@@ -91,79 +91,338 @@
         .set-row input {
             flex: 1;
         }
+        .timer {
+            font-size: 48px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .exercise-card {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .exercise-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .counter {
+            font-size: 24px;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .counter-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .template-list {
+            margin-top: 20px;
+        }
+        
+        .template-item {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        .active-exercise {
+            border: 2px solid var(--tg-theme-button-color, #2481cc);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--tg-theme-button-color, #2481cc);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.3s;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="tabs">
             <div class="tab active" onclick="showTab('workout')">Тренировка</div>
-            <div class="tab" onclick="showTab('exercises')">Упражнения</div>
-            <div class="tab" onclick="showTab('progress')">Прогресс</div>
+            <div class="tab" onclick="showTab('templates')">Шаблоны</div>
+            <div class="tab" onclick="showTab('create')">Создать</div>
         </div>
 
+        <!-- Вкладка активной тренировки -->
         <div id="workout" class="tab-content active">
-            <h2>Записать тренировку</h2>
+            <h2>Текущая тренировка</h2>
+            <div class="timer">00:00</div>
+            <div class="timer-controls">
+                <button onclick="startTimer()">Старт</button>
+                <button onclick="pauseTimer()">Пауза</button>
+                <button onclick="resetTimer()">Сброс</button>
+            </div>
+            
+            <div id="currentExercise" class="exercise-card">
+                <h3>Текущее упражнение</h3>
+                <div class="counter">0 / <span id="targetReps">12</span></div>
+                <div class="counter-controls">
+                    <button onclick="decrementReps()">-</button>
+                    <button onclick="incrementReps()">+</button>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill"></div>
+                </div>
+            </div>
+            
+            <div id="exerciseQueue"></div>
+            <button onclick="finishWorkout()">Завершить тренировку</button>
+        </div>
+
+        <!-- Вкладка шаблонов -->
+        <div id="templates" class="tab-content">
+            <h2>Мои тренировки</h2>
+            <div id="templateList" class="template-list">
+                <!-- Шаблоны будут добавляться здесь -->
+            </div>
+        </div>
+
+        <!-- Вкладка создания тренировки -->
+        <div id="create" class="tab-content">
+            <h2>Создать тренировку</h2>
             <div class="workout-form">
+                <input type="text" id="workoutName" placeholder="Название тренировки">
                 <select id="workoutType">
                     <option value="">Выберите тип тренировки</option>
-                    <option value="cardio">Кардио</option>
                     <option value="strength">Силовая</option>
-                    <option value="yoga">Йога</option>
-                    <option value="stretching">Растяжка</option>
+                    <option value="cardio">Кардио</option>
+                    <option value="hiit">HIIT</option>
                 </select>
-                
-                <input type="number" id="duration" placeholder="Длительность (минут)">
-                <input type="number" id="calories" placeholder="Сожжено калорий">
                 
                 <div id="exerciseList" class="exercise-list"></div>
-                
-                <button onclick="addExercise()" id="addExerciseBtn" style="display: none;">
-                    Добавить упражнение
-                </button>
-                
-                <button onclick="saveWorkout()">Сохранить тренировку</button>
-                <div id="error" class="error"></div>
-            </div>
-        </div>
-
-        <div id="exercises" class="tab-content">
-            <h2>Мои упражнения</h2>
-            <div class="exercise-form">
-                <select id="exerciseType">
-                    <option value="">Выберите упражнение</option>
-                    <option value="pushups">Отжимания</option>
-                    <option value="squats">Приседания</option>
-                    <option value="pullups">Подтягивания</option>
-                </select>
-                <div class="sets-container" id="setsContainer">
-                    <!-- Сеты будут добавляться здесь -->
-                </div>
-                <button onclick="addSet()">Добавить подход</button>
-                <button onclick="saveExercise()">Сохранить упражнение</button>
-            </div>
-        </div>
-
-        <div id="progress" class="tab-content">
-            <h2>Мой прогресс</h2>
-            <div class="progress-stats">
-                <!-- Здесь будет отображаться прогресс -->
+                <button onclick="addExerciseToTemplate()">Добавить упражнение</button>
+                <button onclick="saveTemplate()">Сохранить тренировку</button>
             </div>
         </div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        let currentExercises = [];
+        let timer;
+        let seconds = 0;
+        let isRunning = false;
+        let currentWorkout = null;
+        let currentExerciseIndex = 0;
+        let currentReps = 0;
         
+        // Инициализация
         if (tg) {
             console.log("Telegram WebApp успешно инициализирован");
             tg.expand();
-        } else {
-            console.error("Ошибка инициализации Telegram WebApp");
+            loadTemplates();
+        }
+
+        // Функции для таймера
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                timer = setInterval(updateTimer, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            isRunning = false;
+            clearInterval(timer);
+        }
+
+        function resetTimer() {
+            isRunning = false;
+            clearInterval(timer);
+            seconds = 0;
+            updateTimerDisplay();
+        }
+
+        function updateTimer() {
+            seconds++;
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            document.querySelector('.timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        // Функции для упражнений
+        function incrementReps() {
+            if (!currentWorkout) return;
+            currentReps++;
+            updateRepsDisplay();
+        }
+
+        function decrementReps() {
+            if (!currentWorkout || currentReps <= 0) return;
+            currentReps--;
+            updateRepsDisplay();
+        }
+
+        function updateRepsDisplay() {
+            const counter = document.querySelector('.counter');
+            const targetReps = currentWorkout.exercises[currentExerciseIndex].reps;
+            counter.textContent = `${currentReps} / ${targetReps}`;
+            
+            // Обновляем прогресс-бар
+            const progress = (currentReps / targetReps) * 100;
+            document.querySelector('.progress-bar-fill').style.width = `${progress}%`;
+        }
+
+        // Функции для создания тренировок
+        function addExerciseToTemplate() {
+            const exerciseList = document.getElementById('exerciseList');
+            const exerciseDiv = document.createElement('div');
+            exerciseDiv.className = 'exercise-item';
+            
+            exerciseDiv.innerHTML = `
+                <input type="text" placeholder="Название упражнения">
+                <input type="number" placeholder="Количество подходов">
+                <input type="number" placeholder="Повторений">
+                <input type="number" placeholder="Вес (кг)">
+                <button onclick="this.parentElement.remove()">Удалить</button>
+            `;
+            
+            exerciseList.appendChild(exerciseDiv);
+        }
+
+        function saveTemplate() {
+            const name = document.getElementById('workoutName').value;
+            const type = document.getElementById('workoutType').value;
+            
+            if (!name || !type) {
+                showError("Заполните название и тип тренировки");
+                return;
+            }
+
+            const exercises = [];
+            document.querySelectorAll('.exercise-item').forEach(item => {
+                const inputs = item.querySelectorAll('input');
+                exercises.push({
+                    name: inputs[0].value,
+                    sets: parseInt(inputs[1].value),
+                    reps: parseInt(inputs[2].value),
+                    weight: parseFloat(inputs[3].value)
+                });
+            });
+
+            const template = {
+                name: name,
+                type: type,
+                exercises: exercises
+            };
+
+            // Сохраняем шаблон
+            const templates = JSON.parse(localStorage.getItem('workoutTemplates') || '[]');
+            templates.push(template);
+            localStorage.setItem('workoutTemplates', JSON.stringify(templates));
+            
+            loadTemplates();
+            showTab('templates');
+        }
+
+        function loadTemplates() {
+            const templateList = document.getElementById('templateList');
+            templateList.innerHTML = '';
+            
+            const templates = JSON.parse(localStorage.getItem('workoutTemplates') || '[]');
+            templates.forEach((template, index) => {
+                const templateDiv = document.createElement('div');
+                templateDiv.className = 'template-item';
+                templateDiv.innerHTML = `
+                    <h3>${template.name}</h3>
+                    <p>Тип: ${template.type}</p>
+                    <p>Упражнений: ${template.exercises.length}</p>
+                    <button onclick="startWorkout(${index})">Начать</button>
+                `;
+                templateList.appendChild(templateDiv);
+            });
+        }
+
+        function startWorkout(templateIndex) {
+            const templates = JSON.parse(localStorage.getItem('workoutTemplates') || '[]');
+            currentWorkout = templates[templateIndex];
+            currentExerciseIndex = 0;
+            currentReps = 0;
+            
+            // Показываем первое упражнение
+            showCurrentExercise();
+            resetTimer();
+            showTab('workout');
+        }
+
+        function showCurrentExercise() {
+            if (!currentWorkout || !currentWorkout.exercises[currentExerciseIndex]) return;
+            
+            const exercise = currentWorkout.exercises[currentExerciseIndex];
+            const exerciseCard = document.getElementById('currentExercise');
+            exerciseCard.innerHTML = `
+                <h3>${exercise.name}</h3>
+                <p>Подход ${currentExerciseIndex + 1} из ${currentWorkout.exercises.length}</p>
+                <p>Вес: ${exercise.weight} кг</p>
+                <div class="counter">0 / ${exercise.reps}</div>
+                <div class="counter-controls">
+                    <button onclick="decrementReps()">-</button>
+                    <button onclick="incrementReps()">+</button>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill"></div>
+                </div>
+                <button onclick="nextExercise()">Следующее упражнение</button>
+            `;
+        }
+
+        function nextExercise() {
+            currentExerciseIndex++;
+            currentReps = 0;
+            
+            if (currentExerciseIndex >= currentWorkout.exercises.length) {
+                // Тренировка завершена
+                finishWorkout();
+            } else {
+                showCurrentExercise();
+            }
+        }
+
+        function finishWorkout() {
+            const workoutData = {
+                type: currentWorkout.type,
+                name: currentWorkout.name,
+                duration: seconds,
+                exercises: currentWorkout.exercises,
+                completed: true
+            };
+            
+            tg.sendData(JSON.stringify(workoutData));
+            tg.close();
         }
 
         function showTab(tabId) {
-            // Скрываем все вкладки
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
@@ -171,81 +430,13 @@
                 tab.classList.remove('active');
             });
 
-            // Показываем выбранную вкладку
             document.getElementById(tabId).classList.add('active');
             event.currentTarget.classList.add('active');
         }
 
-        document.getElementById('workoutType').addEventListener('change', function() {
-            const addExerciseBtn = document.getElementById('addExerciseBtn');
-            if (this.value === 'strength') {
-                addExerciseBtn.style.display = 'block';
-            } else {
-                addExerciseBtn.style.display = 'none';
-            }
-        });
-
-        function addExercise() {
-            const exerciseList = document.getElementById('exerciseList');
-            const exerciseDiv = document.createElement('div');
-            exerciseDiv.className = 'exercise-item';
-            
-            const exerciseId = 'exercise_' + Date.now();
-            exerciseDiv.innerHTML = `
-                <select id="${exerciseId}_name">
-                    <option value="">Выберите упражнение</option>
-                    <option value="pushups">Отжимания</option>
-                    <option value="squats">Приседания</option>
-                    <option value="pullups">Подтягивания</option>
-                </select>
-                <input type="number" id="${exerciseId}_sets" placeholder="Количество подходов">
-                <input type="number" id="${exerciseId}_reps" placeholder="Повторений в подходе">
-                <input type="number" id="${exerciseId}_weight" placeholder="Вес (кг)">
-            `;
-            
-            exerciseList.appendChild(exerciseDiv);
-        }
-
-        function saveWorkout() {
-            try {
-                const workoutType = document.getElementById('workoutType').value;
-                const duration = document.getElementById('duration').value;
-                const calories = document.getElementById('calories').value;
-
-                if (!workoutType || !duration || !calories) {
-                    showError("Пожалуйста, заполните все основные поля");
-                    return;
-                }
-
-                const exercises = [];
-                document.querySelectorAll('.exercise-item').forEach(item => {
-                    const id = item.querySelector('select').id.split('_')[1];
-                    exercises.push({
-                        name: document.getElementById(`exercise_${id}_name`).value,
-                        sets: document.getElementById(`exercise_${id}_sets`).value,
-                        reps: document.getElementById(`exercise_${id}_reps`).value,
-                        weight: document.getElementById(`exercise_${id}_weight`).value
-                    });
-                });
-
-                const workoutData = {
-                    type: workoutType,
-                    duration: parseInt(duration),
-                    calories: parseInt(calories),
-                    exercises: exercises
-                };
-
-                tg.sendData(JSON.stringify(workoutData));
-                tg.close();
-            } catch (error) {
-                showError("Ошибка при сохранении тренировки: " + error.message);
-            }
-        }
-
         function showError(message) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.style.display = 'block';
-            errorDiv.textContent = message;
+            // Показываем ошибку пользователю
+            alert(message);
         }
     </script>
 </body>
