@@ -1,23 +1,251 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Telegram Mini App</title>
+    <title>Фитнес Трекер</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 10px;
+            padding: 5px;
+        }
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .tab.active {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .workout-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .exercise-item {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        select, input, button {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--tg-theme-hint-color, #ccc);
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        button {
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .error {
+            color: #ff4444;
+            display: none;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255, 68, 68, 0.1);
+        }
+        .exercise-list {
+            margin-top: 15px;
+        }
+        .sets-container {
+            margin-top: 10px;
+        }
+        .set-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .set-row input {
+            flex: 1;
+        }
+    </style>
 </head>
 <body>
-    <div id="main">
-        <h1>Моё мини-приложение</h1>
-        <button onclick="sendData()">Отправить данные</button>
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('workout')">Тренировка</div>
+            <div class="tab" onclick="showTab('exercises')">Упражнения</div>
+            <div class="tab" onclick="showTab('progress')">Прогресс</div>
+        </div>
+
+        <div id="workout" class="tab-content active">
+            <h2>Записать тренировку</h2>
+            <div class="workout-form">
+                <select id="workoutType">
+                    <option value="">Выберите тип тренировки</option>
+                    <option value="cardio">Кардио</option>
+                    <option value="strength">Силовая</option>
+                    <option value="yoga">Йога</option>
+                    <option value="stretching">Растяжка</option>
+                </select>
+                
+                <input type="number" id="duration" placeholder="Длительность (минут)">
+                <input type="number" id="calories" placeholder="Сожжено калорий">
+                
+                <div id="exerciseList" class="exercise-list"></div>
+                
+                <button onclick="addExercise()" id="addExerciseBtn" style="display: none;">
+                    Добавить упражнение
+                </button>
+                
+                <button onclick="saveWorkout()">Сохранить тренировку</button>
+                <div id="error" class="error"></div>
+            </div>
+        </div>
+
+        <div id="exercises" class="tab-content">
+            <h2>Мои упражнения</h2>
+            <div class="exercise-form">
+                <select id="exerciseType">
+                    <option value="">Выберите упражнение</option>
+                    <option value="pushups">Отжимания</option>
+                    <option value="squats">Приседания</option>
+                    <option value="pullups">Подтягивания</option>
+                </select>
+                <div class="sets-container" id="setsContainer">
+                    <!-- Сеты будут добавляться здесь -->
+                </div>
+                <button onclick="addSet()">Добавить подход</button>
+                <button onclick="saveExercise()">Сохранить упражнение</button>
+            </div>
+        </div>
+
+        <div id="progress" class="tab-content">
+            <h2>Мой прогресс</h2>
+            <div class="progress-stats">
+                <!-- Здесь будет отображаться прогресс -->
+            </div>
+        </div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand();
+        let currentExercises = [];
+        
+        if (tg) {
+            console.log("Telegram WebApp успешно инициализирован");
+            tg.expand();
+        } else {
+            console.error("Ошибка инициализации Telegram WebApp");
+        }
 
-        function sendData() {
-            tg.sendData("Привет из мини-приложения!");
-            tg.close();
+        function showTab(tabId) {
+            // Скрываем все вкладки
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Показываем выбранную вкладку
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        document.getElementById('workoutType').addEventListener('change', function() {
+            const addExerciseBtn = document.getElementById('addExerciseBtn');
+            if (this.value === 'strength') {
+                addExerciseBtn.style.display = 'block';
+            } else {
+                addExerciseBtn.style.display = 'none';
+            }
+        });
+
+        function addExercise() {
+            const exerciseList = document.getElementById('exerciseList');
+            const exerciseDiv = document.createElement('div');
+            exerciseDiv.className = 'exercise-item';
+            
+            const exerciseId = 'exercise_' + Date.now();
+            exerciseDiv.innerHTML = `
+                <select id="${exerciseId}_name">
+                    <option value="">Выберите упражнение</option>
+                    <option value="pushups">Отжимания</option>
+                    <option value="squats">Приседания</option>
+                    <option value="pullups">Подтягивания</option>
+                </select>
+                <input type="number" id="${exerciseId}_sets" placeholder="Количество подходов">
+                <input type="number" id="${exerciseId}_reps" placeholder="Повторений в подходе">
+                <input type="number" id="${exerciseId}_weight" placeholder="Вес (кг)">
+            `;
+            
+            exerciseList.appendChild(exerciseDiv);
+        }
+
+        function saveWorkout() {
+            try {
+                const workoutType = document.getElementById('workoutType').value;
+                const duration = document.getElementById('duration').value;
+                const calories = document.getElementById('calories').value;
+
+                if (!workoutType || !duration || !calories) {
+                    showError("Пожалуйста, заполните все основные поля");
+                    return;
+                }
+
+                const exercises = [];
+                document.querySelectorAll('.exercise-item').forEach(item => {
+                    const id = item.querySelector('select').id.split('_')[1];
+                    exercises.push({
+                        name: document.getElementById(`exercise_${id}_name`).value,
+                        sets: document.getElementById(`exercise_${id}_sets`).value,
+                        reps: document.getElementById(`exercise_${id}_reps`).value,
+                        weight: document.getElementById(`exercise_${id}_weight`).value
+                    });
+                });
+
+                const workoutData = {
+                    type: workoutType,
+                    duration: parseInt(duration),
+                    calories: parseInt(calories),
+                    exercises: exercises
+                };
+
+                tg.sendData(JSON.stringify(workoutData));
+                tg.close();
+            } catch (error) {
+                showError("Ошибка при сохранении тренировки: " + error.message);
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = message;
         }
     </script>
 </body>
