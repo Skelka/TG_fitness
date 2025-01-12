@@ -274,12 +274,10 @@
                 if (user) {
                     document.getElementById('tg-username').textContent = user.username || 'Пользователь';
                     
-                    // Получаем сохраненные данные из localStorage
-                    const savedData = localStorage.getItem('profileData');
-                    if (savedData) {
-                        const data = JSON.parse(savedData);
-                        updateProfileFields(data);
-                    }
+                    // Запрашиваем данные с сервера
+                    tg.sendData(JSON.stringify({
+                        type: 'get_profile_data'
+                    }));
                 }
             } catch (error) {
                 console.error('Ошибка при загрузке данных профиля:', error);
@@ -335,15 +333,11 @@
             // Сохраняем локально
             localStorage.setItem('profileData', JSON.stringify(profileData));
             
-            // Отправляем на сервер только при выходе из приложения
-            tg.onEvent('viewportChanged', function() {
-                if (!tg.isExpanded) {
-                    tg.sendData(JSON.stringify({
-                        type: 'profile_update',
-                        data: profileData
-                    }));
-                }
-            });
+            // Сразу отправляем данные на сервер
+            tg.sendData(JSON.stringify({
+                type: 'profile_update',
+                data: profileData
+            }));
         }
 
         // Добавим автосохранение при изменении полей
