@@ -274,25 +274,10 @@
                 if (user) {
                     document.getElementById('tg-username').textContent = user.username || 'Пользователь';
                     
-                    // Получаем данные с сервера
-                    const response = await fetch(`http://localhost:8000/getProfileData?user_id=${user.id}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    console.log('Полученные данные:', data);
-
-                    if (data.ok && data.result) {
-                        const profileData = data.result;
-                        // Обновляем поля формы
-                        document.getElementById('age').value = profileData.age || '';
-                        document.getElementById('height').value = profileData.height || '';
-                        document.getElementById('weight').value = profileData.weight || '';
-                        document.getElementById('goal').value = profileData.goal || '';
-                        if (profileData.photo_url) {
-                            document.getElementById('profile-image').src = profileData.photo_url;
-                        }
-                    }
+                    // Запрашиваем данные через WebApp
+                    tg.sendData(JSON.stringify({
+                        type: 'get_profile_data'
+                    }));
                 }
             } catch (error) {
                 console.error('Ошибка при загрузке данных:', error);
@@ -330,17 +315,11 @@
             // Сохраняем в localStorage
             localStorage.setItem('profileData', JSON.stringify(profileData));
             
-            // Отправляем на сервер
-            fetch(`http://localhost:8000/getProfileData?user_id=${tg.initDataUnsafe?.user?.id}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    type: 'profile_update',
-                    data: profileData
-                })
-            }).catch(error => console.error('Ошибка при сохранении:', error));
+            // Отправляем данные через WebApp
+            tg.sendData(JSON.stringify({
+                type: 'profile_update',
+                data: profileData
+            }));
         }
 
         // Добавим функцию для отправки данных при закрытии приложения
@@ -445,7 +424,21 @@
         // Добавим обработчик для получения данных от бота
         if (tg) {
             tg.onEvent('message', function(event) {
-                handleBotResponse(event.data);
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'profile_data') {
+                        // Обновляем поля формы
+                        document.getElementById('age').value = data.age || '';
+                        document.getElementById('height').value = data.height || '';
+                        document.getElementById('weight').value = data.weight || '';
+                        document.getElementById('goal').value = data.goal || '';
+                        if (data.photo_url) {
+                            document.getElementById('profile-image').src = data.photo_url;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Ошибка при обработке сообщения:', e);
+                }
             });
         }
 
