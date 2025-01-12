@@ -231,17 +231,18 @@
         }
 
         .workout-types {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 15px;
         }
 
         .workout-type-card {
             position: relative;
-            height: 80px;
+            height: 150px;
             background-size: cover;
             background-position: center;
+            border-radius: 10px;
             padding: 20px;
             cursor: pointer;
             overflow: hidden;
@@ -271,13 +272,13 @@
         }
 
         .workout-type-card h3 {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             margin-bottom: 5px;
         }
 
         .workout-type-card p {
-            font-size: 12px;
+            font-size: 14px;
             opacity: 0.9;
         }
 
@@ -450,7 +451,7 @@
             cursor: pointer;
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         .days-list {
@@ -487,9 +488,10 @@
         /* Обновим стили для карточек типов тренировок */
         .workout-type-card {
             position: relative;
-            height: 80px;
+            height: 150px;
             background-size: cover;
             background-position: center;
+            border-radius: 10px;
             padding: 20px;
             cursor: pointer;
             overflow: hidden;
@@ -519,13 +521,13 @@
         }
 
         .workout-type-card h3 {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             margin-bottom: 5px;
         }
 
         .workout-type-card p {
-            font-size: 12px;
+            font-size: 14px;
             opacity: 0.9;
         }
 
@@ -731,6 +733,34 @@
         /* Добавим стили для фона страницы упражнений */
         #exercises-page {
             background-color: #1E1E1E;
+        }
+
+        /* Разные стили для главной страницы и внутренних */
+        #workouts-page .workout-type-card {
+            height: 150px;  /* Оставляем большие карточки на главной */
+        }
+
+        /* Уменьшенный заголовок для внутренних страниц */
+        #workout-days-page .header,
+        #exercises-page .header,
+        #active-exercise-page .header {
+            min-height: 80px;
+            padding: 15px;
+        }
+
+        /* Уменьшим размер заголовка на внутренних страницах */
+        #workout-days-page .header h1,
+        #exercises-page .header h1,
+        #active-exercise-page .header h1 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        /* Уменьшим отступ для кнопки "Назад" на внутренних страницах */
+        #workout-days-page .header .back-button,
+        #exercises-page .header .back-button,
+        #active-exercise-page .header .back-button {
+            margin-bottom: 5px;
         }
     </style>
 </head>
