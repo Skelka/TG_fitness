@@ -334,6 +334,27 @@
         #exercises-page {
             background-color: #F5F5F5;
         }
+
+        /* Стили для MainButton */
+        .telegram-button {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #7C5AF1;
+            color: white;
+            padding: 16px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 1000;
+            display: none;
+        }
+
+        /* Обновим отступ для контента */
+        .exercise-list {
+            padding-bottom: 80px;
+        }
     </style>
 </head>
 <body>
@@ -831,14 +852,18 @@
         }
 
         function showExercises(workoutTypeId) {
-            // Запрашиваем упражнения у бота
-            tg.sendData(JSON.stringify({
-                type: 'get_exercises',
-                workout_type_id: workoutTypeId
-            }));
+            // Запрашиваем упражнения через MainButton
+            tg.MainButton.setText('Загрузка упражнений...');
+            tg.MainButton.show();
+            tg.MainButton.onClick(() => {
+                tg.sendData(JSON.stringify({
+                    type: 'get_exercises',
+                    workout_type_id: workoutTypeId
+                }));
+            });
             
-            document.getElementById('workouts-page').style.display = 'none';
-            document.getElementById('exercises-page').style.display = 'block';
+            // Показываем страницу упражнений
+            showPage('exercises-page');
         }
 
         function showWorkouts() {
@@ -847,24 +872,18 @@
         }
 
         function displayExercises(exercises) {
+            if (!exercises) return;
+            
             const container = document.getElementById('exercise-list');
             container.innerHTML = '';
             
             exercises.forEach(exercise => {
                 const card = document.createElement('div');
                 card.className = 'exercise-card';
-                
-                // Добавим стили для карточки упражнения
-                card.style.backgroundColor = '#fff';
-                card.style.borderRadius = '10px';
-                card.style.padding = '15px';
-                card.style.marginBottom = '10px';
-                card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-                
                 card.innerHTML = `
-                    <h4 style="margin: 0; font-size: 16px; color: #333;">${exercise.name}</h4>
-                    <p style="margin: 8px 0; font-size: 14px; color: #666;">${exercise.description}</p>
-                    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 14px; color: #666;">
+                    <h4>${exercise.name}</h4>
+                    <p>${exercise.description}</p>
+                    <div class="exercise-details">
                         <span>${exercise.sets} подхода</span>
                         <span>${exercise.reps} ${exercise.workout_type_id === 2 ? 'сек' : 'повторений'}</span>
                     </div>
@@ -875,17 +894,35 @@
 
         // Обновим обработчик сообщений
         if (tg) {
+            tg.onEvent('mainButtonClicked', function() {
+                // Скрываем кнопку после клика
+                tg.MainButton.hide();
+            });
+
+            tg.onEvent('viewportChanged', function() {
+                // Если приложение было свернуто и развернуто
+                if (document.getElementById('exercises-page').style.display === 'block') {
+                    displayExercises(lastExercises);
+                }
+            });
+
+            let lastExercises = null;
             tg.onEvent('message', function(event) {
                 try {
-                    console.log('Получены данные:', event.data); // Добавим для отладки
+                    console.log('Получены данные:', event.data);
                     const data = JSON.parse(event.data);
                     if (data.type === 'exercises_list') {
-                        console.log('Упражнения:', data.exercises); // Добавим для отладки
+                        console.log('Упражнения:', data.exercises);
+                        lastExercises = data.exercises;
                         displayExercises(data.exercises);
+                        // Скрываем кнопку после получения данных
+                        tg.MainButton.hide();
                     }
                 } catch (e) {
                     console.error('Ошибка при обработке сообщения:', e);
-                    console.error('Данные:', event.data); // Добавим для отладки
+                    console.error('Данные:', event.data);
+                    // В случае ошибки тоже скрываем кнопку
+                    tg.MainButton.hide();
                 }
             });
         }
