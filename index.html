@@ -1763,6 +1763,11 @@
         let restTime = 0;
 
         function startExercise(workoutTypeId, dayNum, exerciseIndex) {
+            // Сохраняем информацию о текущей тренировке
+            currentWorkoutTypeId = workoutTypeId;
+            currentDayNum = dayNum;
+            currentWorkout = workoutPrograms[workoutTypeId].days[dayNum];
+            
             const exercise = workoutPrograms[workoutTypeId].days[dayNum].exercises[exerciseIndex];
             currentExercise = exercise;
             currentSet = 1;
@@ -1798,16 +1803,94 @@
                 currentSet++;
                 document.getElementById('current-set').textContent = currentSet;
                 
-                // Обновляем информацию о следующем подходе
-                document.getElementById('next-exercise-name').textContent = 
-                    currentSet < currentExercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
-                
-                document.getElementById('start-set-btn').style.display = 'block';
-                document.getElementById('complete-set-btn').style.display = 'none';
+                // Показываем таймер отдыха
+                showRestTimer();
             } else {
-                completeExercise();
+                // Если это был последний подход текущего упражнения
+                if (hasNextExercise()) {
+                    showNextExercisePreview();
+                } else {
+                    completeExercise();
+                }
             }
         }
+
+        function showRestTimer() {
+            const restSeconds = parseInt(currentExercise.rest);
+            let timeLeft = restSeconds;
+            
+            // Обновляем интерфейс для отображения таймера
+            const repsCircle = document.querySelector('.reps-circle');
+            repsCircle.innerHTML = `
+                <div class="weight-info">Отдых</div>
+                <div class="reps-count" id="rest-timer">${timeLeft}</div>
+                <div class="reps-label">секунд</div>
+            `;
+            
+            // Запускаем таймер
+            const timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('rest-timer').textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    playNotificationSound();
+                    vibrate();
+                    // Возвращаем интерфейс для следующего подхода
+                    resetExerciseInterface();
+                }
+            }, 1000);
+        }
+
+        function resetExerciseInterface() {
+            // Восстанавливаем интерфейс упражнения
+            const repsCircle = document.querySelector('.reps-circle');
+            repsCircle.innerHTML = `
+                <div class="weight-info" id="weight-info">${currentExercise.weight || ''}</div>
+                <div class="reps-count" id="reps-count">${currentExercise.reps.split(' ')[0]}</div>
+                <div class="reps-label">Готово</div>
+                <button class="decrease-reps" onclick="adjustReps(-1)">−</button>
+                <button class="increase-reps" onclick="adjustReps(1)">+</button>
+            `;
+            
+            // Обновляем информацию о следующем подходе
+            document.getElementById('next-exercise-name').textContent = 
+                currentSet < currentExercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
+            
+            document.getElementById('start-set-btn').style.display = 'block';
+            document.getElementById('complete-set-btn').style.display = 'none';
+        }
+
+        function hasNextExercise() {
+            // Проверяем, есть ли следующее упражнение
+            const currentExerciseIndex = getCurrentExerciseIndex();
+            return currentExerciseIndex < currentWorkout.exercises.length - 1;
+        }
+
+        function showNextExercisePreview() {
+            const nextExercise = getNextExercise();
+            const container = document.querySelector('.exercise-content');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 30px;">
+                    <h2 style="color: #fff; margin-bottom: 20px;">Подход завершен!</h2>
+                    <p style="color: #B0B0B0; margin-bottom: 20px;">Следующее упражнение:</p>
+                    <h3 style="color: #fff; margin-bottom: 30px;">${nextExercise.name}</h3>
+                    <button class="primary-button" onclick="startNextExercise()">
+                        Начать следующее упражнение
+                    </button>
+                </div>
+            `;
+        }
+
+        function startNextExercise() {
+            const nextExerciseIndex = getCurrentExerciseIndex() + 1;
+            startExercise(currentWorkoutTypeId, currentDayNum, nextExerciseIndex);
+        }
+
+        // Добавим глобальные переменные для отслеживания текущей тренировки
+        let currentWorkoutTypeId = null;
+        let currentDayNum = null;
+        let currentWorkout = null;
 
         function startTimer(seconds, isWorkout = false) {
             if (timerInterval) clearInterval(timerInterval);
