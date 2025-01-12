@@ -110,13 +110,27 @@
         }
 
         .page {
-            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #F5F5F5;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+            overflow-y: auto;
             padding: 20px;
             padding-bottom: 70px;
+            visibility: hidden;
         }
         
         .page.active {
-            display: block;
+            transform: translateX(0);
+            visibility: visible;
+        }
+        
+        .page.previous {
+            transform: translateX(-100%);
         }
         
         .profile-section {
@@ -355,10 +369,56 @@
         .exercise-list {
             padding-bottom: 80px;
         }
+
+        /* Стили для дней тренировок */
+        .training-days {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 15px;
+        }
+
+        .day-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+
+        .day-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .day-card p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Индикатор прогресса */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #eee;
+            border-radius: 2px;
+            margin-top: 10px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: #7C5AF1;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
     </style>
 </head>
 <body>
     <div id="workouts-page" class="page">
+        <h2>Тренировки</h2>
         <div class="workout-types">
             <div class="workout-type-card" onclick="showExercises(1)" 
                  style="background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')">
@@ -383,10 +443,19 @@
         </div>
     </div>
 
+    <div id="training-days-page" class="page">
+        <button class="back-button" onclick="showWorkouts()">Назад к типам тренировок</button>
+        <h2 id="workout-type-title">Тренировка</h2>
+        <div class="training-days">
+            <!-- Дни будут добавляться динамически -->
+        </div>
+    </div>
+
     <div id="exercises-page" class="page">
-        <button class="back-button" onclick="showWorkouts()">Назад к тренировкам</button>
+        <button class="back-button" onclick="showTrainingDays()">Назад к дням</button>
+        <h2 id="training-day-title">День 1</h2>
         <div id="exercise-list" class="exercise-list">
-            <!-- Здесь будут упражнения -->
+            <!-- Упражнения будут добавляться динамически -->
         </div>
     </div>
 
@@ -1003,6 +1072,171 @@
                     console.error('Ошибка при обработке сообщения:', e);
                 }
             });
+        }
+
+        // Структура данных тренировок
+        const workoutPrograms = {
+            1: { // Силовая тренировка
+                name: "Силовая тренировка",
+                description: "Программа для набора мышечной массы",
+                days: {
+                    1: {
+                        name: "День 1 - Грудь и трицепс",
+                        exercises: [
+                            {
+                                name: "Отжимания",
+                                description: "Классические отжимания от пола",
+                                sets: 4,
+                                reps: "12-15",
+                                rest: "60 сек"
+                            },
+                            {
+                                name: "Отжимания на брусьях",
+                                description: "Для проработки нижней части груди",
+                                sets: 3,
+                                reps: "10-12",
+                                rest: "90 сек"
+                            },
+                            {
+                                name: "Алмазные отжимания",
+                                description: "Акцент на трицепс",
+                                sets: 3,
+                                reps: "12-15",
+                                rest: "60 сек"
+                            }
+                        ]
+                    },
+                    2: {
+                        name: "День 2 - Спина и бицепс",
+                        exercises: [
+                            {
+                                name: "Подтягивания",
+                                description: "Широким хватом к груди",
+                                sets: 4,
+                                reps: "8-10",
+                                rest: "90 сек"
+                            },
+                            {
+                                name: "Австралийские подтягивания",
+                                description: "Горизонтальная тяга",
+                                sets: 3,
+                                reps: "12-15",
+                                rest: "60 сек"
+                            }
+                        ]
+                    },
+                    3: {
+                        name: "День 3 - Ноги и плечи",
+                        exercises: [
+                            {
+                                name: "Приседания",
+                                description: "Классические приседания",
+                                sets: 4,
+                                reps: "15-20",
+                                rest: "90 сек"
+                            },
+                            {
+                                name: "Выпады",
+                                description: "Поочередно на каждую ногу",
+                                sets: 3,
+                                reps: "12 на ногу",
+                                rest: "60 сек"
+                            }
+                        ]
+                    }
+                }
+            },
+            2: { // Кардио
+                name: "Кардио",
+                description: "Программа для сжигания жира",
+                days: {
+                    1: {
+                        name: "День 1 - Интервальная тренировка",
+                        exercises: [
+                            {
+                                name: "Бег на месте",
+                                description: "Чередование быстрого и медленного темпа",
+                                sets: 10,
+                                reps: "30 сек быстро / 30 сек медленно",
+                                rest: "60 сек между сетами"
+                            }
+                        ]
+                    },
+                    2: {
+                        name: "День 2 - Круговая тренировка",
+                        exercises: [
+                            {
+                                name: "Комплекс упражнений",
+                                description: "Берпи, прыжки, скакалка",
+                                sets: 5,
+                                reps: "40 сек работа / 20 сек отдых",
+                                rest: "60 сек между кругами"
+                            }
+                        ]
+                    }
+                }
+            }
+            // Добавить остальные программы...
+        };
+
+        // Функции навигации
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                page.classList.remove('active', 'previous');
+                if (page.classList.contains('active')) {
+                    page.classList.add('previous');
+                }
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function showTrainingDays(workoutTypeId) {
+            const workout = workoutPrograms[workoutTypeId];
+            const container = document.querySelector('.training-days');
+            container.innerHTML = '';
+            
+            document.getElementById('workout-type-title').textContent = workout.name;
+            
+            Object.entries(workout.days).forEach(([dayNum, day]) => {
+                const card = document.createElement('div');
+                card.className = 'day-card';
+                card.innerHTML = `
+                    <h3>${day.name}</h3>
+                    <p>${day.exercises.length} упражнений</p>
+                    <div class="progress-bar">
+                        <div class="progress-bar-fill" style="width: 0%"></div>
+                    </div>
+                `;
+                card.onclick = () => showExercises(workoutTypeId, dayNum);
+                container.appendChild(card);
+            });
+            
+            showPage('training-days-page');
+        }
+
+        function showExercises(workoutTypeId, dayNum) {
+            const day = workoutPrograms[workoutTypeId].days[dayNum];
+            document.getElementById('training-day-title').textContent = day.name;
+            
+            const container = document.getElementById('exercise-list');
+            container.innerHTML = '';
+            
+            day.exercises.forEach(exercise => {
+                const card = document.createElement('div');
+                card.className = 'exercise-card';
+                card.innerHTML = `
+                    <h4>${exercise.name}</h4>
+                    <p>${exercise.description}</p>
+                    <div class="exercise-details">
+                        <span>${exercise.sets} подхода × ${exercise.reps}</span>
+                        <span>Отдых: ${exercise.rest}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            showPage('exercises-page');
         }
     </script>
 </body>
