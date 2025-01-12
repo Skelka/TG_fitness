@@ -263,11 +263,11 @@
             
             // Получаем данные из URL
             const urlParams = new URLSearchParams(window.location.search);
-            const profileData = urlParams.get('data');
+            const encodedData = urlParams.get('data');
             
-            if (profileData) {
+            if (encodedData) {
                 try {
-                    const data = JSON.parse(profileData);
+                    const data = JSON.parse(decodeURIComponent(encodedData));
                     // Заполняем поля формы
                     document.getElementById('tg-username').textContent = data.username || 'Пользователь';
                     if (data.age) document.getElementById('age').value = data.age;
