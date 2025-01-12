@@ -367,7 +367,7 @@
         `);
 
         // Обработчик для кнопки сохранения
-        document.getElementById('saveProfileBtn').addEventListener('click', function() {
+        document.getElementById('saveProfileBtn').addEventListener('click', async function() {
             const profileData = {
                 age: document.getElementById('age').value,
                 height: document.getElementById('height').value,
@@ -375,11 +375,22 @@
                 goal: document.getElementById('goal').value
             };
             
+            // Сохраняем в localStorage
+            localStorage.setItem('profileData', JSON.stringify(profileData));
+            
             // Отправляем данные через WebApp
             tg.sendData(JSON.stringify({
                 type: 'profile_update',
                 data: profileData
             }));
+
+            // Ждем немного и перезапускаем приложение
+            setTimeout(() => {
+                tg.openApp({
+                    url: window.location.href,
+                    try_instant_view: true
+                });
+            }, 500);
         });
 
         function initProfile() {
