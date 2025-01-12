@@ -419,7 +419,7 @@
             min-height: 140px;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
+            justify-content: space-between;
         }
 
         .header::before {
@@ -429,8 +429,18 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
+            background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.7));
             z-index: 1;
+        }
+
+        .header-top {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-bottom {
+            position: relative;
+            z-index: 2;
         }
 
         .header button,
@@ -440,11 +450,11 @@
         }
 
         .header h1 {
-            margin: 10px 0 0 0;
+            margin: 0;
             font-size: 24px;
             color: white;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            padding: 0 0 10px 0;
+            padding: 0;
             line-height: 1.2;
         }
 
@@ -457,7 +467,6 @@
             cursor: pointer;
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
@@ -692,6 +701,15 @@
             border-radius: 8px;
             padding: 12px;
         }
+
+        /* Стили для страницы активного упражнения */
+        #active-exercise-page .exercise-content {
+            padding: 20px;
+        }
+
+        #active-exercise-page .set-counter {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -804,8 +822,12 @@
 
     <div id="active-exercise-page" class="page">
         <div class="header">
-            <button class="back-button" onclick="confirmExitExercise()">← Назад</button>
-            <h1 id="active-exercise-title"></h1>
+            <div class="header-top">
+                <button class="back-button" onclick="confirmExitExercise()">← Назад</button>
+            </div>
+            <div class="header-bottom">
+                <h1 id="active-exercise-title"></h1>
+            </div>
         </div>
         
         <div class="exercise-content">
@@ -1508,6 +1530,8 @@
                 showPage('workouts-page');
             } else if (currentPage.id === 'exercises-page') {
                 showPage('workout-days-page');
+            } else if (currentPage.id === 'active-exercise-page') {
+                confirmExitExercise();
             }
         }
 
@@ -1598,10 +1622,10 @@
             if (timerInterval) {
                 if (confirm('Вы уверены, что хотите прервать упражнение?')) {
                     clearInterval(timerInterval);
-                    goBack();
+                    showPage('exercises-page');
                 }
             } else {
-                goBack();
+                showPage('exercises-page');
             }
         }
 
