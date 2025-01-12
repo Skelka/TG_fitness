@@ -258,14 +258,40 @@
             document.getElementById(pageId).classList.add('active');
         }
 
+        function updateProfileFields(data) {
+            if (data.age) document.getElementById('age').value = data.age;
+            if (data.height) document.getElementById('height').value = data.height;
+            if (data.weight) document.getElementById('weight').value = data.weight;
+            if (data.goal) document.getElementById('goal').value = data.goal;
+            if (data.username) document.getElementById('tg-username').textContent = data.username;
+        }
+
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', function(e) {
                 e.preventDefault();
                 document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
                 this.classList.add('active');
+                
                 const pageId = this.getAttribute('data-page');
                 if (pageId) {
                     showPage(pageId);
+                    
+                    // Загружаем данные профиля при переходе на страницу профиля
+                    if (pageId === 'profile-page') {
+                        tg.sendData(JSON.stringify({
+                            type: 'get_profile_data'
+                        }));
+                        
+                        // Добавим обработчик для получения данных от бота
+                        tg.onEvent('message', function(message) {
+                            try {
+                                const data = JSON.parse(message.data);
+                                updateProfileFields(data);
+                            } catch (e) {
+                                console.error('Ошибка при обработке данных профиля:', e);
+                            }
+                        });
+                    }
                 }
             });
         });
@@ -292,10 +318,6 @@
             if (tg.initDataUnsafe?.user?.photo_url) {
                 document.getElementById('profile-image').src = tg.initDataUnsafe.user.photo_url;
             }
-            
-            tg.sendData(JSON.stringify({
-                type: 'get_profile_data'
-            }));
         }
 
         document.querySelector('.profile-photo').addEventListener('click', function() {
