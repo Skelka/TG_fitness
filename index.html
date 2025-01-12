@@ -318,18 +318,13 @@
         .back-button {
             background: none;
             border: none;
-            padding: 10px;
+            color: white;
             font-size: 16px;
-            color: #333;
+            padding: 0;
             cursor: pointer;
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .back-button:before {
-            content: "←";
-            margin-right: 8px;
+            margin-bottom: 10px;
         }
 
         #exercises-page {
@@ -536,7 +531,7 @@
 
     <div id="workout-days-page" class="page">
         <div class="header">
-            <button class="back-button" onclick="showPage('workouts-page')">← Назад к типам тренировок</button>
+            <button class="back-button" onclick="goBack()">← Назад</button>
             <h1 id="workout-type-title"></h1>
         </div>
         <div id="workout-days" class="days-list"></div>
@@ -671,8 +666,9 @@
         }
 
         function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.style.display = 'none');
+            document.getElementById(pageId).style.display = 'block';
         }
 
         async function loadProfileData() {
@@ -1187,9 +1183,10 @@
 
         function showDayExercises(workoutTypeId, dayNum) {
             const day = workoutPrograms[workoutTypeId].days[dayNum];
+            
+            document.getElementById('exercise-day-title').textContent = day.name;
             const container = document.getElementById('exercise-list');
             container.innerHTML = `
-                <h2>${day.name}</h2>
                 <div class="exercises-list">
                     ${day.exercises.map(exercise => `
                         <div class="exercise-card">
