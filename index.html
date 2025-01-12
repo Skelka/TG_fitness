@@ -232,154 +232,211 @@
     </style>
 </head>
 <body>
-    <div id="workouts-page" class="page active">
-        <div class="workout-list">
-            <div class="workout-type">
-                <h3>Всё тело</h3>
-                <p>Общее описание</p>
-            </div>
-            <div class="workout-type">
-                <h3>Выносливость</h3>
-                <p>Общее описание</p>
-            </div>
-            <div class="workout-type">
-                <h3>Похудение</h3>
-                <p>Общее описание</p>
-            </div>
-            <div class="workout-type">
-                <h3>Начинающий</h3>
-                <p>Общее описание</p>
-            </div>
-        </div>
+    <div id="error-container" style="display: none; padding: 20px; text-align: center; color: #333;">
     </div>
-
-    <div id="profile-page" class="page">
-        <div class="profile-section">
-            <div class="profile-header">
-                <div class="profile-photo">
-                    <img id="profile-image" src="images/default-avatar.png" alt="Profile photo">
+    
+    <div id="app-container">
+        <div id="workouts-page" class="page active">
+            <div class="workout-list">
+                <div class="workout-type">
+                    <h3>Всё тело</h3>
+                    <p>Общее описание</p>
                 </div>
-                <div class="profile-info">
-                    <h2 class="profile-name" id="tg-username">Загрузка...</h2>
+                <div class="workout-type">
+                    <h3>Выносливость</h3>
+                    <p>Общее описание</p>
                 </div>
-            </div>
-            
-            <div class="profile-field">
-                <label>Возраст</label>
-                <input type="number" id="age" placeholder="Укажите ваш возраст">
-            </div>
-            
-            <div class="profile-field">
-                <label>Рост (см)</label>
-                <input type="number" id="height" placeholder="Укажите ваш рост">
-            </div>
-            
-            <div class="profile-field">
-                <label>Вес (кг)</label>
-                <input type="number" id="weight" placeholder="Укажите ваш вес">
-            </div>
-            
-            <div class="profile-field">
-                <label>Цель тренировок</label>
-                <select id="goal">
-                    <option value="">Выберите цель</option>
-                    <option value="weight_loss">Похудение</option>
-                    <option value="muscle_gain">Набор мышечной массы</option>
-                    <option value="endurance">Выносливость</option>
-                    <option value="maintenance">Поддержание формы</option>
-                </select>
-            </div>
-        </div>
-    </div>
-
-    <div id="stats-page" class="page">
-        <div class="stats-section">
-            <div class="stats-header">
-                <h2>Статистика веса</h2>
-                <select id="weight-period">
-                    <option value="week">За неделю</option>
-                    <option value="month">За месяц</option>
-                </select>
-            </div>
-            <div class="chart-container">
-                <canvas id="weightChart"></canvas>
-            </div>
-            <div class="stats-summary">
-                <div class="stat-item">
-                    <span class="stat-label">Начальный вес</span>
-                    <span class="stat-value" id="initial-weight">-</span>
+                <div class="workout-type">
+                    <h3>Похудение</h3>
+                    <p>Общее описание</p>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-label">Текущий вес</span>
-                    <span class="stat-value" id="current-weight">-</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Изменение</span>
-                    <span class="stat-value" id="weight-change">-</span>
+                <div class="workout-type">
+                    <h3>Начинающий</h3>
+                    <p>Общее описание</p>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="bottom-nav">
-        <a href="#" class="nav-item active" data-page="workouts-page">
-            <img src="images/dumbbell.png" alt="Тренировки">
-            <span>Тренировки</span>
-        </a>
-        <a href="#" class="nav-item" data-page="templates-page">
-            <img src="images/template.png" alt="Мои шаблоны">
-            <span>Мои шаблоны</span>
-        </a>
-        <a href="#" class="nav-item" data-page="stats-page">
-            <img src="images/stats.png" alt="Статистика">
-            <span>Статистика</span>
-        </a>
-        <a href="#" class="nav-item" data-page="profile-page">
-            <img src="images/profile.png" alt="Профиль">
-            <span>Профиль</span>
-        </a>
+        <div id="profile-page" class="page">
+            <div class="profile-section">
+                <div class="profile-header">
+                    <div class="profile-photo">
+                        <img id="profile-image" src="images/default-avatar.png" alt="Profile photo">
+                    </div>
+                    <div class="profile-info">
+                        <h2 class="profile-name" id="tg-username">Загрузка...</h2>
+                    </div>
+                </div>
+                
+                <div class="profile-field">
+                    <label>Возраст</label>
+                    <input type="number" id="age" placeholder="Укажите ваш возраст">
+                </div>
+                
+                <div class="profile-field">
+                    <label>Рост (см)</label>
+                    <input type="number" id="height" placeholder="Укажите ваш рост">
+                </div>
+                
+                <div class="profile-field">
+                    <label>Вес (кг)</label>
+                    <input type="number" id="weight" placeholder="Укажите ваш вес">
+                </div>
+                
+                <div class="profile-field">
+                    <label>Цель тренировок</label>
+                    <select id="goal">
+                        <option value="">Выберите цель</option>
+                        <option value="weight_loss">Похудение</option>
+                        <option value="muscle_gain">Набор мышечной массы</option>
+                        <option value="endurance">Выносливость</option>
+                        <option value="maintenance">Поддержание формы</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="stats-page" class="page">
+            <div class="stats-section">
+                <div class="stats-header">
+                    <h2>Статистика веса</h2>
+                    <select id="weight-period">
+                        <option value="week">За неделю</option>
+                        <option value="month">За месяц</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="weightChart"></canvas>
+                </div>
+                <div class="stats-summary">
+                    <div class="stat-item">
+                        <span class="stat-label">Начальный вес</span>
+                        <span class="stat-value" id="initial-weight">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Текущий вес</span>
+                        <span class="stat-value" id="current-weight">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Изменение</span>
+                        <span class="stat-value" id="weight-change">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <a href="#" class="nav-item active" data-page="workouts-page">
+                <img src="images/dumbbell.png" alt="Тренировки">
+                <span>Тренировки</span>
+            </a>
+            <a href="#" class="nav-item" data-page="templates-page">
+                <img src="images/template.png" alt="Мои шаблоны">
+                <span>Мои шаблоны</span>
+            </a>
+            <a href="#" class="nav-item" data-page="stats-page">
+                <img src="images/stats.png" alt="Статистика">
+                <span>Статистика</span>
+            </a>
+            <a href="#" class="nav-item" data-page="profile-page">
+                <img src="images/profile.png" alt="Профиль">
+                <span>Профиль</span>
+            </a>
+        </div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        if (tg) {
+
+        // Функция инициализации приложения
+        function initializeApp() {
+            if (!tg.initDataUnsafe?.query_id) {
+                // Если приложение открыто не через Telegram, показываем сообщение
+                document.body.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: #333;">
+                        <h2>Ошибка доступа</h2>
+                        <p>Это приложение может быть открыто только через Telegram бота.</p>
+                        <p>Пожалуйста, вернитесь в Telegram и откройте приложение через бота.</p>
+                    </div>
+                `;
+                return false;
+            }
+            return true;
+        }
+
+        // Инициализируем приложение при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!initializeApp()) return;
+
+            // Настраиваем Telegram WebApp
             tg.expand();
+            tg.enableClosingConfirmation();
+
+            // Инициализируем интерфейс
+            showPage('workouts-page');
             
-            // Получаем данные из URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const encodedData = urlParams.get('data');
-            
+            // Загружаем данные профиля
+            const encodedData = new URLSearchParams(window.location.search).get('data');
             if (encodedData) {
                 try {
                     const data = JSON.parse(decodeURIComponent(encodedData));
                     log('Получены данные из URL:');
                     log(JSON.stringify(data, null, 2));
-                    
-                    document.getElementById('tg-username').textContent = data.username || 'Пользователь';
-                    if (data.age) document.getElementById('age').value = data.age;
-                    if (data.height) document.getElementById('height').value = data.height;
-                    if (data.weight) document.getElementById('weight').value = data.weight;
-                    if (data.goal) document.getElementById('goal').value = data.goal;
-                    if (data.photo_url) {
-                        log(`Загружаем фото из URL: ${data.photo_url}`);
-                        const profileImage = document.getElementById('profile-image');
-                        profileImage.src = data.photo_url;
-                        profileImage.onerror = function(e) {
-                            log(`Ошибка загрузки фото: ${e.message}`);
-                            this.src = 'images/default-avatar.png';
-                        };
-                        profileImage.onload = function() {
-                            log('Фото успешно загружено');
-                        };
-                    } else {
-                        log('URL фото отсутствует в данных');
-                    }
+                    updateProfileFields(data);
                 } catch (e) {
                     console.error('Ошибка при загрузке данных:', e);
-                    log(`Ошибка при обработке данных: ${e.message}`);
                 }
             }
+
+            // Добавляем обработчики событий
+            setupEventListeners();
+        });
+
+        // Функция настройки обработчиков событий
+        function setupEventListeners() {
+            // Обработчики навигации
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const pageId = item.getAttribute('data-page');
+                    if (pageId) {
+                        showPage(pageId);
+                        if (pageId === 'stats-page') {
+                            loadWeightStats(document.getElementById('weight-period').value);
+                        }
+                    }
+                });
+            });
+
+            // Обработчик изменения периода в статистике
+            const periodSelect = document.getElementById('weight-period');
+            if (periodSelect) {
+                periodSelect.addEventListener('change', () => {
+                    loadWeightStats(periodSelect.value);
+                });
+            }
+
+            // Обработчик сообщений от бота
+            if (tg) {
+                tg.onEvent('message', function(event) {
+                    try {
+                        console.log('Получено сообщение от бота:', event.data);
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'weight_history') {
+                            console.log('Получены данные для графика:', data);
+                            updateWeightChart(data);
+                        }
+                    } catch (e) {
+                        console.error('Ошибка при обработке сообщения:', e);
+                    }
+                });
+            }
         }
+
+        // Предотвращаем закрытие при обновлении
+        window.addEventListener('beforeunload', (e) => {
+            e.preventDefault();
+            e.returnValue = '';
+        });
 
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
