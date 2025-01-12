@@ -317,6 +317,7 @@
             padding-top: 12px;
             border-top: 1px solid #3D3D3D;
             color: #B0B0B0;
+            font-size: 14px;
         }
 
         .back-button {
@@ -332,7 +333,7 @@
         }
 
         #exercises-page {
-            background-color: #F5F5F5;
+            background-color: #1E1E1E;
         }
 
         /* Стили для MainButton */
@@ -397,29 +398,29 @@
 
         .exercise-card {
             background: #2D2D2D;
-            border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 0;
+            border-bottom: 1px solid #3D3D3D;
         }
 
         .exercise-details {
             display: flex;
             justify-content: space-between;
-            margin-top: 15px;
-            font-size: 14px;
-            color: #B0B0B0;
-            padding-top: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
             border-top: 1px solid #3D3D3D;
+            color: #B0B0B0;
+            font-size: 14px;
         }
 
         .header {
             background-size: cover;
             background-position: center;
-            padding: 15px;
+            padding: 20px;
             margin: 0;
             color: white;
             position: relative;
-            min-height: 120px;
+            min-height: 140px;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
@@ -539,9 +540,9 @@
 
         .exercise-card {
             background: #2D2D2D;
-            border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 0;
+            border-bottom: 1px solid #3D3D3D;
         }
 
         .exercise-card h3 {
@@ -554,15 +555,17 @@
         .exercise-card p {
             margin: 8px 0;
             color: #B0B0B0;
+            opacity: 0.8;
         }
 
         .exercise-details {
             display: flex;
             justify-content: space-between;
-            margin-top: 15px;
-            padding-top: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
             border-top: 1px solid #3D3D3D;
             color: #B0B0B0;
+            font-size: 14px;
         }
 
         .exercise-content {
@@ -680,7 +683,9 @@
         .exercise-card .primary-button {
             margin-top: 12px;
             width: 100%;
-            border-radius: 4px;
+            background: #7C5AF1;
+            height: 48px;
+            font-size: 16px;
         }
 
         /* Обновим стили для деталей упражнения */
@@ -691,6 +696,7 @@
             padding-top: 12px;
             border-top: 1px solid #3D3D3D;
             color: #B0B0B0;
+            font-size: 14px;
         }
 
         /* Обновим стили для заголовка упражнения */
@@ -705,6 +711,7 @@
             margin: 8px 0;
             font-size: 14px;
             color: #B0B0B0;
+            opacity: 0.8;
         }
 
         /* Добавим разделитель между группами упражнений */
@@ -721,6 +728,11 @@
             height: 8px;
             background-color: #1E1E1E;
             display: block;
+        }
+
+        /* Добавим стили для фона страницы упражнений */
+        #exercises-page {
+            background-color: #1E1E1E;
         }
     </style>
 </head>
