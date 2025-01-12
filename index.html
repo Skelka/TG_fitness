@@ -244,41 +244,42 @@
             background-position: center;
             border-radius: 10px;
             padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             cursor: pointer;
-            transition: transform 0.2s;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
         }
 
-        .workout-type-card:before {
+        .workout-type-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
             z-index: 1;
         }
 
         .workout-type-card h3, 
         .workout-type-card p {
             position: relative;
-            color: white;
             z-index: 2;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            color: white;
+            margin: 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
         .workout-type-card h3 {
-            margin: 0;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
+            margin-bottom: 5px;
         }
 
         .workout-type-card p {
-            margin: 8px 0 0;
             font-size: 14px;
+            opacity: 0.9;
         }
 
         .exercise-list {
@@ -364,7 +365,7 @@
         }
 
         .day-card {
-            background: #fff;
+            background: white;
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -380,6 +381,7 @@
             margin: 0;
             font-size: 18px;
             color: #333;
+            font-weight: bold;
         }
 
         .day-card p {
@@ -410,37 +412,134 @@
             padding-top: 10px;
             border-top: 1px solid #eee;
         }
+
+        .header {
+            background: #7C5AF1;
+            padding: 15px;
+            margin: -20px -20px 20px -20px;
+            color: white;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .days-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .day-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .day-card:active {
+            transform: scale(0.98);
+        }
+
+        .day-card h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .day-card p {
+            margin: 8px 0 0;
+            color: #666;
+        }
+
+        /* Обновим стили для карточек типов тренировок */
+        .workout-type-card {
+            position: relative;
+            height: 150px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .workout-type-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+            z-index: 1;
+        }
+
+        .workout-type-card h3, 
+        .workout-type-card p {
+            position: relative;
+            z-index: 2;
+            color: white;
+            margin: 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .workout-type-card h3 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .workout-type-card p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
     <div id="workouts-page" class="page">
         <div class="workout-types">
-            <div class="workout-type-card" onclick="showWorkoutDays(1)" 
-                 style="background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')">
+            <div class="workout-type-card" 
+                 onclick="showWorkoutDays(1)"
+                 style="background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48')">
                 <h3>Силовая тренировка</h3>
                 <p>Тренировка для набора мышечной массы</p>
             </div>
-            <div class="workout-type-card" onclick="showWorkoutDays(2)"
-                 style="background-image: url('https://images.unsplash.com/photo-1538805060514-97d9cc17730c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')">
+            <div class="workout-type-card"
+                 onclick="showWorkoutDays(2)"
+                 style="background-image: url('https://images.unsplash.com/photo-1538805060514-97d9cc17730c')">
                 <h3>Кардио</h3>
                 <p>Тренировка для сжигания жира</p>
             </div>
-            <div class="workout-type-card" onclick="showWorkoutDays(3)"
-                 style="background-image: url('https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')">
+            <div class="workout-type-card"
+                 onclick="showWorkoutDays(3)"
+                 style="background-image: url('https://images.unsplash.com/photo-1544367567-0f2fcb009e0b')">
                 <h3>Растяжка</h3>
                 <p>Упражнения для гибкости</p>
-            </div>
-            <div class="workout-type-card" onclick="showWorkoutDays(4)"
-                 style="background-image: url('https://images.unsplash.com/photo-1518611012118-696072aa579a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')">
-                <h3>Функциональный тренинг</h3>
-                <p>Комплексная тренировка</p>
             </div>
         </div>
     </div>
 
     <div id="workout-days-page" class="page">
-        <button class="back-button" onclick="showPage('workouts-page')">Назад к типам тренировок</button>
-        <div id="workout-days"></div>
+        <div class="header">
+            <button class="back-button" onclick="showPage('workouts-page')">← Назад к типам тренировок</button>
+            <h1 id="workout-type-title"></h1>
+        </div>
+        <div id="workout-days" class="days-list"></div>
     </div>
 
     <div id="profile-page" class="page">
@@ -1071,19 +1170,18 @@
         // Обновим функции для навигации
         function showWorkoutDays(workoutTypeId) {
             const workout = workoutPrograms[workoutTypeId];
+            if (!workout) return;
+
+            document.getElementById('workout-type-title').textContent = workout.name;
+            
             const container = document.getElementById('workout-days');
-            container.innerHTML = `
-                <h2>${workout.name}</h2>
-                <p>${workout.description}</p>
-                <div class="days-list">
-                    ${Object.entries(workout.days).map(([dayNum, day]) => `
-                        <div class="day-card" onclick="showDayExercises(${workoutTypeId}, ${dayNum})">
-                            <h3>${day.name}</h3>
-                            <p>${day.exercises.length} упражнений</p>
-                        </div>
-                    `).join('')}
+            container.innerHTML = Object.entries(workout.days).map(([dayNum, day]) => `
+                <div class="day-card" onclick="showDayExercises(${workoutTypeId}, ${dayNum})">
+                    <h3>${day.name}</h3>
+                    <p>${day.exercises.length} упражнений</p>
                 </div>
-            `;
+            `).join('');
+
             showPage('workout-days-page');
         }
 
@@ -1160,6 +1258,16 @@
                     console.error('Ошибка при обработке сообщения:', e);
                 }
             });
+        }
+
+        // Функция для возврата назад
+        function goBack() {
+            const currentPage = document.querySelector('.page[style*="block"]');
+            if (currentPage.id === 'workout-days-page') {
+                showPage('workouts-page');
+            } else if (currentPage.id === 'exercises-page') {
+                showPage('workout-days-page');
+            }
         }
     </script>
 </body>
