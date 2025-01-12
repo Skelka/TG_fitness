@@ -229,27 +229,126 @@
             font-weight: bold;
             color: #333;
         }
+
+        .workout-types {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 15px;
+        }
+
+        .workout-type-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .workout-type-card:active {
+            transform: scale(0.98);
+        }
+
+        .workout-type-card img {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 10px;
+        }
+
+        .workout-type-card h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .workout-type-card p {
+            margin: 5px 0 0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .exercise-list {
+            padding: 15px;
+        }
+
+        .exercise-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .exercise-card h4 {
+            margin: 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .exercise-card p {
+            margin: 5px 0 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .exercise-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .back-button:before {
+            content: "←";
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
-    <div id="workouts-page" class="page active">
-        <div class="workout-list">
-            <div class="workout-type">
-                <h3>Всё тело</h3>
-                <p>Общее описание</p>
+    <div id="workouts-page" class="page">
+        <div class="workout-types">
+            <div class="workout-type-card" onclick="showExercises(1)">
+                <img src="images/strength.png" alt="Силовая">
+                <h3>Силовая тренировка</h3>
+                <p>Тренировка для набора мышечной массы</p>
             </div>
-            <div class="workout-type">
-                <h3>Выносливость</h3>
-                <p>Общее описание</p>
+            <div class="workout-type-card" onclick="showExercises(2)">
+                <img src="images/cardio.png" alt="Кардио">
+                <h3>Кардио</h3>
+                <p>Тренировка для сжигания жира</p>
             </div>
-            <div class="workout-type">
-                <h3>Похудение</h3>
-                <p>Общее описание</p>
+            <div class="workout-type-card" onclick="showExercises(3)">
+                <img src="images/stretching.png" alt="Растяжка">
+                <h3>Растяжка</h3>
+                <p>Упражнения для гибкости</p>
             </div>
-            <div class="workout-type">
-                <h3>Начинающий</h3>
-                <p>Общее описание</p>
+            <div class="workout-type-card" onclick="showExercises(4)">
+                <img src="images/functional.png" alt="Функциональный">
+                <h3>Функциональный тренинг</h3>
+                <p>Комплексная тренировка</p>
             </div>
+        </div>
+    </div>
+
+    <div id="exercises-page" class="page">
+        <button class="back-button" onclick="showWorkouts()">Назад к тренировкам</button>
+        <div id="exercise-list" class="exercise-list">
+            <!-- Здесь будут упражнения -->
         </div>
     </div>
 
@@ -712,6 +811,55 @@
         // В начале скрипта добавим функцию для логирования
         function log(message) {
             console.log(`[${new Date().toISOString()}] ${message}`);
+        }
+
+        function showExercises(workoutTypeId) {
+            // Запрашиваем упражнения у бота
+            tg.sendData(JSON.stringify({
+                type: 'get_exercises',
+                workout_type_id: workoutTypeId
+            }));
+            
+            document.getElementById('workouts-page').style.display = 'none';
+            document.getElementById('exercises-page').style.display = 'block';
+        }
+
+        function showWorkouts() {
+            document.getElementById('exercises-page').style.display = 'none';
+            document.getElementById('workouts-page').style.display = 'block';
+        }
+
+        function displayExercises(exercises) {
+            const container = document.getElementById('exercise-list');
+            container.innerHTML = '';
+            
+            exercises.forEach(exercise => {
+                const card = document.createElement('div');
+                card.className = 'exercise-card';
+                card.innerHTML = `
+                    <h4>${exercise.name}</h4>
+                    <p>${exercise.description}</p>
+                    <div class="exercise-details">
+                        <span>${exercise.sets} подхода</span>
+                        <span>${exercise.reps} ${exercise.workout_type_id === 2 ? 'сек' : 'повторений'}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Добавим обработчик сообщений от бота
+        if (tg) {
+            tg.onEvent('message', function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'exercises_list') {
+                        displayExercises(data.exercises);
+                    }
+                } catch (e) {
+                    console.error('Ошибка при обработке сообщения:', e);
+                }
+            });
         }
     </script>
 </body>
