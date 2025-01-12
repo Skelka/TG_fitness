@@ -952,41 +952,6 @@
             });
         }
 
-        // Обновим обработчик сообщений
-        if (tg) {
-            tg.onEvent('mainButtonClicked', function() {
-                // Скрываем кнопку после клика
-                tg.MainButton.hide();
-            });
-
-            tg.onEvent('viewportChanged', function() {
-                // Если приложение было свернуто и развернуто
-                if (document.getElementById('exercises-page').style.display === 'block') {
-                    displayExercises(lastExercises);
-                }
-            });
-
-            let lastExercises = null;
-            tg.onEvent('message', function(event) {
-                try {
-                    console.log('Получены данные:', event.data);
-                    const data = JSON.parse(event.data);
-                    if (data.type === 'exercises_list') {
-                        console.log('Упражнения:', data.exercises);
-                        lastExercises = data.exercises;
-                        displayExercises(data.exercises);
-                        // Скрываем кнопку после получения данных
-                        tg.MainButton.hide();
-                    }
-                } catch (e) {
-                    console.error('Ошибка при обработке сообщения:', e);
-                    console.error('Данные:', event.data);
-                    // В случае ошибки тоже скрываем кнопку
-                    tg.MainButton.hide();
-                }
-            });
-        }
-
         // Функция для инициализации страницы тренировок
         function initWorkoutsPage() {
             const pages = document.querySelectorAll('.page');
@@ -1004,14 +969,6 @@
         // Обновим функции навигации
         function showWorkouts() {
             showPage('workouts-page');
-        }
-
-        function showExercises(workoutTypeId) {
-            tg.sendData(JSON.stringify({
-                type: 'get_exercises',
-                workout_type_id: workoutTypeId
-            }));
-            showPage('exercises-page');
         }
 
         // Инициализация при загрузке страницы
