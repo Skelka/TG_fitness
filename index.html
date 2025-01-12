@@ -362,24 +362,8 @@
                     log(JSON.stringify(data, null, 2));
                     
                     // Обновляем данные профиля
-                    document.getElementById('tg-username').textContent = data.username || 'Пользователь';
-                    if (data.age) document.getElementById('age').value = data.age;
-                    if (data.height) document.getElementById('height').value = data.height;
-                    if (data.weight) document.getElementById('weight').value = data.weight;
-                    if (data.goal) document.getElementById('goal').value = data.goal;
-                    if (data.photo_url) {
-                        log(`Загружаем фото из URL: ${data.photo_url}`);
-                        const profileImage = document.getElementById('profile-image');
-                        profileImage.src = data.photo_url;
-                        profileImage.onerror = function(e) {
-                            log(`Ошибка загрузки фото: ${e.message}`);
-                            this.src = 'images/default-avatar.png';
-                        };
-                        profileImage.onload = function() {
-                            log('Фото успешно загружено');
-                        };
-                    }
-
+                    updateProfileData(data);
+                    
                     // Обновляем график веса, если есть данные
                     if (data.weight_history) {
                         log('Обновляем график с данными из URL');
@@ -387,8 +371,11 @@
                     }
                 }
 
-                // Настраиваем обработчики событий
-                setupEventListeners();
+                // Настраиваем навигацию
+                setupNavigation();
+                
+                // Настраиваем обработчики событий формы профиля
+                setupProfileHandlers();
                 
                 // Показываем начальную страницу
                 showPage('workouts-page');
@@ -398,43 +385,76 @@
             }
         }
 
-        // Настройка обработчиков событий
-        function setupEventListeners() {
-            // Навигация
+        // Обновление данных профиля
+        function updateProfileData(data) {
+            document.getElementById('tg-username').textContent = data.username || 'Пользователь';
+            if (data.age) document.getElementById('age').value = data.age;
+            if (data.height) document.getElementById('height').value = data.height;
+            if (data.weight) document.getElementById('weight').value = data.weight;
+            if (data.goal) document.getElementById('goal').value = data.goal;
+            if (data.photo_url) {
+                log(`Загружаем фото из URL: ${data.photo_url}`);
+                const profileImage = document.getElementById('profile-image');
+                profileImage.src = data.photo_url;
+                profileImage.onerror = function(e) {
+                    log(`Ошибка загрузки фото: ${e.message}`);
+                    this.src = 'images/default-avatar.png';
+                };
+                profileImage.onload = function() {
+                    log('Фото успешно загружено');
+                };
+            }
+        }
+
+        // Настройка навигации
+        function setupNavigation() {
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
-                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                    this.classList.add('active');
-                    
                     const pageId = this.getAttribute('data-page');
                     if (pageId) {
+                        // Обновляем активную вкладку
+                        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // Показываем выбранную страницу
                         showPage(pageId);
+                        
+                        // Если открыта страница статистики, загружаем данные
                         if (pageId === 'stats-page') {
-                            loadWeightStats(document.getElementById('weight-period').value);
+                            const period = document.getElementById('weight-period').value;
+                            loadWeightStats(period);
                         }
                     }
                 });
             });
 
-            // Обработчик изменения периода статистики
+            // Обработчик изменения периода в статистике
             const periodSelect = document.getElementById('weight-period');
             if (periodSelect) {
-                periodSelect.addEventListener('change', () => {
-                    loadWeightStats(periodSelect.value);
+                periodSelect.addEventListener('change', (e) => {
+                    loadWeightStats(e.target.value);
                 });
             }
+        }
 
-            // Обработчик сообщений от бота
-            if (tg) {
-                tg.onEvent('message', function(event) {
-                    try {
-                        const data = JSON.parse(event.data);
-                        if (data.type === 'weight_history') {
-                            updateWeightChart(data);
+        // Настройка обработчиков формы профиля
+        function setupProfileHandlers() {
+            const profileForm = document.querySelector('.profile-section');
+            if (profileForm) {
+                profileForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = {
+                        type: 'profile_update',
+                        data: {
+                            age: document.getElementById('age').value,
+                            height: document.getElementById('height').value,
+                            weight: document.getElementById('weight').value,
+                            goal: document.getElementById('goal').value
                         }
-                    } catch (e) {
-                        console.error('Ошибка при обработке сообщения:', e);
+                    };
+                    if (tg) {
+                        tg.sendData(JSON.stringify(formData));
                     }
                 });
             }
