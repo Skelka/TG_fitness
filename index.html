@@ -274,16 +274,12 @@
                 if (user) {
                     document.getElementById('tg-username').textContent = user.username || 'Пользователь';
                     
-                    // Отправляем запрос на получение данных
-                    tg.sendData(JSON.stringify({
-                        type: 'profile_update',
-                        data: {
-                            age: document.getElementById('age').value || null,
-                            height: document.getElementById('height').value || null,
-                            weight: document.getElementById('weight').value || null,
-                            goal: document.getElementById('goal').value || null
-                        }
-                    }));
+                    // Получаем сохраненные данные из localStorage
+                    const savedData = localStorage.getItem('profileData');
+                    if (savedData) {
+                        const data = JSON.parse(savedData);
+                        updateProfileFields(data);
+                    }
                 }
             } catch (error) {
                 console.error('Ошибка при загрузке данных профиля:', error);
@@ -322,10 +318,7 @@
                     
                     if (pageId === 'profile-page') {
                         initProfile();
-                        // Запрашиваем данные при открытии профиля
-                        tg.sendData(JSON.stringify({
-                            type: 'get_profile_data'
-                        }));
+                        loadProfileData();
                     }
                 }
             });
@@ -339,15 +332,21 @@
                 goal: document.getElementById('goal').value
             };
             
-            console.log('Отправка данных:', profileData);
+            // Сохраняем локально
+            localStorage.setItem('profileData', JSON.stringify(profileData));
             
-            tg.sendData(JSON.stringify({
-                type: 'profile_update',
-                data: profileData
-            }));
+            // Отправляем на сервер только при выходе из приложения
+            tg.onEvent('viewportChanged', function() {
+                if (!tg.isExpanded) {
+                    tg.sendData(JSON.stringify({
+                        type: 'profile_update',
+                        data: profileData
+                    }));
+                }
+            });
         }
 
-        // Изменим обработчики полей ввода для автосохранения
+        // Добавим автосохранение при изменении полей
         ['age', 'height', 'weight', 'goal'].forEach(fieldId => {
             document.getElementById(fieldId).addEventListener('change', saveProfileData);
         });
@@ -381,10 +380,7 @@
                     
                     if (pageId === 'profile-page') {
                         initProfile();
-                        // Запрашиваем данные при открытии профиля
-                        tg.sendData(JSON.stringify({
-                            type: 'get_profile_data'
-                        }));
+                        loadProfileData();
                     }
                 }
             });
