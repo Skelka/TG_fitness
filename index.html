@@ -283,6 +283,7 @@
 
         .exercise-list {
             padding: 15px;
+            padding-bottom: 70px; /* Отступ для нижней навигации */
         }
 
         .exercise-card {
@@ -300,7 +301,7 @@
         }
 
         .exercise-card p {
-            margin: 5px 0 0;
+            margin: 8px 0;
             font-size: 14px;
             color: #666;
         }
@@ -328,6 +329,10 @@
         .back-button:before {
             content: "←";
             margin-right: 8px;
+        }
+
+        #exercises-page {
+            background-color: #F5F5F5;
         }
     </style>
 </head>
@@ -848,10 +853,18 @@
             exercises.forEach(exercise => {
                 const card = document.createElement('div');
                 card.className = 'exercise-card';
+                
+                // Добавим стили для карточки упражнения
+                card.style.backgroundColor = '#fff';
+                card.style.borderRadius = '10px';
+                card.style.padding = '15px';
+                card.style.marginBottom = '10px';
+                card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                
                 card.innerHTML = `
-                    <h4>${exercise.name}</h4>
-                    <p>${exercise.description}</p>
-                    <div class="exercise-details">
+                    <h4 style="margin: 0; font-size: 16px; color: #333;">${exercise.name}</h4>
+                    <p style="margin: 8px 0; font-size: 14px; color: #666;">${exercise.description}</p>
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 14px; color: #666;">
                         <span>${exercise.sets} подхода</span>
                         <span>${exercise.reps} ${exercise.workout_type_id === 2 ? 'сек' : 'повторений'}</span>
                     </div>
@@ -860,16 +873,19 @@
             });
         }
 
-        // Добавим обработчик сообщений от бота
+        // Обновим обработчик сообщений
         if (tg) {
             tg.onEvent('message', function(event) {
                 try {
+                    console.log('Получены данные:', event.data); // Добавим для отладки
                     const data = JSON.parse(event.data);
                     if (data.type === 'exercises_list') {
+                        console.log('Упражнения:', data.exercises); // Добавим для отладки
                         displayExercises(data.exercises);
                     }
                 } catch (e) {
                     console.error('Ошибка при обработке сообщения:', e);
+                    console.error('Данные:', event.data); // Добавим для отладки
                 }
             });
         }
