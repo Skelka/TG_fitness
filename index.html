@@ -1769,33 +1769,41 @@
             
             document.getElementById('active-exercise-title').textContent = exercise.name;
             document.getElementById('active-exercise-description').textContent = exercise.description;
-            document.getElementById('active-exercise-target').textContent = 
-                `Цель: ${exercise.sets} подхода по ${exercise.reps}`;
             document.getElementById('total-sets').textContent = exercise.sets;
             document.getElementById('current-set').textContent = currentSet;
             
+            // Устанавливаем начальное количество повторений
+            const reps = exercise.reps.split(' ')[0]; // Получаем число из строки "12-15" или "30 сек"
+            document.getElementById('reps-count').textContent = reps;
+            
+            // Обновляем информацию о следующем подходе
+            document.getElementById('next-exercise-name').textContent = 
+                currentSet < exercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
+            
+            // Показываем страницу упражнения
             showPage('active-exercise-page');
+            
+            // Сбрасываем состояние кнопок
+            document.getElementById('start-set-btn').style.display = 'block';
+            document.getElementById('complete-set-btn').style.display = 'none';
         }
 
         function startSet() {
             document.getElementById('start-set-btn').style.display = 'none';
             document.getElementById('complete-set-btn').style.display = 'block';
-            document.getElementById('timer-label').textContent = 'Выполнение';
-            startTimer(0, true); // Запускаем таймер выполнения
         }
 
         function completeSet() {
-            const repsCount = document.getElementById('reps-count').textContent;
-            
             if (currentSet < parseInt(document.getElementById('total-sets').textContent)) {
                 currentSet++;
                 document.getElementById('current-set').textContent = currentSet;
+                
+                // Обновляем информацию о следующем подходе
+                document.getElementById('next-exercise-name').textContent = 
+                    currentSet < currentExercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
+                
                 document.getElementById('start-set-btn').style.display = 'block';
                 document.getElementById('complete-set-btn').style.display = 'none';
-                
-                restTime = parseInt(currentExercise.rest);
-                document.getElementById('timer-label').textContent = 'Отдых';
-                startTimer(restTime);
             } else {
                 completeExercise();
             }
@@ -1833,8 +1841,8 @@
         function completeExercise() {
             const container = document.querySelector('.exercise-content');
             container.innerHTML = `
-                <div class="exercise-complete">
-                    <h2>Упражнение завершено!</h2>
+                <div class="exercise-complete" style="text-align: center; padding: 30px;">
+                    <h2 style="color: #fff; margin-bottom: 20px;">Упражнение завершено!</h2>
                     <button class="primary-button" onclick="goBack()">
                         Вернуться к списку упражнений
                     </button>
