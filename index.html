@@ -503,6 +503,41 @@
             font-size: 14px;
             opacity: 0.9;
         }
+
+        .exercises-list {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .exercise-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .exercise-card h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .exercise-card p {
+            margin: 8px 0;
+            color: #666;
+        }
+
+        .exercise-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -603,6 +638,14 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="exercises-page" class="page">
+        <div class="header">
+            <button class="back-button" onclick="goBack()">← Назад</button>
+            <h1 id="exercise-day-title"></h1>
+        </div>
+        <div id="exercise-list" class="exercises-list"></div>
     </div>
 
     <div class="bottom-nav">
@@ -1182,25 +1225,27 @@
         }
 
         function showDayExercises(workoutTypeId, dayNum) {
-            const day = workoutPrograms[workoutTypeId].days[dayNum];
+            const workout = workoutPrograms[workoutTypeId];
+            const day = workout.days[dayNum];
             
+            // Устанавливаем заголовок
             document.getElementById('exercise-day-title').textContent = day.name;
+            
+            // Заполняем список упражнений
             const container = document.getElementById('exercise-list');
-            container.innerHTML = `
-                <div class="exercises-list">
-                    ${day.exercises.map(exercise => `
-                        <div class="exercise-card">
-                            <h3>${exercise.name}</h3>
-                            <p>${exercise.description}</p>
-                            <div class="exercise-details">
-                                <span>${exercise.sets} подхода</span>
-                                <span>${exercise.reps}</span>
-                                <span>Отдых: ${exercise.rest}</span>
-                            </div>
-                        </div>
-                    `).join('')}
+            container.innerHTML = day.exercises.map(exercise => `
+                <div class="exercise-card">
+                    <h3>${exercise.name}</h3>
+                    <p>${exercise.description}</p>
+                    <div class="exercise-details">
+                        <span>${exercise.sets} подхода</span>
+                        <span>${exercise.reps}</span>
+                        <span>Отдых: ${exercise.rest}</span>
+                    </div>
                 </div>
-            `;
+            `).join('');
+
+            // Показываем страницу с упражнениями
             showPage('exercises-page');
         }
 
