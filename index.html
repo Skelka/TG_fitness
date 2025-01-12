@@ -567,81 +567,53 @@
             });
         });
 
-        // Обновим функцию обработки ответа от бота
-        function handleBotResponse(response) {
-            try {
-                const data = JSON.parse(response);
-                console.log('Получены данные от бота:', data);
-                
-                // Обновляем поля только если есть данные
-                const fields = {
-                    'age': data.age,
-                    'height': data.height,
-                    'weight': data.weight,
-                    'goal': data.goal
-                };
-
-                for (const [field, value] of Object.entries(fields)) {
-                    const element = document.getElementById(field);
-                    if (value !== null && value !== undefined) {
-                        element.value = value;
+        // Оставляем только один набор обработчиков
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обработчики для навигации
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const pageId = this.getAttribute('data-page');
+                    if (pageId) {
+                        showPage(pageId);
+                        if (pageId === 'stats-page') {
+                            loadWeightStats();
+                        }
                     }
-                }
-
-                if (data.photo_url) {
-                    document.getElementById('profile-image').src = data.photo_url;
-                }
-            } catch (e) {
-                console.error('Ошибка при обработке ответа от бота:', e);
-            }
-        }
-
-        // Добавим обработчик для получения данных от бота
-        if (tg) {
-            tg.onEvent('message', function(event) {
-                try {
-                    const data = JSON.parse(event.data);
-                    if (data.type === 'profile_data') {
-                        updateProfileFields(data);
-                        localStorage.setItem('profileData', JSON.stringify(data));
-                    }
-                } catch (e) {
-                    console.error('Ошибка при обработке сообщения:', e);
-                }
+                });
             });
-        }
 
-        // Добавим функцию для первоначальной загрузки данных
-        async function initializeProfileData() {
-            try {
-                const user = tg.initDataUnsafe?.user;
-                if (user) {
-                    const response = await fetch(`http://localhost:8000/getProfileData?user_id=${user.id}`);
-                    const data = await response.json();
-                    if (data.ok) {
-                        updateProfileFields(data.result);
-                        localStorage.setItem('profileData', JSON.stringify(data.result));
-                    }
-                }
-            } catch (error) {
-                console.error('Ошибка при инициализации данных профиля:', error);
-                // Пробуем загрузить из localStorage если запрос не удался
-                const savedData = localStorage.getItem('profileData');
-                if (savedData) {
+            // Обработчик кнопки обновления
+            document.getElementById('refresh-stats').addEventListener('click', function() {
+                const period = document.getElementById('weight-period').value;
+                loadWeightStats(period);
+            });
+
+            // Обработчик изменения периода
+            document.getElementById('weight-period').addEventListener('change', function() {
+                loadWeightStats(this.value);
+            });
+
+            // Единый обработчик сообщений от бота
+            if (tg) {
+                tg.onEvent('message', function(event) {
                     try {
-                        const data = JSON.parse(savedData);
-                        updateProfileFields(data);
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'weight_history') {
+                            updateWeightChart(data);
+                        } else if (data.type === 'profile_data') {
+                            updateProfileFields(data);
+                            localStorage.setItem('profileData', JSON.stringify(data));
+                        }
                     } catch (e) {
-                        console.error('Ошибка при загрузке локальных данных:', e);
+                        console.error('Ошибка при обработке сообщения:', e);
                     }
-                }
+                });
             }
-        }
-
-        // Вызываем инициализацию при загрузке страницы
-        if (tg) {
-            initializeProfileData();
-        }
+        });
 
         // Добавим функции для работы с графиком
         let weightChart = null;
@@ -706,29 +678,6 @@
                 changeElement.style.color = change < 0 ? '#28a745' : '#dc3545';
             }
         }
-
-        // Добавляем обработчик изменения периода
-        document.getElementById('weight-period').addEventListener('change', function() {
-            loadWeightStats(this.value);
-        });
-
-        // Обновляем обработчик сообщений от бота
-        if (tg) {
-            tg.onEvent('message', function(event) {
-                try {
-                    console.log('Получено сообщение от бота:', event.data);
-                    const data = JSON.parse(event.data);
-                    if (data.type === 'weight_history') {
-                        updateWeightChart(data);
-                    }
-                } catch (e) {
-                    console.error('Ошибка при обработке сообщения:', e);
-                }
-            });
-        }
-
-        // Загружаем статистику при открытии страницы
-        document.addEventListener('DOMContentLoaded', () => loadWeightStats());
 
         // В начале скрипта добавим функцию для логирования
         function log(message) {
