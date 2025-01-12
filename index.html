@@ -1793,26 +1793,51 @@
             document.getElementById('complete-set-btn').style.display = 'none';
         }
 
-        function startSet() {
-            document.getElementById('start-set-btn').style.display = 'none';
-            document.getElementById('complete-set-btn').style.display = 'block';
-        }
+        // Добавим защиту от множественных нажатий
+        let isCompletingSet = false;
 
         function completeSet() {
+            if (isCompletingSet) return; // Предотвращаем множественные нажатия
+            isCompletingSet = true;
+            
             if (currentSet < parseInt(document.getElementById('total-sets').textContent)) {
                 currentSet++;
                 document.getElementById('current-set').textContent = currentSet;
+                document.getElementById('next-exercise-name').textContent = 
+                    currentSet < currentExercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
                 
-                // Показываем таймер отдыха
                 showRestTimer();
             } else {
-                // Если это был последний подход текущего упражнения
-                if (hasNextExercise()) {
-                    showNextExercisePreview();
-                } else {
-                    completeExercise();
-                }
+                // Показываем экран завершения упражнения
+                const container = document.querySelector('.exercise-content');
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 30px;">
+                        <h2 style="color: #fff; margin-bottom: 20px;">Упражнение завершено!</h2>
+                        ${hasNextExercise() ? `
+                            <p style="color: #B0B0B0; margin-bottom: 20px;">Следующее упражнение:</p>
+                            <h3 style="color: #fff; margin-bottom: 30px;">${getNextExercise().name}</h3>
+                            <button class="primary-button" onclick="startNextExercise()">
+                                Начать следующее упражнение
+                            </button>
+                        ` : `
+                            <button class="primary-button" onclick="showPage('exercises-page')">
+                                Вернуться к списку упражнений
+                            </button>
+                        `}
+                    </div>
+                `;
             }
+            
+            setTimeout(() => {
+                isCompletingSet = false;
+            }, 500); // Защита от двойного нажатия на 500мс
+        }
+
+        function startSet() {
+            document.getElementById('start-set-btn').style.display = 'none';
+            document.getElementById('complete-set-btn').style.display = 'block';
+            document.getElementById('next-exercise-name').textContent = 
+                currentSet < currentExercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
         }
 
         function showRestTimer() {
@@ -1857,8 +1882,8 @@
             document.getElementById('next-exercise-name').textContent = 
                 currentSet < currentExercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
             
-            document.getElementById('start-set-btn').style.display = 'block';
-            document.getElementById('complete-set-btn').style.display = 'none';
+            // Автоматически начинаем следующий подход
+            startSet();
         }
 
         function hasNextExercise() {
@@ -1934,13 +1959,11 @@
         }
 
         function confirmExitExercise() {
-            if (timerInterval) {
-                if (confirm('Вы уверены, что хотите прервать упражнение?')) {
+            if (confirm('Вы уверены, что хотите прервать упражнение?')) {
+                if (timerInterval) {
                     clearInterval(timerInterval);
-                    goBack();
                 }
-            } else {
-                goBack();
+                showPage('exercises-page');
             }
         }
 
@@ -1977,6 +2000,15 @@
             let currentReps = parseInt(repsElement.textContent);
             currentReps = Math.max(1, currentReps + change);
             repsElement.textContent = currentReps;
+        }
+
+        function getNextExercise() {
+            const currentExerciseIndex = getCurrentExerciseIndex();
+            return currentWorkout.exercises[currentExerciseIndex + 1];
+        }
+
+        function getCurrentExerciseIndex() {
+            return currentWorkout.exercises.findIndex(ex => ex.name === currentExercise.name);
         }
     </script>
 </body>
