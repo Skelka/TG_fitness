@@ -229,6 +229,25 @@
             font-weight: bold;
             color: #333;
         }
+
+        .stats-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .refresh-button {
+            padding: 8px 16px;
+            background-color: #7C5AF1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .refresh-button:hover {
+            background-color: #6847d5;
+        }
     </style>
 </head>
 <body>
@@ -296,10 +315,15 @@
         <div class="stats-section">
             <div class="stats-header">
                 <h2>Статистика веса</h2>
-                <select id="weight-period">
-                    <option value="week">За неделю</option>
-                    <option value="month">За месяц</option>
-                </select>
+                <div class="stats-controls">
+                    <select id="weight-period">
+                        <option value="week">За неделю</option>
+                        <option value="month">За месяц</option>
+                    </select>
+                    <button id="refresh-stats" class="refresh-button">
+                        Обновить
+                    </button>
+                </div>
             </div>
             <div class="chart-container">
                 <canvas id="weightChart"></canvas>
@@ -709,6 +733,59 @@
         // В начале скрипта добавим функцию для логирования
         function log(message) {
             console.log(`[${new Date().toISOString()}] ${message}`);
+        }
+
+        // Обработчики для страницы статистики
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                const pageId = this.getAttribute('data-page');
+                if (pageId) {
+                    showPage(pageId);
+                    if (pageId === 'stats-page') {
+                        loadWeightStats();
+                    }
+                }
+            });
+        });
+
+        // Обработчик кнопки обновления
+        document.getElementById('refresh-stats').addEventListener('click', function() {
+            const period = document.getElementById('weight-period').value;
+            loadWeightStats(period);
+        });
+
+        // Обработчик изменения периода
+        document.getElementById('weight-period').addEventListener('change', function() {
+            loadWeightStats(this.value);
+        });
+
+        function loadWeightStats(period = 'month') {
+            try {
+                tg.sendData(JSON.stringify({
+                    type: 'get_weight_history',
+                    period: period
+                }));
+            } catch (error) {
+                console.error('Ошибка при загрузке статистики:', error);
+            }
+        }
+
+        // Обработчик ответа от бота
+        if (tg) {
+            tg.onEvent('message', function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'weight_history') {
+                        updateWeightChart(data);
+                    }
+                } catch (e) {
+                    console.error('Ошибка при обработке сообщения:', e);
+                }
+            });
         }
     </script>
 </body>
