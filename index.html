@@ -538,6 +538,116 @@
             border-top: 1px solid #eee;
             color: #666;
         }
+
+        .exercise-content {
+            padding: 20px;
+        }
+
+        .exercise-progress {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .set-counter {
+            display: inline-block;
+            padding: 15px 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .set-counter span {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .set-counter h2 {
+            margin: 5px 0 0;
+            color: #333;
+            font-size: 24px;
+        }
+
+        .exercise-info {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .exercise-description {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .exercise-target {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .timer-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .timer {
+            display: inline-block;
+            padding: 20px;
+            background: #7C5AF1;
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        #timer-value {
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .timer-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .exercise-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .primary-button, .success-button {
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .primary-button {
+            background: #7C5AF1;
+            color: white;
+        }
+
+        .success-button {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .exercise-complete {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .exercise-complete h2 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -646,6 +756,43 @@
             <h1 id="exercise-day-title"></h1>
         </div>
         <div id="exercise-list" class="exercises-list"></div>
+    </div>
+
+    <div id="active-exercise-page" class="page">
+        <div class="header">
+            <button class="back-button" onclick="confirmExitExercise()">← Назад</button>
+            <h1 id="active-exercise-title"></h1>
+        </div>
+        
+        <div class="exercise-content">
+            <div class="exercise-progress">
+                <div class="set-counter">
+                    <span>Подход</span>
+                    <h2><span id="current-set">1</span>/<span id="total-sets">3</span></h2>
+                </div>
+            </div>
+
+            <div class="exercise-info">
+                <div class="exercise-description" id="active-exercise-description"></div>
+                <div class="exercise-target" id="active-exercise-target"></div>
+            </div>
+
+            <div class="timer-container">
+                <div class="timer" id="exercise-timer">
+                    <span id="timer-value">00:00</span>
+                    <div class="timer-label" id="timer-label">Отдых</div>
+                </div>
+            </div>
+
+            <div class="exercise-controls">
+                <button id="start-set-btn" class="primary-button" onclick="startSet()">
+                    Начать подход
+                </button>
+                <button id="complete-set-btn" class="success-button" onclick="completeSet()" style="display: none;">
+                    Завершить подход
+                </button>
+            </div>
+        </div>
     </div>
 
     <div class="bottom-nav">
@@ -1228,12 +1375,10 @@
             const workout = workoutPrograms[workoutTypeId];
             const day = workout.days[dayNum];
             
-            // Устанавливаем заголовок
             document.getElementById('exercise-day-title').textContent = day.name;
             
-            // Заполняем список упражнений
             const container = document.getElementById('exercise-list');
-            container.innerHTML = day.exercises.map(exercise => `
+            container.innerHTML = day.exercises.map((exercise, index) => `
                 <div class="exercise-card">
                     <h3>${exercise.name}</h3>
                     <p>${exercise.description}</p>
@@ -1242,10 +1387,14 @@
                         <span>${exercise.reps}</span>
                         <span>Отдых: ${exercise.rest}</span>
                     </div>
+                    <button class="primary-button" 
+                            onclick="startExercise(${workoutTypeId}, ${dayNum}, ${index})"
+                            style="margin-top: 15px; width: 100%;">
+                        Начать упражнение
+                    </button>
                 </div>
             `).join('');
 
-            // Показываем страницу с упражнениями
             showPage('exercises-page');
         }
 
@@ -1310,6 +1459,106 @@
             } else if (currentPage.id === 'exercises-page') {
                 showPage('workout-days-page');
             }
+        }
+
+        let currentExercise = null;
+        let currentSet = 1;
+        let timerInterval = null;
+        let restTime = 0;
+
+        function startExercise(workoutTypeId, dayNum, exerciseIndex) {
+            const exercise = workoutPrograms[workoutTypeId].days[dayNum].exercises[exerciseIndex];
+            currentExercise = exercise;
+            currentSet = 1;
+            
+            document.getElementById('active-exercise-title').textContent = exercise.name;
+            document.getElementById('active-exercise-description').textContent = exercise.description;
+            document.getElementById('active-exercise-target').textContent = 
+                `Цель: ${exercise.sets} подхода по ${exercise.reps}`;
+            document.getElementById('total-sets').textContent = exercise.sets;
+            document.getElementById('current-set').textContent = currentSet;
+            
+            showPage('active-exercise-page');
+        }
+
+        function startSet() {
+            document.getElementById('start-set-btn').style.display = 'none';
+            document.getElementById('complete-set-btn').style.display = 'block';
+            document.getElementById('timer-label').textContent = 'Выполнение';
+            startTimer(0, true); // Запускаем таймер выполнения
+        }
+
+        function completeSet() {
+            if (currentSet < currentExercise.sets) {
+                currentSet++;
+                document.getElementById('current-set').textContent = currentSet;
+                document.getElementById('start-set-btn').style.display = 'block';
+                document.getElementById('complete-set-btn').style.display = 'none';
+                
+                // Парсим время отдыха из строки (например, "90 сек" -> 90)
+                restTime = parseInt(currentExercise.rest);
+                document.getElementById('timer-label').textContent = 'Отдых';
+                startTimer(restTime);
+            } else {
+                completeExercise();
+            }
+        }
+
+        function startTimer(seconds, isWorkout = false) {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            const timerDisplay = document.getElementById('timer-value');
+            let timeLeft = seconds;
+            
+            updateTimerDisplay(timeLeft);
+            
+            if (!isWorkout) { // Если это таймер отдыха
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    updateTimerDisplay(timeLeft);
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        playNotificationSound();
+                    }
+                }, 1000);
+            }
+        }
+
+        function updateTimerDisplay(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            document.getElementById('timer-value').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function completeExercise() {
+            const container = document.querySelector('.exercise-content');
+            container.innerHTML = `
+                <div class="exercise-complete">
+                    <h2>Упражнение завершено!</h2>
+                    <button class="primary-button" onclick="goBack()">
+                        Вернуться к списку упражнений
+                    </button>
+                </div>
+            `;
+        }
+
+        function confirmExitExercise() {
+            if (timerInterval) {
+                if (confirm('Вы уверены, что хотите прервать упражнение?')) {
+                    clearInterval(timerInterval);
+                    goBack();
+                }
+            } else {
+                goBack();
+            }
+        }
+
+        function playNotificationSound() {
+            // Можно добавить звук уведомления
+            const audio = new Audio('notification.mp3');
+            audio.play().catch(e => console.log('Ошибка воспроизведения звука:', e));
         }
     </script>
 </body>
