@@ -6,125 +6,153 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            background-color: #000;
+            background-color: #1E1E1E;
             color: #fff;
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            min-height: 100vh;
         }
-        .header {
-            background-color: #111;
-            padding: 10px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-        .header p {
-            margin: 0;
-            font-size: 14px;
-            color: #aaa;
-        }
-        .nav {
-            display: flex;
-            justify-content: space-around;
-            background-color: #222;
-            padding: 10px 0;
-        }
-        .nav img {
-            width: 24px;
-            height: 24px;
-        }
+
         .content {
             padding: 20px;
         }
-        .card {
-            background-color: #333;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            overflow: hidden;
-            position: relative;
-        }
-        .card img {
-            width: 100%;
-            height: auto;
-            opacity: 0.7;
-        }
-        .card h2 {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            margin: 0;
-            font-size: 20px;
-            color: #fff;
-        }
-        .card p {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            margin: 0;
-            font-size: 14px;
-            color: #fff;
-        }
-        .settings {
-            background-color: #333;
+
+        .workout-card {
+            background-color: #fff;
             border-radius: 10px;
             padding: 15px;
-            margin-top: 20px;
+            margin-bottom: 15px;
+            color: #333;
         }
-        .settings h2 {
-            margin-top: 0;
+
+        .workout-card h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
         }
-        .settings label {
-            display: block;
-            margin-bottom: 10px;
+
+        .workout-card p {
+            margin: 5px 0 0;
+            font-size: 14px;
+            color: #666;
         }
-        .settings input {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border: none;
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 1px solid #eee;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #666;
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+        .nav-item.active {
+            color: #7C5AF1;
+        }
+
+        .nav-item img {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+        }
+
+        /* Стили для списка тренировок */
+        .workout-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-bottom: 70px; /* Отступ для нижней навигации */
+        }
+
+        .workout-type {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .workout-type h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .workout-type p {
+            margin: 5px 0 0;
+            font-size: 14px;
+            color: #666;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Гантели</h1>
-        <p>Стандартные</p>
-    </div>
-    <div class="nav">
-        <img src="icon1.png" alt="icon1">
-        <img src="icon2.png" alt="icon2">
-        <img src="icon3.png" alt="icon3">
-        <img src="icon4.png" alt="icon4">
-    </div>
     <div class="content">
-        <div class="card">
-            <img src="dumbbells.jpg" alt="dumbbells">
-            <h2>Начинающий</h2>
-            <p>Ежедневно</p>
+        <div class="workout-list">
+            <div class="workout-type">
+                <h3>Всё тело</h3>
+                <p>Общее описание</p>
+            </div>
+            <div class="workout-type">
+                <h3>Выносливость</h3>
+                <p>Общее описание</p>
+            </div>
+            <div class="workout-type">
+                <h3>Похудение</h3>
+                <p>Общее описание</p>
+            </div>
+            <div class="workout-type">
+                <h3>Начинающий</h3>
+                <p>Общее описание</p>
+            </div>
         </div>
-        <div class="card">
-            <img src="weight_loss.jpg" alt="weight loss">
-            <h2>Сбрось вес</h2>
-            <p>Ежедневно</p>
-        </div>
-        <!-- Добавьте больше карточек по аналогии -->
     </div>
-    <div class="settings">
-        <h2>Настройки</h2>
-        <label>Рост: <input type="text" value="178 см"></label>
-        <label>Вес: <input type="text" value="64 кг"></label>
-        <!-- Добавьте больше настроек по аналогии -->
+
+    <div class="bottom-nav">
+        <a href="#" class="nav-item active">
+            <img src="images/workout.png" alt="Тренировки">
+            <span>Тренировки</span>
+        </a>
+        <a href="#" class="nav-item">
+            <img src="images/templates.png" alt="Мои шаблоны">
+            <span>Мои шаблоны</span>
+        </a>
+        <a href="#" class="nav-item">
+            <img src="images/stats.png" alt="Статистика">
+            <span>Статистика</span>
+        </a>
+        <a href="#" class="nav-item">
+            <img src="images/profile.png" alt="Профиль">
+            <span>Профиль</span>
+        </a>
     </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        if (tg) {
+            tg.expand();
+        }
+
+        // Обработчики для нижней навигации
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
 </body>
-<<<<<<< HEAD
-</html> 
-=======
-</html> 
->>>>>>> 98218db2f36bbd85609c86db5781b600747c05d9
+</html>
