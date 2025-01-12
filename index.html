@@ -274,21 +274,21 @@
                 if (user) {
                     document.getElementById('tg-username').textContent = user.username || 'Пользователь';
                     
-                    // Получаем сохраненные данные
-                    const savedData = localStorage.getItem('profileData');
-                    if (savedData) {
-                        const data = JSON.parse(savedData);
-                        updateProfileFields(data);
-                    }
-                    
-                    // Запрашиваем актуальные данные с сервера
-                    const response = await fetch(`https://api.telegram.org/bot${TOKEN}/getUserProfileData?user_id=${user.id}`);
-                    const profileData = await response.json();
-                    
-                    if (profileData.ok) {
-                        updateProfileFields(profileData.result);
-                        localStorage.setItem('profileData', JSON.stringify(profileData.result));
-                    }
+                    // Отправляем запрос на получение данных
+                    tg.sendData(JSON.stringify({
+                        type: 'get_profile_data'
+                    }));
+
+                    // Добавляем обработчик для получения ответа от бота
+                    tg.onEvent('message', function(message) {
+                        try {
+                            const data = JSON.parse(message.data);
+                            updateProfileFields(data);
+                            localStorage.setItem('profileData', JSON.stringify(data));
+                        } catch (e) {
+                            console.error('Ошибка при обработке данных профиля:', e);
+                        }
+                    });
                 }
             } catch (error) {
                 console.error('Ошибка при загрузке данных профиля:', error);
@@ -335,21 +335,16 @@
             
             localStorage.setItem('profileData', JSON.stringify(profileData));
             
-            // Отправляем данные без закрытия приложения
+            // Отправляем данные через WebApp
+            tg.sendData(JSON.stringify({
+                type: 'profile_update',
+                data: profileData
+            }));
+
+            // Показываем уведомление о сохранении
             tg.MainButton.setParams({
                 text: 'Сохранено!',
                 color: '#31b545'
-            });
-            
-            fetch(`https://api.telegram.org/bot${TOKEN}/sendData`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    type: 'profile_update',
-                    data: profileData
-                })
             });
 
             // Через 2 секунды возвращаем кнопку в исходное состояние
@@ -358,7 +353,6 @@
                     text: 'Сохранить изменения',
                     color: '#2481cc'
                 });
-                tg.MainButton.hide();
             }, 2000);
         }
 
