@@ -238,35 +238,47 @@
         }
 
         .workout-type-card {
-            background: #fff;
+            position: relative;
+            height: 150px;
+            background-size: cover;
+            background-position: center;
             border-radius: 10px;
             padding: 20px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             cursor: pointer;
             transition: transform 0.2s;
+            overflow: hidden;
         }
 
-        .workout-type-card:active {
-            transform: scale(0.98);
+        .workout-type-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1;
         }
 
-        .workout-type-card img {
-            width: 48px;
-            height: 48px;
-            margin-bottom: 10px;
+        .workout-type-card h3, 
+        .workout-type-card p {
+            position: relative;
+            color: white;
+            z-index: 2;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .workout-type-card h3 {
             margin: 0;
-            font-size: 16px;
-            color: #333;
+            font-size: 18px;
+            font-weight: bold;
         }
 
         .workout-type-card p {
-            margin: 5px 0 0;
-            font-size: 12px;
-            color: #666;
+            margin: 8px 0 0;
+            font-size: 14px;
         }
 
         .exercise-list {
@@ -322,23 +334,23 @@
 <body>
     <div id="workouts-page" class="page">
         <div class="workout-types">
-            <div class="workout-type-card" onclick="showExercises(1)">
-                <img src="images/strength.png" alt="Силовая">
+            <div class="workout-type-card" onclick="showExercises(1)" 
+                 style="background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')">
                 <h3>Силовая тренировка</h3>
                 <p>Тренировка для набора мышечной массы</p>
             </div>
-            <div class="workout-type-card" onclick="showExercises(2)">
-                <img src="images/cardio.png" alt="Кардио">
+            <div class="workout-type-card" onclick="showExercises(2)"
+                 style="background-image: url('https://images.unsplash.com/photo-1538805060514-97d9cc17730c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')">
                 <h3>Кардио</h3>
                 <p>Тренировка для сжигания жира</p>
             </div>
-            <div class="workout-type-card" onclick="showExercises(3)">
-                <img src="images/stretching.png" alt="Растяжка">
+            <div class="workout-type-card" onclick="showExercises(3)"
+                 style="background-image: url('https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')">
                 <h3>Растяжка</h3>
                 <p>Упражнения для гибкости</p>
             </div>
-            <div class="workout-type-card" onclick="showExercises(4)">
-                <img src="images/functional.png" alt="Функциональный">
+            <div class="workout-type-card" onclick="showExercises(4)"
+                 style="background-image: url('https://images.unsplash.com/photo-1518611012118-696072aa579a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')">
                 <h3>Функциональный тренинг</h3>
                 <p>Комплексная тренировка</p>
             </div>
@@ -849,6 +861,67 @@
         }
 
         // Добавим обработчик сообщений от бота
+        if (tg) {
+            tg.onEvent('message', function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'exercises_list') {
+                        displayExercises(data.exercises);
+                    }
+                } catch (e) {
+                    console.error('Ошибка при обработке сообщения:', e);
+                }
+            });
+        }
+
+        // Функция для инициализации страницы тренировок
+        function initWorkoutsPage() {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.style.display = 'none');
+            document.getElementById('workouts-page').style.display = 'block';
+        }
+
+        // Функция для переключения между страницами
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.style.display = 'none');
+            document.getElementById(pageId).style.display = 'block';
+        }
+
+        // Обновим функции навигации
+        function showWorkouts() {
+            showPage('workouts-page');
+        }
+
+        function showExercises(workoutTypeId) {
+            tg.sendData(JSON.stringify({
+                type: 'get_exercises',
+                workout_type_id: workoutTypeId
+            }));
+            showPage('exercises-page');
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            initWorkoutsPage();
+            
+            // Добавляем обработчики для нижней навигации
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const pageId = this.getAttribute('data-page');
+                    if (pageId) {
+                        showPage(pageId);
+                        // Обновляем активный элемент навигации
+                        document.querySelectorAll('.nav-item').forEach(navItem => {
+                            navItem.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // Обновим обработчик сообщений от бота
         if (tg) {
             tg.onEvent('message', function(event) {
                 try {
