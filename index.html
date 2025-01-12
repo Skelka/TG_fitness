@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #F5F5F5;
+            background-color: #1E1E1E;
             color: #fff;
             font-family: Arial, sans-serif;
             margin: 0;
@@ -44,11 +44,11 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background-color: #FFFFFF;
+            background-color: #2D2D2D;
             display: flex;
             justify-content: space-around;
             padding: 10px 0;
-            border-top: 1px solid #E0E0E0;
+            border-top: 1px solid #3D3D3D;
             box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
         }
 
@@ -56,7 +56,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            color: #666;
+            color: #888;
             text-decoration: none;
             font-size: 12px;
             padding: 8px 12px;
@@ -66,7 +66,7 @@
 
         .nav-item.active {
             color: #7C5AF1;
-            background-color: rgba(124, 90, 241, 0.1);
+            background-color: rgba(124, 90, 241, 0.2);
         }
 
         .nav-item img {
@@ -283,16 +283,18 @@
         }
 
         .exercise-list {
-            padding: 15px;
-            padding-bottom: 70px; /* Отступ для нижней навигации */
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            background-color: white;
         }
 
         .exercise-card {
-            background: #fff;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: white;
+            padding: 16px;
+            margin: 0;
+            border-bottom: 1px solid #eee;
         }
 
         .exercise-card h4 {
@@ -310,8 +312,9 @@
         .exercise-details {
             display: flex;
             justify-content: space-between;
-            margin-top: 10px;
-            font-size: 14px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
             color: #666;
         }
 
@@ -670,6 +673,45 @@
         .exercise-complete h2 {
             color: #4CAF50;
             margin-bottom: 15px;
+        }
+
+        /* Обновим стили для кнопки в карточке упражнения */
+        .exercise-card .primary-button {
+            margin-top: 12px;
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        /* Обновим стили для деталей упражнения */
+        .exercise-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+            color: #666;
+        }
+
+        /* Обновим стили для заголовка упражнения */
+        .exercise-card h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .exercise-card p {
+            margin: 8px 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Добавим разделитель между группами упражнений */
+        .exercises-list::after {
+            content: '';
+            height: 8px;
+            background-color: #1E1E1E;
+            display: block;
         }
     </style>
 </head>
