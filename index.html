@@ -851,29 +851,89 @@
             console.log(`[${new Date().toISOString()}] ${message}`);
         }
 
+        // Добавим данные об упражнениях
+        const exercisesData = {
+            1: [ // Силовые упражнения
+                {
+                    id: 1,
+                    name: "Отжимания",
+                    description: "Классические отжимания от пола",
+                    sets: 3,
+                    reps: 12
+                },
+                {
+                    id: 2,
+                    name: "Приседания",
+                    description: "Приседания с собственным весом",
+                    sets: 3,
+                    reps: 15
+                },
+                {
+                    id: 3,
+                    name: "Подтягивания",
+                    description: "Подтягивания на перекладине",
+                    sets: 3,
+                    reps: 8
+                }
+            ],
+            2: [ // Кардио
+                {
+                    id: 4,
+                    name: "Бег",
+                    description: "Бег на месте",
+                    sets: 1,
+                    reps: 180
+                },
+                {
+                    id: 5,
+                    name: "Прыжки на скакалке",
+                    description: "Прыжки на скакалке",
+                    sets: 1,
+                    reps: 300
+                }
+            ],
+            3: [ // Растяжка
+                {
+                    id: 6,
+                    name: "Наклоны вперед",
+                    description: "Растяжка задней поверхности бедра",
+                    sets: 3,
+                    reps: 30
+                },
+                {
+                    id: 7,
+                    name: "Бабочка",
+                    description: "Растяжка внутренней поверхности бедра",
+                    sets: 3,
+                    reps: 30
+                }
+            ],
+            4: [ // Функциональные упражнения
+                {
+                    id: 8,
+                    name: "Берпи",
+                    description: "Комплексное упражнение",
+                    sets: 3,
+                    reps: 10
+                },
+                {
+                    id: 9,
+                    name: "Планка",
+                    description: "Статическое упражнение",
+                    sets: 3,
+                    reps: 60
+                }
+            ]
+        };
+
+        // Обновим функцию показа упражнений
         function showExercises(workoutTypeId) {
-            // Запрашиваем упражнения через MainButton
-            tg.MainButton.setText('Загрузка упражнений...');
-            tg.MainButton.show();
-            tg.MainButton.onClick(() => {
-                tg.sendData(JSON.stringify({
-                    type: 'get_exercises',
-                    workout_type_id: workoutTypeId
-                }));
-            });
-            
-            // Показываем страницу упражнений
+            const exercises = exercisesData[workoutTypeId];
+            displayExercises(exercises);
             showPage('exercises-page');
         }
 
-        function showWorkouts() {
-            document.getElementById('exercises-page').style.display = 'none';
-            document.getElementById('workouts-page').style.display = 'block';
-        }
-
         function displayExercises(exercises) {
-            if (!exercises) return;
-            
             const container = document.getElementById('exercise-list');
             container.innerHTML = '';
             
