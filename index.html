@@ -236,92 +236,71 @@
     </div>
     
     <div id="app-container">
-        <div id="workouts-page" class="page active">
-            <div class="workout-list">
-                <div class="workout-type">
-                    <h3>Всё тело</h3>
-                    <p>Общее описание</p>
-                </div>
-                <div class="workout-type">
-                    <h3>Выносливость</h3>
-                    <p>Общее описание</p>
-                </div>
-                <div class="workout-type">
-                    <h3>Похудение</h3>
-                    <p>Общее описание</p>
-                </div>
-                <div class="workout-type">
-                    <h3>Начинающий</h3>
-                    <p>Общее описание</p>
+        <div class="content">
+            <!-- Страница тренировок -->
+            <div id="workouts-page" class="page active">
+                <div class="workout-list">
+                    <div class="workout-type">
+                        <h3>Всё тело</h3>
+                        <p>Общее описание</p>
+                    </div>
+                    <div class="workout-type">
+                        <h3>Выносливость</h3>
+                        <p>Общее описание</p>
+                    </div>
+                    <div class="workout-type">
+                        <h3>Похудение</h3>
+                        <p>Общее описание</p>
+                    </div>
+                    <div class="workout-type">
+                        <h3>Начинающий</h3>
+                        <p>Общее описание</p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="profile-page" class="page">
-            <div class="profile-section">
-                <div class="profile-header">
-                    <div class="profile-photo">
-                        <img id="profile-image" src="images/default-avatar.png" alt="Profile photo">
-                    </div>
-                    <div class="profile-info">
-                        <h2 class="profile-name" id="tg-username">Загрузка...</h2>
-                    </div>
-                </div>
-                
-                <div class="profile-field">
-                    <label>Возраст</label>
-                    <input type="number" id="age" placeholder="Укажите ваш возраст">
-                </div>
-                
-                <div class="profile-field">
-                    <label>Рост (см)</label>
-                    <input type="number" id="height" placeholder="Укажите ваш рост">
-                </div>
-                
-                <div class="profile-field">
-                    <label>Вес (кг)</label>
-                    <input type="number" id="weight" placeholder="Укажите ваш вес">
-                </div>
-                
-                <div class="profile-field">
-                    <label>Цель тренировок</label>
-                    <select id="goal">
-                        <option value="">Выберите цель</option>
-                        <option value="weight_loss">Похудение</option>
-                        <option value="muscle_gain">Набор мышечной массы</option>
-                        <option value="endurance">Выносливость</option>
-                        <option value="maintenance">Поддержание формы</option>
-                    </select>
+            <!-- Страница шаблонов -->
+            <div id="templates-page" class="page">
+                <div class="workout-list">
+                    <!-- содержимое страницы шаблонов -->
                 </div>
             </div>
-        </div>
 
-        <div id="stats-page" class="page">
-            <div class="stats-section">
-                <div class="stats-header">
-                    <h2>Статистика веса</h2>
-                    <select id="weight-period">
-                        <option value="week">За неделю</option>
-                        <option value="month">За месяц</option>
-                    </select>
-                </div>
-                <div class="chart-container">
-                    <canvas id="weightChart"></canvas>
-                </div>
-                <div class="stats-summary">
-                    <div class="stat-item">
-                        <span class="stat-label">Начальный вес</span>
-                        <span class="stat-value" id="initial-weight">-</span>
+            <!-- Страница статистики -->
+            <div id="stats-page" class="page">
+                <div class="stats-section">
+                    <div class="stats-header">
+                        <h2>Статистика веса</h2>
+                        <select id="weight-period">
+                            <option value="week">За неделю</option>
+                            <option value="month" selected>За месяц</option>
+                        </select>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Текущий вес</span>
-                        <span class="stat-value" id="current-weight">-</span>
+                    <div class="chart-container">
+                        <canvas id="weightChart"></canvas>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Изменение</span>
-                        <span class="stat-value" id="weight-change">-</span>
+                    <div class="stats-summary">
+                        <div class="stat-item">
+                            <span class="stat-label">Начальный вес</span>
+                            <span class="stat-value" id="initial-weight">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Текущий вес</span>
+                            <span class="stat-value" id="current-weight">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Изменение</span>
+                            <span class="stat-value" id="weight-change">-</span>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Страница профиля -->
+            <div id="profile-page" class="page">
+                <form class="profile-section">
+                    <!-- содержимое страницы профиля -->
+                </form>
             </div>
         </div>
 
@@ -408,16 +387,15 @@
 
         // Настройка навигации
         function setupNavigation() {
+            console.log('Настройка навигации');
+            
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
                     const pageId = this.getAttribute('data-page');
+                    console.log('Клик по навигации:', pageId);
+                    
                     if (pageId) {
-                        // Обновляем активную вкладку
-                        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                        this.classList.add('active');
-                        
-                        // Показываем выбранную страницу
                         showPage(pageId);
                         
                         // Если открыта страница статистики, загружаем данные
@@ -462,7 +440,10 @@
 
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', () => {
-            if (tg) {
+            console.log('DOM загружен');
+            if (window.Telegram?.WebApp) {
+                console.log('Telegram WebApp доступен');
+                tg = window.Telegram.WebApp;
                 initializeApp();
             } else {
                 console.error('Telegram WebApp не инициализирован');
@@ -470,8 +451,31 @@
         });
 
         function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
+            console.log('Переключение на страницу:', pageId);
+            
+            // Скрываем все страницы
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+                console.log('Скрыта страница:', page.id);
+            });
+            
+            // Показываем нужную страницу
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                console.log('Показана страница:', pageId);
+            } else {
+                console.error('Страница не найдена:', pageId);
+            }
+            
+            // Обновляем активную вкладку в навигации
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if (item.getAttribute('data-page') === pageId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
         }
 
         async function loadWeightStats(period = 'month') {
