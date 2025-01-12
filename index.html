@@ -260,8 +260,25 @@
         let tg = window.Telegram.WebApp;
         if (tg) {
             tg.expand();
-            document.getElementById('tg-username').textContent = tg.initDataUnsafe?.user?.username || 'Пользователь';
-            loadProfileData();
+            
+            // Получаем данные из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const profileData = urlParams.get('data');
+            
+            if (profileData) {
+                try {
+                    const data = JSON.parse(profileData);
+                    // Заполняем поля формы
+                    document.getElementById('tg-username').textContent = data.username || 'Пользователь';
+                    if (data.age) document.getElementById('age').value = data.age;
+                    if (data.height) document.getElementById('height').value = data.height;
+                    if (data.weight) document.getElementById('weight').value = data.weight;
+                    if (data.goal) document.getElementById('goal').value = data.goal;
+                    if (data.photo_url) document.getElementById('profile-image').src = data.photo_url;
+                } catch (e) {
+                    console.error('Ошибка при загрузке данных:', e);
+                }
+            }
         }
 
         function showPage(pageId) {
@@ -371,7 +388,7 @@
         `);
 
         // Обработчик для кнопки сохранения
-        document.getElementById('saveProfileBtn').addEventListener('click', async function() {
+        document.getElementById('saveProfileBtn').addEventListener('click', function() {
             const profileData = {
                 age: document.getElementById('age').value,
                 height: document.getElementById('height').value,
@@ -379,22 +396,11 @@
                 goal: document.getElementById('goal').value
             };
             
-            // Сохраняем в localStorage
-            localStorage.setItem('profileData', JSON.stringify(profileData));
-            
             // Отправляем данные через WebApp
             tg.sendData(JSON.stringify({
                 type: 'profile_update',
                 data: profileData
             }));
-
-            // Ждем немного и перезапускаем приложение
-            setTimeout(() => {
-                tg.openApp({
-                    url: window.location.href,
-                    try_instant_view: true
-                });
-            }, 500);
         });
 
         function initProfile() {
