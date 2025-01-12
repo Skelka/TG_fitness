@@ -49,7 +49,6 @@
             justify-content: space-around;
             padding: 10px 0;
             border-top: 1px solid #E0E0E0;
-            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .nav-item {
@@ -59,22 +58,10 @@
             color: #666;
             text-decoration: none;
             font-size: 12px;
-            padding: 12px 16px;
-            border-radius: 8px;
-            transition: background-color 0.3s;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-            touch-action: manipulation;
-        }
-
-        .nav-item:active {
-            background-color: rgba(124, 90, 241, 0.2);
         }
 
         .nav-item.active {
             color: #7C5AF1;
-            background-color: rgba(124, 90, 241, 0.1);
         }
 
         .nav-item img {
@@ -313,22 +300,22 @@
         </div>
 
         <div class="bottom-nav">
-            <div class="nav-item active" data-page="workouts-page">
+            <a href="#" class="nav-item active" data-page="workouts-page">
                 <img src="images/dumbbell.png" alt="Workouts">
                 <span>Тренировки</span>
-            </div>
-            <div class="nav-item" data-page="templates-page">
+            </a>
+            <a href="#" class="nav-item" data-page="templates-page">
                 <img src="images/template.png" alt="Templates">
                 <span>Мои шаблоны</span>
-            </div>
-            <div class="nav-item" data-page="stats-page">
+            </a>
+            <a href="#" class="nav-item" data-page="stats-page">
                 <img src="images/stats.png" alt="Statistics">
                 <span>Статистика</span>
-            </div>
-            <div class="nav-item" data-page="profile-page">
+            </a>
+            <a href="#" class="nav-item" data-page="profile-page">
                 <img src="images/profile.png" alt="Profile">
                 <span>Профиль</span>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -413,113 +400,31 @@
             }
         }
 
-        // Настройка навигации
-        function setupNavigation() {
-            console.log('Настройка навигации');
-            
-            const navItems = document.querySelectorAll('.nav-item');
-            console.log('Найдено элементов навигации:', navItems.length);
-            
-            navItems.forEach(item => {
-                const pageId = item.getAttribute('data-page');
-                console.log('Настройка обработчика для:', pageId);
+        // Заменим функцию setupNavigation на более простую версию
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
                 
-                // Добавляем обработчик и для click, и для touchend
-                ['click', 'touchend'].forEach(eventType => {
-                    item.addEventListener(eventType, function(e) {
-                        e.preventDefault();
-                        e.stopPropagation(); // Останавливаем всплытие события
-                        
-                        console.log(`${eventType} по элементу навигации:`, this);
-                        console.log('data-page:', pageId);
-                        
-                        if (pageId) {
-                            showPage(pageId);
-                            
-                            if (pageId === 'stats-page') {
-                                const period = document.getElementById('weight-period')?.value || 'month';
-                                console.log('Загрузка статистики за период:', period);
-                                loadWeightStats(period);
-                            }
-                        }
-                    }, { passive: false }); // Важно для touchend
-                });
-            });
-
-            // Обработчик изменения периода в статистике
-            const periodSelect = document.getElementById('weight-period');
-            if (periodSelect) {
-                console.log('Найден селектор периода');
-                periodSelect.addEventListener('change', (e) => {
-                    console.log('Изменен период:', e.target.value);
-                    loadWeightStats(e.target.value);
-                });
-            }
-        }
-
-        // Настройка обработчиков формы профиля
-        function setupProfileHandlers() {
-            const profileForm = document.querySelector('.profile-section');
-            if (profileForm) {
-                profileForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const formData = {
-                        type: 'profile_update',
-                        data: {
-                            age: document.getElementById('age').value,
-                            height: document.getElementById('height').value,
-                            weight: document.getElementById('weight').value,
-                            goal: document.getElementById('goal').value
-                        }
-                    };
-                    if (tg) {
-                        tg.sendData(JSON.stringify(formData));
+                const pageId = this.getAttribute('data-page');
+                if (pageId) {
+                    showPage(pageId);
+                    
+                    if (pageId === 'profile-page') {
+                        initProfile();
                     }
-                });
-            }
-        }
-
-        // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM загружен');
-            if (window.Telegram?.WebApp) {
-                console.log('Telegram WebApp доступен');
-                tg = window.Telegram.WebApp;
-                initializeApp();
-            } else {
-                console.error('Telegram WebApp не инициализирован');
-            }
+                    if (pageId === 'stats-page') {
+                        loadWeightStats(document.getElementById('weight-period').value);
+                    }
+                }
+            });
         });
 
+        // Упростим функцию showPage
         function showPage(pageId) {
-            console.log('Переключение на страницу:', pageId);
-            
-            const pages = document.querySelectorAll('.page');
-            console.log('Найдено страниц:', pages.length);
-            
-            pages.forEach(page => {
-                console.log('Обработка страницы:', page.id);
-                page.classList.remove('active');
-            });
-            
-            const targetPage = document.getElementById(pageId);
-            if (targetPage) {
-                console.log('Активация страницы:', pageId);
-                targetPage.classList.add('active');
-                
-                // Обновляем навигацию
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    const itemPageId = item.getAttribute('data-page');
-                    if (itemPageId === pageId) {
-                        item.classList.add('active');
-                        console.log('Активирована вкладка:', itemPageId);
-                    } else {
-                        item.classList.remove('active');
-                    }
-                });
-            } else {
-                console.error('Страница не найдена:', pageId);
-            }
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
         }
 
         async function loadWeightStats(period = 'month') {
