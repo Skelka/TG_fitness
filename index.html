@@ -429,12 +429,12 @@
 
         async function loadWeightStats(period = 'month') {
             try {
-                console.log('Запрашиваем обновление страницы с новым периодом:', period);
+                console.log('Запрашиваем историю веса за период:', period);
                 if (tg) {
                     tg.MainButton.hide();
-                    // Запрашиваем обновление всего приложения с новым периодом
+                    // Отправляем запрос на получение истории веса
                     tg.sendData(JSON.stringify({
-                        type: 'refresh_data',
+                        type: 'get_weight_history',
                         period: period
                     }));
                 }
@@ -503,6 +503,99 @@
         // В начале скрипта добавим функцию для логирования
         function log(message) {
             console.log(`[${new Date().toISOString()}] ${message}`);
+        }
+
+        // Добавим обработку инициализации при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            if (tg) {
+                tg.expand();
+                
+                // Загружаем данные из URL
+                const encodedData = new URLSearchParams(window.location.search).get('data');
+                if (encodedData) {
+                    const data = JSON.parse(decodeURIComponent(encodedData));
+                    console.log('Получены данные из URL:', data);
+                    
+                    // Обновляем данные профиля
+                    updateProfileData(data);
+                    
+                    // Если есть данные для графика, обновляем его
+                    if (data.weight_history) {
+                        updateWeightChart(data.weight_history);
+                    }
+                }
+            }
+        });
+
+        // Добавим обработчик для изменения периода в статистике
+        document.getElementById('weight-period')?.addEventListener('change', function(e) {
+            loadWeightStats(e.target.value);
+        });
+
+        // Добавим функции для работы с профилем
+        function initProfile() {
+            const profileData = {
+                type: 'get_profile_data'
+            };
+            if (tg) {
+                tg.sendData(JSON.stringify(profileData));
+            }
+        }
+
+        function saveProfileData() {
+            const profileData = {
+                type: 'profile_update',
+                data: {
+                    age: document.getElementById('age').value,
+                    height: document.getElementById('height').value,
+                    weight: document.getElementById('weight').value,
+                    goal: document.getElementById('goal').value
+                }
+            };
+            
+            if (tg) {
+                tg.sendData(JSON.stringify(profileData));
+            }
+        }
+
+        // Добавим обработчики изменений полей профиля
+        ['age', 'height', 'weight', 'goal'].forEach(fieldId => {
+            document.getElementById(fieldId)?.addEventListener('change', saveProfileData);
+        });
+
+        // Обновим обработчик для фото профиля
+        document.querySelector('.profile-photo')?.addEventListener('click', function() {
+            if (tg) {
+                tg.showPopup({
+                    title: 'Обновить фото профиля',
+                    message: 'Выберите новое фото профиля',
+                    buttons: [
+                        {id: 'choose_photo', type: 'default', text: 'Выбрать фото'},
+                        {id: 'cancel', type: 'cancel', text: 'Отмена'}
+                    ]
+                }, function(buttonId) {
+                    if (buttonId === 'choose_photo') {
+                        tg.openMedia({
+                            type: 'photo',
+                            caption: 'Выберите фото'
+                        });
+                    }
+                });
+            }
+        });
+
+        // Добавим обработчик сообщений от бота
+        if (tg) {
+            tg.onEvent('message', function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'weight_history') {
+                        updateWeightChart(data);
+                    }
+                } catch (e) {
+                    console.error('Ошибка при обработке сообщения:', e);
+                }
+            });
         }
     </script>
 </body>
