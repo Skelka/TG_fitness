@@ -417,179 +417,178 @@
     </style>
 </head>
 <body>
-    <div id="workouts-page" class="page">
-        <h2>Тренировки</h2>
-        <div class="workout-types">
-            <div class="workout-type-card" onclick="showExercises(1)" 
-                 style="background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')">
-                <h3>Силовая тренировка</h3>
-                <p>Тренировка для набора мышечной массы</p>
-            </div>
-            <div class="workout-type-card" onclick="showExercises(2)"
-                 style="background-image: url('https://images.unsplash.com/photo-1538805060514-97d9cc17730c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')">
-                <h3>Кардио</h3>
-                <p>Тренировка для сжигания жира</p>
-            </div>
-            <div class="workout-type-card" onclick="showExercises(3)"
-                 style="background-image: url('https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')">
-                <h3>Растяжка</h3>
-                <p>Упражнения для гибкости</p>
-            </div>
-            <div class="workout-type-card" onclick="showExercises(4)"
-                 style="background-image: url('https://images.unsplash.com/photo-1518611012118-696072aa579a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')">
-                <h3>Функциональный тренинг</h3>
-                <p>Комплексная тренировка</p>
-            </div>
-        </div>
-    </div>
-
-    <div id="training-days-page" class="page">
-        <button class="back-button" onclick="showWorkouts()">Назад к типам тренировок</button>
-        <h2 id="workout-type-title">Тренировка</h2>
-        <div class="training-days">
-            <!-- Дни будут добавляться динамически -->
-        </div>
-    </div>
-
-    <div id="exercises-page" class="page">
-        <button class="back-button" onclick="showTrainingDays()">Назад к дням</button>
-        <h2 id="training-day-title">День 1</h2>
-        <div id="exercise-list" class="exercise-list">
-            <!-- Упражнения будут добавляться динамически -->
-        </div>
-    </div>
-
-    <div id="profile-page" class="page">
-        <div class="profile-section">
-            <div class="profile-header">
-                <div class="profile-photo">
-                    <img id="profile-image" src="images/default-avatar.png" alt="Profile photo">
+    <div class="pages-container">
+        <!-- Страница профиля -->
+        <div id="profile-page" class="page">
+            <h2>Профиль</h2>
+            <div class="profile-section">
+                <div class="profile-header">
+                    <div class="profile-photo">
+                        <img id="profile-image" src="images/default-avatar.png" alt="Фото профиля">
+                    </div>
+                    <div class="profile-info">
+                        <h3 id="tg-username" class="profile-name">Пользователь</h3>
+                    </div>
                 </div>
-                <div class="profile-info">
-                    <h2 class="profile-name" id="tg-username">Загрузка...</h2>
+                <div class="profile-field">
+                    <label for="age">Возраст</label>
+                    <input type="number" id="age" placeholder="Введите возраст">
+                </div>
+                <div class="profile-field">
+                    <label for="height">Рост (см)</label>
+                    <input type="number" id="height" placeholder="Введите рост">
+                </div>
+                <div class="profile-field">
+                    <label for="weight">Вес (кг)</label>
+                    <input type="number" id="weight" placeholder="Введите вес">
+                </div>
+                <div class="profile-field">
+                    <label for="goal">Цель</label>
+                    <select id="goal">
+                        <option value="loss">Снижение веса</option>
+                        <option value="gain">Набор массы</option>
+                        <option value="maintenance">Поддержание формы</option>
+                    </select>
                 </div>
             </div>
-            
-            <div class="profile-field">
-                <label>Возраст</label>
-                <input type="number" id="age" placeholder="Укажите ваш возраст">
-            </div>
-            
-            <div class="profile-field">
-                <label>Рост (см)</label>
-                <input type="number" id="height" placeholder="Укажите ваш рост">
-            </div>
-            
-            <div class="profile-field">
-                <label>Вес (кг)</label>
-                <input type="number" id="weight" placeholder="Укажите ваш вес">
-            </div>
-            
-            <div class="profile-field">
-                <label>Цель тренировок</label>
-                <select id="goal">
-                    <option value="">Выберите цель</option>
-                    <option value="weight_loss">Похудение</option>
-                    <option value="muscle_gain">Набор мышечной массы</option>
-                    <option value="endurance">Выносливость</option>
-                    <option value="maintenance">Поддержание формы</option>
-                </select>
+        </div>
+
+        <!-- Страница тренировок -->
+        <div id="workouts-page" class="page">
+            <h2>Тренировки</h2>
+            <div class="workout-types">
+                <div class="workout-type-card" onclick="showTrainingDays(1)" 
+                     style="background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48')">
+                    <h3>Силовая тренировка</h3>
+                    <p>Тренировка для набора мышечной массы</p>
+                </div>
+                <div class="workout-type-card" onclick="showTrainingDays(2)"
+                     style="background-image: url('https://images.unsplash.com/photo-1538805060514-97d9cc17730c')">
+                    <h3>Кардио</h3>
+                    <p>Тренировка для сжигания жира</p>
+                </div>
+                <div class="workout-type-card" onclick="showTrainingDays(3)"
+                     style="background-image: url('https://images.unsplash.com/photo-1544367567-0f2fcb009e0b')">
+                    <h3>Растяжка</h3>
+                    <p>Упражнения для гибкости</p>
+                </div>
+                <div class="workout-type-card" onclick="showTrainingDays(4)"
+                     style="background-image: url('https://images.unsplash.com/photo-1518611012118-696072aa579a')">
+                    <h3>Функциональный тренинг</h3>
+                    <p>Комплексная тренировка</p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="stats-page" class="page">
-        <div class="stats-section">
-            <div class="stats-header">
-                <h2>Статистика веса</h2>
-                <select id="weight-period">
-                    <option value="week">За неделю</option>
-                    <option value="month">За месяц</option>
-                </select>
-            </div>
-            <div class="chart-container">
-                <canvas id="weightChart"></canvas>
-            </div>
-            <div class="stats-summary">
-                <div class="stat-item">
-                    <span class="stat-label">Начальный вес</span>
-                    <span class="stat-value" id="initial-weight">-</span>
+        <!-- Страница дней тренировок -->
+        <div id="training-days-page" class="page">
+            <button class="back-button" onclick="showPage('workouts-page')">Назад к тренировкам</button>
+            <h2 id="workout-type-title">Тренировка</h2>
+            <div class="training-days"></div>
+        </div>
+
+        <!-- Страница упражнений -->
+        <div id="exercises-page" class="page">
+            <button class="back-button" onclick="showPage('training-days-page')">Назад к дням</button>
+            <h2 id="training-day-title">День 1</h2>
+            <div id="exercise-list" class="exercise-list"></div>
+        </div>
+
+        <!-- Страница статистики -->
+        <div id="stats-page" class="page">
+            <h2>Статистика</h2>
+            <div class="stats-section">
+                <div class="stats-header">
+                    <h3>Динамика веса</h3>
+                    <select id="period-select" onchange="updateWeightStats()">
+                        <option value="week">За неделю</option>
+                        <option value="month">За месяц</option>
+                    </select>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-label">Текущий вес</span>
-                    <span class="stat-value" id="current-weight">-</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Изменение</span>
-                    <span class="stat-value" id="weight-change">-</span>
+                <div class="chart-container">
+                    <canvas id="weightChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Нижняя навигация -->
     <div class="bottom-nav">
-        <a href="#" class="nav-item active" data-page="workouts-page">
-            <img src="images/dumbbell.png" alt="Тренировки">
-            <span>Тренировки</span>
-        </a>
-        <a href="#" class="nav-item" data-page="templates-page">
-            <img src="images/template.png" alt="Мои шаблоны">
-            <span>Мои шаблоны</span>
-        </a>
-        <a href="#" class="nav-item" data-page="stats-page">
-            <img src="images/stats.png" alt="Статистика">
-            <span>Статистика</span>
-        </a>
-        <a href="#" class="nav-item" data-page="profile-page">
+        <div class="nav-item" onclick="showPage('profile-page')" data-page="profile-page">
             <img src="images/profile.png" alt="Профиль">
             <span>Профиль</span>
-        </a>
+        </div>
+        <div class="nav-item" onclick="showPage('workouts-page')" data-page="workouts-page">
+            <img src="images/workout.png" alt="Тренировки">
+            <span>Тренировки</span>
+        </div>
+        <div class="nav-item" onclick="showPage('stats-page')" data-page="stats-page">
+            <img src="images/stats.png" alt="Статистика">
+            <span>Статистика</span>
+        </div>
     </div>
 
     <script>
-        let tg = window.Telegram.WebApp;
-        if (tg) {
+        // Функция для инициализации приложения
+        document.addEventListener('DOMContentLoaded', () => {
+            // Показываем страницу профиля при запуске
+            showPage('profile-page');
+            
+            // Инициализируем Telegram WebApp
+            const tg = window.Telegram.WebApp;
             tg.expand();
             
-            // Получаем данные из URL
+            // Загружаем данные из URL если они есть
             const urlParams = new URLSearchParams(window.location.search);
             const encodedData = urlParams.get('data');
-            
             if (encodedData) {
                 try {
                     const data = JSON.parse(decodeURIComponent(encodedData));
-                    log('Получены данные из URL:');
-                    log(JSON.stringify(data, null, 2));
-                    
+                    // Заполняем данные профиля
                     document.getElementById('tg-username').textContent = data.username || 'Пользователь';
                     if (data.age) document.getElementById('age').value = data.age;
                     if (data.height) document.getElementById('height').value = data.height;
                     if (data.weight) document.getElementById('weight').value = data.weight;
                     if (data.goal) document.getElementById('goal').value = data.goal;
-                    if (data.photo_url) {
-                        log(`Загружаем фото из URL: ${data.photo_url}`);
-                        const profileImage = document.getElementById('profile-image');
-                        profileImage.src = data.photo_url;
-                        profileImage.onerror = function(e) {
-                            log(`Ошибка загрузки фото: ${e.message}`);
-                            this.src = 'images/default-avatar.png';
-                        };
-                        profileImage.onload = function() {
-                            log('Фото успешно загружено');
-                        };
-                    } else {
-                        log('URL фото отсутствует в данных');
-                    }
+                    if (data.photo_url) document.getElementById('profile-image').src = data.photo_url;
                 } catch (e) {
                     console.error('Ошибка при загрузке данных:', e);
-                    log(`Ошибка при обработке данных: ${e.message}`);
                 }
             }
-        }
+            
+            // Добавляем обработчики для нижней навигации
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.nav-item').forEach(navItem => {
+                        navItem.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            });
+        });
 
+        // Функция для переключения страниц с анимацией
         function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
+            const pages = document.querySelectorAll('.page');
+            const currentPage = document.querySelector('.page.active');
+            const nextPage = document.getElementById(pageId);
+            
+            if (currentPage === nextPage) return;
+            
+            pages.forEach(page => {
+                page.classList.remove('active', 'previous');
+            });
+            
+            if (currentPage) {
+                currentPage.classList.add('previous');
+            }
+            
+            nextPage.classList.add('active');
+            
+            // Обновляем активный элемент в навигации
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.toggle('active', item.getAttribute('data-page') === pageId);
+            });
         }
 
         async function loadProfileData() {
@@ -1084,24 +1083,38 @@
                         name: "День 1 - Грудь и трицепс",
                         exercises: [
                             {
+                                name: "Разминка",
+                                description: "Круговые движения руками, наклоны, вращения в суставах",
+                                sets: 1,
+                                reps: "5 минут",
+                                rest: "нет"
+                            },
+                            {
                                 name: "Отжимания",
-                                description: "Классические отжимания от пола",
+                                description: "Классические отжимания от пола. Локти вдоль тела, грудь касается пола",
                                 sets: 4,
                                 reps: "12-15",
-                                rest: "60 сек"
+                                rest: "90 сек"
                             },
                             {
                                 name: "Отжимания на брусьях",
-                                description: "Для проработки нижней части груди",
+                                description: "Для проработки нижней части груди. Наклон корпуса вперед",
                                 sets: 3,
                                 reps: "10-12",
                                 rest: "90 сек"
                             },
                             {
                                 name: "Алмазные отжимания",
-                                description: "Акцент на трицепс",
+                                description: "Руки образуют форму алмаза под грудью. Акцент на трицепс",
                                 sets: 3,
                                 reps: "12-15",
+                                rest: "60 сек"
+                            },
+                            {
+                                name: "Обратные отжимания от скамьи",
+                                description: "Для трицепса. Руки на скамье позади тела",
+                                sets: 3,
+                                reps: "15-20",
                                 rest: "60 сек"
                             }
                         ]
@@ -1110,17 +1123,38 @@
                         name: "День 2 - Спина и бицепс",
                         exercises: [
                             {
-                                name: "Подтягивания",
-                                description: "Широким хватом к груди",
+                                name: "Разминка",
+                                description: "Разогрев плечевого пояса, наклоны, вращения",
+                                sets: 1,
+                                reps: "5 минут",
+                                rest: "нет"
+                            },
+                            {
+                                name: "Подтягивания широким хватом",
+                                description: "К груди, лопатки сводим вместе",
                                 sets: 4,
                                 reps: "8-10",
                                 rest: "90 сек"
                             },
                             {
                                 name: "Австралийские подтягивания",
-                                description: "Горизонтальная тяга",
+                                description: "Горизонтальная тяга. Чем ниже перекладина, тем сложнее",
                                 sets: 3,
                                 reps: "12-15",
+                                rest: "90 сек"
+                            },
+                            {
+                                name: "Подтягивания обратным хватом",
+                                description: "Акцент на бицепс, локти близко к телу",
+                                sets: 3,
+                                reps: "8-10",
+                                rest: "90 сек"
+                            },
+                            {
+                                name: "Изометрия в подтягивании",
+                                description: "Удержание в верхней точке подтягивания",
+                                sets: 3,
+                                reps: "20-30 сек",
                                 rest: "60 сек"
                             }
                         ]
@@ -1129,17 +1163,38 @@
                         name: "День 3 - Ноги и плечи",
                         exercises: [
                             {
+                                name: "Разминка",
+                                description: "Суставная гимнастика, растяжка ног",
+                                sets: 1,
+                                reps: "5-7 минут",
+                                rest: "нет"
+                            },
+                            {
                                 name: "Приседания",
-                                description: "Классические приседания",
+                                description: "Глубокие приседания, следим за коленями",
                                 sets: 4,
                                 reps: "15-20",
                                 rest: "90 сек"
                             },
                             {
                                 name: "Выпады",
-                                description: "Поочередно на каждую ногу",
+                                description: "Поочередно на каждую ногу, спина прямая",
                                 sets: 3,
                                 reps: "12 на ногу",
+                                rest: "90 сек"
+                            },
+                            {
+                                name: "Отжимания в стойке на руках",
+                                description: "У стены, акцент на плечи",
+                                sets: 3,
+                                reps: "8-12",
+                                rest: "60 сек"
+                            },
+                            {
+                                name: "Пике-отжимания",
+                                description: "Ноги на возвышении, голова вниз",
+                                sets: 3,
+                                reps: "10-12",
                                 rest: "60 сек"
                             }
                         ]
@@ -1154,11 +1209,32 @@
                         name: "День 1 - Интервальная тренировка",
                         exercises: [
                             {
-                                name: "Бег на месте",
+                                name: "Разминка",
+                                description: "Легкий бег на месте, суставная гимнастика",
+                                sets: 1,
+                                reps: "5 минут",
+                                rest: "нет"
+                            },
+                            {
+                                name: "Интервальный бег",
                                 description: "Чередование быстрого и медленного темпа",
                                 sets: 10,
                                 reps: "30 сек быстро / 30 сек медленно",
-                                rest: "60 сек между сетами"
+                                rest: "60 сек после 5 повторений"
+                            },
+                            {
+                                name: "Прыжки на скакалке",
+                                description: "Чередование обычных прыжков и двойных",
+                                sets: 5,
+                                reps: "60 сек работы",
+                                rest: "30 сек"
+                            },
+                            {
+                                name: "Берпи",
+                                description: "Максимальная интенсивность",
+                                sets: 3,
+                                reps: "45 сек работы",
+                                rest: "45 сек"
                             }
                         ]
                     },
@@ -1166,17 +1242,167 @@
                         name: "День 2 - Круговая тренировка",
                         exercises: [
                             {
-                                name: "Комплекс упражнений",
-                                description: "Берпи, прыжки, скакалка",
-                                sets: 5,
-                                reps: "40 сек работа / 20 сек отдых",
+                                name: "Разминка",
+                                description: "Динамическая растяжка, суставная гимнастика",
+                                sets: 1,
+                                reps: "5 минут",
+                                rest: "нет"
+                            },
+                            {
+                                name: "Круг 1",
+                                description: "Берпи (30 сек) → Прыжки на скакалке (30 сек) → Бег на месте с высоким подниманием колен (30 сек)",
+                                sets: 3,
+                                reps: "90 сек работы",
+                                rest: "60 сек между кругами"
+                            },
+                            {
+                                name: "Круг 2",
+                                description: "Прыжки из приседа (30 сек) → Альпинист (30 сек) → Джампинг джек (30 сек)",
+                                sets: 3,
+                                reps: "90 сек работы",
                                 rest: "60 сек между кругами"
                             }
                         ]
                     }
                 }
+            },
+            3: { // Растяжка
+                name: "Растяжка",
+                description: "Программа для развития гибкости",
+                days: {
+                    1: {
+                        name: "День 1 - Общая растяжка",
+                        exercises: [
+                            {
+                                name: "Разминка",
+                                description: "Легкая суставная гимнастика",
+                                sets: 1,
+                                reps: "5 минут",
+                                rest: "нет"
+                            },
+                            {
+                                name: "Наклоны вперед",
+                                description: "Растяжка задней поверхности бедра и спины",
+                                sets: 3,
+                                reps: "30-40 сек удержание",
+                                rest: "20 сек"
+                            },
+                            {
+                                name: "Бабочка",
+                                description: "Растяжка внутренней поверхности бедра",
+                                sets: 3,
+                                reps: "40-60 сек удержание",
+                                rest: "20 сек"
+                            },
+                            {
+                                name: "Мостик",
+                                description: "Прогиб в спине, растяжка живота",
+                                sets: 3,
+                                reps: "20-30 сек удержание",
+                                rest: "30 сек"
+                            }
+                        ]
+                    },
+                    2: {
+                        name: "День 2 - Продвинутая растяжка",
+                        exercises: [
+                            {
+                                name: "Разминка",
+                                description: "Динамическая растяжка",
+                                sets: 1,
+                                reps: "7 минут",
+                                rest: "нет"
+                            },
+                            {
+                                name: "Шпагат",
+                                description: "Подготовительные упражнения и удержание",
+                                sets: 3,
+                                reps: "60 сек работы",
+                                rest: "30 сек"
+                            },
+                            {
+                                name: "Складка",
+                                description: "Сидя и стоя",
+                                sets: 3,
+                                reps: "45 сек удержание",
+                                rest: "30 сек"
+                            }
+                        ]
+                    }
+                }
+            },
+            4: { // Функциональный тренинг
+                name: "Функциональный тренинг",
+                description: "Комплексная тренировка",
+                days: {
+                    1: {
+                        name: "День 1 - Полное тело",
+                        exercises: [
+                            {
+                                name: "Разминка",
+                                description: "Комплексная разминка всего тела",
+                                sets: 1,
+                                reps: "7-10 минут",
+                                rest: "нет"
+                            },
+                            {
+                                name: "Берпи",
+                                description: "Комплексное упражнение",
+                                sets: 4,
+                                reps: "10-12",
+                                rest: "60 сек"
+                            },
+                            {
+                                name: "Планка с переходом в отжимание",
+                                description: "Удержание планки 30 сек + 5-7 отжиманий",
+                                sets: 3,
+                                reps: "45 сек работы",
+                                rest: "45 сек"
+                            },
+                            {
+                                name: "Приседания с выпрыгиванием",
+                                description: "Взрывная работа ног",
+                                sets: 3,
+                                reps: "12-15",
+                                rest: "60 сек"
+                            }
+                        ]
+                    },
+                    2: {
+                        name: "День 2 - Кор и баланс",
+                        exercises: [
+                            {
+                                name: "Разминка",
+                                description: "Разогрев корпуса и суставов",
+                                sets: 1,
+                                reps: "5 минут",
+                                rest: "нет"
+                            },
+                            {
+                                name: "Планка на локтях",
+                                description: "С переходом в боковую планку",
+                                sets: 3,
+                                reps: "60 сек",
+                                rest: "45 сек"
+                            },
+                            {
+                                name: "Скручивания",
+                                description: "Медленные и контролируемые",
+                                sets: 3,
+                                reps: "15-20",
+                                rest: "45 сек"
+                            },
+                            {
+                                name: "Ягодичный мостик",
+                                description: "С задержкой в верхней точке",
+                                sets: 3,
+                                reps: "20 + 10 сек удержание",
+                                rest: "60 сек"
+                            }
+                        ]
+                    }
+                }
             }
-            // Добавить остальные программы...
         };
 
         // Функции навигации
