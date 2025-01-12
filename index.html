@@ -250,7 +250,6 @@
         if (tg) {
             tg.expand();
             document.getElementById('tg-username').textContent = tg.initDataUnsafe?.user?.username || 'Пользователь';
-            initProfile();
         }
 
         function showPage(pageId) {
@@ -276,21 +275,11 @@
                 if (pageId) {
                     showPage(pageId);
                     
-                    // Загружаем данные профиля при переходе на страницу профиля
                     if (pageId === 'profile-page') {
+                        initProfile();
                         tg.sendData(JSON.stringify({
                             type: 'get_profile_data'
                         }));
-                        
-                        // Добавим обработчик для получения данных от бота
-                        tg.onEvent('message', function(message) {
-                            try {
-                                const data = JSON.parse(message.data);
-                                updateProfileFields(data);
-                            } catch (e) {
-                                console.error('Ошибка при обработке данных профиля:', e);
-                            }
-                        });
                     }
                 }
             });
