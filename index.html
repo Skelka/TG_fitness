@@ -283,17 +283,16 @@
         }
 
         .exercise-list {
-            padding: 0;
-            display: flex;
-            flex-direction: column;
+            padding: 15px;
+            padding-bottom: 70px; /* Отступ для нижней навигации */
         }
 
         .exercise-card {
-            background: white;
-            border-radius: 0;
+            background: #fff;
+            border-radius: 10px;
             padding: 15px;
-            margin: 0;
-            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .exercise-card h4 {
@@ -356,15 +355,15 @@
         .days-list {
             display: flex;
             flex-direction: column;
-            padding: 0;
+            gap: 15px;
+            padding: 15px;
         }
 
         .day-card {
             background: white;
-            border-radius: 0;
+            border-radius: 10px;
             padding: 20px;
-            margin: 0;
-            border-bottom: 1px solid #eee;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             cursor: pointer;
             transition: transform 0.2s;
         }
@@ -386,16 +385,16 @@
         }
 
         .exercises-list {
-            padding: 0;
             display: flex;
             flex-direction: column;
+            gap: 15px;
+            padding: 15px;
         }
 
         .exercise-card {
             background: #fff;
             border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
+            padding: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
@@ -410,17 +409,16 @@
         }
 
         .header {
-            background-image: var(--header-image);
             background-size: cover;
             background-position: center;
-            position: relative;
             padding: 15px;
-            margin: -20px -20px 0 -20px;
-            min-height: 100px;
+            margin: 0;
+            color: white;
+            position: relative;
+            min-height: 120px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            overflow: hidden;
+            justify-content: flex-end;
         }
 
         .header::before {
@@ -430,39 +428,13 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
             z-index: 1;
         }
 
-        .header-top {
+        .header * {
             position: relative;
             z-index: 2;
-            margin: 0;
-        }
-
-        .header-bottom {
-            position: relative;
-            z-index: 2;
-            margin: 10px 0 0 0;
-        }
-
-        .header button,
-        .header h1 {
-            position: relative;
-            z-index: 2;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 22px;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            padding: 0;
-            line-height: 1.2;
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
 
         .back-button {
@@ -474,8 +446,7 @@
             cursor: pointer;
             display: flex;
             align-items: center;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            margin: 0;
+            margin-bottom: 10px;
         }
 
         .days-list {
@@ -591,9 +562,7 @@
         }
 
         .exercise-content {
-            padding: 15px;
-            margin: 0;
-            background: #F5F5F5;
+            padding: 0;
         }
 
         .exercise-progress {
@@ -624,7 +593,8 @@
             background: white;
             border-radius: 10px;
             padding: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 0;
+            border-bottom: 1px solid #eee;
         }
 
         .exercise-description {
@@ -700,137 +670,6 @@
         .exercise-complete h2 {
             color: #4CAF50;
             margin-bottom: 15px;
-        }
-
-        /* Обновим стили для кнопки в карточке упражнения */
-        .exercise-card .primary-button {
-            margin-top: 15px;
-            width: 100%;
-            background: #7C5AF1;
-            color: white;
-            border-radius: 8px;
-            padding: 12px;
-        }
-
-        /* Стили для страницы активного упражнения */
-        #active-exercise-page .exercise-content {
-            padding: 20px;
-        }
-
-        #active-exercise-page .set-counter {
-            margin-top: 20px;
-        }
-
-        /* Обновим стили для страницы */
-        .page {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            background: #F5F5F5;
-            position: relative;
-        }
-
-        /* Обновим стили для контента упражнения */
-        .exercise-content {
-            padding: 15px;
-            margin: 0;
-            background: #F5F5F5;
-        }
-
-        /* Обновим стили для карточек упражнений */
-        .exercise-card {
-            background: white;
-            border-radius: 0;
-            padding: 15px;
-            margin: 0;
-            border-bottom: 1px solid #eee;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        /* Обновим стили для карточек дней */
-        .day-card {
-            padding: 12px 15px;
-        }
-
-        .day-card h3 {
-            font-size: 16px;
-        }
-
-        .day-card p {
-            font-size: 14px;
-            margin: 4px 0 0;
-        }
-
-        /* Обновим стили для карточек упражнений */
-        .exercise-card {
-            padding: 12px 15px;
-        }
-
-        .exercise-card h3 {
-            font-size: 16px;
-        }
-
-        .exercise-card p {
-            font-size: 14px;
-            margin: 4px 0;
-        }
-
-        .exercise-details {
-            margin-top: 8px;
-            padding-top: 8px;
-            font-size: 13px;
-        }
-
-        /* Обновим стили для дней тренировок */
-        .days-list {
-            padding: 0;
-            margin: 0;
-        }
-
-        .day-card {
-            position: relative;
-            padding: 15px;
-            background-size: cover;
-            background-position: center;
-            border: none;
-            margin: 0;
-            cursor: pointer;
-            overflow: hidden;
-            color: white;
-            min-height: 80px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-        }
-
-        .day-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
-            z-index: 1;
-        }
-
-        .day-card h3,
-        .day-card p {
-            position: relative;
-            z-index: 2;
-            margin: 0;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
-
-        .day-card h3 {
-            font-size: 18px;
-            margin-bottom: 4px;
-        }
-
-        .day-card p {
-            font-size: 14px;
-            opacity: 0.9;
         }
     </style>
 </head>
@@ -944,15 +783,8 @@
 
     <div id="active-exercise-page" class="page">
         <div class="header">
-            <div class="header-top">
-                <button class="back-button" onclick="confirmExitExercise()">
-                    <span style="margin-right: 8px;">←</span>
-                    <span>Назад</span>
-                </button>
-            </div>
-            <div class="header-bottom">
-                <h1 id="active-exercise-title"></h1>
-            </div>
+            <button class="back-button" onclick="confirmExitExercise()">← Назад</button>
+            <h1 id="active-exercise-title"></h1>
         </div>
         
         <div class="exercise-content">
@@ -1549,16 +1381,21 @@
             const workout = workoutPrograms[workoutTypeId];
             if (!workout) return;
 
-            // Установим соответствующую картинку для заголовка
-            setHeaderImage(workoutTypeId);
+            // Добавим соответствующий фон для заголовка
+            const headerBackgrounds = {
+                1: "url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48')", // Силовая
+                2: "url('https://images.unsplash.com/photo-1538805060514-97d9cc17730c')", // Кардио
+                3: "url('https://images.unsplash.com/photo-1544367567-0f2fcb009e0b')"  // Растяжка
+            };
+            
+            document.querySelector('#workout-days-page .header').style.backgroundImage = 
+                headerBackgrounds[workoutTypeId];
             
             document.getElementById('workout-type-title').textContent = workout.name;
             
             const container = document.getElementById('workout-days');
             container.innerHTML = Object.entries(workout.days).map(([dayNum, day]) => `
-                <div class="day-card" 
-                     onclick="showDayExercises(${workoutTypeId}, ${dayNum})"
-                     style="background-image: url('${workoutBackgrounds[workoutTypeId][dayNum]}')">
+                <div class="day-card" onclick="showDayExercises(${workoutTypeId}, ${dayNum})">
                     <h3>${day.name}</h3>
                     <p>${day.exercises.length} упражнений</p>
                 </div>
@@ -1571,8 +1408,9 @@
             const workout = workoutPrograms[workoutTypeId];
             const day = workout.days[dayNum];
             
-            // Сохраняем ту же картинку заголовка
-            setHeaderImage(workoutTypeId);
+            // Используем тот же фон для страницы упражнений
+            document.querySelector('#exercises-page .header').style.backgroundImage = 
+                document.querySelector('#workout-days-page .header').style.backgroundImage;
             
             document.getElementById('exercise-day-title').textContent = day.name;
             
@@ -1657,8 +1495,6 @@
                 showPage('workouts-page');
             } else if (currentPage.id === 'exercises-page') {
                 showPage('workout-days-page');
-            } else if (currentPage.id === 'active-exercise-page') {
-                confirmExitExercise();
             }
         }
 
@@ -1749,10 +1585,10 @@
             if (timerInterval) {
                 if (confirm('Вы уверены, что хотите прервать упражнение?')) {
                     clearInterval(timerInterval);
-                    showPage('exercises-page');
+                    goBack();
                 }
             } else {
-                showPage('exercises-page');
+                goBack();
             }
         }
 
@@ -1761,36 +1597,6 @@
             const audio = new Audio('notification.mp3');
             audio.play().catch(e => console.log('Ошибка воспроизведения звука:', e));
         }
-
-        // Добавим функцию для установки фоновой картинки заголовка
-        function setHeaderImage(workoutTypeId) {
-            const headerImages = {
-                1: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48', // Силовые
-                2: 'https://images.unsplash.com/photo-1538805060514-97d9cc17730c', // Кардио
-                3: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b'  // Растяжка
-            };
-            
-            document.documentElement.style.setProperty(
-                '--header-image', 
-                `url('${headerImages[workoutTypeId] || headerImages[1]}')`
-            );
-        }
-
-        // Добавим фоновые изображения для дней тренировок
-        const workoutBackgrounds = {
-            1: { // Силовые
-                1: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e', // Грудь и трицепс
-                2: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3', // Спина и бицепс
-                3: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155'  // Ноги и плечи
-            },
-            2: { // Кардио
-                1: 'https://images.unsplash.com/photo-1538805060514-97d9cc17730c', // Интервальная тренировка
-                2: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8'  // Выносливость
-            },
-            3: { // Растяжка
-                1: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b'  // Общая растяжка
-            }
-        };
     </script>
 </body>
 </html>
