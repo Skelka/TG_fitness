@@ -410,13 +410,13 @@
         }
 
         .header {
-            background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48');
+            background-image: var(--header-image);
             background-size: cover;
             background-position: center;
             position: relative;
             padding: 15px;
             margin: -20px -20px 0 -20px;
-            min-height: 120px;
+            min-height: 140px;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
@@ -442,6 +442,10 @@
         .header h1 {
             margin: 10px 0 0 0;
             font-size: 24px;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            padding: 0 0 10px 0;
+            line-height: 1.2;
         }
 
         .back-button {
@@ -454,6 +458,7 @@
             display: flex;
             align-items: center;
             margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
         .days-list {
@@ -1397,6 +1402,9 @@
             const workout = workoutPrograms[workoutTypeId];
             if (!workout) return;
 
+            // Установим соответствующую картинку для заголовка
+            setHeaderImage(workoutTypeId);
+            
             document.getElementById('workout-type-title').textContent = workout.name;
             
             const container = document.getElementById('workout-days');
@@ -1413,6 +1421,9 @@
         function showDayExercises(workoutTypeId, dayNum) {
             const workout = workoutPrograms[workoutTypeId];
             const day = workout.days[dayNum];
+            
+            // Сохраняем ту же картинку заголовка
+            setHeaderImage(workoutTypeId);
             
             document.getElementById('exercise-day-title').textContent = day.name;
             
@@ -1598,6 +1609,20 @@
             // Можно добавить звук уведомления
             const audio = new Audio('notification.mp3');
             audio.play().catch(e => console.log('Ошибка воспроизведения звука:', e));
+        }
+
+        // Добавим функцию для установки фоновой картинки заголовка
+        function setHeaderImage(workoutTypeId) {
+            const headerImages = {
+                1: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48', // Силовые
+                2: 'https://images.unsplash.com/photo-1538805060514-97d9cc17730c', // Кардио
+                3: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b'  // Растяжка
+            };
+            
+            document.documentElement.style.setProperty(
+                '--header-image', 
+                `url('${headerImages[workoutTypeId] || headerImages[1]}')`
+            );
         }
     </script>
 </body>
