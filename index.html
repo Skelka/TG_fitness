@@ -274,64 +274,33 @@
                 if (user) {
                     document.getElementById('tg-username').textContent = user.username || 'Пользователь';
                     
-                    // Запрашиваем данные с сервера
+                    // Получаем данные с сервера
                     const response = await fetch(`http://localhost:8000/getProfileData?user_id=${user.id}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                     const data = await response.json();
-                    
+                    console.log('Полученные данные:', data);
+
                     if (data.ok && data.result) {
-                        console.log('Получены данные с сервера:', data.result);
-                        updateProfileFields(data.result);
-                        localStorage.setItem('profileData', JSON.stringify(data.result));
-                    } else {
-                        // Если с сервера не получили данные, пробуем взять из localStorage
-                        const savedData = localStorage.getItem('profileData');
-                        if (savedData) {
-                            console.log('Загружены данные из localStorage:', savedData);
-                            updateProfileFields(JSON.parse(savedData));
+                        const profileData = data.result;
+                        // Обновляем поля формы
+                        document.getElementById('age').value = profileData.age || '';
+                        document.getElementById('height').value = profileData.height || '';
+                        document.getElementById('weight').value = profileData.weight || '';
+                        document.getElementById('goal').value = profileData.goal || '';
+                        if (profileData.photo_url) {
+                            document.getElementById('profile-image').src = profileData.photo_url;
                         }
                     }
                 }
             } catch (error) {
-                console.error('Ошибка при загрузке данных профиля:', error);
-                // Пробуем загрузить из localStorage при ошибке
-                const savedData = localStorage.getItem('profileData');
-                if (savedData) {
-                    try {
-                        const data = JSON.parse(savedData);
-                        updateProfileFields(data);
-                    } catch (e) {
-                        console.error('Ошибка при загрузке локальных данных:', e);
-                    }
-                }
+                console.error('Ошибка при загрузке данных:', error);
             }
         }
 
-        // Вызываем загрузку данных при открытии страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            if (tg) {
-                loadProfileData();
-            }
-        });
-
-        // Добавим функцию для обработки входящих данных
-        function handleIncomingData(data) {
-            try {
-                const parsedData = JSON.parse(data);
-                console.log('Получены данные:', parsedData);
-                updateProfileFields(parsedData);
-                localStorage.setItem('profileData', JSON.stringify(parsedData));
-            } catch (e) {
-                console.error('Ошибка при обработке входящих данных:', e);
-            }
-        }
-
-        function updateProfileFields(data) {
-            if (data.age) document.getElementById('age').value = data.age;
-            if (data.height) document.getElementById('height').value = data.height;
-            if (data.weight) document.getElementById('weight').value = data.weight;
-            if (data.goal) document.getElementById('goal').value = data.goal;
-            if (data.photo_url) document.getElementById('profile-image').src = data.photo_url;
-        }
+        // Вызываем загрузку данных при открытии страницы и при переходе на вкладку профиля
+        document.addEventListener('DOMContentLoaded', loadProfileData);
 
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', function(e) {
@@ -342,15 +311,14 @@
                 const pageId = this.getAttribute('data-page');
                 if (pageId) {
                     showPage(pageId);
-                    
                     if (pageId === 'profile-page') {
-                        initProfile();
                         loadProfileData();
                     }
                 }
             });
         });
 
+        // Обновим функцию сохранения
         function saveProfileData() {
             const profileData = {
                 age: document.getElementById('age').value,
@@ -359,14 +327,20 @@
                 goal: document.getElementById('goal').value
             };
             
-            // Сохраняем локально
+            // Сохраняем в localStorage
             localStorage.setItem('profileData', JSON.stringify(profileData));
             
             // Отправляем на сервер
-            tg.sendData(JSON.stringify({
-                type: 'profile_update',
-                data: profileData
-            }));
+            fetch(`http://localhost:8000/getProfileData?user_id=${tg.initDataUnsafe?.user?.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: 'profile_update',
+                    data: profileData
+                })
+            }).catch(error => console.error('Ошибка при сохранении:', error));
         }
 
         // Добавим функцию для отправки данных при закрытии приложения
