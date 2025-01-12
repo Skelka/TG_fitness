@@ -49,6 +49,7 @@
             justify-content: space-around;
             padding: 10px 0;
             border-top: 1px solid #E0E0E0;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .nav-item {
@@ -58,10 +59,14 @@
             color: #666;
             text-decoration: none;
             font-size: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
         }
 
         .nav-item.active {
             color: #7C5AF1;
+            background-color: rgba(124, 90, 241, 0.1);
         }
 
         .nav-item img {
@@ -227,180 +232,201 @@
     </style>
 </head>
 <body>
-    <div id="error-container" style="display: none; padding: 20px; text-align: center; color: #333;">
+    <div id="workouts-page" class="page active">
+        <div class="workout-list">
+            <div class="workout-type">
+                <h3>Всё тело</h3>
+                <p>Общее описание</p>
+            </div>
+            <div class="workout-type">
+                <h3>Выносливость</h3>
+                <p>Общее описание</p>
+            </div>
+            <div class="workout-type">
+                <h3>Похудение</h3>
+                <p>Общее описание</p>
+            </div>
+            <div class="workout-type">
+                <h3>Начинающий</h3>
+                <p>Общее описание</p>
+            </div>
+        </div>
     </div>
-    
-    <div id="app-container">
-        <div class="content">
-            <!-- Страница тренировок -->
-            <div id="workouts-page" class="page active">
-                <div class="workout-list">
-                    <div class="workout-type">
-                        <h3>Всё тело</h3>
-                        <p>Общее описание</p>
-                    </div>
-                    <div class="workout-type">
-                        <h3>Выносливость</h3>
-                        <p>Общее описание</p>
-                    </div>
-                    <div class="workout-type">
-                        <h3>Похудение</h3>
-                        <p>Общее описание</p>
-                    </div>
-                    <div class="workout-type">
-                        <h3>Начинающий</h3>
-                        <p>Общее описание</p>
-                    </div>
+
+    <div id="profile-page" class="page">
+        <div class="profile-section">
+            <div class="profile-header">
+                <div class="profile-photo">
+                    <img id="profile-image" src="images/default-avatar.png" alt="Profile photo">
+                </div>
+                <div class="profile-info">
+                    <h2 class="profile-name" id="tg-username">Загрузка...</h2>
                 </div>
             </div>
-
-            <!-- Страница шаблонов -->
-            <div id="templates-page" class="page">
-                <div class="workout-list">
-                    <!-- содержимое страницы шаблонов -->
-                </div>
+            
+            <div class="profile-field">
+                <label>Возраст</label>
+                <input type="number" id="age" placeholder="Укажите ваш возраст">
             </div>
-
-            <!-- Страница статистики -->
-            <div id="stats-page" class="page">
-                <div class="stats-section">
-                    <div class="stats-header">
-                        <h2>Статистика веса</h2>
-                        <select id="weight-period">
-                            <option value="week">За неделю</option>
-                            <option value="month" selected>За месяц</option>
-                        </select>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="weightChart"></canvas>
-                    </div>
-                    <div class="stats-summary">
-                        <div class="stat-item">
-                            <span class="stat-label">Начальный вес</span>
-                            <span class="stat-value" id="initial-weight">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Текущий вес</span>
-                            <span class="stat-value" id="current-weight">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Изменение</span>
-                            <span class="stat-value" id="weight-change">-</span>
-                        </div>
-                    </div>
-                </div>
+            
+            <div class="profile-field">
+                <label>Рост (см)</label>
+                <input type="number" id="height" placeholder="Укажите ваш рост">
             </div>
-
-            <!-- Страница профиля -->
-            <div id="profile-page" class="page">
-                <form class="profile-section">
-                    <!-- содержимое страницы профиля -->
-                </form>
+            
+            <div class="profile-field">
+                <label>Вес (кг)</label>
+                <input type="number" id="weight" placeholder="Укажите ваш вес">
+            </div>
+            
+            <div class="profile-field">
+                <label>Цель тренировок</label>
+                <select id="goal">
+                    <option value="">Выберите цель</option>
+                    <option value="weight_loss">Похудение</option>
+                    <option value="muscle_gain">Набор мышечной массы</option>
+                    <option value="endurance">Выносливость</option>
+                    <option value="maintenance">Поддержание формы</option>
+                </select>
             </div>
         </div>
+    </div>
 
-        <div class="bottom-nav">
-            <a href="#" class="nav-item active" data-page="workouts-page">
-                <img src="images/dumbbell.png" alt="Workouts">
-                <span>Тренировки</span>
-            </a>
-            <a href="#" class="nav-item" data-page="templates-page">
-                <img src="images/template.png" alt="Templates">
-                <span>Мои шаблоны</span>
-            </a>
-            <a href="#" class="nav-item" data-page="stats-page">
-                <img src="images/stats.png" alt="Statistics">
-                <span>Статистика</span>
-            </a>
-            <a href="#" class="nav-item" data-page="profile-page">
-                <img src="images/profile.png" alt="Profile">
-                <span>Профиль</span>
-            </a>
+    <div id="stats-page" class="page">
+        <div class="stats-section">
+            <div class="stats-header">
+                <h2>Статистика веса</h2>
+                <select id="weight-period">
+                    <option value="week">За неделю</option>
+                    <option value="month">За месяц</option>
+                </select>
+            </div>
+            <div class="chart-container">
+                <canvas id="weightChart"></canvas>
+            </div>
+            <div class="stats-summary">
+                <div class="stat-item">
+                    <span class="stat-label">Начальный вес</span>
+                    <span class="stat-value" id="initial-weight">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Текущий вес</span>
+                    <span class="stat-value" id="current-weight">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Изменение</span>
+                    <span class="stat-value" id="weight-change">-</span>
+                </div>
+            </div>
         </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="#" class="nav-item active" data-page="workouts-page">
+            <img src="images/dumbbell.png" alt="Тренировки">
+            <span>Тренировки</span>
+        </a>
+        <a href="#" class="nav-item" data-page="templates-page">
+            <img src="images/template.png" alt="Мои шаблоны">
+            <span>Мои шаблоны</span>
+        </a>
+        <a href="#" class="nav-item" data-page="stats-page">
+            <img src="images/stats.png" alt="Статистика">
+            <span>Статистика</span>
+        </a>
+        <a href="#" class="nav-item" data-page="profile-page">
+            <img src="images/profile.png" alt="Профиль">
+            <span>Профиль</span>
+        </a>
     </div>
 
     <script>
-        // В начале скрипта добавляем эмуляцию Telegram WebApp для тестирования
-        if (!window.Telegram) {
-            window.Telegram = {
-                WebApp: {
-                    ready: () => {},
-                    expand: () => {},
-                    MainButton: {
-                        hide: () => {},
-                        show: () => {}
-                    },
-                    onEvent: () => {},
-                    sendData: (data) => { console.log('Отправка данных:', data); }
-                }
-            };
-        }
-
         let tg = window.Telegram.WebApp;
-
-        // Функция инициализации приложения
-        function initializeApp() {
-            try {
-                console.log('Инициализация приложения');
-                
-                // Проверяем наличие необходимых элементов
-                const pages = document.querySelectorAll('.page');
-                console.log('Найдено страниц:', pages.length);
-                pages.forEach(page => console.log('Страница:', page.id));
-                
-                const navItems = document.querySelectorAll('.nav-item');
-                console.log('Найдено элементов навигации:', navItems.length);
-                navItems.forEach(item => console.log('Навигация:', item.getAttribute('data-page')));
-                
-                // Настраиваем Telegram WebApp
-                tg.expand();
-                
-                // Загружаем данные из URL
-                const encodedData = new URLSearchParams(window.location.search).get('data');
-                if (encodedData) {
+        if (tg) {
+            tg.expand();
+            
+            // Получаем данные из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedData = urlParams.get('data');
+            
+            if (encodedData) {
+                try {
                     const data = JSON.parse(decodeURIComponent(encodedData));
-                    log('Получены данные из URL');
-                    updateProfileData(data);
+                    log('Получены данные из URL:');
+                    log(JSON.stringify(data, null, 2));
                     
-                    if (data.weight_history) {
-                        log('Обновляем график');
-                        updateWeightChart(data.weight_history);
+                    document.getElementById('tg-username').textContent = data.username || 'Пользователь';
+                    if (data.age) document.getElementById('age').value = data.age;
+                    if (data.height) document.getElementById('height').value = data.height;
+                    if (data.weight) document.getElementById('weight').value = data.weight;
+                    if (data.goal) document.getElementById('goal').value = data.goal;
+                    if (data.photo_url) {
+                        log(`Загружаем фото из URL: ${data.photo_url}`);
+                        const profileImage = document.getElementById('profile-image');
+                        profileImage.src = data.photo_url;
+                        profileImage.onerror = function(e) {
+                            log(`Ошибка загрузки фото: ${e.message}`);
+                            this.src = 'images/default-avatar.png';
+                        };
+                        profileImage.onload = function() {
+                            log('Фото успешно загружено');
+                        };
+                    } else {
+                        log('URL фото отсутствует в данных');
                     }
+                } catch (e) {
+                    console.error('Ошибка при загрузке данных:', e);
+                    log(`Ошибка при обработке данных: ${e.message}`);
                 }
-
-                // Настраиваем навигацию
-                setupNavigation();
-                
-                // Показываем начальную страницу
-                showPage('workouts-page');
-                
-            } catch (error) {
-                console.error('Ошибка при инициализации:', error);
             }
         }
 
-        // Обновление данных профиля
-        function updateProfileData(data) {
-            document.getElementById('tg-username').textContent = data.username || 'Пользователь';
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        async function loadProfileData() {
+            try {
+                const user = tg.initDataUnsafe?.user;
+                if (user) {
+                    document.getElementById('tg-username').textContent = user.username || 'Пользователь';
+                    
+                    // Сначала пробуем загрузить из localStorage
+                    const savedData = localStorage.getItem('profileData');
+                    if (savedData) {
+                        const data = JSON.parse(savedData);
+                        updateProfileFields(data);
+                    }
+                    
+                    // Затем запрашиваем актуальные данные с сервера
+                    tg.sendData(JSON.stringify({
+                        type: 'get_profile_data'
+                    }));
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке данных:', error);
+            }
+        }
+
+        // Обновим функцию обновления полей
+        function updateProfileFields(data) {
             if (data.age) document.getElementById('age').value = data.age;
             if (data.height) document.getElementById('height').value = data.height;
             if (data.weight) document.getElementById('weight').value = data.weight;
             if (data.goal) document.getElementById('goal').value = data.goal;
             if (data.photo_url) {
-                log(`Загружаем фото из URL: ${data.photo_url}`);
                 const profileImage = document.getElementById('profile-image');
                 profileImage.src = data.photo_url;
-                profileImage.onerror = function(e) {
-                    log(`Ошибка загрузки фото: ${e.message}`);
+                profileImage.onerror = function() {
                     this.src = 'images/default-avatar.png';
-                };
-                profileImage.onload = function() {
-                    log('Фото успешно загружено');
                 };
             }
         }
 
-        // Заменим функцию setupNavigation на более простую версию
+        // Вызываем загрузку данных при открытии страницы и при переходе на вкладку профиля
+        document.addEventListener('DOMContentLoaded', loadProfileData);
+
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -410,29 +436,197 @@
                 const pageId = this.getAttribute('data-page');
                 if (pageId) {
                     showPage(pageId);
-                    
                     if (pageId === 'profile-page') {
-                        initProfile();
-                    }
-                    if (pageId === 'stats-page') {
-                        loadWeightStats(document.getElementById('weight-period').value);
+                        loadProfileData();
                     }
                 }
             });
         });
 
-        // Упростим функцию showPage
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
+        // Изменим обработчики полей
+        ['age', 'height', 'weight', 'goal'].forEach(fieldId => {
+            const element = document.getElementById(fieldId);
+            
+            // Сохраняем значение при потере фокуса
+            element.addEventListener('blur', function() {
+                const value = this.value.trim();
+                
+                // Проверяем валидность введенных данных
+                let isValid = true;
+                if (fieldId === 'age') {
+                    isValid = value.length > 0 && parseInt(value) > 0 && parseInt(value) < 120;
+                } else if (fieldId === 'height') {
+                    isValid = value.length > 2 && parseFloat(value) > 50 && parseFloat(value) < 250;
+                } else if (fieldId === 'weight') {
+                    isValid = value.length > 1 && parseFloat(value) > 20 && parseFloat(value) < 300;
+                } else if (fieldId === 'goal') {
+                    isValid = value !== '';
+                }
+
+                // Сохраняем только если данные валидны
+                if (isValid) {
+                    const profileData = {
+                        age: document.getElementById('age').value,
+                        height: document.getElementById('height').value,
+                        weight: document.getElementById('weight').value,
+                        goal: document.getElementById('goal').value
+                    };
+                    
+                    // Сохраняем в localStorage
+                    localStorage.setItem('profileData', JSON.stringify(profileData));
+                }
+            });
+        });
+
+        // Добавим кнопку сохранения
+        document.querySelector('.profile-section').insertAdjacentHTML('beforeend', `
+            <button id="saveProfileBtn" style="
+                width: 100%;
+                padding: 12px;
+                background-color: #7C5AF1;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                margin-top: 20px;
+                cursor: pointer;
+            ">Сохранить изменения</button>
+        `);
+
+        // Обработчик для кнопки сохранения
+        document.getElementById('saveProfileBtn').addEventListener('click', function() {
+            const profileData = {
+                age: document.getElementById('age').value,
+                height: document.getElementById('height').value,
+                weight: document.getElementById('weight').value,
+                goal: document.getElementById('goal').value
+            };
+            
+            // Отправляем данные через WebApp
+            tg.sendData(JSON.stringify({
+                type: 'profile_update',
+                data: profileData
+            }));
+        });
+
+        function initProfile() {
+            if (tg.initDataUnsafe?.user?.photo_url) {
+                document.getElementById('profile-image').src = tg.initDataUnsafe.user.photo_url;
+            }
         }
+
+        document.querySelector('.profile-photo').addEventListener('click', function() {
+            tg.showPopup({
+                title: 'Обновить фото профиля',
+                message: 'Отправьте фото в чат с ботом',
+                buttons: [
+                    {id: 'ok', type: 'ok', text: 'OK'}
+                ]
+            });
+        });
+
+        // Обновим обработчик переключения вкладок
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                const pageId = this.getAttribute('data-page');
+                if (pageId) {
+                    showPage(pageId);
+                    if (pageId === 'profile-page') {
+                        initProfile();
+                        loadProfileData();
+                    }
+                }
+            });
+        });
+
+        // Обновим функцию обработки ответа от бота
+        function handleBotResponse(response) {
+            try {
+                const data = JSON.parse(response);
+                console.log('Получены данные от бота:', data);
+                
+                // Обновляем поля только если есть данные
+                const fields = {
+                    'age': data.age,
+                    'height': data.height,
+                    'weight': data.weight,
+                    'goal': data.goal
+                };
+
+                for (const [field, value] of Object.entries(fields)) {
+                    const element = document.getElementById(field);
+                    if (value !== null && value !== undefined) {
+                        element.value = value;
+                    }
+                }
+
+                if (data.photo_url) {
+                    document.getElementById('profile-image').src = data.photo_url;
+                }
+            } catch (e) {
+                console.error('Ошибка при обработке ответа от бота:', e);
+            }
+        }
+
+        // Добавим обработчик для получения данных от бота
+        if (tg) {
+            tg.onEvent('message', function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'profile_data') {
+                        updateProfileFields(data);
+                        localStorage.setItem('profileData', JSON.stringify(data));
+                    }
+                } catch (e) {
+                    console.error('Ошибка при обработке сообщения:', e);
+                }
+            });
+        }
+
+        // Добавим функцию для первоначальной загрузки данных
+        async function initializeProfileData() {
+            try {
+                const user = tg.initDataUnsafe?.user;
+                if (user) {
+                    const response = await fetch(`http://localhost:8000/getProfileData?user_id=${user.id}`);
+                    const data = await response.json();
+                    if (data.ok) {
+                        updateProfileFields(data.result);
+                        localStorage.setItem('profileData', JSON.stringify(data.result));
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка при инициализации данных профиля:', error);
+                // Пробуем загрузить из localStorage если запрос не удался
+                const savedData = localStorage.getItem('profileData');
+                if (savedData) {
+                    try {
+                        const data = JSON.parse(savedData);
+                        updateProfileFields(data);
+                    } catch (e) {
+                        console.error('Ошибка при загрузке локальных данных:', e);
+                    }
+                }
+            }
+        }
+
+        // Вызываем инициализацию при загрузке страницы
+        if (tg) {
+            initializeProfileData();
+        }
+
+        // Добавим функции для работы с графиком
+        let weightChart = null;
 
         async function loadWeightStats(period = 'month') {
             try {
-                console.log('Запрашиваем историю веса за период:', period);
-                if (tg) {
-                    tg.MainButton.hide();
-                    // Отправляем запрос на получение истории веса
+                const user = tg.initDataUnsafe?.user;
+                if (user) {
+                    // Запрашиваем данные через WebApp
                     tg.sendData(JSON.stringify({
                         type: 'get_weight_history',
                         period: period
@@ -444,16 +638,15 @@
         }
 
         function updateWeightChart(data) {
-            console.log('Обновляем график с данными:', data);
             const ctx = document.getElementById('weightChart').getContext('2d');
             
             // Уничтожаем предыдущий график если он существует
-            if (window.weightChart) {
-                window.weightChart.destroy();
+            if (weightChart) {
+                weightChart.destroy();
             }
             
             // Создаем новый график
-            window.weightChart = new Chart(ctx, {
+            weightChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: data.dates,
@@ -461,8 +654,7 @@
                         label: 'Вес (кг)',
                         data: data.weights,
                         borderColor: '#7C5AF1',
-                        tension: 0.1,
-                        fill: false
+                        tension: 0.1
                     }]
                 },
                 options: {
@@ -475,12 +667,7 @@
                     },
                     scales: {
                         y: {
-                            beginAtZero: false,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + ' кг';
-                                }
-                            }
+                            beginAtZero: false
                         }
                     }
                 }
@@ -500,91 +687,12 @@
             }
         }
 
-        // В начале скрипта добавим функцию для логирования
-        function log(message) {
-            console.log(`[${new Date().toISOString()}] ${message}`);
-        }
-
-        // Добавим обработку инициализации при загрузке страницы
-        document.addEventListener('DOMContentLoaded', () => {
-            if (tg) {
-                tg.expand();
-                
-                // Загружаем данные из URL
-                const encodedData = new URLSearchParams(window.location.search).get('data');
-                if (encodedData) {
-                    const data = JSON.parse(decodeURIComponent(encodedData));
-                    console.log('Получены данные из URL:', data);
-                    
-                    // Обновляем данные профиля
-                    updateProfileData(data);
-                    
-                    // Если есть данные для графика, обновляем его
-                    if (data.weight_history) {
-                        updateWeightChart(data.weight_history);
-                    }
-                }
-            }
+        // Добавляем обработчик изменения периода
+        document.getElementById('weight-period').addEventListener('change', function() {
+            loadWeightStats(this.value);
         });
 
-        // Добавим обработчик для изменения периода в статистике
-        document.getElementById('weight-period')?.addEventListener('change', function(e) {
-            loadWeightStats(e.target.value);
-        });
-
-        // Добавим функции для работы с профилем
-        function initProfile() {
-            const profileData = {
-                type: 'get_profile_data'
-            };
-            if (tg) {
-                tg.sendData(JSON.stringify(profileData));
-            }
-        }
-
-        function saveProfileData() {
-            const profileData = {
-                type: 'profile_update',
-                data: {
-                    age: document.getElementById('age').value,
-                    height: document.getElementById('height').value,
-                    weight: document.getElementById('weight').value,
-                    goal: document.getElementById('goal').value
-                }
-            };
-            
-            if (tg) {
-                tg.sendData(JSON.stringify(profileData));
-            }
-        }
-
-        // Добавим обработчики изменений полей профиля
-        ['age', 'height', 'weight', 'goal'].forEach(fieldId => {
-            document.getElementById(fieldId)?.addEventListener('change', saveProfileData);
-        });
-
-        // Обновим обработчик для фото профиля
-        document.querySelector('.profile-photo')?.addEventListener('click', function() {
-            if (tg) {
-                tg.showPopup({
-                    title: 'Обновить фото профиля',
-                    message: 'Выберите новое фото профиля',
-                    buttons: [
-                        {id: 'choose_photo', type: 'default', text: 'Выбрать фото'},
-                        {id: 'cancel', type: 'cancel', text: 'Отмена'}
-                    ]
-                }, function(buttonId) {
-                    if (buttonId === 'choose_photo') {
-                        tg.openMedia({
-                            type: 'photo',
-                            caption: 'Выберите фото'
-                        });
-                    }
-                });
-            }
-        });
-
-        // Добавим обработчик сообщений от бота
+        // Обновляем обработчик сообщений от бота
         if (tg) {
             tg.onEvent('message', function(event) {
                 try {
@@ -596,6 +704,14 @@
                     console.error('Ошибка при обработке сообщения:', e);
                 }
             });
+        }
+
+        // Загружаем статистику при открытии страницы
+        document.addEventListener('DOMContentLoaded', () => loadWeightStats());
+
+        // В начале скрипта добавим функцию для логирования
+        function log(message) {
+            console.log(`[${new Date().toISOString()}] ${message}`);
         }
     </script>
 </body>
