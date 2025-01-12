@@ -274,17 +274,44 @@
                 if (user) {
                     document.getElementById('tg-username').textContent = user.username || 'Пользователь';
                     
-                    // Получаем сохраненные данные из localStorage
-                    const savedData = localStorage.getItem('profileData');
-                    if (savedData) {
-                        const data = JSON.parse(savedData);
-                        updateProfileFields(data);
+                    // Запрашиваем данные с сервера
+                    const response = await fetch(`http://localhost:8000/getProfileData?user_id=${user.id}`);
+                    const data = await response.json();
+                    
+                    if (data.ok && data.result) {
+                        console.log('Получены данные с сервера:', data.result);
+                        updateProfileFields(data.result);
+                        localStorage.setItem('profileData', JSON.stringify(data.result));
+                    } else {
+                        // Если с сервера не получили данные, пробуем взять из localStorage
+                        const savedData = localStorage.getItem('profileData');
+                        if (savedData) {
+                            console.log('Загружены данные из localStorage:', savedData);
+                            updateProfileFields(JSON.parse(savedData));
+                        }
                     }
                 }
             } catch (error) {
                 console.error('Ошибка при загрузке данных профиля:', error);
+                // Пробуем загрузить из localStorage при ошибке
+                const savedData = localStorage.getItem('profileData');
+                if (savedData) {
+                    try {
+                        const data = JSON.parse(savedData);
+                        updateProfileFields(data);
+                    } catch (e) {
+                        console.error('Ошибка при загрузке локальных данных:', e);
+                    }
+                }
             }
         }
+
+        // Вызываем загрузку данных при открытии страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            if (tg) {
+                loadProfileData();
+            }
+        });
 
         // Добавим функцию для обработки входящих данных
         function handleIncomingData(data) {
@@ -335,12 +362,11 @@
             // Сохраняем локально
             localStorage.setItem('profileData', JSON.stringify(profileData));
             
-            // Показываем уведомление о сохранении
-            tg.showPopup({
-                title: 'Сохранение',
-                message: 'Данные сохранены',
-                buttons: [{type: 'ok'}]
-            });
+            // Отправляем на сервер
+            tg.sendData(JSON.stringify({
+                type: 'profile_update',
+                data: profileData
+            }));
         }
 
         // Добавим функцию для отправки данных при закрытии приложения
@@ -358,8 +384,24 @@
         ['age', 'height', 'weight', 'goal'].forEach(fieldId => {
             const element = document.getElementById(fieldId);
             element.addEventListener('input', function() {
-                // Сохраняем при каждом изменении
-                saveProfileData();
+                const value = this.value.trim();
+                
+                // Проверяем валидность введенных данных
+                let isValid = true;
+                if (fieldId === 'age') {
+                    isValid = value.length > 0 && parseInt(value) > 0 && parseInt(value) < 120;
+                } else if (fieldId === 'height') {
+                    isValid = value.length > 2 && parseFloat(value) > 50 && parseFloat(value) < 250;
+                } else if (fieldId === 'weight') {
+                    isValid = value.length > 1 && parseFloat(value) > 20 && parseFloat(value) < 300;
+                } else if (fieldId === 'goal') {
+                    isValid = value !== '';
+                }
+
+                // Сохраняем только если данные валидны
+                if (isValid) {
+                    saveProfileData();
+                }
             });
         });
 
