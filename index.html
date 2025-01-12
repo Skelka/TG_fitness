@@ -781,6 +781,57 @@
             padding-top: 8px;
             font-size: 13px;
         }
+
+        /* Обновим стили для дней тренировок */
+        .days-list {
+            padding: 0;
+            margin: 0;
+        }
+
+        .day-card {
+            position: relative;
+            padding: 15px;
+            background-size: cover;
+            background-position: center;
+            border: none;
+            margin: 0;
+            cursor: pointer;
+            overflow: hidden;
+            color: white;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .day-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
+            z-index: 1;
+        }
+
+        .day-card h3,
+        .day-card p {
+            position: relative;
+            z-index: 2;
+            margin: 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .day-card h3 {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .day-card p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
@@ -1505,7 +1556,9 @@
             
             const container = document.getElementById('workout-days');
             container.innerHTML = Object.entries(workout.days).map(([dayNum, day]) => `
-                <div class="day-card" onclick="showDayExercises(${workoutTypeId}, ${dayNum})">
+                <div class="day-card" 
+                     onclick="showDayExercises(${workoutTypeId}, ${dayNum})"
+                     style="background-image: url('${workoutBackgrounds[workoutTypeId][dayNum]}')">
                     <h3>${day.name}</h3>
                     <p>${day.exercises.length} упражнений</p>
                 </div>
@@ -1722,6 +1775,22 @@
                 `url('${headerImages[workoutTypeId] || headerImages[1]}')`
             );
         }
+
+        // Добавим фоновые изображения для дней тренировок
+        const workoutBackgrounds = {
+            1: { // Силовые
+                1: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e', // Грудь и трицепс
+                2: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3', // Спина и бицепс
+                3: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155'  // Ноги и плечи
+            },
+            2: { // Кардио
+                1: 'https://images.unsplash.com/photo-1538805060514-97d9cc17730c', // Интервальная тренировка
+                2: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8'  // Выносливость
+            },
+            3: { // Растяжка
+                1: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b'  // Общая растяжка
+            }
+        };
     </script>
 </body>
 </html>
