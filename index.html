@@ -274,24 +274,27 @@
                 if (user) {
                     document.getElementById('tg-username').textContent = user.username || 'Пользователь';
                     
-                    // Отправляем запрос на получение данных
-                    tg.sendData(JSON.stringify({
-                        type: 'get_profile_data'
-                    }));
-
-                    // Добавляем обработчик для получения ответа от бота
-                    tg.onEvent('message', function(message) {
-                        try {
-                            const data = JSON.parse(message.data);
-                            updateProfileFields(data);
-                            localStorage.setItem('profileData', JSON.stringify(data));
-                        } catch (e) {
-                            console.error('Ошибка при обработке данных профиля:', e);
-                        }
-                    });
+                    // Получаем сохраненные данные из localStorage
+                    const savedData = localStorage.getItem('profileData');
+                    if (savedData) {
+                        const data = JSON.parse(savedData);
+                        updateProfileFields(data);
+                    }
                 }
             } catch (error) {
                 console.error('Ошибка при загрузке данных профиля:', error);
+            }
+        }
+
+        // Добавим функцию для обработки входящих данных
+        function handleIncomingData(data) {
+            try {
+                const parsedData = JSON.parse(data);
+                console.log('Получены данные:', parsedData);
+                updateProfileFields(parsedData);
+                localStorage.setItem('profileData', JSON.stringify(parsedData));
+            } catch (e) {
+                console.error('Ошибка при обработке входящих данных:', e);
             }
         }
 
@@ -333,21 +336,18 @@
                 goal: document.getElementById('goal').value
             };
             
-            localStorage.setItem('profileData', JSON.stringify(profileData));
+            console.log('Отправка данных:', profileData);
             
-            // Отправляем данные через WebApp
             tg.sendData(JSON.stringify({
                 type: 'profile_update',
                 data: profileData
             }));
 
-            // Показываем уведомление о сохранении
             tg.MainButton.setParams({
                 text: 'Сохранено!',
                 color: '#31b545'
             });
 
-            // Через 2 секунды возвращаем кнопку в исходное состояние
             setTimeout(() => {
                 tg.MainButton.setParams({
                     text: 'Сохранить изменения',
@@ -373,19 +373,10 @@
         document.querySelector('.profile-photo').addEventListener('click', function() {
             tg.showPopup({
                 title: 'Обновить фото профиля',
-                message: 'Выберите новое фото профиля',
+                message: 'Отправьте фото в чат с ботом',
                 buttons: [
-                    {id: 'choose_photo', type: 'default', text: 'Выбрать фото'},
-                    {id: 'cancel', type: 'cancel', text: 'Отмена'}
+                    {id: 'ok', type: 'ok', text: 'OK'}
                 ]
-            }, function(buttonId) {
-                if (buttonId === 'choose_photo') {
-                    // Используем нативный метод Telegram для выбора фото
-                    tg.showPopup({
-                        title: 'Загрузка фото',
-                        message: 'Пожалуйста, отправьте фото в чат с ботом'
-                    });
-                }
             });
         });
     </script>
