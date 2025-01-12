@@ -379,6 +379,12 @@
                             log('Фото успешно загружено');
                         };
                     }
+
+                    // Обновляем график веса, если есть данные
+                    if (data.weight_history) {
+                        log('Обновляем график с данными из URL');
+                        updateWeightChart(data.weight_history);
+                    }
                 }
 
                 // Настраиваем обработчики событий
@@ -450,12 +456,12 @@
 
         async function loadWeightStats(period = 'month') {
             try {
-                console.log('Запрашиваем историю веса за период:', period);
+                console.log('Запрашиваем обновление страницы с новым периодом:', period);
                 if (tg) {
                     tg.MainButton.hide();
-                    // Отправляем запрос на получение истории веса
+                    // Запрашиваем обновление всего приложения с новым периодом
                     tg.sendData(JSON.stringify({
-                        type: 'get_weight_history',
+                        type: 'refresh_data',
                         period: period
                     }));
                 }
