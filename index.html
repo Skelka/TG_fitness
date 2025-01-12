@@ -573,16 +573,14 @@
         }
 
         .exercise-progress {
-            text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
+            padding: 10px;
         }
 
         .set-counter {
-            display: inline-block;
-            padding: 15px 30px;
+            padding: 10px 20px;
             background: #383838;
-            border-radius: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
         }
 
         .set-counter span {
@@ -591,23 +589,22 @@
         }
 
         .set-counter h2 {
-            margin: 5px 0 0;
-            color: #fff;
-            font-size: 24px;
+            font-size: 20px;
+            margin: 3px 0 0;
         }
 
         .exercise-info {
             background: #2D2D2D;
             border-radius: 10px;
-            padding: 20px;
+            padding: 15px;
             margin-bottom: 0;
             border-bottom: 1px solid #3D3D3D;
         }
 
         .exercise-description {
             color: #fff;
-            font-size: 16px;
-            margin-bottom: 10px;
+            font-size: 14px;
+            margin-bottom: 8px;
         }
 
         .exercise-target {
@@ -616,27 +613,19 @@
         }
 
         .timer-container {
-            text-align: center;
-            margin: 30px 0;
+            margin: 15px 0;
         }
 
         .timer {
-            display: inline-block;
-            padding: 20px;
-            background: #7C5AF1;
-            border-radius: 50%;
-            width: 150px;
-            height: 150px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
+            background: #2D2D2D;
+            border: 2px solid #3D3D3D;
+            width: 120px;
+            height: 120px;
+            padding: 15px;
         }
 
         #timer-value {
-            font-size: 36px;
-            font-weight: bold;
+            font-size: 28px;
         }
 
         .timer-label {
@@ -645,16 +634,15 @@
         }
 
         .exercise-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            padding: 15px;
+            gap: 8px;
         }
 
         .primary-button, .success-button {
-            padding: 15px;
+            padding: 12px;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
         }
@@ -744,7 +732,7 @@
         #workout-days-page .header,
         #exercises-page .header,
         #active-exercise-page .header {
-            min-height: 80px;
+            min-height: 60px;
             padding: 15px;
         }
 
@@ -752,7 +740,7 @@
         #workout-days-page .header h1,
         #exercises-page .header h1,
         #active-exercise-page .header h1 {
-            font-size: 20px;
+            font-size: 16px;
             margin: 0;
         }
 
@@ -770,39 +758,40 @@
         }
 
         .reps-input {
-            margin-top: 15px;
-            padding-top: 15px;
+            margin-top: 10px;
+            padding-top: 10px;
             border-top: 1px solid #3D3D3D;
         }
 
         .reps-input label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             color: #B0B0B0;
+            font-size: 12px;
         }
 
         .reps-input input {
             background: #383838;
             border: 1px solid #3D3D3D;
             color: white;
-            padding: 8px;
+            padding: 6px;
             border-radius: 4px;
-            width: 80px;
-            font-size: 16px;
+            width: 60px;
+            font-size: 14px;
         }
 
         .timer-controls {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 8px;
+            margin-top: 10px;
         }
 
         .timer-controls button {
             background: #383838;
             border: 1px solid #3D3D3D;
             color: white;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 4px;
             cursor: pointer;
         }
@@ -825,6 +814,105 @@
             font-size: 12px;
             color: #666;
             margin-top: 4px;
+        }
+
+        /* Добавим отступ снизу для контента */
+        .exercise-content {
+            padding-bottom: 60px;
+        }
+
+        #active-exercise-page {
+            background: #000;
+            color: #fff;
+        }
+
+        .set-info {
+            text-align: center;
+            padding: 15px;
+            color: rgba(255,255,255,0.8);
+            font-size: 16px;
+        }
+
+        .exercise-description {
+            text-align: center;
+            padding: 15px;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .reps-circle {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 30px auto;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .weight-info {
+            position: absolute;
+            top: 20%;
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .reps-count {
+            font-size: 48px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .reps-label {
+            position: absolute;
+            bottom: 20%;
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .decrease-reps, .increase-reps {
+            position: absolute;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .decrease-reps {
+            left: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .increase-reps {
+            right: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .next-exercise {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .next-exercise span {
+            font-size: 14px;
+        }
+
+        .next-exercise h3 {
+            margin: 5px 0 0;
+            color: #fff;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -943,34 +1031,23 @@
         </div>
         
         <div class="exercise-content">
-            <div class="exercise-progress">
-                <div class="set-counter">
-                    <span>Подход</span>
-                    <h2><span id="current-set">1</span>/<span id="total-sets" contenteditable="true">3</span></h2>
-                    <small>Нажмите для изменения</small>
-                </div>
+            <div class="set-info">
+                <span>Подход <span id="current-set">1</span> из <span id="total-sets">3</span></span>
             </div>
 
-            <div class="exercise-info">
-                <div class="exercise-description" id="active-exercise-description"></div>
-                <div class="exercise-target" id="active-exercise-target"></div>
-                <div class="reps-input">
-                    <label>Количество повторений:</label>
-                    <input type="number" id="reps-count" min="1" value="12">
-                </div>
+            <div class="exercise-description" id="active-exercise-description"></div>
+
+            <div class="reps-circle">
+                <div class="weight-info" id="weight-info">4 кг</div>
+                <div class="reps-count" id="reps-count">12</div>
+                <div class="reps-label">Готово</div>
+                <button class="decrease-reps" onclick="adjustReps(-1)">−</button>
+                <button class="increase-reps" onclick="adjustReps(1)">+</button>
             </div>
 
-            <div class="timer-container">
-                <div class="timer" id="exercise-timer">
-                    <span id="timer-value">00:00</span>
-                    <div class="timer-label" id="timer-label">Отдых</div>
-                </div>
-                <div class="timer-controls">
-                    <button onclick="adjustTimer(-10)">-10с</button>
-                    <button onclick="adjustTimer(-5)">-5с</button>
-                    <button onclick="adjustTimer(5)">+5с</button>
-                    <button onclick="adjustTimer(10)">+10с</button>
-                </div>
+            <div class="next-exercise">
+                <span>Следующее упражнение:</span>
+                <h3 id="next-exercise-name">Подход 2</h3>
             </div>
 
             <div class="exercise-controls">
@@ -1692,8 +1769,7 @@
         }
 
         function completeSet() {
-            const repsCount = document.getElementById('reps-count').value;
-            // Здесь можно сохранить количество повторений
+            const repsCount = document.getElementById('reps-count').textContent;
             
             if (currentSet < parseInt(document.getElementById('total-sets').textContent)) {
                 currentSet++;
@@ -1787,6 +1863,13 @@
             if (navigator.vibrate) {
                 navigator.vibrate([200, 100, 200]); // Вибрация: 200мс вкл, 100мс выкл, 200мс вкл
             }
+        }
+
+        function adjustReps(change) {
+            const repsElement = document.getElementById('reps-count');
+            let currentReps = parseInt(repsElement.textContent);
+            currentReps = Math.max(1, currentReps + change);
+            repsElement.textContent = currentReps;
         }
     </script>
 </body>
