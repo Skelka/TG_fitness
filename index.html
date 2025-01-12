@@ -365,130 +365,69 @@
     </div>
 
     <script>
-        let tg = window.Telegram.WebApp;
-        if (tg) {
-            tg.expand();
-            
-            // Получаем данные из URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const encodedData = urlParams.get('data');
-            
-            if (encodedData) {
-                try {
-                    const data = JSON.parse(decodeURIComponent(encodedData));
-                    log('Получены данные из URL:');
-                    log(JSON.stringify(data, null, 2));
-                    
-                    document.getElementById('tg-username').textContent = data.username || 'Пользователь';
-                    if (data.age) document.getElementById('age').value = data.age;
-                    if (data.height) document.getElementById('height').value = data.height;
-                    if (data.weight) document.getElementById('weight').value = data.weight;
-                    if (data.goal) document.getElementById('goal').value = data.goal;
-                    if (data.photo_url) {
-                        log(`Загружаем фото из URL: ${data.photo_url}`);
-                        const profileImage = document.getElementById('profile-image');
-                        profileImage.src = data.photo_url;
-                        profileImage.onerror = function(e) {
-                            log(`Ошибка загрузки фото: ${e.message}`);
-                            this.src = 'images/default-avatar.png';
-                        };
-                        profileImage.onload = function() {
-                            log('Фото успешно загружено');
-                        };
-                    } else {
-                        log('URL фото отсутствует в данных');
-                    }
-                } catch (e) {
-                    console.error('Ошибка при загрузке данных:', e);
-                    log(`Ошибка при обработке данных: ${e.message}`);
-                }
-            }
-        }
+        const tg = window.Telegram.WebApp;
+        let weightChart = null;
 
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-        }
-
-        async function loadProfileData() {
-            try {
-                const user = tg.initDataUnsafe?.user;
-                if (user) {
-                    document.getElementById('tg-username').textContent = user.username || 'Пользователь';
-                    
-                    // Сначала пробуем загрузить из localStorage
-                    const savedData = localStorage.getItem('profileData');
-                    if (savedData) {
-                        const data = JSON.parse(savedData);
-                        updateProfileFields(data);
-                    }
-                    
-                    // Затем запрашиваем актуальные данные с сервера
-                    tg.sendData(JSON.stringify({
-                        type: 'get_profile_data'
-                    }));
-                }
-            } catch (error) {
-                console.error('Ошибка при загрузке данных:', error);
-            }
-        }
-
-        // Обновим функцию обновления полей
-        function updateProfileFields(data) {
-            if (data.age) document.getElementById('age').value = data.age;
-            if (data.height) document.getElementById('height').value = data.height;
-            if (data.weight) document.getElementById('weight').value = data.weight;
-            if (data.goal) document.getElementById('goal').value = data.goal;
-            if (data.photo_url) {
-                const profileImage = document.getElementById('profile-image');
-                profileImage.src = data.photo_url;
-                profileImage.onerror = function() {
-                    this.src = 'images/default-avatar.png';
-                };
-            }
-        }
-
-        // Вызываем загрузку данных при открытии страницы и при переходе на вкладку профиля
-        document.addEventListener('DOMContentLoaded', loadProfileData);
-
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                this.classList.add('active');
-                
-                const pageId = this.getAttribute('data-page');
-                if (pageId) {
-                    showPage(pageId);
-                    if (pageId === 'profile-page') {
-                        loadProfileData();
-                    }
-                }
-            });
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
         });
 
-        // Изменим обработчики полей
-        ['age', 'height', 'weight', 'goal'].forEach(fieldId => {
-            const element = document.getElementById(fieldId);
+        function initializeApp() {
+            // Настройка навигации
+            setupNavigation();
             
-            // Сохраняем значение при потере фокуса
-            element.addEventListener('blur', function() {
-                const value = this.value.trim();
-                
-                // Проверяем валидность введенных данных
-                let isValid = true;
-                if (fieldId === 'age') {
-                    isValid = value.length > 0 && parseInt(value) > 0 && parseInt(value) < 120;
-                } else if (fieldId === 'height') {
-                    isValid = value.length > 2 && parseFloat(value) > 50 && parseFloat(value) < 250;
-                } else if (fieldId === 'weight') {
-                    isValid = value.length > 1 && parseFloat(value) > 20 && parseFloat(value) < 300;
-                } else if (fieldId === 'goal') {
-                    isValid = value !== '';
-                }
+            // Настройка обработчиков для страницы статистики
+            setupStatsPage();
+            
+            // Настройка обработчиков профиля
+            setupProfilePage();
+            
+            // Показываем начальную страницу
+            showPage('workouts-page');
+        }
 
-                // Сохраняем только если данные валидны
-                if (isValid) {
+        function setupNavigation() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const pageId = this.getAttribute('data-page');
+                    if (pageId) {
+                        // Обновляем активную вкладку
+                        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // Показываем выбранную страницу
+                        showPage(pageId);
+                    }
+                });
+            });
+        }
+
+        function setupStatsPage() {
+            // Обработчик кнопки обновления
+            const refreshButton = document.getElementById('refresh-stats');
+            if (refreshButton) {
+                refreshButton.addEventListener('click', function() {
+                    const period = document.getElementById('weight-period').value;
+                    requestWeightStats(period);
+                });
+            }
+
+            // Обработчик изменения периода
+            const periodSelect = document.getElementById('weight-period');
+            if (periodSelect) {
+                periodSelect.addEventListener('change', function() {
+                    requestWeightStats(this.value);
+                });
+            }
+        }
+
+        function setupProfilePage() {
+            // Обработчик сохранения профиля
+            const saveButton = document.getElementById('saveProfileBtn');
+            if (saveButton) {
+                saveButton.addEventListener('click', function() {
                     const profileData = {
                         age: document.getElementById('age').value,
                         height: document.getElementById('height').value,
@@ -496,143 +435,58 @@
                         goal: document.getElementById('goal').value
                     };
                     
-                    // Сохраняем в localStorage
-                    localStorage.setItem('profileData', JSON.stringify(profileData));
-                }
-            });
-        });
+                    tg.sendData(JSON.stringify({
+                        type: 'profile_update',
+                        data: profileData
+                    }));
+                });
+            }
 
-        // Добавим кнопку сохранения
-        document.querySelector('.profile-section').insertAdjacentHTML('beforeend', `
-            <button id="saveProfileBtn" style="
-                width: 100%;
-                padding: 12px;
-                background-color: #7C5AF1;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                font-size: 16px;
-                margin-top: 20px;
-                cursor: pointer;
-            ">Сохранить изменения</button>
-        `);
-
-        // Обработчик для кнопки сохранения
-        document.getElementById('saveProfileBtn').addEventListener('click', function() {
-            const profileData = {
-                age: document.getElementById('age').value,
-                height: document.getElementById('height').value,
-                weight: document.getElementById('weight').value,
-                goal: document.getElementById('goal').value
-            };
-            
-            // Отправляем данные через WebApp
-            tg.sendData(JSON.stringify({
-                type: 'profile_update',
-                data: profileData
-            }));
-        });
-
-        function initProfile() {
-            if (tg.initDataUnsafe?.user?.photo_url) {
-                document.getElementById('profile-image').src = tg.initDataUnsafe.user.photo_url;
+            // Обработчик клика по фото профиля
+            const profilePhoto = document.querySelector('.profile-photo');
+            if (profilePhoto) {
+                profilePhoto.addEventListener('click', function() {
+                    tg.showPopup({
+                        title: 'Обновить фото профиля',
+                        message: 'Отправьте фото в чат с ботом',
+                        buttons: [{id: 'ok', type: 'ok', text: 'OK'}]
+                    });
+                });
             }
         }
 
-        document.querySelector('.profile-photo').addEventListener('click', function() {
-            tg.showPopup({
-                title: 'Обновить фото профиля',
-                message: 'Отправьте фото в чат с ботом',
-                buttons: [
-                    {id: 'ok', type: 'ok', text: 'OK'}
-                ]
+        function showPage(pageId) {
+            // Скрываем все страницы
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
             });
-        });
-
-        // Обновим обработчик переключения вкладок
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                this.classList.add('active');
+            
+            // Показываем нужную страницу
+            const page = document.getElementById(pageId);
+            if (page) {
+                page.classList.add('active');
                 
-                const pageId = this.getAttribute('data-page');
-                if (pageId) {
-                    showPage(pageId);
-                    if (pageId === 'profile-page') {
-                        initProfile();
-                        loadProfileData();
-                    }
+                // Если открыта страница статистики, загружаем данные
+                if (pageId === 'stats-page') {
+                    requestWeightStats('month');
                 }
-            });
-        });
-
-        // Оставляем только один набор обработчиков
-        document.addEventListener('DOMContentLoaded', function() {
-            // Обработчики для навигации
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    const pageId = this.getAttribute('data-page');
-                    if (pageId) {
-                        showPage(pageId);
-                        if (pageId === 'stats-page') {
-                            loadWeightStats();
-                        }
-                    }
-                });
-            });
-
-            // Обработчик кнопки обновления
-            document.getElementById('refresh-stats').addEventListener('click', function() {
-                const period = document.getElementById('weight-period').value;
-                loadWeightStats(period);
-            });
-
-            // Обработчик изменения периода
-            document.getElementById('weight-period').addEventListener('change', function() {
-                loadWeightStats(this.value);
-            });
-
-            // Единый обработчик сообщений от бота
-            if (tg) {
-                tg.onEvent('message', function(event) {
-                    try {
-                        const data = JSON.parse(event.data);
-                        if (data.type === 'weight_history') {
-                            updateWeightChart(data);
-                        } else if (data.type === 'profile_data') {
-                            updateProfileFields(data);
-                            localStorage.setItem('profileData', JSON.stringify(data));
-                        }
-                    } catch (e) {
-                        console.error('Ошибка при обработке сообщения:', e);
-                    }
-                });
             }
-        });
+        }
 
-        // Добавим функции для работы с графиком
-        let weightChart = null;
-
-        async function loadWeightStats(period = 'month') {
+        function requestWeightStats(period) {
             try {
-                console.log('Загрузка статистики веса...');
                 tg.sendData(JSON.stringify({
                     type: 'get_weight_history',
                     period: period
                 }));
             } catch (error) {
-                console.error('Ошибка при загрузке статистики:', error);
+                console.error('Ошибка при запросе статистики:', error);
             }
         }
 
         function updateWeightChart(data) {
-            console.log('Обновление графика с данными:', data);
-            const ctx = document.getElementById('weightChart').getContext('2d');
+            const ctx = document.getElementById('weightChart')?.getContext('2d');
+            if (!ctx) return;
             
             if (weightChart) {
                 weightChart.destroy();
@@ -667,63 +521,24 @@
 
             // Обновляем сводную информацию
             if (data.weights.length > 0) {
-                document.getElementById('initial-weight').textContent = 
-                    data.weights[0] + ' кг';
-                document.getElementById('current-weight').textContent = 
-                    data.weights[data.weights.length - 1] + ' кг';
-                
-                const change = data.weights[data.weights.length - 1] - data.weights[0];
-                const changeElement = document.getElementById('weight-change');
-                changeElement.textContent = Math.abs(change).toFixed(1) + ' кг';
-                changeElement.style.color = change < 0 ? '#28a745' : '#dc3545';
+                updateWeightSummary(data.weights);
             }
         }
 
-        // В начале скрипта добавим функцию для логирования
-        function log(message) {
-            console.log(`[${new Date().toISOString()}] ${message}`);
+        function updateWeightSummary(weights) {
+            const initialWeight = weights[0];
+            const currentWeight = weights[weights.length - 1];
+            const change = currentWeight - initialWeight;
+
+            document.getElementById('initial-weight').textContent = initialWeight + ' кг';
+            document.getElementById('current-weight').textContent = currentWeight + ' кг';
+            
+            const changeElement = document.getElementById('weight-change');
+            changeElement.textContent = Math.abs(change).toFixed(1) + ' кг';
+            changeElement.style.color = change < 0 ? '#28a745' : '#dc3545';
         }
 
-        // Обработчики для страницы статистики
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                this.classList.add('active');
-                
-                const pageId = this.getAttribute('data-page');
-                if (pageId) {
-                    showPage(pageId);
-                    if (pageId === 'stats-page') {
-                        loadWeightStats();
-                    }
-                }
-            });
-        });
-
-        // Обработчик кнопки обновления
-        document.getElementById('refresh-stats').addEventListener('click', function() {
-            const period = document.getElementById('weight-period').value;
-            loadWeightStats(period);
-        });
-
-        // Обработчик изменения периода
-        document.getElementById('weight-period').addEventListener('change', function() {
-            loadWeightStats(this.value);
-        });
-
-        function loadWeightStats(period = 'month') {
-            try {
-                tg.sendData(JSON.stringify({
-                    type: 'get_weight_history',
-                    period: period
-                }));
-            } catch (error) {
-                console.error('Ошибка при загрузке статистики:', error);
-            }
-        }
-
-        // Обработчик ответа от бота
+        // Обработчик сообщений от бота
         if (tg) {
             tg.onEvent('message', function(event) {
                 try {
