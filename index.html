@@ -59,9 +59,17 @@
             color: #666;
             text-decoration: none;
             font-size: 12px;
-            padding: 8px 12px;
+            padding: 12px 16px;
             border-radius: 8px;
             transition: background-color 0.3s;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .nav-item:active {
+            background-color: rgba(124, 90, 241, 0.2);
         }
 
         .nav-item.active {
@@ -305,22 +313,22 @@
         </div>
 
         <div class="bottom-nav">
-            <a href="#" class="nav-item active" data-page="workouts-page">
+            <div class="nav-item active" data-page="workouts-page">
                 <img src="images/dumbbell.png" alt="Workouts">
                 <span>Тренировки</span>
-            </a>
-            <a href="#" class="nav-item" data-page="templates-page">
+            </div>
+            <div class="nav-item" data-page="templates-page">
                 <img src="images/template.png" alt="Templates">
                 <span>Мои шаблоны</span>
-            </a>
-            <a href="#" class="nav-item" data-page="stats-page">
+            </div>
+            <div class="nav-item" data-page="stats-page">
                 <img src="images/stats.png" alt="Statistics">
                 <span>Статистика</span>
-            </a>
-            <a href="#" class="nav-item" data-page="profile-page">
+            </div>
+            <div class="nav-item" data-page="profile-page">
                 <img src="images/profile.png" alt="Profile">
                 <span>Профиль</span>
-            </a>
+            </div>
         </div>
     </div>
 
@@ -416,20 +424,25 @@
                 const pageId = item.getAttribute('data-page');
                 console.log('Настройка обработчика для:', pageId);
                 
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    console.log('Клик по элементу навигации:', this);
-                    console.log('data-page:', pageId);
-                    
-                    if (pageId) {
-                        showPage(pageId);
+                // Добавляем обработчик и для click, и для touchend
+                ['click', 'touchend'].forEach(eventType => {
+                    item.addEventListener(eventType, function(e) {
+                        e.preventDefault();
+                        e.stopPropagation(); // Останавливаем всплытие события
                         
-                        if (pageId === 'stats-page') {
-                            const period = document.getElementById('weight-period')?.value || 'month';
-                            console.log('Загрузка статистики за период:', period);
-                            loadWeightStats(period);
+                        console.log(`${eventType} по элементу навигации:`, this);
+                        console.log('data-page:', pageId);
+                        
+                        if (pageId) {
+                            showPage(pageId);
+                            
+                            if (pageId === 'stats-page') {
+                                const period = document.getElementById('weight-period')?.value || 'month';
+                                console.log('Загрузка статистики за период:', period);
+                                loadWeightStats(period);
+                            }
                         }
-                    }
+                    }, { passive: false }); // Важно для touchend
                 });
             });
 
@@ -441,8 +454,6 @@
                     console.log('Изменен период:', e.target.value);
                     loadWeightStats(e.target.value);
                 });
-            } else {
-                console.log('Селектор периода не найден');
             }
         }
 
