@@ -436,14 +436,27 @@
         // Добавим функцию для первоначальной загрузки данных
         async function initializeProfileData() {
             try {
-                const response = await fetch(`https://api.telegram.org/bot${TOKEN}/getProfileData?user_id=${tg.initDataUnsafe?.user?.id}`);
-                const data = await response.json();
-                if (data.ok) {
-                    updateProfileFields(data.result);
-                    localStorage.setItem('profileData', JSON.stringify(data.result));
+                const user = tg.initDataUnsafe?.user;
+                if (user) {
+                    const response = await fetch(`http://localhost:8000/getProfileData?user_id=${user.id}`);
+                    const data = await response.json();
+                    if (data.ok) {
+                        updateProfileFields(data.result);
+                        localStorage.setItem('profileData', JSON.stringify(data.result));
+                    }
                 }
             } catch (error) {
                 console.error('Ошибка при инициализации данных профиля:', error);
+                // Пробуем загрузить из localStorage если запрос не удался
+                const savedData = localStorage.getItem('profileData');
+                if (savedData) {
+                    try {
+                        const data = JSON.parse(savedData);
+                        updateProfileFields(data);
+                    } catch (e) {
+                        console.error('Ошибка при загрузке локальных данных:', e);
+                    }
+                }
             }
         }
 
