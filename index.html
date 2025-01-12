@@ -6,7 +6,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            background-color: #1E1E1E;
+            background-color: #F5F5F5;
             color: #fff;
             font-family: Arial, sans-serif;
             margin: 0;
@@ -43,11 +43,12 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background-color: #fff;
+            background-color: #FFFFFF;
             display: flex;
             justify-content: space-around;
             padding: 10px 0;
-            border-top: 1px solid #eee;
+            border-top: 1px solid #E0E0E0;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .nav-item {
@@ -57,16 +58,25 @@
             color: #666;
             text-decoration: none;
             font-size: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
         }
 
         .nav-item.active {
             color: #7C5AF1;
+            background-color: rgba(124, 90, 241, 0.1);
         }
 
         .nav-item img {
             width: 24px;
             height: 24px;
             margin-bottom: 4px;
+            opacity: 0.7;
+        }
+
+        .nav-item.active img {
+            opacity: 1;
         }
 
         /* Стили для списка тренировок */
@@ -78,11 +88,12 @@
         }
 
         .workout-type {
-            background-color: #fff;
+            background-color: #FFFFFF;
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 8px;
             color: #333;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .workout-type h3 {
@@ -228,14 +239,14 @@
 
     <div class="bottom-nav">
         <a href="#" class="nav-item active" data-page="workouts-page">
-            <img src="images/workout.png" alt="Тренировки">
+            <img src="images/dumbbell.png" alt="Тренировки">
             <span>Тренировки</span>
         </a>
         <a href="#" class="nav-item" data-page="templates-page">
-            <img src="images/templates.png" alt="Мои шаблоны">
+            <img src="images/template.png" alt="Мои шаблоны">
             <span>Мои шаблоны</span>
         </a>
-        <a href="#" class="nav-page" data-page="stats-page">
+        <a href="#" class="nav-item" data-page="stats-page">
             <img src="images/stats.png" alt="Статистика">
             <span>Статистика</span>
         </a>
@@ -277,13 +288,27 @@
                     
                     if (pageId === 'profile-page') {
                         initProfile();
-                        tg.sendData(JSON.stringify({
-                            type: 'get_profile_data'
-                        }));
+                        tg.MainButton.setText('Сохранить изменения');
+                        tg.MainButton.show();
+                        loadProfileData();
+                    } else {
+                        tg.MainButton.hide();
                     }
                 }
             });
         });
+
+        function loadProfileData() {
+            const user = tg.initDataUnsafe?.user;
+            if (user) {
+                document.getElementById('tg-username').textContent = user.username || 'Пользователь';
+                const savedData = localStorage.getItem('profileData');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    updateProfileFields(data);
+                }
+            }
+        }
 
         function saveProfileData() {
             const profileData = {
@@ -293,14 +318,22 @@
                 goal: document.getElementById('goal').value
             };
             
+            localStorage.setItem('profileData', JSON.stringify(profileData));
+            
             tg.sendData(JSON.stringify({
                 type: 'profile_update',
                 data: profileData
             }));
+            
+            tg.MainButton.hide();
         }
 
+        tg.MainButton.onClick(saveProfileData);
+
         ['age', 'height', 'weight', 'goal'].forEach(fieldId => {
-            document.getElementById(fieldId).addEventListener('change', saveProfileData);
+            document.getElementById(fieldId).addEventListener('input', function() {
+                tg.MainButton.show();
+            });
         });
 
         function initProfile() {
