@@ -261,6 +261,7 @@
         if (tg) {
             tg.expand();
             document.getElementById('tg-username').textContent = tg.initDataUnsafe?.user?.username || 'Пользователь';
+            loadProfileData();
         }
 
         function showPage(pageId) {
@@ -274,27 +275,30 @@
                 if (user) {
                     document.getElementById('tg-username').textContent = user.username || 'Пользователь';
                     
-                    // Запрашиваем данные через WebApp
+                    // Сначала пробуем загрузить из localStorage
+                    const savedData = localStorage.getItem('profileData');
+                    if (savedData) {
+                        const data = JSON.parse(savedData);
+                        updateProfileFields(data);
+                    }
+                    
+                    // Затем запрашиваем актуальные данные с сервера
                     tg.sendData(JSON.stringify({
                         type: 'get_profile_data'
                     }));
                 }
             } catch (error) {
                 console.error('Ошибка при загрузке данных:', error);
-                // Пробуем загрузить из localStorage
-                const savedData = localStorage.getItem('profileData');
-                if (savedData) {
-                    try {
-                        const data = JSON.parse(savedData);
-                        document.getElementById('age').value = data.age || '';
-                        document.getElementById('height').value = data.height || '';
-                        document.getElementById('weight').value = data.weight || '';
-                        document.getElementById('goal').value = data.goal || '';
-                    } catch (e) {
-                        console.error('Ошибка при загрузке локальных данных:', e);
-                    }
-                }
             }
+        }
+
+        // Обновим функцию обновления полей
+        function updateProfileFields(data) {
+            if (data.age) document.getElementById('age').value = data.age;
+            if (data.height) document.getElementById('height').value = data.height;
+            if (data.weight) document.getElementById('weight').value = data.weight;
+            if (data.goal) document.getElementById('goal').value = data.goal;
+            if (data.photo_url) document.getElementById('profile-image').src = data.photo_url;
         }
 
         // Вызываем загрузку данных при открытии страницы и при переходе на вкладку профиля
@@ -462,14 +466,8 @@
                 try {
                     const data = JSON.parse(event.data);
                     if (data.type === 'profile_data') {
-                        // Обновляем поля формы
-                        document.getElementById('age').value = data.age || '';
-                        document.getElementById('height').value = data.height || '';
-                        document.getElementById('weight').value = data.weight || '';
-                        document.getElementById('goal').value = data.goal || '';
-                        if (data.photo_url) {
-                            document.getElementById('profile-image').src = data.photo_url;
-                        }
+                        updateProfileFields(data);
+                        localStorage.setItem('profileData', JSON.stringify(data));
                     }
                 } catch (e) {
                     console.error('Ошибка при обработке сообщения:', e);
