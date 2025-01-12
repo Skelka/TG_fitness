@@ -352,15 +352,31 @@
             if (encodedData) {
                 try {
                     const data = JSON.parse(decodeURIComponent(encodedData));
-                    // Заполняем поля формы
+                    log('Получены данные из URL:');
+                    log(JSON.stringify(data, null, 2));
+                    
                     document.getElementById('tg-username').textContent = data.username || 'Пользователь';
                     if (data.age) document.getElementById('age').value = data.age;
                     if (data.height) document.getElementById('height').value = data.height;
                     if (data.weight) document.getElementById('weight').value = data.weight;
                     if (data.goal) document.getElementById('goal').value = data.goal;
-                    if (data.photo_url) document.getElementById('profile-image').src = data.photo_url;
+                    if (data.photo_url) {
+                        log(`Загружаем фото из URL: ${data.photo_url}`);
+                        const profileImage = document.getElementById('profile-image');
+                        profileImage.src = data.photo_url;
+                        profileImage.onerror = function(e) {
+                            log(`Ошибка загрузки фото: ${e.message}`);
+                            this.src = 'images/default-avatar.png';
+                        };
+                        profileImage.onload = function() {
+                            log('Фото успешно загружено');
+                        };
+                    } else {
+                        log('URL фото отсутствует в данных');
+                    }
                 } catch (e) {
                     console.error('Ошибка при загрузке данных:', e);
+                    log(`Ошибка при обработке данных: ${e.message}`);
                 }
             }
         }
@@ -692,6 +708,11 @@
 
         // Загружаем статистику при открытии страницы
         document.addEventListener('DOMContentLoaded', () => loadWeightStats());
+
+        // В начале скрипта добавим функцию для логирования
+        function log(message) {
+            console.log(`[${new Date().toISOString()}] ${message}`);
+        }
     </script>
 </body>
 </html>
