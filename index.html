@@ -111,7 +111,7 @@
 
         .page {
             display: none;
-            padding: 20px;
+            padding: 0;
             padding-bottom: 70px;
         }
         
@@ -283,16 +283,17 @@
         }
 
         .exercise-list {
-            padding: 15px;
-            padding-bottom: 70px; /* Отступ для нижней навигации */
+            padding: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         .exercise-card {
-            background: #fff;
-            border-radius: 10px;
+            background: white;
+            border-radius: 0;
             padding: 15px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 0;
+            border-bottom: 1px solid #eee;
         }
 
         .exercise-card h4 {
@@ -355,15 +356,15 @@
         .days-list {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            padding: 15px;
+            padding: 0;
         }
 
         .day-card {
             background: white;
-            border-radius: 10px;
+            border-radius: 0;
             padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 0;
+            border-bottom: 1px solid #eee;
             cursor: pointer;
             transition: transform 0.2s;
         }
@@ -385,16 +386,16 @@
         }
 
         .exercises-list {
+            padding: 0;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            padding: 15px;
         }
 
         .exercise-card {
             background: #fff;
             border-radius: 10px;
-            padding: 20px;
+            padding: 15px;
+            margin-bottom: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
@@ -409,10 +410,38 @@
         }
 
         .header {
-            background: #7C5AF1;
+            background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48');
+            background-size: cover;
+            background-position: center;
+            position: relative;
             padding: 15px;
-            margin: -20px -20px 20px -20px;
-            color: white;
+            margin: -20px -20px 0 -20px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
+            z-index: 1;
+        }
+
+        .header button,
+        .header h1 {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header h1 {
+            margin: 10px 0 0 0;
+            font-size: 24px;
         }
 
         .back-button {
@@ -647,6 +676,16 @@
         .exercise-complete h2 {
             color: #4CAF50;
             margin-bottom: 15px;
+        }
+
+        /* Обновим стили для кнопки в карточке упражнения */
+        .exercise-card .primary-button {
+            margin-top: 15px;
+            width: 100%;
+            background: #7C5AF1;
+            color: white;
+            border-radius: 8px;
+            padding: 12px;
         }
     </style>
 </head>
