@@ -414,12 +414,13 @@
             background-size: cover;
             background-position: center;
             position: relative;
-            padding: 15px;
+            padding: 20px;
             margin: -20px -20px 0 -20px;
             min-height: 140px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            overflow: hidden;
         }
 
         .header::before {
@@ -429,18 +430,20 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.7));
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
             z-index: 1;
         }
 
         .header-top {
             position: relative;
             z-index: 2;
+            margin: 0 0 auto 0;
         }
 
         .header-bottom {
             position: relative;
             z-index: 2;
+            margin: auto 0 0 0;
         }
 
         .header button,
@@ -451,23 +454,28 @@
 
         .header h1 {
             margin: 0;
-            font-size: 24px;
+            font-size: 28px;
             color: white;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             padding: 0;
             line-height: 1.2;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .back-button {
             background: none;
             border: none;
             color: white;
-            font-size: 16px;
+            font-size: 18px;
             padding: 0;
             cursor: pointer;
             display: flex;
             align-items: center;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            margin: 0;
         }
 
         .days-list {
@@ -583,7 +591,9 @@
         }
 
         .exercise-content {
-            padding: 20px;
+            padding: 15px;
+            margin: 0;
+            background: #F5F5F5;
         }
 
         .exercise-progress {
@@ -710,6 +720,33 @@
         #active-exercise-page .set-counter {
             margin-top: 20px;
         }
+
+        /* Обновим стили для страницы */
+        .page {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: #F5F5F5;
+            position: relative;
+        }
+
+        /* Обновим стили для контента упражнения */
+        .exercise-content {
+            padding: 15px;
+            margin: 0;
+            background: #F5F5F5;
+        }
+
+        /* Обновим стили для карточек упражнений */
+        .exercise-card {
+            background: white;
+            border-radius: 0;
+            padding: 15px;
+            margin: 0;
+            border-bottom: 1px solid #eee;
+            width: 100%;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
@@ -823,7 +860,10 @@
     <div id="active-exercise-page" class="page">
         <div class="header">
             <div class="header-top">
-                <button class="back-button" onclick="confirmExitExercise()">← Назад</button>
+                <button class="back-button" onclick="confirmExitExercise()">
+                    <span style="margin-right: 8px;">←</span>
+                    <span>Назад</span>
+                </button>
             </div>
             <div class="header-bottom">
                 <h1 id="active-exercise-title"></h1>
