@@ -356,23 +356,21 @@
         }
 
         .days-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding: 15px;
+            padding: 0;
+            margin: 0;
+            background-color: white;
         }
 
         .day-card {
             background: white;
-            border-radius: 10px;
+            border-bottom: 1px solid #eee;
+            margin: 0;
             padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             cursor: pointer;
-            transition: transform 0.2s;
         }
 
         .day-card:active {
-            transform: scale(0.98);
+            background-color: #f5f5f5;
         }
 
         .day-card h3 {
@@ -385,6 +383,8 @@
         .day-card p {
             margin: 8px 0 0;
             color: #666;
+            font-size: 14px;
+            opacity: 0.8;
         }
 
         .exercises-list {
@@ -708,6 +708,14 @@
 
         /* Добавим разделитель между группами упражнений */
         .exercises-list::after {
+            content: '';
+            height: 8px;
+            background-color: #1E1E1E;
+            display: block;
+        }
+
+        /* Добавим разделитель между группами дней */
+        .days-list::after {
             content: '';
             height: 8px;
             background-color: #1E1E1E;
