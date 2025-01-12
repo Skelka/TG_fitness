@@ -624,9 +624,10 @@
 
         async function loadWeightStats(period = 'month') {
             try {
-                const user = tg.initDataUnsafe?.user;
-                if (user) {
-                    // Запрашиваем данные через WebApp
+                console.log('Запрашиваем историю веса за период:', period);
+                if (tg) {
+                    tg.MainButton.hide();
+                    // Отправляем запрос на получение истории веса
                     tg.sendData(JSON.stringify({
                         type: 'get_weight_history',
                         period: period
@@ -638,15 +639,16 @@
         }
 
         function updateWeightChart(data) {
+            console.log('Обновляем график с данными:', data);
             const ctx = document.getElementById('weightChart').getContext('2d');
             
             // Уничтожаем предыдущий график если он существует
-            if (weightChart) {
-                weightChart.destroy();
+            if (window.weightChart) {
+                window.weightChart.destroy();
             }
             
             // Создаем новый график
-            weightChart = new Chart(ctx, {
+            window.weightChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: data.dates,
@@ -654,7 +656,8 @@
                         label: 'Вес (кг)',
                         data: data.weights,
                         borderColor: '#7C5AF1',
-                        tension: 0.1
+                        tension: 0.1,
+                        fill: false
                     }]
                 },
                 options: {
@@ -667,7 +670,12 @@
                     },
                     scales: {
                         y: {
-                            beginAtZero: false
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' кг';
+                                }
+                            }
                         }
                     }
                 }
@@ -696,8 +704,10 @@
         if (tg) {
             tg.onEvent('message', function(event) {
                 try {
+                    console.log('Получено сообщение от бота:', event.data);
                     const data = JSON.parse(event.data);
                     if (data.type === 'weight_history') {
+                        console.log('Получены данные для графика:', data);
                         updateWeightChart(data);
                     }
                 } catch (e) {
@@ -706,8 +716,17 @@
             });
         }
 
-        // Загружаем статистику при открытии страницы
-        document.addEventListener('DOMContentLoaded', () => loadWeightStats());
+        // Загружаем статистику при открытии страницы статистики
+        document.addEventListener('DOMContentLoaded', () => {
+            const statsTab = document.getElementById('stats-tab');
+            if (statsTab) {
+                statsTab.addEventListener('click', () => {
+                    loadWeightStats(document.getElementById('weight-period').value);
+                });
+            }
+            // Также загружаем при первом открытии
+            loadWeightStats();
+        });
 
         // В начале скрипта добавим функцию для логирования
         function log(message) {
