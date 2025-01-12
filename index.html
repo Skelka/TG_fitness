@@ -281,6 +281,19 @@
                 }
             } catch (error) {
                 console.error('Ошибка при загрузке данных:', error);
+                // Пробуем загрузить из localStorage
+                const savedData = localStorage.getItem('profileData');
+                if (savedData) {
+                    try {
+                        const data = JSON.parse(savedData);
+                        document.getElementById('age').value = data.age || '';
+                        document.getElementById('height').value = data.height || '';
+                        document.getElementById('weight').value = data.weight || '';
+                        document.getElementById('goal').value = data.goal || '';
+                    } catch (e) {
+                        console.error('Ошибка при загрузке локальных данных:', e);
+                    }
+                }
             }
         }
 
@@ -303,40 +316,12 @@
             });
         });
 
-        // Обновим функцию сохранения
-        function saveProfileData() {
-            const profileData = {
-                age: document.getElementById('age').value,
-                height: document.getElementById('height').value,
-                weight: document.getElementById('weight').value,
-                goal: document.getElementById('goal').value
-            };
-            
-            // Сохраняем в localStorage
-            localStorage.setItem('profileData', JSON.stringify(profileData));
-            
-            // Отправляем данные через WebApp
-            tg.sendData(JSON.stringify({
-                type: 'profile_update',
-                data: profileData
-            }));
-        }
-
-        // Добавим функцию для отправки данных при закрытии приложения
-        window.addEventListener('beforeunload', function() {
-            const profileData = localStorage.getItem('profileData');
-            if (profileData) {
-                tg.sendData(JSON.stringify({
-                    type: 'profile_update',
-                    data: JSON.parse(profileData)
-                }));
-            }
-        });
-
         // Изменим обработчики полей
         ['age', 'height', 'weight', 'goal'].forEach(fieldId => {
             const element = document.getElementById(fieldId);
-            element.addEventListener('input', function() {
+            
+            // Сохраняем значение при потере фокуса
+            element.addEventListener('blur', function() {
                 const value = this.value.trim();
                 
                 // Проверяем валидность введенных данных
@@ -353,9 +338,48 @@
 
                 // Сохраняем только если данные валидны
                 if (isValid) {
-                    saveProfileData();
+                    const profileData = {
+                        age: document.getElementById('age').value,
+                        height: document.getElementById('height').value,
+                        weight: document.getElementById('weight').value,
+                        goal: document.getElementById('goal').value
+                    };
+                    
+                    // Сохраняем в localStorage
+                    localStorage.setItem('profileData', JSON.stringify(profileData));
                 }
             });
+        });
+
+        // Добавим кнопку сохранения
+        document.querySelector('.profile-section').insertAdjacentHTML('beforeend', `
+            <button id="saveProfileBtn" style="
+                width: 100%;
+                padding: 12px;
+                background-color: #7C5AF1;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                margin-top: 20px;
+                cursor: pointer;
+            ">Сохранить изменения</button>
+        `);
+
+        // Обработчик для кнопки сохранения
+        document.getElementById('saveProfileBtn').addEventListener('click', function() {
+            const profileData = {
+                age: document.getElementById('age').value,
+                height: document.getElementById('height').value,
+                weight: document.getElementById('weight').value,
+                goal: document.getElementById('goal').value
+            };
+            
+            // Отправляем данные через WebApp
+            tg.sendData(JSON.stringify({
+                type: 'profile_update',
+                data: profileData
+            }));
         });
 
         function initProfile() {
