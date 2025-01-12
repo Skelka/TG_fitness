@@ -322,11 +322,10 @@
                     
                     if (pageId === 'profile-page') {
                         initProfile();
-                        loadProfileData(); // Загружаем данные при открытии профиля
-                        tg.MainButton.setText('Сохранить изменения');
-                        tg.MainButton.show();
-                    } else {
-                        tg.MainButton.hide();
+                        // Запрашиваем данные при открытии профиля
+                        tg.sendData(JSON.stringify({
+                            type: 'get_profile_data'
+                        }));
                     }
                 }
             });
@@ -346,26 +345,11 @@
                 type: 'profile_update',
                 data: profileData
             }));
-
-            tg.MainButton.setParams({
-                text: 'Сохранено!',
-                color: '#31b545'
-            });
-
-            setTimeout(() => {
-                tg.MainButton.setParams({
-                    text: 'Сохранить изменения',
-                    color: '#2481cc'
-                });
-            }, 2000);
         }
 
-        tg.MainButton.onClick(saveProfileData);
-
+        // Изменим обработчики полей ввода для автосохранения
         ['age', 'height', 'weight', 'goal'].forEach(fieldId => {
-            document.getElementById(fieldId).addEventListener('input', function() {
-                tg.MainButton.show();
-            });
+            document.getElementById(fieldId).addEventListener('change', saveProfileData);
         });
 
         function initProfile() {
@@ -384,16 +368,52 @@
             });
         });
 
-        // Добавим функцию для обработки ответа от бота
+        // Обновим обработчик переключения вкладок
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                const pageId = this.getAttribute('data-page');
+                if (pageId) {
+                    showPage(pageId);
+                    
+                    if (pageId === 'profile-page') {
+                        initProfile();
+                        // Запрашиваем данные при открытии профиля
+                        tg.sendData(JSON.stringify({
+                            type: 'get_profile_data'
+                        }));
+                    }
+                }
+            });
+        });
+
+        // Обновим функцию обработки ответа от бота
         function handleBotResponse(response) {
             try {
                 const data = JSON.parse(response);
                 console.log('Получены данные от бота:', data);
-                if (data.age) document.getElementById('age').value = data.age;
-                if (data.height) document.getElementById('height').value = data.height;
-                if (data.weight) document.getElementById('weight').value = data.weight;
-                if (data.goal) document.getElementById('goal').value = data.goal;
-                if (data.photo_url) document.getElementById('profile-image').src = data.photo_url;
+                
+                // Обновляем поля только если есть данные
+                const fields = {
+                    'age': data.age,
+                    'height': data.height,
+                    'weight': data.weight,
+                    'goal': data.goal
+                };
+
+                for (const [field, value] of Object.entries(fields)) {
+                    const element = document.getElementById(field);
+                    if (value !== null && value !== undefined) {
+                        element.value = value;
+                    }
+                }
+
+                if (data.photo_url) {
+                    document.getElementById('profile-image').src = data.photo_url;
+                }
             } catch (e) {
                 console.error('Ошибка при обработке ответа от бота:', e);
             }
