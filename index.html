@@ -274,12 +274,16 @@
                 if (user) {
                     document.getElementById('tg-username').textContent = user.username || 'Пользователь';
                     
-                    // Получаем сохраненные данные из localStorage
-                    const savedData = localStorage.getItem('profileData');
-                    if (savedData) {
-                        const data = JSON.parse(savedData);
-                        updateProfileFields(data);
-                    }
+                    // Отправляем запрос на получение данных
+                    tg.sendData(JSON.stringify({
+                        type: 'profile_update',
+                        data: {
+                            age: document.getElementById('age').value || null,
+                            height: document.getElementById('height').value || null,
+                            weight: document.getElementById('weight').value || null,
+                            goal: document.getElementById('goal').value || null
+                        }
+                    }));
                 }
             } catch (error) {
                 console.error('Ошибка при загрузке данных профиля:', error);
@@ -318,9 +322,9 @@
                     
                     if (pageId === 'profile-page') {
                         initProfile();
+                        loadProfileData(); // Загружаем данные при открытии профиля
                         tg.MainButton.setText('Сохранить изменения');
                         tg.MainButton.show();
-                        loadProfileData();
                     } else {
                         tg.MainButton.hide();
                     }
@@ -379,6 +383,28 @@
                 ]
             });
         });
+
+        // Добавим функцию для обработки ответа от бота
+        function handleBotResponse(response) {
+            try {
+                const data = JSON.parse(response);
+                console.log('Получены данные от бота:', data);
+                if (data.age) document.getElementById('age').value = data.age;
+                if (data.height) document.getElementById('height').value = data.height;
+                if (data.weight) document.getElementById('weight').value = data.weight;
+                if (data.goal) document.getElementById('goal').value = data.goal;
+                if (data.photo_url) document.getElementById('profile-image').src = data.photo_url;
+            } catch (e) {
+                console.error('Ошибка при обработке ответа от бота:', e);
+            }
+        }
+
+        // Добавим обработчик для получения данных от бота
+        if (tg) {
+            tg.onEvent('message', function(event) {
+                handleBotResponse(event.data);
+            });
+        }
     </script>
 </body>
 </html>
