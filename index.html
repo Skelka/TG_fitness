@@ -110,12 +110,15 @@
         }
 
         .page {
+            transition: opacity 0.3s, transform 0.3s;
+            opacity: 0;
+            transform: translateY(20px);
             display: none;
-            padding: 0;
-            padding-bottom: 70px;
         }
         
         .page.active {
+            opacity: 1;
+            transform: translateY(0);
             display: block;
         }
         
@@ -975,6 +978,398 @@
             z-index: 1;
             padding: 20px;
         }
+
+        .profile-container {
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-photo {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin-right: 20px;
+        }
+
+        .profile-photo img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .change-photo-btn {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #7C5AF1;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .profile-section {
+            background: #2D2D2D;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #B0B0B0;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #3D3D3D;
+            border-radius: 5px;
+            background: #1E1E1E;
+            color: white;
+        }
+
+        .level-buttons, .goals-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        .level-btn, .goal-btn {
+            padding: 10px;
+            border: 1px solid #7C5AF1;
+            border-radius: 5px;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+        }
+
+        .level-btn.active, .goal-btn.active {
+            background: #7C5AF1;
+        }
+
+        .restrictions-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .restrictions-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #B0B0B0;
+        }
+
+        .save-profile-btn {
+            width: 100%;
+            padding: 15px;
+            background: #7C5AF1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .stats-container {
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #2D2D2D;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #7C5AF1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #B0B0B0;
+            margin-top: 5px;
+        }
+
+        .weight-progress, .favorite-exercises, .recommendations {
+            background: #2D2D2D;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .weight-progress h3, .favorite-exercises h3, .recommendations h3 {
+            margin: 0 0 15px 0;
+            color: #fff;
+        }
+
+        #favorite-exercises-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .exercise-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #1E1E1E;
+            border-radius: 5px;
+        }
+
+        .recommendation-item {
+            background: #1E1E1E;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .recommendation-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .recommendation-exercises {
+            color: #B0B0B0;
+            font-size: 14px;
+        }
+
+        .recommendation-item {
+            background: #1E1E1E;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .recommendation-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .recommendation-item.workout {
+            border-left: 3px solid #7C5AF1;
+        }
+
+        .recommendation-item.tip {
+            border-left: 3px solid #4CAF50;
+        }
+
+        .recommendation-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .start-workout-btn {
+            background: #7C5AF1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .start-workout-btn:hover {
+            background: #6A4CD3;
+        }
+
+        /* Стили для детальной информации о тренировке */
+        .workout-details {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .workout-details.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .workout-details-content {
+            background: #2D2D2D;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            position: relative;
+            transform: translateY(50px);
+            transition: transform 0.3s;
+        }
+
+        .workout-details.active .workout-details-content {
+            transform: translateY(0);
+        }
+
+        .close-details {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .workout-info {
+            margin: 20px 0;
+        }
+
+        .workout-info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #1E1E1E;
+            border-radius: 5px;
+        }
+
+        .workout-info-label {
+            color: #B0B0B0;
+        }
+
+        .workout-info-value {
+            color: #7C5AF1;
+            font-weight: bold;
+        }
+
+        /* Анимации для кнопок */
+        .start-workout-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .start-workout-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .start-workout-btn:active::after {
+            width: 200px;
+            height: 200px;
+            opacity: 0;
+        }
+
+        /* Анимации для карточек упражнений */
+        .workout-info-item {
+            transform: translateX(0);
+            transition: transform 0.3s, background-color 0.3s;
+        }
+
+        .workout-info-item:hover {
+            transform: translateX(5px);
+            background-color: #252525;
+        }
+
+        /* Анимация для модального окна */
+        @keyframes slideIn {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .workout-details-content {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Анимация для закрытия */
+        .close-details {
+            transition: transform 0.3s;
+        }
+
+        .close-details:hover {
+            transform: rotate(90deg);
+        }
+
+        /* Пульсация для активных элементов */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .recommendation-item.active {
+            animation: pulse 1s infinite;
+        }
+
+        /* Интерактивные состояния для упражнений */
+        .workout-exercises .workout-info-item {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .workout-exercises .workout-info-item::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            width: 0;
+            height: 2px;
+            background: #7C5AF1;
+            transform: translateY(-50%);
+            transition: width 0.3s;
+        }
+
+        .workout-exercises .workout-info-item:hover::before {
+            width: 15px;
+        }
     </style>
 </head>
 <body>
@@ -1009,70 +1404,115 @@
         <div id="workout-days" class="days-list"></div>
     </div>
 
-    <div id="profile-page" class="page">
-        <div class="profile-section">
+    <div id="profile-page" class="page" style="display: none;">
+        <div class="profile-container">
             <div class="profile-header">
                 <div class="profile-photo">
-                    <img id="profile-image" src="images/default-avatar.png" alt="Profile photo">
+                    <img src="images/default-avatar.png" alt="Фото профиля" id="profile-photo">
+                    <button class="change-photo-btn" onclick="requestProfilePhoto()">
+                        Изменить фото
+                    </button>
                 </div>
                 <div class="profile-info">
-                    <h2 class="profile-name" id="tg-username">Загрузка...</h2>
+                    <h2 id="profile-name">Ваш профиль</h2>
                 </div>
             </div>
             
-            <div class="profile-field">
-                <label>Возраст</label>
-                <input type="number" id="age" placeholder="Укажите ваш возраст">
+            <div class="profile-sections">
+                <div class="profile-section">
+                    <h3>Основная информация</h3>
+                    <div class="form-group">
+                        <label>Возраст</label>
+                        <input type="number" id="age" placeholder="Лет">
+                    </div>
+                    <div class="form-group">
+                        <label>Рост</label>
+                        <input type="number" id="height" placeholder="см">
+                    </div>
+                    <div class="form-group">
+                        <label>Вес</label>
+                        <input type="number" id="weight" placeholder="кг">
+                    </div>
+                </div>
+                
+                <div class="profile-section">
+                    <h3>Уровень подготовки</h3>
+                    <div class="level-buttons">
+                        <button class="level-btn" data-level="beginner">Новичок</button>
+                        <button class="level-btn" data-level="intermediate">Средний</button>
+                        <button class="level-btn" data-level="advanced">Продвинутый</button>
+                    </div>
+                </div>
+                
+                <div class="profile-section">
+                    <h3>Цели тренировок</h3>
+                    <div class="goals-buttons">
+                        <button class="goal-btn" data-goal="strength">Набор мышечной массы</button>
+                        <button class="goal-btn" data-goal="weight-loss">Снижение веса</button>
+                        <button class="goal-btn" data-goal="endurance">Выносливость</button>
+                        <button class="goal-btn" data-goal="flexibility">Гибкость</button>
+                    </div>
+                </div>
+                
+                <div class="profile-section">
+                    <h3>Ограничения</h3>
+                    <div class="restrictions-group">
+                        <label>
+                            <input type="checkbox" value="back">
+                            Проблемы со спиной
+                        </label>
+                        <label>
+                            <input type="checkbox" value="knees">
+                            Проблемы с коленями
+                        </label>
+                        <label>
+                            <input type="checkbox" value="shoulders">
+                            Проблемы с плечами
+                        </label>
+                    </div>
+                </div>
             </div>
             
-            <div class="profile-field">
-                <label>Рост (см)</label>
-                <input type="number" id="height" placeholder="Укажите ваш рост">
-            </div>
-            
-            <div class="profile-field">
-                <label>Вес (кг)</label>
-                <input type="number" id="weight" placeholder="Укажите ваш вес">
-            </div>
-            
-            <div class="profile-field">
-                <label>Цель тренировок</label>
-                <select id="goal">
-                    <option value="">Выберите цель</option>
-                    <option value="weight_loss">Похудение</option>
-                    <option value="muscle_gain">Набор мышечной массы</option>
-                    <option value="endurance">Выносливость</option>
-                    <option value="maintenance">Поддержание формы</option>
-                </select>
-            </div>
+            <button class="save-profile-btn" onclick="saveProfile()">
+                Сохранить изменения
+            </button>
         </div>
     </div>
 
-    <div id="stats-page" class="page">
-        <div class="stats-section">
-            <div class="stats-header">
-                <h2>Статистика веса</h2>
-                <select id="weight-period">
-                    <option value="week">За неделю</option>
-                    <option value="month">За месяц</option>
-                </select>
+    <div id="stats-page" class="page" style="display: none;">
+        <div class="stats-container">
+            <!-- Общая статистика -->
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-workouts">0</div>
+                    <div class="stat-label">Тренировок</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avg-duration">0</div>
+                    <div class="stat-label">Минут в среднем</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="week-streak">0</div>
+                    <div class="stat-label">Недель подряд</div>
+                </div>
             </div>
-            <div class="chart-container">
+
+            <!-- График прогресса веса -->
+            <div class="weight-progress">
+                <h3>Прогресс веса</h3>
                 <canvas id="weightChart"></canvas>
             </div>
-            <div class="stats-summary">
-                <div class="stat-item">
-                    <span class="stat-label">Начальный вес</span>
-                    <span class="stat-value" id="initial-weight">-</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Текущий вес</span>
-                    <span class="stat-value" id="current-weight">-</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Изменение</span>
-                    <span class="stat-value" id="weight-change">-</span>
-                </div>
+
+            <!-- Любимые упражнения -->
+            <div class="favorite-exercises">
+                <h3>Любимые упражнения</h3>
+                <div id="favorite-exercises-list"></div>
+            </div>
+
+            <!-- Персональные рекомендации -->
+            <div class="recommendations">
+                <h3>Рекомендации</h3>
+                <div id="recommendations-list"></div>
             </div>
         </div>
     </div>
@@ -1121,22 +1561,36 @@
     </div>
 
     <div class="bottom-nav">
-        <a href="#" class="nav-item active" data-page="workouts-page">
-            <img src="images/dumbbell.png" alt="Тренировки">
+        <div class="nav-item" onclick="showPage('workouts-page')">
+            <img src="images/workout.png" alt="Тренировки">
             <span>Тренировки</span>
-        </a>
-        <a href="#" class="nav-item" data-page="templates-page">
-            <img src="images/template.png" alt="Мои шаблоны">
-            <span>Мои шаблоны</span>
-        </a>
-        <a href="#" class="nav-item" data-page="stats-page">
+        </div>
+        <div class="nav-item" onclick="showPage('programs-page')">
+            <img src="images/program.png" alt="Программы">
+            <span>Программы</span>
+        </div>
+        <div class="nav-item" onclick="showPage('stats-page')">
             <img src="images/stats.png" alt="Статистика">
             <span>Статистика</span>
-        </a>
-        <a href="#" class="nav-item" data-page="profile-page">
+        </div>
+        <div class="nav-item" onclick="showPage('profile-page')">
             <img src="images/profile.png" alt="Профиль">
             <span>Профиль</span>
-        </a>
+        </div>
+    </div>
+
+    <!-- Страница программ -->
+    <div id="programs-page" class="page" style="display: none;">
+        <div class="programs-container">
+            <div class="program-filters">
+                <button onclick="filterPrograms('strength')">Сила</button>
+                <button onclick="filterPrograms('cardio')">Кардио</button>
+                <button onclick="filterPrograms('flexibility')">Гибкость</button>
+            </div>
+            <div class="program-list">
+                <!-- Программы будут добавляться динамически -->
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1180,10 +1634,16 @@
             }
         }
 
+        // Обновляем функцию переключения страниц
         function showPage(pageId) {
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(page => page.style.display = 'none');
-            document.getElementById(pageId).style.display = 'block';
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            const page = document.getElementById(pageId);
+            setTimeout(() => {
+                page.classList.add('active');
+            }, 50);
         }
 
         async function loadProfileData() {
@@ -1747,9 +2207,14 @@
 
         // Функция для переключения между страницами
         function showPage(pageId) {
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(page => page.style.display = 'none');
-            document.getElementById(pageId).style.display = 'block';
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            const page = document.getElementById(pageId);
+            setTimeout(() => {
+                page.classList.add('active');
+            }, 50);
         }
 
         // Обновим функции навигации
@@ -2269,6 +2734,352 @@
             'Растяжка задней поверхности бедра': 'https://thumbs.gfycat.com/DentalShrillAcornweevil-max-1mb.gif',
             'Бабочка': 'https://thumbs.gfycat.com/UniformFarflungBernesemountaindog-max-1mb.gif'
         };
+
+        // Объект для хранения данных пользователя
+        let userProfile = {
+            personalInfo: {
+                age: null,
+                height: null,
+                weight: null,
+                fitnessLevel: null,
+                photo: null
+            },
+            goals: [],
+            restrictions: []
+        };
+
+        // Инициализация профиля при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            initProfile();
+            
+            // Получаем имя пользователя из Telegram
+            if (window.Telegram.WebApp) {
+                const user = window.Telegram.WebApp.initDataUnsafe.user;
+                if (user) {
+                    document.getElementById('profile-name').textContent = user.first_name || 'Ваш профиль';
+                }
+            }
+        });
+
+        // Инициализация профиля
+        function initProfile() {
+            // Добавляем обработчики для кнопок уровня
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    userProfile.personalInfo.fitnessLevel = btn.dataset.level;
+                });
+            });
+
+            // Добавляем обработчики для кнопок целей
+            document.querySelectorAll('.goal-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.classList.toggle('active');
+                    const goal = btn.dataset.goal;
+                    if (btn.classList.contains('active')) {
+                        if (!userProfile.goals.includes(goal)) {
+                            userProfile.goals.push(goal);
+                        }
+                    } else {
+                        userProfile.goals = userProfile.goals.filter(g => g !== goal);
+                    }
+                });
+            });
+
+            // Добавляем обработчики для чекбоксов ограничений
+            document.querySelectorAll('.restrictions-group input').forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    if (checkbox.checked) {
+                        userProfile.restrictions.push(checkbox.value);
+                    } else {
+                        userProfile.restrictions = userProfile.restrictions.filter(r => r !== checkbox.value);
+                    }
+                });
+            });
+        }
+
+        // Сохранение профиля
+        function saveProfile() {
+            // Собираем данные из формы
+            userProfile.personalInfo.age = parseInt(document.getElementById('age').value) || null;
+            userProfile.personalInfo.height = parseInt(document.getElementById('height').value) || null;
+            userProfile.personalInfo.weight = parseInt(document.getElementById('weight').value) || null;
+
+            // Отправляем данные в Telegram бот
+            if (window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData(JSON.stringify({
+                    type: 'profile_update',
+                    data: userProfile
+                }));
+            }
+
+            // Показываем уведомление
+            if (window.Telegram.WebApp) {
+                window.Telegram.WebApp.showPopup({
+                    title: 'Успех',
+                    message: 'Профиль успешно обновлен',
+                    buttons: [{
+                        type: 'ok',
+                    }]
+                });
+            }
+        }
+
+        // Запрос на изменение фото профиля
+        function requestProfilePhoto() {
+            if (window.Telegram.WebApp) {
+                window.Telegram.WebApp.showPopup({
+                    title: 'Фото профиля',
+                    message: 'Отправьте новое фото в чат с ботом',
+                    buttons: [{
+                        type: 'ok',
+                    }]
+                });
+            }
+        }
+
+        // Функция для загрузки и отображения статистики
+        async function loadStats() {
+            if (window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData(JSON.stringify({
+                    type: 'get_stats'
+                }));
+            }
+        }
+
+        // Функция для обновления интерфейса статистики
+        function updateStats(stats) {
+            // Обновляем общую статистику
+            document.getElementById('total-workouts').textContent = stats.total_workouts;
+            document.getElementById('avg-duration').textContent = 
+                Math.round(stats.average_duration);
+
+            // Обновляем график веса
+            updateWeightChart(stats.weight_progress);
+
+            // Обновляем любимые упражнения
+            const favoriteList = document.getElementById('favorite-exercises-list');
+            favoriteList.innerHTML = stats.favorite_exercises
+                .map(exercise => `
+                    <div class="exercise-item">
+                        <span>${exercise}</span>
+                    </div>
+                `).join('');
+        }
+
+        // Функция для обновления графика веса
+        function updateWeightChart(weightData) {
+            const ctx = document.getElementById('weightChart').getContext('2d');
+            
+            if (window.weightChart) {
+                window.weightChart.destroy();
+            }
+
+            window.weightChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: weightData.map(([_, date]) => {
+                        const d = new Date(date);
+                        return d.toLocaleDateString();
+                    }),
+                    datasets: [{
+                        label: 'Вес (кг)',
+                        data: weightData.map(([weight]) => weight),
+                        borderColor: '#7C5AF1',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Функция для загрузки и отображения рекомендаций
+        async function loadRecommendations() {
+            if (window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData(JSON.stringify({
+                    type: 'get_recommendations'
+                }));
+            }
+        }
+
+        // Обновляем функцию для рекомендаций
+        function updateRecommendations(recommendations) {
+            const recList = document.getElementById('recommendations-list');
+            recList.innerHTML = recommendations
+                .map(rec => `
+                    <div class="recommendation-item ${rec.type}" 
+                         ${rec.type === 'workout' ? `onclick="showWorkoutDetails(${JSON.stringify(rec)})"` : ''}>
+                        <div class="recommendation-title">
+                            ${rec.name}
+                            ${rec.type === 'workout' ? `
+                                <button class="start-workout-btn" 
+                                        onclick="event.stopPropagation(); showWorkoutDetails(${JSON.stringify(rec)})">
+                                    Подробнее
+                                </button>
+                            ` : ''}
+                        </div>
+                        ${rec.type === 'workout' ? `
+                            <div class="recommendation-exercises">
+                                ${rec.exercises.map(ex => `• ${ex.name}`).join('<br>')}
+                            </div>
+                        ` : `
+                            <div class="recommendation-tip">${rec.text}</div>
+                        `}
+                    </div>
+                `).join('');
+        }
+
+        // Загружаем данные при открытии страницы статистики
+        document.addEventListener('DOMContentLoaded', () => {
+            const statsPage = document.getElementById('stats-page');
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.target.style.display !== 'none') {
+                        loadStats();
+                        loadRecommendations();
+                    }
+                });
+            });
+
+            observer.observe(statsPage, { 
+                attributes: true, 
+                attributeFilter: ['style'] 
+            });
+        });
+
+        // Функция для начала рекомендованной тренировки
+        async function startRecommendedWorkout(workoutId) {
+            if (window.Telegram.WebApp) {
+                // Показываем подтверждение
+                window.Telegram.WebApp.showPopup({
+                    title: 'Начать тренировку',
+                    message: 'Хотите начать эту тренировку сейчас?',
+                    buttons: [
+                        {
+                            id: 'start',
+                            type: 'ok',
+                            text: 'Начать'
+                        },
+                        {
+                            type: 'cancel',
+                        }
+                    ]
+                }, (buttonId) => {
+                    if (buttonId === 'start') {
+                        // Отправляем запрос на начало тренировки
+                        window.Telegram.WebApp.sendData(JSON.stringify({
+                            type: 'start_recommended_workout',
+                            workout_id: workoutId
+                        }));
+                    }
+                });
+            }
+        }
+
+        // Обработчик ответа от бота при начале тренировки
+        function handleWorkoutStart(response) {
+            if (response.success) {
+                // Переходим на страницу тренировки
+                currentWorkoutTypeId = response.workout.typeId;
+                currentDayNum = response.workout.dayNum;
+                currentWorkout = response.workout;
+                startExercise(currentWorkoutTypeId, currentDayNum, 0);
+            } else {
+                // Показываем ошибку
+                window.Telegram.WebApp.showPopup({
+                    title: 'Ошибка',
+                    message: response.error || 'Не удалось начать тренировку',
+                    buttons: [{
+                        type: 'ok'
+                    }]
+                });
+            }
+        }
+
+        // Функция для показа деталей тренировки
+        function showWorkoutDetails(workout) {
+            const detailsHtml = `
+                <div class="workout-details-content">
+                    <button class="close-details" onclick="closeWorkoutDetails()">×</button>
+                    <h2>${workout.name}</h2>
+                    
+                    <div class="workout-info">
+                        ${workout.info.map((item, index) => `
+                            <div class="workout-info-item" 
+                                 style="animation-delay: ${index * 0.1}s; 
+                                        animation: slideIn 0.3s ease-out forwards;">
+                                <span class="workout-info-label">${item.label}</span>
+                                <span class="workout-info-value">${item.value}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="workout-exercises">
+                        <h3>Упражнения</h3>
+                        ${workout.exercises.map((ex, index) => `
+                            <div class="workout-info-item"
+                                 style="animation-delay: ${(index + 3) * 0.1}s;
+                                        animation: slideIn 0.3s ease-out forwards;"
+                                 onclick="showExerciseDetails('${ex.name}')">
+                                <span>${ex.name}</span>
+                                <span>${ex.sets}×${ex.reps}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <button class="start-workout-btn" 
+                            onclick="startRecommendedWorkout('${workout.id}')">
+                        Начать тренировку
+                    </button>
+                </div>
+            `;
+            
+            const detailsElement = document.createElement('div');
+            detailsElement.className = 'workout-details';
+            detailsElement.innerHTML = detailsHtml;
+            document.body.appendChild(detailsElement);
+            
+            setTimeout(() => {
+                detailsElement.classList.add('active');
+            }, 50);
+        }
+
+        // Функция закрытия деталей тренировки
+        function closeWorkoutDetails() {
+            const details = document.querySelector('.workout-details');
+            details.classList.remove('active');
+            setTimeout(() => {
+                details.remove();
+            }, 300);
+        }
+
+        // Добавляем функцию для показа деталей упражнения
+        function showExerciseDetails(exerciseName) {
+            const exercise = exerciseDatabase[exerciseName];
+            if (exercise) {
+                window.Telegram.WebApp.showPopup({
+                    title: exerciseName,
+                    message: `
+                        ${exercise.description}\n\n
+                        🎯 Целевые мышцы: ${exercise.muscles.join(', ')}\n
+                        ⚡️ Сложность: ${exercise.difficulty}\n
+                        ⚠️ Важно: ${exercise.tips}
+                    `,
+                    buttons: [{
+                        type: 'ok',
+                        text: 'Понятно'
+                    }]
+                });
+            }
+        }
     </script>
 </body>
 </html>
