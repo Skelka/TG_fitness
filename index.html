@@ -1916,6 +1916,53 @@
         // Инициализация Telegram WebApp
         const tg = window.Telegram.WebApp;
 
+        // Данные тренировок
+        const workouts = {
+            strength: [
+                {
+                    day: 1,
+                    title: 'Тренировка верхней части тела',
+                    exercises: [
+                        { name: 'Жим лежа', sets: 3, reps: '8-12', rest: 90 },
+                        { name: 'Тяга верхнего блока', sets: 3, reps: '10-12', rest: 90 },
+                        { name: 'Отжимания', sets: 3, reps: '12-15', rest: 60 },
+                        { name: 'Подъем гантелей на бицепс', sets: 3, reps: '12-15', rest: 60 }
+                    ]
+                },
+                {
+                    day: 2,
+                    title: 'Тренировка ног',
+                    exercises: [
+                        { name: 'Приседания', sets: 4, reps: '10-12', rest: 120 },
+                        { name: 'Выпады', sets: 3, reps: '12-15', rest: 90 },
+                        { name: 'Подъемы на носки', sets: 3, reps: '15-20', rest: 60 }
+                    ]
+                }
+            ],
+            cardio: [
+                {
+                    day: 1,
+                    title: 'Интервальная тренировка',
+                    exercises: [
+                        { name: 'Бег', duration: '20 мин', intensity: 'средняя' },
+                        { name: 'Прыжки со скакалкой', duration: '10 мин', intensity: 'высокая' },
+                        { name: 'Берпи', sets: 3, reps: '10', rest: 60 }
+                    ]
+                }
+            ],
+            stretching: [
+                {
+                    day: 1,
+                    title: 'Общая растяжка',
+                    exercises: [
+                        { name: 'Растяжка ног', duration: '10 мин', technique: 'статическая' },
+                        { name: 'Растяжка спины', duration: '10 мин', technique: 'динамическая' },
+                        { name: 'Растяжка плеч', duration: '5 мин', technique: 'статическая' }
+                    ]
+                }
+            ]
+        };
+
         // Функция для переключения страниц
         function showPage(pageId) {
             // Убираем активный класс у всех пунктов меню
@@ -1945,20 +1992,119 @@
         // Функция для показа дней тренировок
         function showWorkoutDays(type) {
             const workoutTypes = {
-                1: 'Силовая тренировка',
-                2: 'Кардио',
-                3: 'Растяжка'
+                1: 'strength',
+                2: 'cardio',
+                3: 'stretching'
             };
 
+            const workoutType = workoutTypes[type];
+            const workout = workouts[workoutType];
+            const buttons = workout.map((day, index) => ({
+                type: 'default',
+                text: `День ${index + 1}: ${day.title}`
+            }));
+            buttons.push({type: 'cancel', text: 'Закрыть'});
+
             tg.showPopup({
-                title: workoutTypes[type],
+                title: getWorkoutTitle(workoutType),
                 message: 'Выберите день тренировки:',
+                buttons: buttons
+            }, (buttonId) => {
+                if (buttonId !== 'cancel') {
+                    showExercises(workoutType, parseInt(buttonId));
+                }
+            });
+        }
+
+        // Функция получения заголовка тренировки
+        function getWorkoutTitle(type) {
+            const titles = {
+                strength: 'Силовая тренировка',
+                cardio: 'Кардио',
+                stretching: 'Растяжка'
+            };
+            return titles[type];
+        }
+
+        // Функция показа упражнений
+        function showExercises(type, dayIndex) {
+            const workout = workouts[type][dayIndex];
+            let message = `${workout.title}\n\nУпражнения:\n\n`;
+            
+            workout.exercises.forEach((exercise, index) => {
+                message += `${index + 1}. ${exercise.name}\n`;
+                if (exercise.sets && exercise.reps) {
+                    message += `   ${exercise.sets}x${exercise.reps}, отдых ${exercise.rest}с\n`;
+                } else if (exercise.duration) {
+                    message += `   ${exercise.duration}`;
+                    if (exercise.intensity) message += ` (${exercise.intensity} интенсивность)`;
+                    if (exercise.technique) message += ` (${exercise.technique})`;
+                    message += '\n';
+                }
+            });
+
+            tg.showPopup({
+                title: 'Программа тренировки',
+                message: message,
                 buttons: [
-                    {type: 'default', text: 'День 1'},
-                    {type: 'default', text: 'День 2'},
-                    {type: 'default', text: 'День 3'},
+                    {type: 'default', text: 'Начать тренировку'},
                     {type: 'cancel', text: 'Закрыть'}
                 ]
+            }, (buttonId) => {
+                if (buttonId === '0') {
+                    startWorkout(type, dayIndex);
+                }
+            });
+        }
+
+        // Функция начала тренировки
+        function startWorkout(type, dayIndex) {
+            const workout = workouts[type][dayIndex];
+            tg.showPopup({
+                title: 'Начинаем тренировку',
+                message: 'Подготовьтесь к тренировке. Нажмите "Начать" когда будете готовы.',
+                buttons: [
+                    {type: 'default', text: 'Начать'},
+                    {type: 'cancel', text: 'Отмена'}
+                ]
+            }, (buttonId) => {
+                if (buttonId === '0') {
+                    startExercise(workout.exercises, 0);
+                }
+            });
+        }
+
+        // Функция для запуска упражнения
+        function startExercise(exercises, index) {
+            if (index >= exercises.length) {
+                tg.showPopup({
+                    title: 'Поздравляем!',
+                    message: 'Вы завершили тренировку!',
+                    buttons: [{type: 'ok'}]
+                });
+                return;
+            }
+
+            const exercise = exercises[index];
+            let message = `${exercise.name}\n\n`;
+            if (exercise.sets && exercise.reps) {
+                message += `${exercise.sets} подхода по ${exercise.reps} повторений\n`;
+                message += `Отдых между подходами: ${exercise.rest} секунд`;
+            } else if (exercise.duration) {
+                message += `Продолжительность: ${exercise.duration}`;
+            }
+
+            tg.showPopup({
+                title: `Упражнение ${index + 1}/${exercises.length}`,
+                message: message,
+                buttons: [
+                    {type: 'default', text: 'Завершить упражнение'},
+                    {type: 'cancel', text: 'Прервать тренировку'}
+                ]
+            }, (buttonId) => {
+                if (buttonId === '0') {
+                    startExercise(exercises, index + 1);
+                }
             });
         }
 
