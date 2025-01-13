@@ -270,6 +270,9 @@
             overflow: hidden;
             color: #fff;
             text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .workout-type-card::before {
@@ -1629,7 +1632,13 @@
             color: #fff;
             text-shadow: 0 1px 3px rgba(0,0,0,0.3);
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .workout-type-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .workout-type-card:active {
@@ -1723,6 +1732,73 @@
             align-items: center;
             gap: 10px;
             color: #fff;
+        }
+
+        /* Стили для анимации таймера */
+        .timer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .timer-overlay.active {
+            opacity: 1;
+        }
+
+        .timer-circle {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+
+        .timer-progress {
+            fill: none;
+            stroke: #7C5AF1;
+            stroke-width: 5;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: stroke-dashoffset 1s linear;
+        }
+
+        .timer-count {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: #fff;
+        }
+
+        /* Стили для анимации упражнений */
+        .exercise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .exercise-overlay.active {
+            opacity: 1;
+            transform: scale(1);
         }
     </style>
 </head>
@@ -2077,11 +2153,13 @@
         // Функция для запуска упражнения
         function startExercise(exercises, index) {
             if (index >= exercises.length) {
+                utils.playSound('success');
                 tg.showPopup({
                     title: 'Поздравляем!',
                     message: 'Вы завершили тренировку!',
                     buttons: [{type: 'ok'}]
                 });
+                saveWorkoutProgress(exercises);
                 return;
             }
 
@@ -2103,18 +2181,53 @@
                 ]
             }, (buttonId) => {
                 if (buttonId === '0') {
-                    startExercise(exercises, index + 1);
+                    if (exercise.rest) {
+                        tg.MainButton.setText('Отдых начнется через 3...');
+                        tg.MainButton.show();
+                        
+                        setTimeout(() => {
+                            startTimer(exercise.rest, () => {
+                                startExercise(exercises, index + 1);
+                            });
+                        }, 3000);
+                    } else {
+                        startExercise(exercises, index + 1);
+                    }
                 }
             });
         }
 
+        // Функция сохранения прогресса тренировки
+        function saveWorkoutProgress(exercises) {
+            const progress = {
+                date: new Date().toISOString(),
+                exercises: exercises.map(ex => ({
+                    name: ex.name,
+                    completed: true
+                }))
+            };
+
+            let history = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+            history.push(progress);
+            localStorage.setItem('workoutHistory', JSON.stringify(history));
+        }
+
         // Инициализация приложения
         document.addEventListener('DOMContentLoaded', () => {
-            // Расширяем на весь экран
             tg.expand();
-            
-            // Показываем первую страницу
             showPage('workouts-page');
+            loadProfileData();
+            
+            // Загружаем сохраненный профиль из локального хранилища
+            const savedProfile = localStorage.getItem('userProfile');
+            if (savedProfile) {
+                const profile = JSON.parse(savedProfile);
+                // Заполняем поля профиля
+                document.getElementById('age').value = profile.age || '';
+                document.getElementById('height').value = profile.height || '';
+                document.getElementById('weight').value = profile.weight || '';
+                // ... остальные поля
+            }
         });
 
         // Функция переключения панели настроек
@@ -2137,21 +2250,18 @@
                         .map(input => input.value)
                 };
 
+                // Сохраняем в локальное хранилище
+                localStorage.setItem('userProfile', JSON.stringify(profile));
+
                 tg.sendData(JSON.stringify({
                     type: 'profile_update',
                     data: profile
                 }));
-                
-                tg.showPopup({
-                    message: 'Профиль успешно сохранен!',
-                    buttons: [{type: 'ok'}]
-                });
+
+                utils.showNotification('Профиль успешно сохранен!', 'success');
             } catch (error) {
                 console.error('Ошибка сохранения профиля:', error);
-                tg.showPopup({
-                    message: 'Ошибка сохранения профиля',
-                    buttons: [{type: 'ok'}]
-                });
+                utils.showNotification('Ошибка сохранения профиля', 'error');
             }
         }
 
@@ -2168,6 +2278,87 @@
                 btn.classList.toggle('active');
             });
         });
+
+        // Утилиты для работы с анимациями и уведомлениями
+        const utils = {
+            showLoading(text = 'Загрузка...') {
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.querySelector('.loading-text').textContent = text;
+                overlay.classList.add('active');
+            },
+            
+            hideLoading() {
+                document.getElementById('loadingOverlay').classList.remove('active');
+            },
+            
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => notification.classList.add('show'), 100);
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            },
+            
+            playSound(type) {
+                if (!document.getElementById('soundEffects').checked) return;
+                
+                const sounds = {
+                    success: new Audio('sounds/success.mp3'),
+                    error: new Audio('sounds/error.mp3'),
+                    countdown: new Audio('sounds/countdown.mp3'),
+                    complete: new Audio('sounds/complete.mp3')
+                };
+                
+                const sound = sounds[type];
+                if (sound) {
+                    sound.volume = parseFloat(document.getElementById('soundVolume').value);
+                    sound.play();
+                }
+            }
+        };
+
+        // Обновляем функцию startTimer
+        function startTimer(duration, onComplete) {
+            let timeLeft = duration;
+            utils.playSound('countdown');
+            
+            // Добавляем анимацию обратного отсчета
+            const timerEl = document.createElement('div');
+            timerEl.className = 'timer-overlay';
+            timerEl.innerHTML = `
+                <div class="timer-circle">
+                    <svg viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" class="timer-progress"/>
+                    </svg>
+                    <div class="timer-count">${timeLeft}</div>
+                </div>
+            `;
+            document.body.appendChild(timerEl);
+            
+            setTimeout(() => timerEl.classList.add('active'), 100);
+
+            const timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.querySelector('.timer-count').textContent = timeLeft;
+                
+                // Обновляем прогресс
+                const progress = (duration - timeLeft) / duration * 283; // 283 = 2πr
+                timerEl.querySelector('.timer-progress').style.strokeDashoffset = progress;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerEl.classList.remove('active');
+                    setTimeout(() => timerEl.remove(), 300);
+                    utils.playSound('complete');
+                    onComplete();
+                }
+            }, 1000);
+        }
     </script>
 </body>
 </html>
