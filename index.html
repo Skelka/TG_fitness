@@ -1487,9 +1487,97 @@
             width: 0%;
             transition: width 0.3s linear;
         }
+
+        /* Стили для настроек звука */
+        .sound-settings {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: #2D2D2D;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .settings-panel {
+            position: fixed;
+            bottom: 140px;
+            right: 20px;
+            background: #2D2D2D;
+            border-radius: 10px;
+            padding: 15px;
+            width: 250px;
+            transform: translateY(20px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 999;
+        }
+
+        .settings-panel.active {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sound-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .volume-slider {
+            width: 100px;
+            height: 4px;
+            background: #1E1E1E;
+            border-radius: 2px;
+            -webkit-appearance: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #7C5AF1;
+            border-radius: 50%;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
+    <!-- Добавляем кнопку настроек звука -->
+    <div class="sound-settings" onclick="toggleSettings()">
+        <img src="images/sound-icon.svg" alt="Sound settings" width="24" height="24">
+    </div>
+
+    <!-- Панель настроек -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="sound-option">
+            <span>Звуковые эффекты</span>
+            <input type="checkbox" id="soundEffects" checked>
+        </div>
+        <div class="sound-option">
+            <span>Громкость</span>
+            <input type="range" id="soundVolume" class="volume-slider" min="0" max="1" step="0.1" value="0.7">
+        </div>
+        <div class="sound-option">
+            <span>Голосовые подсказки</span>
+            <input type="checkbox" id="voiceGuide" checked>
+        </div>
+        <div class="sound-option">
+            <span>Обратный отсчет</span>
+            <input type="checkbox" id="countdownSound" checked>
+        </div>
+    </div>
+
     <div id="workouts-page" class="page">
         <div class="workout-types">
             <div class="workout-type-card" 
@@ -3395,6 +3483,86 @@
                 }
             }, 1000);
         }
+
+        // Настройки по умолчанию
+        let soundSettings = {
+            effects: true,
+            volume: 0.7,
+            voice: true,
+            countdown: true
+        };
+
+        // Загружаем настройки из localStorage
+        function loadSettings() {
+            const saved = localStorage.getItem('soundSettings');
+            if (saved) {
+                soundSettings = JSON.parse(saved);
+                document.getElementById('soundEffects').checked = soundSettings.effects;
+                document.getElementById('soundVolume').value = soundSettings.volume;
+                document.getElementById('voiceGuide').checked = soundSettings.voice;
+                document.getElementById('countdownSound').checked = soundSettings.countdown;
+                
+                // Применяем настройки к звукам
+                Object.values(sounds).forEach(sound => {
+                    sound.volume = soundSettings.volume;
+                });
+            }
+        }
+
+        // Сохраняем настройки
+        function saveSettings() {
+            localStorage.setItem('soundSettings', JSON.stringify(soundSettings));
+        }
+
+        // Обработчики изменения настроек
+        document.getElementById('soundEffects').addEventListener('change', (e) => {
+            soundSettings.effects = e.target.checked;
+            saveSettings();
+        });
+
+        document.getElementById('soundVolume').addEventListener('input', (e) => {
+            soundSettings.volume = parseFloat(e.target.value);
+            Object.values(sounds).forEach(sound => {
+                sound.volume = soundSettings.volume;
+            });
+            saveSettings();
+        });
+
+        document.getElementById('voiceGuide').addEventListener('change', (e) => {
+            soundSettings.voice = e.target.checked;
+            saveSettings();
+        });
+
+        document.getElementById('countdownSound').addEventListener('change', (e) => {
+            soundSettings.countdown = e.target.checked;
+            saveSettings();
+        });
+
+        // Показать/скрыть панель настроек
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('active');
+        }
+
+        // Обновляем функции воспроизведения звука
+        function playSound(soundName) {
+            if (!soundSettings.effects) return;
+            if (soundName === 'countdown' && !soundSettings.countdown) return;
+            
+            const sound = sounds[soundName];
+            sound.volume = soundSettings.volume;
+            sound.play();
+        }
+
+        function speakText(text) {
+            if (!soundSettings.voice) return;
+            
+            speechVoice.text = text;
+            speechSynth.speak(speechVoice);
+        }
+
+        // Загружаем настройки при старте
+        document.addEventListener('DOMContentLoaded', loadSettings);
     </script>
 </body>
 </html>
