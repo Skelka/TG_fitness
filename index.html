@@ -3360,129 +3360,154 @@
             // ... остальной код для управления таймером отдыха
         }
 
-        // Создаем аудио элементы для разных звуков
-        const sounds = {
-            countdown: new Audio('sounds/countdown.mp3'),
-            start: new Audio('sounds/start.mp3'),
-            complete: new Audio('sounds/complete.mp3'),
-            rest: new Audio('sounds/rest.mp3')
-        };
+        // Класс для управления звуками
+        class SoundManager {
+            constructor() {
+                this.sounds = {};
+                this.loadingPromises = {};
+                this.isReady = false;
+                
+                // Список звуков для загрузки
+                this.soundsList = {
+                    countdown: 'sounds/countdown.mp3',
+                    start: 'sounds/start.mp3',
+                    complete: 'sounds/complete.mp3',
+                    rest: 'sounds/rest.mp3',
+                    error: 'sounds/error.mp3'
+                };
+            }
 
-        // Создаем объект для синтеза речи
-        const speechSynth = window.speechSynthesis;
-        const speechVoice = new SpeechSynthesisUtterance();
-        speechVoice.lang = 'ru-RU';
+            async init() {
+                try {
+                    // Проверяем поддержку Web Audio API
+                    if (!window.AudioContext && !window.webkitAudioContext) {
+                        throw new Error('Web Audio API не поддерживается');
+                    }
 
-        function showPrepareState(exercise, countdown = 5) {
-            const stateHtml = `
-                <div class="workout-state prepare-state">
-                    <div class="next-exercise">Следующее упражнение</div>
-                    <div class="exercise-name">${exercise.name}</div>
-                    <div class="countdown">${countdown}</div>
-                    <div class="exercise-info">
-                        ${exercise.sets}×${exercise.reps} повторений
-                    </div>
-                </div>
-            `;
-            
-            const stateElement = document.createElement('div');
-            stateElement.innerHTML = stateHtml;
-            document.body.appendChild(stateElement);
-            
-            setTimeout(() => stateElement.querySelector('.workout-state').classList.add('active'), 50);
-            
-            // Произносим название следующего упражнения
-            speechVoice.text = `Приготовьтесь к упражнению: ${exercise.name}`;
-            speechSynth.speak(speechVoice);
-            
-            let count = countdown;
-            const countdownInterval = setInterval(() => {
-                count--;
-                if (count > 0) {
-                    stateElement.querySelector('.countdown').textContent = count;
-                    sounds.countdown.play();
-                } else {
-                    clearInterval(countdownInterval);
-                    sounds.start.play();
-                    stateElement.querySelector('.workout-state').classList.remove('active');
-                    setTimeout(() => {
-                        stateElement.remove();
-                        showExerciseState(exercise);
-                    }, 300);
+                    // Создаем аудио контекст
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                    // Загружаем все звуки
+                    const loadPromises = Object.entries(this.soundsList).map(
+                        ([name, url]) => this.loadSound(name, url)
+                    );
+
+                    await Promise.all(loadPromises);
+                    this.isReady = true;
+                    console.log('Все звуки загружены успешно');
+                } catch (error) {
+                    console.error('Ошибка инициализации звуков:', error);
+                    this.showSoundError();
                 }
-            }, 1000);
+            }
+
+            async loadSound(name, url) {
+                try {
+                    // Если звук уже загружается, возвращаем существующий промис
+                    if (this.loadingPromises[name]) {
+                        return this.loadingPromises[name];
+                    }
+
+                    this.loadingPromises[name] = new Promise(async (resolve, reject) => {
+                        try {
+                            const response = await fetch(url);
+                            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                            
+                            const arrayBuffer = await response.arrayBuffer();
+                            const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                            
+                            this.sounds[name] = audioBuffer;
+                            resolve(audioBuffer);
+                        } catch (error) {
+                            console.error(`Ошибка загрузки звука ${name}:`, error);
+                            reject(error);
+                        }
+                    });
+
+                    return this.loadingPromises[name];
+                } catch (error) {
+                    console.error(`Ошибка загрузки звука ${name}:`, error);
+                    throw error;
+                }
+            }
+
+            async play(soundName, volume = soundSettings.volume) {
+                try {
+                    if (!this.isReady || !soundSettings.effects) return;
+                    if (soundName === 'countdown' && !soundSettings.countdown) return;
+
+                    const buffer = this.sounds[soundName];
+                    if (!buffer) {
+                        throw new Error(`Звук ${soundName} не найден`);
+                    }
+
+                    const source = this.audioContext.createBufferSource();
+                    const gainNode = this.audioContext.createGain();
+
+                    source.buffer = buffer;
+                    gainNode.gain.value = volume;
+
+                    source.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+
+                    source.start(0);
+                    return true;
+                } catch (error) {
+                    console.error(`Ошибка воспроизведения звука ${soundName}:`, error);
+                    this.showSoundError();
+                    return false;
+                }
+            }
+
+            showSoundError() {
+                // Показываем уведомление об ошибке только если это первая ошибка
+                if (!this.errorShown) {
+                    window.Telegram.WebApp.showPopup({
+                        title: 'Проблема со звуком',
+                        message: 'Возникла проблема с воспроизведением звука. Проверьте настройки звука устройства.',
+                        buttons: [{
+                            type: 'ok',
+                            text: 'Понятно'
+                        }]
+                    });
+                    this.errorShown = true;
+                }
+            }
         }
 
-        function showExerciseState(exercise) {
-            // Произносим инструкции
-            speechVoice.text = `Начинаем ${exercise.name}. ${exercise.sets} подходов по ${exercise.reps} повторений`;
-            speechSynth.speak(speechVoice);
+        // Создаем экземпляр менеджера звуков
+        const soundManager = new SoundManager();
 
-            const stateHtml = `
-                <div class="workout-state exercise-state">
-                    <div class="exercise-name">${exercise.name}</div>
-                    <div class="exercise-timer">
-                        <svg width="200" height="200" viewBox="0 0 200 200">
-                            <circle cx="100" cy="100" r="90" fill="none" 
-                                   stroke="#2D2D2D" stroke-width="10"/>
-                            <circle class="timer-circle" cx="100" cy="100" r="90" 
-                                   fill="none" stroke="#7C5AF1" stroke-width="10"/>
-                        </svg>
-                        <div class="timer-text">${exercise.duration}s</div>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill"></div>
-                    </div>
-                </div>
-            `;
-            
-            // Добавляем таймер и звуковые подсказки
-            let timeLeft = exercise.duration;
-            const timer = setInterval(() => {
-                timeLeft--;
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    sounds.complete.play();
-                    showRestState();
-                } else if (timeLeft <= 3) {
-                    sounds.countdown.play();
-                }
-            }, 1000);
+        // Инициализируем звуки при загрузке страницы
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await soundManager.init();
+                loadSettings();
+            } catch (error) {
+                console.error('Ошибка инициализации:', error);
+            }
+        });
+
+        // Обновляем функцию воспроизведения звука
+        async function playSound(soundName) {
+            return await soundManager.play(soundName);
         }
 
-        function showRestState(duration = 60) {
-            // Произносим начало отдыха
-            speechVoice.text = 'Отдых. Восстановите дыхание';
-            speechSynth.speak(speechVoice);
-            sounds.rest.play();
-
-            const stateHtml = `
-                <div class="workout-state rest-state">
-                    <h2>Отдых</h2>
-                    <div class="rest-timer">${duration}</div>
-                    <div class="rest-message">
-                        Восстановите дыхание и подготовьтесь к следующему упражнению
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill"></div>
-                    </div>
-                </div>
-            `;
+        // Обновляем функцию для голосовых подсказок
+        function speakText(text) {
+            if (!soundSettings.voice) return;
             
-            // Добавляем таймер отдыха
-            let timeLeft = duration;
-            const timer = setInterval(() => {
-                timeLeft--;
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    sounds.start.play();
-                    // Переход к следующему упражнению
-                    showNextExercise();
-                } else if (timeLeft <= 3) {
-                    sounds.countdown.play();
-                }
-            }, 1000);
+            try {
+                speechVoice.text = text;
+                speechSynth.speak(speechVoice);
+            } catch (error) {
+                console.error('Ошибка воспроизведения голоса:', error);
+                soundManager.showSoundError();
+            }
         }
+
+        // Загружаем настройки при старте
+        document.addEventListener('DOMContentLoaded', loadSettings);
 
         // Настройки по умолчанию
         let soundSettings = {
@@ -3503,7 +3528,7 @@
                 document.getElementById('countdownSound').checked = soundSettings.countdown;
                 
                 // Применяем настройки к звукам
-                Object.values(sounds).forEach(sound => {
+                Object.values(soundManager.sounds).forEach(sound => {
                     sound.volume = soundSettings.volume;
                 });
             }
@@ -3522,7 +3547,7 @@
 
         document.getElementById('soundVolume').addEventListener('input', (e) => {
             soundSettings.volume = parseFloat(e.target.value);
-            Object.values(sounds).forEach(sound => {
+            Object.values(soundManager.sounds).forEach(sound => {
                 sound.volume = soundSettings.volume;
             });
             saveSettings();
@@ -3543,26 +3568,6 @@
             const panel = document.getElementById('settingsPanel');
             panel.classList.toggle('active');
         }
-
-        // Обновляем функции воспроизведения звука
-        function playSound(soundName) {
-            if (!soundSettings.effects) return;
-            if (soundName === 'countdown' && !soundSettings.countdown) return;
-            
-            const sound = sounds[soundName];
-            sound.volume = soundSettings.volume;
-            sound.play();
-        }
-
-        function speakText(text) {
-            if (!soundSettings.voice) return;
-            
-            speechVoice.text = text;
-            speechSynth.speak(speechVoice);
-        }
-
-        // Загружаем настройки при старте
-        document.addEventListener('DOMContentLoaded', loadSettings);
     </script>
 </body>
 </html>
