@@ -1849,48 +1849,126 @@
             setTimeout(() => {
                 page.classList.add('active');
             }, 50);
+            
+            // Загружаем данные при переключении на страницу
+            switch(pageId) {
+                case 'profile-page':
+                    loadProfileData();
+                    break;
+                case 'statistics-page':
+                    loadStatistics();
+                    break;
+                case 'recommendations-page':
+                    loadRecommendations();
+                    break;
+            }
         }
 
+        // Функция загрузки данных профиля
         async function loadProfileData() {
+            const profilePage = document.getElementById('profile-page');
+            const urlParams = new URLSearchParams(window.location.search);
+            const data = JSON.parse(decodeURIComponent(urlParams.get('data')));
+            
+            if (data && data.personalInfo) {
+                const { age, height, weight, fitnessLevel, photo } = data.personalInfo;
+                
+                // Обновляем фото профиля
+                const profilePhoto = profilePage.querySelector('.profile-photo img');
+                profilePhoto.src = photo || 'images/default-avatar.png';
+                
+                // Обновляем информацию профиля
+                const profileInfo = `
+                    <div class="profile-info-item">
+                        <span>Возраст:</span> ${age || 'Не указан'}
+                    </div>
+                    <div class="profile-info-item">
+                        <span>Рост:</span> ${height ? height + ' см' : 'Не указан'}
+                    </div>
+                    <div class="profile-info-item">
+                        <span>Вес:</span> ${weight ? weight + ' кг' : 'Не указан'}
+                    </div>
+                    <div class="profile-info-item">
+                        <span>Уровень подготовки:</span> ${fitnessLevel || 'Не указан'}
+                    </div>
+                `;
+                profilePage.querySelector('.profile-info').innerHTML = profileInfo;
+                
+                // Отображаем цели
+                const goalsHtml = data.goals.map(goal => `
+                    <div class="goal-item">${goal}</div>
+                `).join('') || '<div class="no-goals">Цели не установлены</div>';
+                profilePage.querySelector('.goals-section').innerHTML = goalsHtml;
+            }
+        }
+
+        // Функция загрузки статистики
+        async function loadStatistics() {
+            const statsPage = document.getElementById('statistics-page');
             try {
-                const user = tg.initDataUnsafe?.user;
-                if (user) {
-                    document.getElementById('tg-username').textContent = user.username || 'Пользователь';
-                    
-                    // Сначала пробуем загрузить из localStorage
-                    const savedData = localStorage.getItem('profileData');
-                    if (savedData) {
-                        const data = JSON.parse(savedData);
-                        updateProfileFields(data);
-                    }
-                    
-                    // Затем запрашиваем актуальные данные с сервера
-                    tg.sendData(JSON.stringify({
-                        type: 'get_profile_data'
-                    }));
+                const response = await fetch('/api/statistics');
+                const data = await response.json();
+                
+                statsPage.innerHTML = `
+                    <div class="stats-section">
+                        <h2>Общая статистика</h2>
+                        <div class="stats-grid">
+                            <div class="stats-item">
+                                <div class="stats-value">${data.totalWorkouts || 0}</div>
+                                <div class="stats-label">Тренировок</div>
+                            </div>
+                            <div class="stats-item">
+                                <div class="stats-value">${data.totalExercises || 0}</div>
+                                <div class="stats-label">Упражнений</div>
+                            </div>
+                            <div class="stats-item">
+                                <div class="stats-value">${data.avgDuration || 0} мин</div>
+                                <div class="stats-label">Средняя длительность</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="weight-chart">
+                        <canvas id="weightChart"></canvas>
+                    </div>
+                `;
+                
+                // Инициализируем график веса если есть данные
+                if (data.weightHistory && data.weightHistory.length > 0) {
+                    initWeightChart(data.weightHistory);
                 }
             } catch (error) {
-                console.error('Ошибка при загрузке данных:', error);
+                console.error('Ошибка загрузки статистики:', error);
             }
         }
 
-        // Обновим функцию обновления полей
-        function updateProfileFields(data) {
-            if (data.age) document.getElementById('age').value = data.age;
-            if (data.height) document.getElementById('height').value = data.height;
-            if (data.weight) document.getElementById('weight').value = data.weight;
-            if (data.goal) document.getElementById('goal').value = data.goal;
-            if (data.photo_url) {
-                const profileImage = document.getElementById('profile-image');
-                profileImage.src = data.photo_url;
-                profileImage.onerror = function() {
-                    this.src = 'images/default-avatar.png';
-                };
+        // Функция загрузки рекомендаций
+        async function loadRecommendations() {
+            const recsPage = document.getElementById('recommendations-page');
+            try {
+                const response = await fetch('/api/recommendations');
+                const recommendations = await response.json();
+                
+                if (recommendations.length > 0) {
+                    updateRecommendations(recommendations);
+                } else {
+                    recsPage.innerHTML = `
+                        <div class="no-recommendations">
+                            <p>У вас пока нет рекомендаций.</p>
+                            <p>Заполните профиль, чтобы получить персональные рекомендации.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки рекомендаций:', error);
             }
         }
 
-        // Вызываем загрузку данных при открытии страницы и при переходе на вкладку профиля
-        document.addEventListener('DOMContentLoaded', loadProfileData);
+        // Загружаем данные при старте приложения
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfileData();
+            loadStatistics();
+            loadRecommendations();
+        });
 
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', function(e) {
