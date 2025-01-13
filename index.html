@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Фитнес Трекер</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -851,6 +851,12 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .reps-circle:active {
+            background-color: rgba(255,255,255,0.1);
         }
 
         .weight-info {
@@ -864,6 +870,10 @@
             font-size: 48px;
             font-weight: bold;
             color: #fff;
+            max-width: 160px;
+            text-align: center;
+            word-break: break-word;
+            line-height: 1.2;
         }
 
         .reps-label {
@@ -929,6 +939,14 @@
             background: #7C5AF1;
             color: white;
             cursor: pointer;
+        }
+
+        /* Добавим стили для предотвращения выделения текста */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
     </style>
 </head>
@@ -1053,16 +1071,14 @@
 
             <div class="exercise-description" id="active-exercise-description"></div>
 
-            <div class="reps-circle">
-                <div class="weight-info" id="weight-info">4 кг</div>
-                <div class="reps-count" id="reps-count">12</div>
+            <div class="reps-circle" onclick="completeSet()">
+                <div class="weight-info" id="weight-info"></div>
+                <div class="reps-count" id="reps-count"></div>
                 <div class="reps-label">Готово</div>
-                <button class="decrease-reps" onclick="adjustReps(-1)">−</button>
-                <button class="increase-reps" onclick="adjustReps(1)">+</button>
             </div>
 
             <div class="next-exercise">
-                <span>Следующее упражнение:</span>
+                <span>Следующее:</span>
                 <h3 id="next-exercise-name">Подход 2</h3>
             </div>
 
@@ -1764,7 +1780,6 @@
         let restTime = 0;
 
         function startExercise(workoutTypeId, dayNum, exerciseIndex) {
-            // Сохраняем информацию о текущей тренировке
             currentWorkoutTypeId = workoutTypeId;
             currentDayNum = dayNum;
             currentWorkout = workoutPrograms[workoutTypeId].days[dayNum];
@@ -1778,11 +1793,17 @@
             document.getElementById('total-sets').textContent = exercise.sets;
             document.getElementById('current-set').textContent = currentSet;
             
-            // Устанавливаем начальное количество повторений
-            const reps = exercise.reps.split(' ')[0];
-            document.getElementById('reps-count').textContent = reps;
+            // Преобразуем строку с повторениями в число
+            let reps;
+            if (exercise.reps === 'максимум') {
+                reps = 1;
+            } else if (exercise.reps.includes('-')) {
+                reps = parseInt(exercise.reps.split('-')[0]);
+            } else {
+                reps = parseInt(exercise.reps);
+            }
             
-            // Обновляем интерфейс упражнения с учетом типа тренировки
+            // Обновляем интерфейс упражнения
             const repsCircle = document.querySelector('.reps-circle');
             repsCircle.innerHTML = `
                 ${workoutTypeId === 1 && exercise.weight ? 
@@ -1794,14 +1815,7 @@
                 <button class="increase-reps" onclick="adjustReps(1)">+</button>
             `;
             
-            // Обновляем информацию о следующем подходе
-            document.getElementById('next-exercise-name').textContent = 
-                currentSet < exercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
-            
             showPage('active-exercise-page');
-            
-            document.getElementById('start-set-btn').style.display = 'block';
-            document.getElementById('complete-set-btn').style.display = 'none';
         }
 
         // Добавим защиту от множественных нажатий
@@ -1880,11 +1894,10 @@
 
         function resetExerciseInterface() {
             const repsCircle = document.querySelector('.reps-circle');
-            // Показываем вес только для силовых упражнений с указанным весом
             const showWeight = currentWorkoutTypeId === 1 && currentExercise.weight;
             repsCircle.innerHTML = `
                 ${showWeight ? `<div class="weight-info" id="weight-info">${currentExercise.weight} кг</div>` : ''}
-                <div class="reps-count" id="reps-count">${currentExercise.reps.split(' ')[0]}</div>
+                <div class="reps-count" id="reps-count">${document.getElementById('reps-count').textContent}</div>
                 <div class="reps-label">Готово</div>
                 <button class="decrease-reps" onclick="adjustReps(-1)">−</button>
                 <button class="increase-reps" onclick="adjustReps(1)">+</button>
@@ -1892,8 +1905,6 @@
             
             document.getElementById('next-exercise-name').textContent = 
                 currentSet < currentExercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
-            
-            startSet();
         }
 
         function hasNextExercise() {
@@ -2008,7 +2019,7 @@
         function adjustReps(change) {
             const repsElement = document.getElementById('reps-count');
             let currentReps = parseInt(repsElement.textContent);
-            currentReps = Math.max(1, currentReps + change);
+            currentReps = Math.max(1, currentReps + change); // Минимум 1 повторение
             repsElement.textContent = currentReps;
         }
 
