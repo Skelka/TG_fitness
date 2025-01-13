@@ -39,6 +39,7 @@
             color: #666;
         }
 
+        /* Обновляем стили для нижней навигации */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -49,7 +50,8 @@
             justify-content: space-around;
             padding: 10px 0;
             border-top: 1px solid #3D3D3D;
-            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
         }
 
         .nav-item {
@@ -61,7 +63,10 @@
             font-size: 12px;
             padding: 8px 12px;
             border-radius: 8px;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .nav-item.active {
@@ -69,15 +74,20 @@
             background-color: rgba(124, 90, 241, 0.2);
         }
 
-        .nav-item img {
+        .nav-item svg {
             width: 24px;
             height: 24px;
             margin-bottom: 4px;
-            opacity: 0.7;
+            fill: currentColor;
+            transition: transform 0.2s ease;
         }
 
-        .nav-item.active img {
-            opacity: 1;
+        .nav-item:active svg {
+            transform: scale(0.9);
+        }
+
+        .nav-item span {
+            margin-top: 4px;
         }
 
         /* Стили для списка тренировок */
@@ -1688,23 +1698,27 @@
     <!-- Нижняя навигация -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="showPage('workouts-page')">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/>
             </svg>
             <span>Тренировки</span>
         </div>
         <div class="nav-item" onclick="showPage('statistics-page')">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2 2H5V5h14v14zm0-16H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
             </svg>
             <span>Статистика</span>
         </div>
         <div class="nav-item" onclick="showPage('recommendations-page')">
-            <img src="images/recommendations.png" alt="Рекомендации">
-            <span>Рекомендации</span>
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            <span>Советы</span>
         </div>
         <div class="nav-item" onclick="showPage('profile-page')">
-            <img src="images/profile.png" alt="Профиль">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
             <span>Профиль</span>
         </div>
     </div>
