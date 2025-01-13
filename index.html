@@ -1507,64 +1507,37 @@
         /* Стили для настроек звука */
         .sound-settings {
             position: fixed;
-            bottom: 80px;
+            top: 20px;
             right: 20px;
-            background: #2D2D2D;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            z-index: 100;
             cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            background: rgba(45, 45, 45, 0.8);
+            padding: 10px;
+            border-radius: 50%;
         }
 
         .settings-panel {
             position: fixed;
-            bottom: 140px;
+            top: 70px;
             right: 20px;
             background: #2D2D2D;
-            border-radius: 10px;
             padding: 15px;
-            width: 250px;
-            transform: translateY(20px);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-            z-index: 999;
-        }
-
-        .settings-panel.active {
-            transform: translateY(0);
-            opacity: 1;
-            visibility: visible;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 99;
         }
 
         .sound-option {
+            margin: 10px 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
-            color: #fff;
+            gap: 15px;
         }
 
         .volume-slider {
             width: 100px;
-            height: 4px;
-            background: #1E1E1E;
-            border-radius: 2px;
-            -webkit-appearance: none;
-        }
-
-        .volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 12px;
-            height: 12px;
-            background: #7C5AF1;
-            border-radius: 50%;
-            cursor: pointer;
         }
 
         /* Стили для индикатора загрузки */
@@ -1708,6 +1681,49 @@
             height: calc(100vh - 60px);
             overflow: hidden;
         }
+
+        /* Обновляем стили профиля */
+        .profile-section {
+            background-color: #2D2D2D;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .goals-buttons, .level-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .goal-btn, .level-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            background: #3D3D3D;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .goal-btn.active, .level-btn.active {
+            background: #7C5AF1;
+        }
+
+        .restrictions-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .restrictions-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -1767,14 +1783,103 @@
         <!-- Страница профиля -->
         <div id="profile-page" class="page">
             <div class="profile-container">
+                <!-- Кнопка настроек звука -->
+                <div class="sound-settings" onclick="toggleSettings()">
+                    <svg viewBox="0 0 24 24" fill="#fff" width="24" height="24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                    </svg>
+                </div>
+
+                <!-- Панель настроек звука -->
+                <div class="settings-panel" id="settingsPanel">
+                    <div class="sound-option">
+                        <span>Звуковые эффекты</span>
+                        <input type="checkbox" id="soundEffects" checked>
+                    </div>
+                    <div class="sound-option">
+                        <span>Громкость</span>
+                        <input type="range" id="soundVolume" class="volume-slider" min="0" max="1" step="0.1" value="0.7">
+                    </div>
+                    <div class="sound-option">
+                        <span>Голосовые подсказки</span>
+                        <input type="checkbox" id="voiceGuide" checked>
+                    </div>
+                    <div class="sound-option">
+                        <span>Обратный отсчет</span>
+                        <input type="checkbox" id="countdownSound" checked>
+                    </div>
+                </div>
+
                 <div class="profile-header">
                     <div class="profile-photo">
                         <img src="images/default-avatar.png" alt="Фото профиля" id="profile-photo">
+                        <button class="change-photo-btn" onclick="requestProfilePhoto()">
+                            Изменить фото
+                        </button>
                     </div>
                     <div class="profile-info" id="profile-info">
-                        <!-- Информация профиля будет добавлена динамически -->
+                        <h2 id="profile-name">Ваш профиль</h2>
                     </div>
                 </div>
+
+                <div class="profile-sections">
+                    <div class="profile-section">
+                        <h3>Основная информация</h3>
+                        <div class="form-group">
+                            <label>Возраст</label>
+                            <input type="number" id="age" placeholder="Лет">
+                        </div>
+                        <div class="form-group">
+                            <label>Рост</label>
+                            <input type="number" id="height" placeholder="см">
+                        </div>
+                        <div class="form-group">
+                            <label>Вес</label>
+                            <input type="number" id="weight" placeholder="кг">
+                        </div>
+                    </div>
+                    
+                    <div class="profile-section">
+                        <h3>Уровень подготовки</h3>
+                        <div class="level-buttons">
+                            <button class="level-btn" data-level="beginner">Новичок</button>
+                            <button class="level-btn" data-level="intermediate">Средний</button>
+                            <button class="level-btn" data-level="advanced">Продвинутый</button>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-section">
+                        <h3>Цели тренировок</h3>
+                        <div class="goals-buttons">
+                            <button class="goal-btn" data-goal="strength">Набор мышечной массы</button>
+                            <button class="goal-btn" data-goal="weight-loss">Снижение веса</button>
+                            <button class="goal-btn" data-goal="endurance">Выносливость</button>
+                            <button class="goal-btn" data-goal="flexibility">Гибкость</button>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-section">
+                        <h3>Ограничения</h3>
+                        <div class="restrictions-group">
+                            <label>
+                                <input type="checkbox" value="back">
+                                Проблемы со спиной
+                            </label>
+                            <label>
+                                <input type="checkbox" value="knees">
+                                Проблемы с коленями
+                            </label>
+                            <label>
+                                <input type="checkbox" value="shoulders">
+                                Проблемы с плечами
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="save-profile-btn" onclick="saveProfile()">
+                    Сохранить изменения
+                </button>
             </div>
         </div>
     </div>
@@ -1864,6 +1969,45 @@
             
             // Показываем первую страницу
             showPage('workouts-page');
+        });
+
+        // Функция переключения панели настроек
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Функция сохранения профиля
+        function saveProfile() {
+            const profile = {
+                age: document.getElementById('age').value,
+                height: document.getElementById('height').value,
+                weight: document.getElementById('weight').value,
+                level: document.querySelector('.level-btn.active')?.dataset.level,
+                goals: Array.from(document.querySelectorAll('.goal-btn.active'))
+                    .map(btn => btn.dataset.goal),
+                restrictions: Array.from(document.querySelectorAll('.restrictions-group input:checked'))
+                    .map(input => input.value)
+            };
+
+            tg.sendData(JSON.stringify({
+                type: 'profile_update',
+                data: profile
+            }));
+        }
+
+        // Обработчики для кнопок
+        document.querySelectorAll('.level-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        document.querySelectorAll('.goal-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+            });
         });
     </script>
 </body>
