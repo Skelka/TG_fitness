@@ -248,19 +248,16 @@
 
         .workout-type-card {
             position: relative;
-            height: 150px;
+            height: 180px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            padding: 20px;
             background-size: cover;
             background-position: center;
-            border-radius: 10px;
-            padding: 20px;
-            cursor: pointer;
+            position: relative;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            transform: scale(0.95);
-            opacity: 0.8;
-            transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
 
         .workout-type-card::before {
@@ -270,28 +267,26 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
-            z-index: 1;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6));
         }
 
         .workout-type-card h3, 
         .workout-type-card p {
             position: relative;
-            z-index: 2;
-            color: white;
-            margin: 0;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            z-index: 1;
         }
 
-        .workout-type-card h3 {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 5px;
+        /* Временные заглушки для изображений */
+        .workout-type-card[data-type="strength"] {
+            background-color: #4A90E2;
         }
 
-        .workout-type-card p {
-            font-size: 14px;
-            opacity: 0.9;
+        .workout-type-card[data-type="cardio"] {
+            background-color: #E2574A;
+        }
+
+        .workout-type-card[data-type="stretching"] {
+            background-color: #50E3C2;
         }
 
         .exercise-list {
@@ -1643,19 +1638,19 @@
         <div class="workout-types">
             <div class="workout-type-card" 
                  onclick="showWorkoutDays(1)"
-                 style="background-image: url('images/strength.jpg')">
+                 data-type="strength">
                 <h3>Силовая тренировка</h3>
                 <p>Тренировка для набора мышечной массы</p>
             </div>
             <div class="workout-type-card"
                  onclick="showWorkoutDays(2)"
-                 style="background-image: url('images/cardio.jpg')">
+                 data-type="cardio">
                 <h3>Кардио</h3>
                 <p>Тренировка для сжигания жира</p>
             </div>
             <div class="workout-type-card"
                  onclick="showWorkoutDays(3)"
-                 style="background-image: url('images/stretching.jpg')">
+                 data-type="stretching">
                 <h3>Растяжка</h3>
                 <p>Упражнения для гибкости</p>
             </div>
@@ -1693,11 +1688,15 @@
     <!-- Нижняя навигация -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="showPage('workouts-page')">
-            <img src="images/workout.png" alt="Тренировки">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/>
+            </svg>
             <span>Тренировки</span>
         </div>
         <div class="nav-item" onclick="showPage('statistics-page')">
-            <img src="images/stats.png" alt="Статистика">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+            </svg>
             <span>Статистика</span>
         </div>
         <div class="nav-item" onclick="showPage('recommendations-page')">
