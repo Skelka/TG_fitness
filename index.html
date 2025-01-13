@@ -1634,6 +1634,71 @@
         .notification.show {
             transform: translateX(-50%) translateY(0);
         }
+
+        /* Стили для карточек тренировок */
+        .workout-types {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .workout-type-card {
+            position: relative;
+            height: 180px;
+            border-radius: 15px;
+            padding: 20px;
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .workout-type-card:active {
+            transform: scale(0.98);
+        }
+
+        .workout-type-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6));
+        }
+
+        .workout-type-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+
+        .workout-type-card p {
+            margin: 0;
+            font-size: 16px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Временные цвета для карточек */
+        .workout-type-card[data-type="strength"] {
+            background: linear-gradient(135deg, #4A90E2, #357ABD);
+        }
+
+        .workout-type-card[data-type="cardio"] {
+            background: linear-gradient(135deg, #E2574A, #D23B2D);
+        }
+
+        .workout-type-card[data-type="stretching"] {
+            background: linear-gradient(135deg, #50E3C2, #2ECAA5);
+        }
     </style>
 </head>
 <body>
@@ -1815,13 +1880,17 @@
             // Скрываем все страницы
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
+                page.style.display = 'none';
             });
 
             // Показываем нужную страницу
             const page = document.getElementById(pageId);
-            setTimeout(() => {
-                page.classList.add('active');
-            }, 50);
+            if (page) {
+                page.style.display = 'block';
+                setTimeout(() => {
+                    page.classList.add('active');
+                }, 50);
+            }
         }
 
         // Утилиты для работы с загрузкой и уведомлениями
