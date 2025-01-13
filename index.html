@@ -1788,33 +1788,54 @@
             currentExercise = exercise;
             currentSet = 1;
             
+            // Инициализируем статистику для нового упражнения
+            if (!currentWorkoutStats.startTime) {
+                currentWorkoutStats = {
+                    startTime: new Date(),
+                    workoutType: workoutPrograms[workoutTypeId].name,
+                    exercises: []
+                };
+            }
+            currentExerciseStats = {
+                name: exercise.name,
+                sets: []
+            };
+
             document.getElementById('active-exercise-title').textContent = exercise.name;
             document.getElementById('active-exercise-description').textContent = exercise.description;
             document.getElementById('total-sets').textContent = exercise.sets;
             document.getElementById('current-set').textContent = currentSet;
             
-            // Преобразуем строку с повторениями в число
-            let reps;
-            if (exercise.reps === 'максимум') {
-                reps = 1;
-            } else if (exercise.reps.includes('-')) {
-                reps = parseInt(exercise.reps.split('-')[0]);
-            } else {
-                reps = parseInt(exercise.reps);
-            }
-            
-            // Обновляем интерфейс упражнения
+            // Разный интерфейс для растяжки и других типов упражнений
+            const isStretchExercise = workoutTypeId === 3; // ID 3 для растяжки
             const repsCircle = document.querySelector('.reps-circle');
-            repsCircle.innerHTML = `
-                ${workoutTypeId === 1 && exercise.weight ? 
-                    `<div class="weight-info" id="weight-info">${exercise.weight} кг</div>` : 
-                    ''}
-                <div class="reps-count" id="reps-count">${reps}</div>
-                <div class="reps-label">Готово</div>
-                <button class="decrease-reps" onclick="adjustReps(-1)">−</button>
-                <button class="increase-reps" onclick="adjustReps(1)">+</button>
-            `;
             
+            if (isStretchExercise) {
+                // Для растяжки показываем время
+                repsCircle.innerHTML = `
+                    <div class="reps-count" id="reps-count">${exercise.reps}</div>
+                    <div class="reps-label">секунд</div>
+                `;
+                // Показываем кнопку "Начать подход"
+                document.getElementById('exercise-controls').innerHTML = `
+                    <button id="start-set-btn" class="primary-button" onclick="startStretchSet()" disabled>
+                        Начать подход
+                    </button>
+                `;
+            } else {
+                // Для других упражнений стандартный интерфейс
+                repsCircle.innerHTML = `
+                    ${workoutTypeId === 1 && exercise.weight ? 
+                        `<div class="weight-info" id="weight-info">${exercise.weight} кг</div>` : 
+                        ''}
+                    <div class="reps-count" id="reps-count">${exercise.reps}</div>
+                    <div class="reps-label">Готово</div>
+                    <button class="decrease-reps" onclick="adjustReps(-1)">−</button>
+                    <button class="increase-reps" onclick="adjustReps(1)">+</button>
+                `;
+                repsCircle.onclick = completeSet;
+            }
+
             showPage('active-exercise-page');
         }
 
@@ -1825,6 +1846,15 @@
             if (isCompletingSet) return; // Предотвращаем множественные нажатия
             isCompletingSet = true;
             
+            // Сохраняем данные о завершенном подходе
+            const reps = parseInt(document.getElementById('reps-count').textContent);
+            const setData = {
+                reps: reps,
+                weight: currentExercise.weight || null,
+                timestamp: new Date()
+            };
+            currentExerciseStats.sets.push(setData);
+
             if (currentSet < parseInt(document.getElementById('total-sets').textContent)) {
                 currentSet++;
                 document.getElementById('current-set').textContent = currentSet;
@@ -1833,24 +1863,16 @@
                 
                 showRestTimer();
             } else {
-                // Показываем экран завершения упражнения
-                const container = document.querySelector('.exercise-content');
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 30px;">
-                        <h2 style="color: #fff; margin-bottom: 20px;">Упражнение завершено!</h2>
-                        ${hasNextExercise() ? `
-                            <p style="color: #B0B0B0; margin-bottom: 20px;">Следующее упражнение:</p>
-                            <h3 style="color: #fff; margin-bottom: 30px;">${getNextExercise().name}</h3>
-                            <button class="primary-button" onclick="startNextExercise()">
-                                Начать следующее упражнение
-                            </button>
-                        ` : `
-                            <button class="primary-button" onclick="showPage('exercises-page')">
-                                Вернуться к списку упражнений
-                            </button>
-                        `}
-                    </div>
-                `;
+                // Сохраняем статистику упражнения при его завершении
+                currentWorkoutStats.exercises.push({...currentExerciseStats});
+
+                if (hasNextExercise()) {
+                    // ... показ следующего упражнения ...
+                } else {
+                    // Сохраняем всю тренировку при её завершении
+                    saveWorkoutStats();
+                    // ... завершение тренировки ...
+                }
             }
             
             setTimeout(() => {
@@ -1865,11 +1887,10 @@
                 currentSet < currentExercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
         }
 
-        function showRestTimer() {
+        function showRestTimer(isStretch = false) {
             const restSeconds = parseInt(currentExercise.rest);
             let timeLeft = restSeconds;
             
-            // Обновляем интерфейс для отображения таймера
             const repsCircle = document.querySelector('.reps-circle');
             repsCircle.innerHTML = `
                 <div class="weight-info">Отдых</div>
@@ -1877,7 +1898,14 @@
                 <div class="reps-label">секунд</div>
             `;
             
-            // Запускаем таймер
+            if (isStretch) {
+                document.getElementById('exercise-controls').innerHTML = `
+                    <button id="start-set-btn" class="primary-button" onclick="startStretchSet()" disabled>
+                        Начать подход
+                    </button>
+                `;
+            }
+            
             const timerInterval = setInterval(() => {
                 timeLeft--;
                 document.getElementById('rest-timer').textContent = timeLeft;
@@ -1886,8 +1914,12 @@
                     clearInterval(timerInterval);
                     playNotificationSound();
                     vibrate();
-                    // Возвращаем интерфейс для следующего подхода
-                    resetExerciseInterface();
+                    if (isStretch) {
+                        // Разблокируем кнопку "Начать подход"
+                        document.getElementById('start-set-btn').disabled = false;
+                    } else {
+                        resetExerciseInterface();
+                    }
                 }
             }, 1000);
         }
@@ -1918,7 +1950,7 @@
             const container = document.querySelector('.exercise-content');
             container.innerHTML = `
                 <div style="text-align: center; padding: 30px;">
-                    <h2 style="color: #fff; margin-bottom: 20px;">Подход завершен!</h2>
+                    <h2 style="color: #fff; margin-bottom: 20px;">Упражнение завершено!</h2>
                     <p style="color: #B0B0B0; margin-bottom: 20px;">Следующее упражнение:</p>
                     <h3 style="color: #fff; margin-bottom: 30px;">${nextExercise.name}</h3>
                     <button class="primary-button" onclick="startNextExercise()">
@@ -2030,6 +2062,132 @@
 
         function getCurrentExerciseIndex() {
             return currentWorkout.exercises.findIndex(ex => ex.name === currentExercise.name);
+        }
+
+        // Добавим объект для хранения текущей тренировки
+        let currentWorkoutStats = {
+            startTime: null,
+            workoutType: null,
+            exercises: []
+        };
+
+        // Объект для хранения данных текущего упражнения
+        let currentExerciseStats = {
+            name: null,
+            sets: []
+        };
+
+        function saveWorkoutStats() {
+            // Добавляем время окончания тренировки
+            currentWorkoutStats.endTime = new Date();
+            
+            // Отправляем данные в Telegram бот
+            if (window.Telegram.WebApp) {
+                window.Telegram.WebApp.sendData(JSON.stringify({
+                    type: 'workout_stats',
+                    data: currentWorkoutStats
+                }));
+            }
+            
+            // Сбрасываем статистику
+            currentWorkoutStats = {
+                startTime: null,
+                workoutType: null,
+                exercises: []
+            };
+        }
+
+        // Функция для форматирования статистики
+        function formatWorkoutStats() {
+            let duration = Math.floor((new Date() - currentWorkoutStats.startTime) / 1000 / 60); // в минутах
+            let totalSets = currentWorkoutStats.exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
+            let totalReps = currentWorkoutStats.exercises.reduce((sum, ex) => 
+                sum + ex.sets.reduce((setSum, set) => setSum + set.reps, 0), 0);
+            
+            return {
+                duration,
+                totalSets,
+                totalReps,
+                exercises: currentWorkoutStats.exercises.map(ex => ({
+                    name: ex.name,
+                    sets: ex.sets.map(set => ({
+                        reps: set.reps,
+                        weight: set.weight
+                    }))
+                }))
+            };
+        }
+
+        function startStretchSet() {
+            const timeLeft = parseInt(currentExercise.reps);
+            const repsCircle = document.querySelector('.reps-circle');
+            repsCircle.onclick = null; // Отключаем клик по кругу
+            
+            // Меняем кнопку на "Готово" и блокируем её
+            document.getElementById('exercise-controls').innerHTML = `
+                <button id="complete-set-btn" class="primary-button" onclick="completeStretchSet()" disabled>
+                    Готово
+                </button>
+            `;
+            
+            // Запускаем таймер
+            let remainingTime = timeLeft;
+            const timerInterval = setInterval(() => {
+                remainingTime--;
+                document.getElementById('reps-count').textContent = remainingTime;
+                
+                if (remainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    playNotificationSound();
+                    vibrate();
+                    // Разблокируем кнопку "Готово"
+                    document.getElementById('complete-set-btn').disabled = false;
+                }
+            }, 1000);
+        }
+
+        function completeStretchSet() {
+            if (isCompletingSet) return;
+            isCompletingSet = true;
+            
+            const setData = {
+                reps: parseInt(currentExercise.reps),
+                timestamp: new Date()
+            };
+            currentExerciseStats.sets.push(setData);
+            
+            if (currentSet < parseInt(document.getElementById('total-sets').textContent)) {
+                currentSet++;
+                document.getElementById('current-set').textContent = currentSet;
+                document.getElementById('next-exercise-name').textContent = 
+                    currentSet < currentExercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
+                
+                showRestTimer(true); // true означает, что это растяжка
+            } else {
+                currentWorkoutStats.exercises.push({...currentExerciseStats});
+                if (hasNextExercise()) {
+                    showNextExercisePreview();
+                } else {
+                    saveWorkoutStats();
+                    completeWorkout();
+                }
+            }
+            
+            setTimeout(() => {
+                isCompletingSet = false;
+            }, 500);
+        }
+
+        function completeWorkout() {
+            const container = document.querySelector('.exercise-content');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 30px;">
+                    <h2 style="color: #fff; margin-bottom: 20px;">Тренировка завершена!</h2>
+                    <button class="primary-button" onclick="showPage('workouts-page')">
+                        Вернуться к списку тренировок
+                    </button>
+                </div>
+            `;
         }
     </script>
 </body>
