@@ -110,9 +110,15 @@
         }
 
         .page {
-            transition: opacity 0.3s, transform 0.3s;
             opacity: 0;
             transform: translateY(20px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 60px; /* Высота нижней навигации */
+            overflow-y: auto;
             display: none;
         }
         
@@ -252,6 +258,9 @@
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
+            transform: scale(0.95);
+            opacity: 0.8;
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out;
         }
 
         .workout-type-card::before {
@@ -1629,21 +1638,108 @@
         <div class="loading-text">Загрузка...</div>
     </div>
 
-    <!-- Остальной контент -->
+    <!-- Основные страницы приложения -->
+    <div id="workouts-page" class="page">
+        <div class="workout-types">
+            <div class="workout-type-card" 
+                 onclick="showWorkoutDays(1)"
+                 style="background-image: url('images/strength.jpg')">
+                <h3>Силовая тренировка</h3>
+                <p>Тренировка для набора мышечной массы</p>
+            </div>
+            <div class="workout-type-card"
+                 onclick="showWorkoutDays(2)"
+                 style="background-image: url('images/cardio.jpg')">
+                <h3>Кардио</h3>
+                <p>Тренировка для сжигания жира</p>
+            </div>
+            <div class="workout-type-card"
+                 onclick="showWorkoutDays(3)"
+                 style="background-image: url('images/stretching.jpg')">
+                <h3>Растяжка</h3>
+                <p>Упражнения для гибкости</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="profile-page" class="page">
+        <div class="profile-container">
+            <div class="profile-header">
+                <div class="profile-photo">
+                    <img src="images/default-avatar.png" alt="Фото профиля" id="profile-photo">
+                </div>
+                <div class="profile-info" id="profile-info">
+                    <!-- Сюда будет загружаться информация профиля -->
+                </div>
+            </div>
+            <div class="goals-section" id="goals-section">
+                <!-- Сюда будут загружаться цели -->
+            </div>
+        </div>
+    </div>
+
+    <div id="statistics-page" class="page">
+        <div class="stats-container">
+            <!-- Сюда будет загружаться статистика -->
+        </div>
+    </div>
+
+    <div id="recommendations-page" class="page">
+        <div class="recommendations-container">
+            <!-- Сюда будут загружаться рекомендации -->
+        </div>
+    </div>
+
+    <!-- Нижняя навигация -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="showPage('workouts-page')">
+            <img src="images/workout.png" alt="Тренировки">
+            <span>Тренировки</span>
+        </div>
+        <div class="nav-item" onclick="showPage('statistics-page')">
+            <img src="images/stats.png" alt="Статистика">
+            <span>Статистика</span>
+        </div>
+        <div class="nav-item" onclick="showPage('recommendations-page')">
+            <img src="images/recommendations.png" alt="Рекомендации">
+            <span>Рекомендации</span>
+        </div>
+        <div class="nav-item" onclick="showPage('profile-page')">
+            <img src="images/profile.png" alt="Профиль">
+            <span>Профиль</span>
+        </div>
+    </div>
 
     <script>
         // Инициализация Telegram WebApp
         const tg = window.Telegram.WebApp;
 
-        // Отправляем сигнал об открытии приложения
+        // Анимация открытия приложения
+        function initApp() {
+            // Показываем загрузку
+            utils.showLoading('Подготовка приложения...');
+
+            // Расширяем на весь экран
+            tg.expand();
+
+            // Устанавливаем основной цвет
+            tg.setHeaderColor('#1E1E1E');
+
+            // Активируем первую страницу
+            setTimeout(() => {
+                showPage('workouts-page');
+                utils.hideLoading();
+            }, 1000);
+        }
+
+        // Обработка открытия приложения
         document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+            
             // Сообщаем боту, что приложение открыто
             tg.sendData(JSON.stringify({
                 type: 'app_opened'
             }));
-            
-            // Расширяем приложение на весь экран
-            tg.expand();
             
             // Загружаем данные
             loadProfileData();
@@ -1693,27 +1789,26 @@
 
         // Обновляем функцию переключения страниц
         function showPage(pageId) {
+            // Убираем активный класс у всех пунктов меню
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Активируем нужный пункт меню
+            const navItem = Array.from(document.querySelectorAll('.nav-item'))
+                .find(item => item.onclick.toString().includes(pageId));
+            if (navItem) navItem.classList.add('active');
+
+            // Скрываем все страницы
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
             });
-            
+
+            // Показываем нужную страницу
             const page = document.getElementById(pageId);
             setTimeout(() => {
                 page.classList.add('active');
             }, 50);
-            
-            // Загружаем данные при переключении на страницу
-            switch(pageId) {
-                case 'profile-page':
-                    loadProfileData();
-                    break;
-                case 'statistics-page':
-                    loadStatistics();
-                    break;
-                case 'recommendations-page':
-                    loadRecommendations();
-                    break;
-            }
         }
 
         // Утилиты для работы с загрузкой и уведомлениями
