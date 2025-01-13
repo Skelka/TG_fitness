@@ -948,6 +948,33 @@
             -webkit-user-select: none;
             user-select: none;
         }
+
+        .exercise-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        .exercise-background img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(0.7);
+        }
+
+        .exercise-content {
+            position: relative;
+            z-index: 1;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -1788,7 +1815,7 @@
             currentExercise = exercise;
             currentSet = 1;
             
-            // Инициализируем статистику для нового упражнения
+            // Инициализируем статистику
             if (!currentWorkoutStats.startTime) {
                 currentWorkoutStats = {
                     startTime: new Date(),
@@ -1806,29 +1833,31 @@
             document.getElementById('total-sets').textContent = exercise.sets;
             document.getElementById('current-set').textContent = currentSet;
             
-            // Разный интерфейс для растяжки и других типов упражнений
+            // Разный интерфейс для разных типов упражнений
             const isStretchExercise = workoutTypeId === 3; // ID 3 для растяжки
             const repsCircle = document.querySelector('.reps-circle');
             
             if (isStretchExercise) {
-                // Для растяжки показываем время
+                // Для растяжки
                 repsCircle.innerHTML = `
                     <div class="reps-count" id="reps-count">${exercise.reps}</div>
                     <div class="reps-label">секунд</div>
                 `;
-                // Показываем кнопку "Начать подход"
+                repsCircle.onclick = null;
+                
                 document.getElementById('exercise-controls').innerHTML = `
-                    <button id="start-set-btn" class="primary-button" onclick="startStretchSet()" disabled>
+                    <button id="start-set-btn" class="primary-button" onclick="startStretchSet()">
                         Начать подход
                     </button>
                 `;
             } else {
-                // Для других упражнений стандартный интерфейс
+                // Для силовых и кардио упражнений
+                let initialReps = parseInt(exercise.reps);
                 repsCircle.innerHTML = `
                     ${workoutTypeId === 1 && exercise.weight ? 
                         `<div class="weight-info" id="weight-info">${exercise.weight} кг</div>` : 
                         ''}
-                    <div class="reps-count" id="reps-count">${exercise.reps}</div>
+                    <div class="reps-count" id="reps-count">${initialReps}</div>
                     <div class="reps-label">Готово</div>
                     <button class="decrease-reps" onclick="adjustReps(-1)">−</button>
                     <button class="increase-reps" onclick="adjustReps(1)">+</button>
@@ -1836,7 +1865,45 @@
                 repsCircle.onclick = completeSet;
             }
 
+            // Добавляем анимацию упражнения
+            const container = document.querySelector('.exercise-content');
+            const animationUrl = exerciseAnimations[exercise.name];
+            if (animationUrl) {
+                container.insertAdjacentHTML('beforebegin', `
+                    <div class="exercise-background">
+                        <img src="${animationUrl}" alt="${exercise.name}" />
+                    </div>
+                `);
+            }
+
             showPage('active-exercise-page');
+        }
+
+        // Обновляем функцию resetExerciseInterface для силовых упражнений
+        function resetExerciseInterface() {
+            const repsCircle = document.querySelector('.reps-circle');
+            const showWeight = currentWorkoutTypeId === 1 && currentExercise.weight;
+            
+            if (currentWorkoutTypeId === 3) {
+                // Для растяжки
+                repsCircle.innerHTML = `
+                    <div class="reps-count" id="reps-count">${currentExercise.reps}</div>
+                    <div class="reps-label">секунд</div>
+                `;
+            } else {
+                // Для силовых и кардио
+                let currentReps = parseInt(document.getElementById('reps-count').textContent);
+                repsCircle.innerHTML = `
+                    ${showWeight ? `<div class="weight-info" id="weight-info">${currentExercise.weight} кг</div>` : ''}
+                    <div class="reps-count" id="reps-count">${currentReps}</div>
+                    <div class="reps-label">Готово</div>
+                    <button class="decrease-reps" onclick="adjustReps(-1)">−</button>
+                    <button class="increase-reps" onclick="adjustReps(1)">+</button>
+                `;
+            }
+            
+            document.getElementById('next-exercise-name').textContent = 
+                currentSet < currentExercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
         }
 
         // Добавим защиту от множественных нажатий
@@ -1924,21 +1991,6 @@
             }, 1000);
         }
 
-        function resetExerciseInterface() {
-            const repsCircle = document.querySelector('.reps-circle');
-            const showWeight = currentWorkoutTypeId === 1 && currentExercise.weight;
-            repsCircle.innerHTML = `
-                ${showWeight ? `<div class="weight-info" id="weight-info">${currentExercise.weight} кг</div>` : ''}
-                <div class="reps-count" id="reps-count">${document.getElementById('reps-count').textContent}</div>
-                <div class="reps-label">Готово</div>
-                <button class="decrease-reps" onclick="adjustReps(-1)">−</button>
-                <button class="increase-reps" onclick="adjustReps(1)">+</button>
-            `;
-            
-            document.getElementById('next-exercise-name').textContent = 
-                currentSet < currentExercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
-        }
-
         function hasNextExercise() {
             // Проверяем, есть ли следующее упражнение
             const currentExerciseIndex = getCurrentExerciseIndex();
@@ -1947,12 +1999,23 @@
 
         function showNextExercisePreview() {
             const nextExercise = getNextExercise();
+            // Удаляем предыдущую анимацию
+            const oldBackground = document.querySelector('.exercise-background');
+            if (oldBackground) {
+                oldBackground.remove();
+            }
+            
             const container = document.querySelector('.exercise-content');
             container.innerHTML = `
                 <div style="text-align: center; padding: 30px;">
                     <h2 style="color: #fff; margin-bottom: 20px;">Упражнение завершено!</h2>
                     <p style="color: #B0B0B0; margin-bottom: 20px;">Следующее упражнение:</p>
                     <h3 style="color: #fff; margin-bottom: 30px;">${nextExercise.name}</h3>
+                    ${exerciseAnimations[nextExercise.name] ? `
+                        <img src="${exerciseAnimations[nextExercise.name]}" 
+                             alt="${nextExercise.name}" 
+                             style="width: 200px; height: 200px; margin: 20px 0; border-radius: 10px;" />
+                    ` : ''}
                     <button class="primary-button" onclick="startNextExercise()">
                         Начать следующее упражнение
                     </button>
@@ -2189,6 +2252,23 @@
                 </div>
             `;
         }
+
+        // Объект с путями к анимациям упражнений
+        const exerciseAnimations = {
+            // Силовые упражнения
+            'Отжимания': 'https://thumbs.gfycat.com/GlossySkinnyDuckbillcat-max-1mb.gif',
+            'Приседания': 'https://thumbs.gfycat.com/UnhappyPennilessHarrierhawk-max-1mb.gif',
+            'Подтягивания': 'https://thumbs.gfycat.com/FaithfulGleamingGermanshepherd-max-1mb.gif',
+            
+            // Кардио
+            'Прыжки на скакалке': 'https://thumbs.gfycat.com/PoisedAgedCatfish-max-1mb.gif',
+            'Бег на месте': 'https://thumbs.gfycat.com/UniformSpecificHartebeest-max-1mb.gif',
+            
+            // Растяжка
+            'Наклоны вперед': 'https://thumbs.gfycat.com/WideeyedShorttermKingfisher-max-1mb.gif',
+            'Растяжка задней поверхности бедра': 'https://thumbs.gfycat.com/DentalShrillAcornweevil-max-1mb.gif',
+            'Бабочка': 'https://thumbs.gfycat.com/UniformFarflungBernesemountaindog-max-1mb.gif'
+        };
     </script>
 </body>
 </html>
