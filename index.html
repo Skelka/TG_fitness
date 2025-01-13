@@ -1370,6 +1370,123 @@
         .workout-exercises .workout-info-item:hover::before {
             width: 15px;
         }
+
+        /* Состояния тренировки */
+        .workout-state {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #1E1E1E;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 100;
+        }
+
+        .workout-state.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Анимация подготовки */
+        .prepare-state {
+            text-align: center;
+        }
+
+        .countdown {
+            font-size: 72px;
+            font-weight: bold;
+            color: #7C5AF1;
+            margin: 20px 0;
+            animation: pulse 1s infinite;
+        }
+
+        .next-exercise {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUp 0.5s forwards;
+        }
+
+        /* Анимация выполнения */
+        .exercise-state {
+            text-align: center;
+        }
+
+        .exercise-timer {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 20px 0;
+        }
+
+        .timer-circle {
+            stroke-dasharray: 628;
+            stroke-dashoffset: 628;
+            transition: stroke-dashoffset 1s linear;
+        }
+
+        .exercise-name {
+            font-size: 28px;
+            margin: 20px 0;
+            animation: glow 2s infinite;
+        }
+
+        /* Анимация отдыха */
+        .rest-state {
+            background: linear-gradient(45deg, #1E1E1E, #2D2D2D);
+        }
+
+        .rest-timer {
+            font-size: 48px;
+            color: #4CAF50;
+            margin: 20px 0;
+        }
+
+        .rest-message {
+            color: #B0B0B0;
+            font-size: 18px;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        /* Анимации */
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 5px rgba(124, 90, 241, 0.5); }
+            50% { text-shadow: 0 0 20px rgba(124, 90, 241, 0.8); }
+        }
+
+        /* Прогресс-бар */
+        .progress-bar {
+            width: 80%;
+            height: 4px;
+            background: #2D2D2D;
+            border-radius: 2px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #7C5AF1;
+            width: 0%;
+            transition: width 0.3s linear;
+        }
     </style>
 </head>
 <body>
@@ -3079,6 +3196,204 @@
                     }]
                 });
             }
+        }
+
+        // Функции для управления состояниями тренировки
+        function showPrepareState(exercise, countdown = 5) {
+            const stateHtml = `
+                <div class="workout-state prepare-state">
+                    <div class="next-exercise">Следующее упражнение</div>
+                    <div class="exercise-name">${exercise.name}</div>
+                    <div class="countdown">${countdown}</div>
+                    <div class="exercise-info">
+                        ${exercise.sets}×${exercise.reps} повторений
+                    </div>
+                </div>
+            `;
+            
+            const stateElement = document.createElement('div');
+            stateElement.innerHTML = stateHtml;
+            document.body.appendChild(stateElement);
+            
+            setTimeout(() => stateElement.querySelector('.workout-state').classList.add('active'), 50);
+            
+            let count = countdown;
+            const countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    stateElement.querySelector('.countdown').textContent = count;
+                } else {
+                    clearInterval(countdownInterval);
+                    stateElement.querySelector('.workout-state').classList.remove('active');
+                    setTimeout(() => {
+                        stateElement.remove();
+                        showExerciseState(exercise);
+                    }, 300);
+                }
+            }, 1000);
+        }
+
+        function showExerciseState(exercise) {
+            const stateHtml = `
+                <div class="workout-state exercise-state">
+                    <div class="exercise-name">${exercise.name}</div>
+                    <div class="exercise-timer">
+                        <svg width="200" height="200" viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="90" fill="none" 
+                                   stroke="#2D2D2D" stroke-width="10"/>
+                            <circle class="timer-circle" cx="100" cy="100" r="90" 
+                                   fill="none" stroke="#7C5AF1" stroke-width="10"/>
+                        </svg>
+                        <div class="timer-text">${exercise.duration}s</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            `;
+            
+            // ... остальной код для управления таймером и прогрессом
+        }
+
+        function showRestState(duration = 60) {
+            const stateHtml = `
+                <div class="workout-state rest-state">
+                    <h2>Отдых</h2>
+                    <div class="rest-timer">${duration}</div>
+                    <div class="rest-message">
+                        Восстановите дыхание и подготовьтесь к следующему упражнению
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            `;
+            
+            // ... остальной код для управления таймером отдыха
+        }
+
+        // Создаем аудио элементы для разных звуков
+        const sounds = {
+            countdown: new Audio('sounds/countdown.mp3'),
+            start: new Audio('sounds/start.mp3'),
+            complete: new Audio('sounds/complete.mp3'),
+            rest: new Audio('sounds/rest.mp3')
+        };
+
+        // Создаем объект для синтеза речи
+        const speechSynth = window.speechSynthesis;
+        const speechVoice = new SpeechSynthesisUtterance();
+        speechVoice.lang = 'ru-RU';
+
+        function showPrepareState(exercise, countdown = 5) {
+            const stateHtml = `
+                <div class="workout-state prepare-state">
+                    <div class="next-exercise">Следующее упражнение</div>
+                    <div class="exercise-name">${exercise.name}</div>
+                    <div class="countdown">${countdown}</div>
+                    <div class="exercise-info">
+                        ${exercise.sets}×${exercise.reps} повторений
+                    </div>
+                </div>
+            `;
+            
+            const stateElement = document.createElement('div');
+            stateElement.innerHTML = stateHtml;
+            document.body.appendChild(stateElement);
+            
+            setTimeout(() => stateElement.querySelector('.workout-state').classList.add('active'), 50);
+            
+            // Произносим название следующего упражнения
+            speechVoice.text = `Приготовьтесь к упражнению: ${exercise.name}`;
+            speechSynth.speak(speechVoice);
+            
+            let count = countdown;
+            const countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    stateElement.querySelector('.countdown').textContent = count;
+                    sounds.countdown.play();
+                } else {
+                    clearInterval(countdownInterval);
+                    sounds.start.play();
+                    stateElement.querySelector('.workout-state').classList.remove('active');
+                    setTimeout(() => {
+                        stateElement.remove();
+                        showExerciseState(exercise);
+                    }, 300);
+                }
+            }, 1000);
+        }
+
+        function showExerciseState(exercise) {
+            // Произносим инструкции
+            speechVoice.text = `Начинаем ${exercise.name}. ${exercise.sets} подходов по ${exercise.reps} повторений`;
+            speechSynth.speak(speechVoice);
+
+            const stateHtml = `
+                <div class="workout-state exercise-state">
+                    <div class="exercise-name">${exercise.name}</div>
+                    <div class="exercise-timer">
+                        <svg width="200" height="200" viewBox="0 0 200 200">
+                            <circle cx="100" cy="100" r="90" fill="none" 
+                                   stroke="#2D2D2D" stroke-width="10"/>
+                            <circle class="timer-circle" cx="100" cy="100" r="90" 
+                                   fill="none" stroke="#7C5AF1" stroke-width="10"/>
+                        </svg>
+                        <div class="timer-text">${exercise.duration}s</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            `;
+            
+            // Добавляем таймер и звуковые подсказки
+            let timeLeft = exercise.duration;
+            const timer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    sounds.complete.play();
+                    showRestState();
+                } else if (timeLeft <= 3) {
+                    sounds.countdown.play();
+                }
+            }, 1000);
+        }
+
+        function showRestState(duration = 60) {
+            // Произносим начало отдыха
+            speechVoice.text = 'Отдых. Восстановите дыхание';
+            speechSynth.speak(speechVoice);
+            sounds.rest.play();
+
+            const stateHtml = `
+                <div class="workout-state rest-state">
+                    <h2>Отдых</h2>
+                    <div class="rest-timer">${duration}</div>
+                    <div class="rest-message">
+                        Восстановите дыхание и подготовьтесь к следующему упражнению
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            `;
+            
+            // Добавляем таймер отдыха
+            let timeLeft = duration;
+            const timer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    sounds.start.play();
+                    // Переход к следующему упражнению
+                    showNextExercise();
+                } else if (timeLeft <= 3) {
+                    sounds.countdown.play();
+                }
+            }, 1000);
         }
     </script>
 </body>
