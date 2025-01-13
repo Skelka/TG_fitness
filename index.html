@@ -1481,11 +1481,12 @@
                         name: "День 1 - Грудь и трицепс",
                         exercises: [
                             {
-                                name: "Отжимания",
-                                description: "Классические отжимания от пола",
+                                name: "Отжимания с гантелями",
+                                description: "Отжимания от пола с гантелями",
                                 sets: 4,
                                 reps: "12-15",
-                                rest: "90 сек"
+                                rest: "90",
+                                weight: "5"
                             },
                             {
                                 name: "Отжимания с узкой постановкой",
@@ -1778,17 +1779,27 @@
             document.getElementById('current-set').textContent = currentSet;
             
             // Устанавливаем начальное количество повторений
-            const reps = exercise.reps.split(' ')[0]; // Получаем число из строки "12-15" или "30 сек"
+            const reps = exercise.reps.split(' ')[0];
             document.getElementById('reps-count').textContent = reps;
+            
+            // Обновляем интерфейс упражнения с учетом типа тренировки
+            const repsCircle = document.querySelector('.reps-circle');
+            repsCircle.innerHTML = `
+                ${workoutTypeId === 1 && exercise.weight ? 
+                    `<div class="weight-info" id="weight-info">${exercise.weight} кг</div>` : 
+                    ''}
+                <div class="reps-count" id="reps-count">${reps}</div>
+                <div class="reps-label">Готово</div>
+                <button class="decrease-reps" onclick="adjustReps(-1)">−</button>
+                <button class="increase-reps" onclick="adjustReps(1)">+</button>
+            `;
             
             // Обновляем информацию о следующем подходе
             document.getElementById('next-exercise-name').textContent = 
                 currentSet < exercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
             
-            // Показываем страницу упражнения
             showPage('active-exercise-page');
             
-            // Сбрасываем состояние кнопок
             document.getElementById('start-set-btn').style.display = 'block';
             document.getElementById('complete-set-btn').style.display = 'none';
         }
@@ -1868,21 +1879,20 @@
         }
 
         function resetExerciseInterface() {
-            // Восстанавливаем интерфейс упражнения
             const repsCircle = document.querySelector('.reps-circle');
+            // Показываем вес только для силовых упражнений с указанным весом
+            const showWeight = currentWorkoutTypeId === 1 && currentExercise.weight;
             repsCircle.innerHTML = `
-                <div class="weight-info" id="weight-info">${currentExercise.weight || ''}</div>
+                ${showWeight ? `<div class="weight-info" id="weight-info">${currentExercise.weight} кг</div>` : ''}
                 <div class="reps-count" id="reps-count">${currentExercise.reps.split(' ')[0]}</div>
                 <div class="reps-label">Готово</div>
                 <button class="decrease-reps" onclick="adjustReps(-1)">−</button>
                 <button class="increase-reps" onclick="adjustReps(1)">+</button>
             `;
             
-            // Обновляем информацию о следующем подходе
             document.getElementById('next-exercise-name').textContent = 
                 currentSet < currentExercise.sets ? `Подход ${currentSet + 1}` : 'Последний подход';
             
-            // Автоматически начинаем следующий подход
             startSet();
         }
 
