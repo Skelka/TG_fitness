@@ -2506,21 +2506,19 @@
                         .map(input => input.value)
                 };
 
-                console.log('Подготовленные данные профиля:', profile);
-
                 const data = JSON.stringify({
                     type: 'profile_update',
                     data: profile
                 });
                 
-                console.log('Отправляем данные в бот:', data);
-                tg.sendData(data);
-                
-                tg.showPopup({
-                    title: 'Отправка данных',
-                    message: 'Данные успешно отправлены',
-                    buttons: [{type: 'ok'}]
+                // Используем MainButton для отправки данных
+                tg.MainButton.setText('Сохранить');
+                tg.MainButton.show();
+                tg.MainButton.onClick(() => {
+                    tg.sendData(data);
+                    tg.MainButton.hide();
                 });
+
             } catch (error) {
                 console.error('Ошибка:', error);
                 tg.showPopup({
@@ -2758,6 +2756,13 @@
             console.log('Telegram WebApp успешно инициализирован');
             console.log('Версия WebApp:', tg.version);
             console.log('Платформа:', tg.platform);
+        });
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            const tg = window.Telegram.WebApp;
+            tg.ready(); // Сообщаем WebApp что мы готовы принимать данные
+            tg.expand(); // Раскрываем на всю высоту
         });
     </script>
 </body>

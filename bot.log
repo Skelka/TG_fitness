@@ -428,3 +428,18 @@ RuntimeError: There is no current event loop in thread 'MainThread'.
 2025-01-14 23:53:01,264 - apscheduler.scheduler - INFO - Scheduler started
 2025-01-14 23:53:01,518 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
 2025-01-14 23:53:01,520 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': None}, 'goals': [], 'restrictions': []}
+2025-01-14 23:54:54,348 - __main__ - INFO - Starting bot...
+2025-01-14 23:54:54,575 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 23:55:46,971 - __main__ - INFO - Starting bot...
+2025-01-14 23:55:47,231 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 23:55:49,249 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 23:55:49,257 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': None}, 'goals': [], 'restrictions': []}
+2025-01-14 23:56:58,163 - __main__ - INFO - Обработка фото профиля для пользователя 279595017
+2025-01-14 23:56:58,363 - __main__ - INFO - Сохраняем file_path в БД: https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_5.jpg
+2025-01-14 23:56:58,364 - database - INFO - Обновляем поля: {'photo_url': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_5.jpg'}
+2025-01-14 23:56:58,365 - database - INFO - SQL запрос: UPDATE users SET photo_url = ? WHERE user_id = ?, значения: ['https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_5.jpg', 279595017]
+2025-01-14 23:56:58,370 - database - INFO - Результат обновления: <sqlite3.Row object at 0x0000023B70A669B0>
+2025-01-14 23:57:05,974 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 23:57:05,976 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_5.jpg'}, 'goals': [], 'restrictions': []}
+2025-01-14 23:57:16,149 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 23:57:16,151 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_5.jpg'}, 'goals': [], 'restrictions': []}
