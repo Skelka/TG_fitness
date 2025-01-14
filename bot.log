@@ -182,3 +182,12 @@ telegram.error.Conflict: Conflict: terminated by other getUpdates request; make 
 2025-01-14 23:04:41,519 - __main__ - INFO - Сохраняем file_path в БД: https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_4.jpg
 2025-01-14 23:05:10,396 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
 2025-01-14 23:05:10,397 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_4.jpg'}, 'goals': [], 'restrictions': []}
+2025-01-14 23:06:47,917 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 23:06:47,941 - __main__ - INFO - Web server started on http://localhost:8000
+2025-01-14 23:06:48,160 - apscheduler.scheduler - INFO - Added job "restart_webhook" to job store "default"
+2025-01-14 23:06:48,161 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 23:06:48,162 - __main__ - INFO - Bot started
+2025-01-14 23:06:58,728 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 23:06:58,731 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_4.jpg'}, 'goals': [], 'restrictions': []}
+2025-01-14 23:07:51,130 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 23:07:51,131 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_4.jpg'}, 'goals': [], 'restrictions': []}

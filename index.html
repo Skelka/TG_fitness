@@ -2099,7 +2099,10 @@
                             Отправьте фото в чат с ботом для изменения
                         </div>
                     </div>
-                    <h2 style="color: #fff; margin: 0;">Ваш профиль</h2>
+                    <div class="profile-title">
+                        <h2 style="color: #fff; margin: 0 0 5px 0;">Ваш профиль</h2>
+                        <span style="color: #B0B0B0; font-size: 12px;">Отправьте фото в чат с ботом для изменения</span>
+                    </div>
                 </div>
 
                 <div class="input-group">
@@ -2477,6 +2480,7 @@
         // Функция сохранения профиля
         function saveProfile() {
             try {
+                console.log('Начинаем сохранение профиля...');
                 const profile = {
                     age: document.getElementById('age').value ? parseInt(document.getElementById('age').value) : null,
                     height: document.getElementById('height').value ? parseInt(document.getElementById('height').value) : null,
@@ -2488,21 +2492,35 @@
                         .map(input => input.value)
                 };
 
+                console.log('Подготовленные данные:', profile);
+
                 // Отправляем данные в бот
                 const tg = window.Telegram.WebApp;
-                tg.sendData(JSON.stringify({
+                const data = JSON.stringify({
                     type: 'profile_update',
                     data: profile
-                }));
-
-                // Показываем уведомление об успешном сохранении
-                tg.showPopup({
-                    title: 'Успешно',
-                    message: 'Профиль успешно обновлен',
-                    buttons: [{type: 'ok'}]
                 });
+                console.log('Отправляем данные в бот:', data);
+                tg.sendData(data);
+
+                // Добавляем небольшую задержку перед показом уведомления
+                setTimeout(() => {
+                    tg.showPopup({
+                        title: 'Успешно',
+                        message: 'Профиль успешно обновлен',
+                        buttons: [{type: 'ok'}]
+                    });
+                }, 500);
+
             } catch (error) {
                 console.error('Ошибка сохранения профиля:', error);
+                // Показываем ошибку пользователю
+                const tg = window.Telegram.WebApp;
+                tg.showPopup({
+                    title: 'Ошибка',
+                    message: 'Не удалось сохранить профиль',
+                    buttons: [{type: 'ok'}]
+                });
             }
         }
 
@@ -2690,8 +2708,12 @@
                         
                         // Устанавливаем фото профиля
                         if (data.personalInfo.photo) {
-                            // Используем прямую ссылку на файл из Telegram
-                            document.getElementById('profile-photo').src = `https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/${data.personalInfo.photo}`;
+                            const photoUrl = data.personalInfo.photo;
+                            if (photoUrl.startsWith('http')) {
+                                document.getElementById('profile-photo').src = photoUrl;
+                            } else {
+                                document.getElementById('profile-photo').src = `https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/${photoUrl}`;
+                            }
                         }
                     }
                     
