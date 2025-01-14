@@ -220,3 +220,28 @@ telegram.error.Conflict: Conflict: terminated by other getUpdates request; make 
 2025-01-14 23:20:49,567 - __main__ - INFO - Bot started
 2025-01-14 23:21:12,437 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
 2025-01-14 23:21:12,439 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_4.jpg'}, 'goals': [], 'restrictions': []}
+2025-01-14 23:26:29,828 - __main__ - ERROR - Error running bot: unsupported operand type(s) for &: 'type' and '_WebAppData'
+Traceback (most recent call last):
+  File "C:\Users\slave\Desktop\TGbot\TG_fitness\bot.py", line 435, in main
+    asyncio.run(init_app())
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\slave\Desktop\TGbot\TG_fitness\bot.py", line 353, in init_app
+    filters.Message & filters.StatusUpdate.WEB_APP_DATA,
+    ~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for &: 'type' and '_WebAppData'
+2025-01-14 23:27:36,199 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 23:27:36,220 - __main__ - INFO - Web server started on http://localhost:8000
+2025-01-14 23:27:36,531 - apscheduler.scheduler - INFO - Added job "restart_webhook" to job store "default"
+2025-01-14 23:27:36,532 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 23:27:36,533 - __main__ - INFO - Bot started
+2025-01-14 23:27:41,774 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 23:27:41,777 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_4.jpg'}, 'goals': [], 'restrictions': []}
+2025-01-14 23:27:42,081 - __main__ - INFO - Получен update: Update(message=Message(channel_chat_created=False, chat=Chat(first_name='Вячеслав', id=279595017, type=<ChatType.PRIVATE>, username='my_br0'), date=datetime.datetime(2025, 1, 14, 20, 27, 42, tzinfo=<UTC>), delete_chat_photo=False, entities=(MessageEntity(length=6, offset=0, type=<MessageEntityType.BOT_COMMAND>),), from_user=User(first_name='Вячеслав', id=279595017, is_bot=False, language_code='ru', username='my_br0'), group_chat_created=False, message_id=606, supergroup_chat_created=False, text='/start'), update_id=581369992)
