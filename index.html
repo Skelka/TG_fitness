@@ -2520,24 +2520,15 @@
                 });
                 
                 console.log('Отправляем данные в бот:', data);
-                // Проверяем, что метод sendData доступен
-                if (typeof tg.sendData !== 'function') {
-                    console.error('Метод sendData не доступен');
-                    return;
-                }
                 
-                tg.MainButton.setText('Сохранение...');
-                tg.MainButton.show();
-                tg.MainButton.disable();
-                
-                console.log('Отправка данных через sendData...');
                 tg.sendData(data);
-                console.log('Данные отправлены');
                 
-                // Восстановим состояние кнопки через секунду
-                setTimeout(() => {
-                    tg.MainButton.hide();
-                }, 1000);
+                // Показываем уведомление об успешной отправке
+                tg.showPopup({
+                    title: 'Отправка данных',
+                    message: 'Данные успешно отправлены',
+                    buttons: [{type: 'ok'}]
+                });
 
             } catch (error) {
                 console.error('Ошибка сохранения профиля:', error);

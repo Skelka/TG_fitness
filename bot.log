@@ -245,3 +245,160 @@ TypeError: unsupported operand type(s) for &: 'type' and '_WebAppData'
 2025-01-14 23:27:41,774 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
 2025-01-14 23:27:41,777 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_4.jpg'}, 'goals': [], 'restrictions': []}
 2025-01-14 23:27:42,081 - __main__ - INFO - Получен update: Update(message=Message(channel_chat_created=False, chat=Chat(first_name='Вячеслав', id=279595017, type=<ChatType.PRIVATE>, username='my_br0'), date=datetime.datetime(2025, 1, 14, 20, 27, 42, tzinfo=<UTC>), delete_chat_photo=False, entities=(MessageEntity(length=6, offset=0, type=<MessageEntityType.BOT_COMMAND>),), from_user=User(first_name='Вячеслав', id=279595017, is_bot=False, language_code='ru', username='my_br0'), group_chat_created=False, message_id=606, supergroup_chat_created=False, text='/start'), update_id=581369992)
+2025-01-14 23:32:40,854 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 23:32:41,424 - apscheduler.scheduler - INFO - Added job "restart_webhook" to job store "default"
+2025-01-14 23:32:41,425 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 23:32:41,427 - __main__ - INFO - Bot started
+2025-01-14 23:37:23,194 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 23:37:23,198 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_4.jpg'}, 'goals': [], 'restrictions': []}
+2025-01-14 23:37:23,552 - __main__ - INFO - Получен update: Update(message=Message(channel_chat_created=False, chat=Chat(first_name='Вячеслав', id=279595017, type=<ChatType.PRIVATE>, username='my_br0'), date=datetime.datetime(2025, 1, 14, 20, 37, 23, tzinfo=<UTC>), delete_chat_photo=False, entities=(MessageEntity(length=6, offset=0, type=<MessageEntityType.BOT_COMMAND>),), from_user=User(first_name='Вячеслав', id=279595017, is_bot=False, language_code='ru', username='my_br0'), group_chat_created=False, message_id=608, supergroup_chat_created=False, text='/start'), update_id=581369993)
+2025-01-14 23:37:40,859 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 20:42:40 UTC)" (scheduled at 2025-01-14 20:37:40.853829+00:00)
+2025-01-14 23:37:40,860 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 23:37:45,877 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 20:42:40 UTC)" executed successfully
+2025-01-14 23:39:34,367 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 23:39:34,369 - __main__ - ERROR - Error in application: Cannot close a running event loop
+Traceback (most recent call last):
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 1006, in __run
+    raise exc
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 995, in __run
+    loop.run_until_complete(self.initialize())
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 663, in run_until_complete
+    self._check_running()
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 622, in _check_running
+    raise RuntimeError('This event loop is already running')
+RuntimeError: This event loop is already running
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 1014, in __run
+    loop.run_until_complete(self.stop())
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 663, in run_until_complete
+    self._check_running()
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 622, in _check_running
+    raise RuntimeError('This event loop is already running')
+RuntimeError: This event loop is already running
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\slave\Desktop\TGbot\TG_fitness\bot.py", line 370, in init_app
+    await application.run_polling()
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 818, in run_polling
+    return self.__run(
+           ^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 1022, in __run
+    loop.close()
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 687, in close
+    raise RuntimeError("Cannot close a running event loop")
+RuntimeError: Cannot close a running event loop
+2025-01-14 23:39:34,389 - __main__ - ERROR - Error during shutdown: This Application is still running!
+Traceback (most recent call last):
+  File "C:\Users\slave\Desktop\TGbot\TG_fitness\bot.py", line 382, in init_app
+    await application.shutdown()
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 524, in shutdown
+    raise RuntimeError("This Application is still running!")
+RuntimeError: This Application is still running!
+2025-01-14 23:39:34,592 - apscheduler.scheduler - INFO - Added job "health_check" to job store "default"
+2025-01-14 23:39:34,593 - apscheduler.scheduler - INFO - Added job "create_backup" to job store "default"
+2025-01-14 23:39:34,596 - telegram.ext.Application - WARNING - Fetching updates got a asyncio.CancelledError. Ignoring as this task may onlybe closed via `Application.stop`.
+2025-01-14 23:40:15,597 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 23:40:15,599 - __main__ - ERROR - Error in application: Cannot close a running event loop
+Traceback (most recent call last):
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 1006, in __run
+    raise exc
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 995, in __run
+    loop.run_until_complete(self.initialize())
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 663, in run_until_complete
+    self._check_running()
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 622, in _check_running
+    raise RuntimeError('This event loop is already running')
+RuntimeError: This event loop is already running
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 1014, in __run
+    loop.run_until_complete(self.stop())
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 663, in run_until_complete
+    self._check_running()
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 622, in _check_running
+    raise RuntimeError('This event loop is already running')
+RuntimeError: This event loop is already running
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\slave\Desktop\TGbot\TG_fitness\bot.py", line 370, in init_app
+    await application.run_polling()
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 818, in run_polling
+    return self.__run(
+           ^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 1022, in __run
+    loop.close()
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\proactor_events.py", line 687, in close
+    raise RuntimeError("Cannot close a running event loop")
+RuntimeError: Cannot close a running event loop
+2025-01-14 23:40:15,616 - __main__ - ERROR - Error during shutdown: This Application is still running!
+Traceback (most recent call last):
+  File "C:\Users\slave\Desktop\TGbot\TG_fitness\bot.py", line 382, in init_app
+    await application.shutdown()
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 524, in shutdown
+    raise RuntimeError("This Application is still running!")
+RuntimeError: This Application is still running!
+2025-01-14 23:40:15,823 - apscheduler.scheduler - INFO - Added job "health_check" to job store "default"
+2025-01-14 23:40:15,823 - apscheduler.scheduler - INFO - Added job "create_backup" to job store "default"
+2025-01-14 23:40:15,827 - telegram.ext.Application - WARNING - Fetching updates got a asyncio.CancelledError. Ignoring as this task may onlybe closed via `Application.stop`.
+2025-01-14 23:41:29,856 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 23:41:29,858 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 23:41:29,861 - __main__ - INFO - Starting bot...
+2025-01-14 23:41:29,862 - __main__ - ERROR - Error running bot: There is no current event loop in thread 'MainThread'.
+Traceback (most recent call last):
+  File "C:\Users\slave\Desktop\TGbot\TG_fitness\bot.py", line 389, in main
+    app.run_polling()
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 818, in run_polling
+    return self.__run(
+           ^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 977, in __run
+    loop = asyncio.get_event_loop()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\events.py", line 702, in get_event_loop
+    raise RuntimeError('There is no current event loop in thread %r.'
+RuntimeError: There is no current event loop in thread 'MainThread'.
+2025-01-14 23:42:23,065 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 23:42:23,067 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 23:42:23,067 - __main__ - INFO - Starting bot...
+2025-01-14 23:42:23,070 - __main__ - ERROR - Error running bot: This Application was not initialized via `Application.initialize`!
+Traceback (most recent call last):
+  File "C:\Users\slave\Desktop\TGbot\TG_fitness\bot.py", line 400, in main
+    asyncio.run(run_bot())
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\slave\Desktop\TGbot\TG_fitness\bot.py", line 388, in run_bot
+    await app.start()
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 600, in start
+    self._check_initialized()
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 454, in _check_initialized
+    raise RuntimeError(
+RuntimeError: This Application was not initialized via `Application.initialize`!
+2025-01-14 23:43:18,764 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 23:43:18,766 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 23:43:18,767 - __main__ - INFO - Starting bot...
+2025-01-14 23:43:18,999 - apscheduler.scheduler - INFO - Added job "health_check" to job store "default"
+2025-01-14 23:43:19,000 - apscheduler.scheduler - INFO - Added job "create_backup" to job store "default"
+2025-01-14 23:43:19,001 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 23:43:19,264 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 23:43:19,267 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_4.jpg'}, 'goals': [], 'restrictions': []}
+2025-01-14 23:43:19,391 - __main__ - INFO - Получен update: Update(message=Message(channel_chat_created=False, chat=Chat(first_name='Вячеслав', id=279595017, type=<ChatType.PRIVATE>, username='my_br0'), date=datetime.datetime(2025, 1, 14, 20, 39, 43, tzinfo=<UTC>), delete_chat_photo=False, entities=(MessageEntity(length=6, offset=0, type=<MessageEntityType.BOT_COMMAND>),), from_user=User(first_name='Вячеслав', id=279595017, is_bot=False, language_code='ru', username='my_br0'), group_chat_created=False, message_id=610, supergroup_chat_created=False, text='/start'), update_id=581369994)
+2025-01-14 23:44:00,941 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 23:44:00,942 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_4.jpg'}, 'goals': [], 'restrictions': []}
+2025-01-14 23:44:01,165 - __main__ - INFO - Получен update: Update(message=Message(channel_chat_created=False, chat=Chat(first_name='Вячеслав', id=279595017, type=<ChatType.PRIVATE>, username='my_br0'), date=datetime.datetime(2025, 1, 14, 20, 44, 1, tzinfo=<UTC>), delete_chat_photo=False, entities=(MessageEntity(length=6, offset=0, type=<MessageEntityType.BOT_COMMAND>),), from_user=User(first_name='Вячеслав', id=279595017, is_bot=False, language_code='ru', username='my_br0'), group_chat_created=False, message_id=612, supergroup_chat_created=False, text='/start'), update_id=581369995)
