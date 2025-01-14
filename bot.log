@@ -443,3 +443,7 @@ RuntimeError: There is no current event loop in thread 'MainThread'.
 2025-01-14 23:57:05,976 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_5.jpg'}, 'goals': [], 'restrictions': []}
 2025-01-14 23:57:16,149 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
 2025-01-14 23:57:16,151 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_5.jpg'}, 'goals': [], 'restrictions': []}
+2025-01-14 23:59:00,262 - __main__ - INFO - Starting bot...
+2025-01-14 23:59:00,593 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 23:59:40,211 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 23:59:40,213 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_5.jpg'}, 'goals': [], 'restrictions': []}

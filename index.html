@@ -2116,31 +2116,33 @@
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label for="age">Возраст</label>
-                    <input type="number" id="age" name="age" placeholder="Лет">
-                </div>
-
-                <div class="input-group">
-                    <label for="height">Рост</label>
-                    <input type="number" id="height" name="height" placeholder="см">
-                </div>
-
-                <div class="input-group">
-                    <label for="weight">Вес</label>
-                    <input type="number" id="weight" name="weight" placeholder="кг">
-                </div>
-
-                <div class="profile-sections">
-                    <div class="profile-section">
-                        <h3>Уровень подготовки</h3>
-                        <div class="level-buttons">
-                            <button class="level-btn" id="level-beginner" name="level" data-level="beginner">Новичок</button>
-                            <button class="level-btn" id="level-intermediate" name="level" data-level="intermediate">Средний</button>
-                            <button class="level-btn" id="level-advanced" name="level" data-level="advanced">Продвинутый</button>
-                        </div>
+                <div class="profile-section">
+                    <div class="profile-field">
+                        <label>Возраст</label>
+                        <input type="number" id="age" placeholder="Укажите ваш возраст" onchange="saveProfileField('age', this.value)">
                     </div>
                     
+                    <div class="profile-field">
+                        <label>Рост (см)</label>
+                        <input type="number" id="height" placeholder="Укажите ваш рост" onchange="saveProfileField('height', this.value)">
+                    </div>
+                    
+                    <div class="profile-field">
+                        <label>Вес (кг)</label>
+                        <input type="number" id="weight" placeholder="Укажите ваш вес" onchange="saveProfileField('weight', this.value)">
+                    </div>
+                    
+                    <div class="profile-field">
+                        <label>Уровень подготовки</label>
+                        <div class="level-buttons">
+                            <button class="level-btn" data-level="beginner" onclick="saveFitnessLevel('beginner')">Новичок</button>
+                            <button class="level-btn" data-level="intermediate" onclick="saveFitnessLevel('intermediate')">Средний</button>
+                            <button class="level-btn" data-level="advanced" onclick="saveFitnessLevel('advanced')">Продвинутый</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-sections">
                     <div class="profile-section">
                         <h3>Цели тренировок</h3>
                         <div class="goals-buttons">
@@ -2689,6 +2691,36 @@
             });
         }
 
+        // Функция для сохранения отдельных полей
+        function saveProfileField(field, value) {
+            const tg = window.Telegram.WebApp;
+            try {
+                const data = {
+                    type: 'profile_update',
+                    data: {
+                        [field]: value
+                    }
+                };
+                
+                tg.sendData(JSON.stringify(data));
+                console.log(`Сохранено поле ${field}:`, value);
+            } catch (error) {
+                console.error(`Ошибка сохранения поля ${field}:`, error);
+            }
+        }
+
+        // Функция для сохранения уровня подготовки
+        function saveFitnessLevel(level) {
+            const buttons = document.querySelectorAll('.level-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            const selectedBtn = document.querySelector(`.level-btn[data-level="${level}"]`);
+            if (selectedBtn) {
+                selectedBtn.classList.add('active');
+                saveProfileField('fitness_level', level);
+            }
+        }
+
         // Функция загрузки данных профиля
         async function loadProfileData() {
             try {
@@ -2697,54 +2729,32 @@
                 
                 if (encodedData) {
                     const data = JSON.parse(decodeURIComponent(encodedData));
-                    console.log('Полученные данные:', data);
+                    console.log('Загружены данные профиля:', data);
                     
+                    // Заполняем поля
                     if (data.personalInfo) {
-                        // Заполняем основную информацию
                         document.getElementById('age').value = data.personalInfo.age || '';
                         document.getElementById('height').value = data.personalInfo.height || '';
                         document.getElementById('weight').value = data.personalInfo.weight || '';
                         
                         // Устанавливаем уровень подготовки
                         if (data.personalInfo.fitnessLevel) {
-                            const levelBtn = document.querySelector(`.level-btn[data-level="${data.personalInfo.fitnessLevel}"]`);
-                            if (levelBtn) levelBtn.classList.add('active');
+                            saveFitnessLevel(data.personalInfo.fitnessLevel);
                         }
-                        
-                        // Устанавливаем фото профиля
-                        if (data.personalInfo.photo) {
-                            const photoUrl = data.personalInfo.photo;
-                            if (photoUrl.startsWith('http')) {
-                                document.getElementById('profile-photo').src = photoUrl;
-                            } else {
-                                document.getElementById('profile-photo').src = `https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/${photoUrl}`;
-                            }
-                        }
-                    }
-                    
-                    // Устанавливаем цели
-                    if (data.goals && Array.isArray(data.goals)) {
-                        data.goals.forEach(goal => {
-                            const goalBtn = document.querySelector(`.goal-btn[data-goal="${goal}"]`);
-                            if (goalBtn) goalBtn.classList.add('active');
-                        });
-                    }
-                    
-                    // Устанавливаем ограничения
-                    if (data.restrictions && Array.isArray(data.restrictions)) {
-                        data.restrictions.forEach(restriction => {
-                            const checkbox = document.querySelector(`input[value="${restriction}"]`);
-                            if (checkbox) checkbox.checked = true;
-                        });
                     }
                 }
             } catch (error) {
-                console.error('Ошибка загрузки данных профиля:', error);
+                console.error('Ошибка загрузки данных:', error);
             }
         }
 
         // Загружаем данные при старте
-        document.addEventListener('DOMContentLoaded', loadProfileData);
+        document.addEventListener('DOMContentLoaded', () => {
+            const tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
+            loadProfileData();
+        });
 
         // Проверяем инициализацию Telegram WebApp
         document.addEventListener('DOMContentLoaded', function() {
