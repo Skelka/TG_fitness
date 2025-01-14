@@ -411,3 +411,20 @@ RuntimeError: This Application was not initialized via `Application.initialize`!
 2025-01-14 23:47:37,777 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
 2025-01-14 23:47:37,784 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': None}, 'goals': [], 'restrictions': []}
 2025-01-14 23:47:38,218 - __main__ - INFO - Получен update: Update(message=Message(channel_chat_created=False, chat=Chat(first_name='Вячеслав', id=279595017, type=<ChatType.PRIVATE>, username='my_br0'), date=datetime.datetime(2025, 1, 14, 20, 47, 38, tzinfo=<UTC>), delete_chat_photo=False, entities=(MessageEntity(length=6, offset=0, type=<MessageEntityType.BOT_COMMAND>),), from_user=User(first_name='Вячеслав', id=279595017, is_bot=False, language_code='ru', username='my_br0'), group_chat_created=False, message_id=614, supergroup_chat_created=False, text='/start'), update_id=581369996)
+2025-01-14 23:51:26,322 - __main__ - ERROR - Error running bot: There is no current event loop in thread 'MainThread'.
+Traceback (most recent call last):
+  File "C:\Users\slave\Desktop\TGbot\TG_fitness\bot.py", line 310, in main
+    app.run_polling()
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 818, in run_polling
+    return self.__run(
+           ^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 977, in __run
+    loop = asyncio.get_event_loop()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\asyncio\events.py", line 702, in get_event_loop
+    raise RuntimeError('There is no current event loop in thread %r.'
+RuntimeError: There is no current event loop in thread 'MainThread'.
+2025-01-14 23:53:00,986 - __main__ - INFO - Starting bot...
+2025-01-14 23:53:01,264 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 23:53:01,518 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 23:53:01,520 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': None}, 'goals': [], 'restrictions': []}

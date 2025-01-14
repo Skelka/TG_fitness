@@ -2506,6 +2506,8 @@
                         .map(input => input.value)
                 };
 
+                console.log('Подготовленные данные профиля:', profile);
+
                 const data = JSON.stringify({
                     type: 'profile_update',
                     data: profile
@@ -2514,7 +2516,6 @@
                 console.log('Отправляем данные в бот:', data);
                 tg.sendData(data);
                 
-                // Показываем уведомление об успешной отправке
                 tg.showPopup({
                     title: 'Отправка данных',
                     message: 'Данные успешно отправлены',
@@ -2522,6 +2523,11 @@
                 });
             } catch (error) {
                 console.error('Ошибка:', error);
+                tg.showPopup({
+                    title: 'Ошибка',
+                    message: 'Не удалось отправить данные: ' + error.message,
+                    buttons: [{type: 'ok'}]
+                });
             }
         }
 
