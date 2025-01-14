@@ -2490,6 +2490,13 @@
         function saveProfile() {
             try {
                 console.log('Начинаем сохранение профиля...');
+                const tg = window.Telegram.WebApp;
+                
+                if (!tg) {
+                    console.error('Telegram WebApp не инициализирован');
+                    return;
+                }
+
                 const profile = {
                     age: document.getElementById('age').value ? parseInt(document.getElementById('age').value) : null,
                     height: document.getElementById('height').value ? parseInt(document.getElementById('height').value) : null,
@@ -2503,26 +2510,25 @@
 
                 console.log('Подготовленные данные:', profile);
 
-                // Отправляем данные в бот
-                const tg = window.Telegram.WebApp;
-                // Убедимся, что объект tg доступен
-                if (!tg) {
-                    console.error('Telegram WebApp не инициализирован');
-                    return;
-                }
-
                 const data = JSON.stringify({
                     type: 'profile_update',
                     data: profile
                 });
                 
                 console.log('Отправляем данные в бот:', data);
-                // Добавим обработчик для MainButton
+                // Проверяем, что метод sendData доступен
+                if (typeof tg.sendData !== 'function') {
+                    console.error('Метод sendData не доступен');
+                    return;
+                }
+                
                 tg.MainButton.setText('Сохранение...');
                 tg.MainButton.show();
                 tg.MainButton.disable();
                 
+                console.log('Отправка данных через sendData...');
                 tg.sendData(data);
+                console.log('Данные отправлены');
                 
                 // Восстановим состояние кнопки через секунду
                 setTimeout(() => {
