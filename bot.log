@@ -51,3 +51,8 @@
 2025-01-14 21:01:24,441 - apscheduler.scheduler - INFO - Scheduler started
 2025-01-14 21:01:24,442 - __main__ - INFO - Bot started
 2025-01-14 21:01:42,257 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 21:06:01,926 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 21:06:01,947 - __main__ - INFO - Web server started on http://localhost:8000
+2025-01-14 21:06:03,186 - apscheduler.scheduler - INFO - Added job "restart_webhook" to job store "default"
+2025-01-14 21:06:03,187 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 21:06:03,188 - __main__ - INFO - Bot started

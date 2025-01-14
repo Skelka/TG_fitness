@@ -1952,6 +1952,59 @@
             font-size: 14px;
             gap: 8px;
         }
+
+        /* Стили для карточек тренировок */
+        .workout-type-card {
+            background: #2D2D2D;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .workout-type-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .workout-type-card h3 {
+            color: #fff;
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+
+        .workout-type-card p {
+            color: #B0B0B0;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* Стили для выбора дня тренировки */
+        .workout-days {
+            display: none;
+        }
+
+        .workout-days.active {
+            display: block;
+        }
+
+        .day-button {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #2D2D2D;
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            text-align: left;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .day-button:hover {
+            background: #3D3D3D;
+        }
     </style>
 </head>
 <body>
@@ -2217,30 +2270,58 @@
         }
 
         // Функция для показа дней тренировок
-        function showWorkoutDays(type) {
-            const workoutTypes = {
-                1: 'strength',
-                2: 'cardio',
-                3: 'stretching'
+        function showWorkoutDays(workoutType) {
+            // Скрываем список типов тренировок
+            document.querySelector('.workout-types').style.display = 'none';
+            
+            // Показываем список дней для выбранного типа тренировки
+            const daysContainer = document.createElement('div');
+            daysContainer.className = 'workout-days active';
+            
+            // Добавляем заголовок
+            const header = document.createElement('div');
+            header.style.marginBottom = '20px';
+            header.style.display = 'flex';
+            header.style.alignItems = 'center';
+            
+            // Кнопка "Назад"
+            const backButton = document.createElement('button');
+            backButton.innerHTML = '←';
+            backButton.style.marginRight = '15px';
+            backButton.style.background = 'none';
+            backButton.style.border = 'none';
+            backButton.style.color = '#fff';
+            backButton.style.fontSize = '20px';
+            backButton.style.cursor = 'pointer';
+            backButton.onclick = () => {
+                daysContainer.remove();
+                document.querySelector('.workout-types').style.display = 'block';
             };
-
-            const workoutType = workoutTypes[type];
-            const workout = workouts[workoutType];
-            const buttons = workout.map((day, index) => ({
-                type: 'default',
-                text: `День ${index + 1}: ${day.title}`
-            }));
-            buttons.push({type: 'cancel', text: 'Закрыть'});
-
-            tg.showPopup({
-                title: getWorkoutTitle(workoutType),
-                message: 'Выберите день тренировки:',
-                buttons: buttons
-            }, (buttonId) => {
-                if (buttonId !== 'cancel') {
-                    showExercises(workoutType, parseInt(buttonId));
-                }
+            
+            header.appendChild(backButton);
+            header.appendChild(document.createElement('h3')).textContent = 'Выберите день тренировки';
+            daysContainer.appendChild(header);
+            
+            // Добавляем кнопки дней
+            const days = [
+                { title: 'День 1: Тренировка верхней части тела', id: 'day1' },
+                { title: 'День 2: Тренировка ног', id: 'day2' }
+            ];
+            
+            days.forEach(day => {
+                const button = document.createElement('button');
+                button.className = 'day-button';
+                button.textContent = day.title;
+                button.onclick = () => startWorkout(workoutType, day.id);
+                daysContainer.appendChild(button);
             });
+            
+            document.getElementById('workouts-page').appendChild(daysContainer);
+        }
+        
+        function startWorkout(workoutType, dayId) {
+            // Здесь будет логика начала тренировки
+            console.log(`Начинаем тренировку типа ${workoutType}, день ${dayId}`);
         }
 
         // Функция получения заголовка тренировки
@@ -2582,6 +2663,59 @@
                 }
             });
         }
+
+        // Функция загрузки данных профиля
+        async function loadProfileData() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const encodedData = urlParams.get('data');
+                
+                if (encodedData) {
+                    const data = JSON.parse(decodeURIComponent(encodedData));
+                    console.log('Полученные данные:', data);
+                    
+                    if (data.personalInfo) {
+                        // Заполняем основную информацию
+                        document.getElementById('age').value = data.personalInfo.age || '';
+                        document.getElementById('height').value = data.personalInfo.height || '';
+                        document.getElementById('weight').value = data.personalInfo.weight || '';
+                        
+                        // Устанавливаем уровень подготовки
+                        if (data.personalInfo.fitnessLevel) {
+                            const levelBtn = document.querySelector(`.level-btn[data-level="${data.personalInfo.fitnessLevel}"]`);
+                            if (levelBtn) levelBtn.classList.add('active');
+                        }
+                        
+                        // Устанавливаем фото профиля
+                        if (data.personalInfo.photo) {
+                            // Используем прямую ссылку на файл из Telegram
+                            document.getElementById('profile-photo').src = `https://api.telegram.org/file/bot${BOT_TOKEN}/${data.personalInfo.photo}`;
+                        }
+                    }
+                    
+                    // Устанавливаем цели
+                    if (data.goals && Array.isArray(data.goals)) {
+                        data.goals.forEach(goal => {
+                            const goalBtn = document.querySelector(`.goal-btn[data-goal="${goal}"]`);
+                            if (goalBtn) goalBtn.classList.add('active');
+                        });
+                    }
+                    
+                    // Устанавливаем ограничения
+                    if (data.restrictions && Array.isArray(data.restrictions)) {
+                        data.restrictions.forEach(restriction => {
+                            const checkbox = document.querySelector(`input[value="${restriction}"]`);
+                            if (checkbox) checkbox.checked = true;
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки данных профиля:', error);
+            }
+        }
+
+        // Загружаем данные при старте
+        document.addEventListener('DOMContentLoaded', loadProfileData);
     </script>
 </body>
 </html>
