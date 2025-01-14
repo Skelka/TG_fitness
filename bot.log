@@ -1,0 +1,47 @@
+2025-01-14 20:50:52,789 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 20:50:52,795 - __main__ - INFO - Web server started on http://localhost:8000
+2025-01-14 20:50:53,082 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getMe "HTTP/1.1 200 OK"
+2025-01-14 20:50:53,083 - apscheduler.scheduler - INFO - Added job "restart_webhook" to job store "default"
+2025-01-14 20:50:53,083 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 20:50:53,084 - telegram.ext.Application - INFO - Application started
+2025-01-14 20:50:53,084 - __main__ - INFO - Bot started
+2025-01-14 20:50:53,145 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/deleteWebhook "HTTP/1.1 200 OK"
+2025-01-14 20:51:03,334 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:51:06,250 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:51:06,253 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 20:51:06,618 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/sendMessage "HTTP/1.1 200 OK"
+2025-01-14 20:51:16,313 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:51:26,371 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:51:33,400 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:51:33,403 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 20:51:33,599 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/sendMessage "HTTP/1.1 200 OK"
+2025-01-14 20:51:43,462 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:51:53,529 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:52:03,584 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:52:13,639 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:52:23,697 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:52:33,751 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:52:43,808 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:52:53,865 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:53:03,743 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 20:53:03,769 - __main__ - INFO - Web server started on http://localhost:8000
+2025-01-14 20:53:04,017 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getMe "HTTP/1.1 200 OK"
+2025-01-14 20:53:04,028 - apscheduler.scheduler - INFO - Added job "restart_webhook" to job store "default"
+2025-01-14 20:53:04,030 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 20:53:04,031 - telegram.ext.Application - INFO - Application started
+2025-01-14 20:53:04,032 - __main__ - INFO - Bot started
+2025-01-14 20:53:04,396 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/deleteWebhook "HTTP/1.1 200 OK"
+2025-01-14 20:53:07,315 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:53:07,329 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 20:53:07,470 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/sendMessage "HTTP/1.1 200 OK"
+2025-01-14 20:53:17,403 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:53:27,472 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:53:37,547 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:53:47,619 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:53:57,685 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:54:07,753 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:54:17,824 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:54:27,897 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:54:37,963 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:54:48,027 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 20:54:58,095 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
