@@ -45,3 +45,9 @@
 2025-01-14 20:54:37,963 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
 2025-01-14 20:54:48,027 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
 2025-01-14 20:54:58,095 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-14 21:01:23,886 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 21:01:23,906 - __main__ - INFO - Web server started on http://localhost:8000
+2025-01-14 21:01:24,439 - apscheduler.scheduler - INFO - Added job "restart_webhook" to job store "default"
+2025-01-14 21:01:24,441 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 21:01:24,442 - __main__ - INFO - Bot started
+2025-01-14 21:01:42,257 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота

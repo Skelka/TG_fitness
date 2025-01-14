@@ -141,32 +141,47 @@
         }
         
         .profile-section {
-            background-color: #fff;
+            background-color: #2D2D2D;
             border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            color: #333;
+            padding: 15px;
+            margin-bottom: 10px;
         }
         
         .profile-header {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .profile-photo-container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            margin-right: 12px;
         }
         
         .profile-photo {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: #eee;
-            margin-right: 15px;
-            overflow: hidden;
-        }
-        
-        .profile-photo img {
             width: 100%;
             height: 100%;
+            border-radius: 50%;
             object-fit: cover;
+            background: #3D3D3D;
+            cursor: pointer;
+        }
+        
+        .photo-edit-button {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: #7C5AF1;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
         
         .profile-info {
@@ -1838,6 +1853,105 @@
                 opacity: 0;
             }
         }
+
+        /* Стили для полей ввода */
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            color: #B0B0B0;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            background: #3D3D3D;
+            border: 1px solid #4D4D4D;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            height: 36px;
+        }
+
+        /* Компактный профиль */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .profile-photo-container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            margin-right: 12px;
+        }
+
+        .profile-photo {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #3D3D3D;
+            cursor: pointer;
+        }
+
+        .photo-edit-button {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: #7C5AF1;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* Стили для кнопок выбора */
+        .buttons-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .level-btn, .goal-btn {
+            padding: 6px 12px;
+            border-radius: 16px;
+            border: 1px solid #4D4D4D;
+            background: #3D3D3D;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .level-btn.active, .goal-btn.active {
+            background: #7C5AF1;
+            border-color: #7C5AF1;
+        }
+
+        /* Стили для чекбоксов */
+        .restrictions-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .restrictions-group label {
+            display: flex;
+            align-items: center;
+            color: #fff;
+            font-size: 14px;
+            gap: 8px;
+        }
     </style>
 </head>
 <body>
@@ -1925,37 +2039,36 @@
                 </div>
 
                 <div class="profile-header">
-                    <div class="profile-photo">
-                        <img src="images/default-avatar.png" alt="Фото профиля" id="profile-photo">
-                        <button class="change-photo-btn" onclick="requestProfilePhoto()">
-                            Изменить фото
+                    <div class="profile-photo-container">
+                        <img id="profile-photo" src="images/default-avatar.png" class="profile-photo">
+                        <button class="photo-edit-button" onclick="handlePhotoEdit()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff">
+                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                            </svg>
                         </button>
                     </div>
-                    <div class="profile-info" id="profile-info">
-                        <h2 id="profile-name">Ваш профиль</h2>
-                    </div>
+                    <h2 style="color: #fff; margin: 0;">Ваш профиль</h2>
+                </div>
+
+                <div class="input-group">
+                    <label>Возраст</label>
+                    <input type="number" id="age" placeholder="Лет">
+                </div>
+
+                <div class="input-group">
+                    <label>Рост</label>
+                    <input type="number" id="height" placeholder="см">
+                </div>
+
+                <div class="input-group">
+                    <label>Вес</label>
+                    <input type="number" id="weight" placeholder="кг">
                 </div>
 
                 <div class="profile-sections">
                     <div class="profile-section">
-                        <h3>Основная информация</h3>
-                        <div class="form-group">
-                            <label>Возраст</label>
-                            <input type="number" id="age" placeholder="Лет">
-                        </div>
-                        <div class="form-group">
-                            <label>Рост</label>
-                            <input type="number" id="height" placeholder="см">
-                        </div>
-                        <div class="form-group">
-                            <label>Вес</label>
-                            <input type="number" id="weight" placeholder="кг">
-                        </div>
-                    </div>
-                    
-                    <div class="profile-section">
                         <h3>Уровень подготовки</h3>
-                        <div class="level-buttons">
+                        <div class="buttons-group">
                             <button class="level-btn" data-level="beginner">Новичок</button>
                             <button class="level-btn" data-level="intermediate">Средний</button>
                             <button class="level-btn" data-level="advanced">Продвинутый</button>
@@ -1964,7 +2077,7 @@
                     
                     <div class="profile-section">
                         <h3>Цели тренировок</h3>
-                        <div class="goals-buttons">
+                        <div class="buttons-group">
                             <button class="goal-btn" data-goal="strength">Набор мышечной массы</button>
                             <button class="goal-btn" data-goal="weight-loss">Снижение веса</button>
                             <button class="goal-btn" data-goal="endurance">Выносливость</button>
@@ -2446,6 +2559,28 @@
                     onComplete();
                 }
             }, 1000);
+        }
+
+        // Функция для обработки изменения фото
+        function handlePhotoEdit() {
+            const tg = window.Telegram.WebApp;
+            tg.expand();
+            
+            tg.showPopup({
+                title: 'Изменить фото профиля',
+                message: 'Выберите действие',
+                buttons: [
+                    {id: 'camera', type: 'default', text: 'Сделать фото'},
+                    {id: 'gallery', type: 'default', text: 'Выбрать из галереи'},
+                    {id: 'cancel', type: 'cancel', text: 'Отмена'}
+                ]
+            }, function(buttonId) {
+                if (buttonId === 'camera') {
+                    tg.showCamera();
+                } else if (buttonId === 'gallery') {
+                    tg.showAttachmentPopup();
+                }
+            });
         }
     </script>
 </body>
