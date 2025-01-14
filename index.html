@@ -2094,11 +2094,10 @@
                 <div class="profile-header">
                     <div class="profile-photo-container">
                         <img id="profile-photo" src="images/default-avatar.png" class="profile-photo">
-                        <button class="photo-edit-button" onclick="handlePhotoEdit()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff">
-                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                            </svg>
-                        </button>
+                        <!-- Добавляем подсказку под фото -->
+                        <div style="color: #B0B0B0; font-size: 12px; text-align: center; margin-top: 5px;">
+                            Отправьте фото в чат с ботом для изменения
+                        </div>
                     </div>
                     <h2 style="color: #fff; margin: 0;">Ваш профиль</h2>
                 </div>
@@ -2479,28 +2478,31 @@
         function saveProfile() {
             try {
                 const profile = {
-                    age: document.getElementById('age').value,
-                    height: document.getElementById('height').value,
-                    weight: document.getElementById('weight').value,
-                    level: document.querySelector('.level-btn.active')?.dataset.level,
+                    age: document.getElementById('age').value ? parseInt(document.getElementById('age').value) : null,
+                    height: document.getElementById('height').value ? parseInt(document.getElementById('height').value) : null,
+                    weight: document.getElementById('weight').value ? parseInt(document.getElementById('weight').value) : null,
+                    fitness_level: document.querySelector('.level-btn.active')?.dataset.level || null,
                     goals: Array.from(document.querySelectorAll('.goal-btn.active'))
                         .map(btn => btn.dataset.goal),
                     restrictions: Array.from(document.querySelectorAll('.restrictions-group input:checked'))
                         .map(input => input.value)
                 };
 
-                // Сохраняем в локальное хранилище
-                localStorage.setItem('userProfile', JSON.stringify(profile));
-
+                // Отправляем данные в бот
+                const tg = window.Telegram.WebApp;
                 tg.sendData(JSON.stringify({
                     type: 'profile_update',
                     data: profile
                 }));
 
-                utils.showNotification('Профиль успешно сохранен!', 'success');
+                // Показываем уведомление об успешном сохранении
+                tg.showPopup({
+                    title: 'Успешно',
+                    message: 'Профиль успешно обновлен',
+                    buttons: [{type: 'ok'}]
+                });
             } catch (error) {
                 console.error('Ошибка сохранения профиля:', error);
-                utils.showNotification('Ошибка сохранения профиля', 'error');
             }
         }
 
@@ -2689,7 +2691,7 @@
                         // Устанавливаем фото профиля
                         if (data.personalInfo.photo) {
                             // Используем прямую ссылку на файл из Telegram
-                            document.getElementById('profile-photo').src = `https://api.telegram.org/file/bot${BOT_TOKEN}/${data.personalInfo.photo}`;
+                            document.getElementById('profile-photo').src = `https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/${data.personalInfo.photo}`;
                         }
                     }
                     
