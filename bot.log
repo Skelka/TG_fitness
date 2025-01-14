@@ -165,3 +165,9 @@ telegram.error.Conflict: Conflict: terminated by other getUpdates request; make 
 2025-01-14 23:00:56,205 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 20:05:56 UTC)" (scheduled at 2025-01-14 20:00:56.194275+00:00)
 2025-01-14 23:00:56,207 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
 2025-01-14 23:01:01,225 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 20:05:56 UTC)" executed successfully
+2025-01-14 23:02:28,420 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 23:02:28,448 - __main__ - INFO - Web server started on http://localhost:8000
+2025-01-14 23:02:28,731 - apscheduler.scheduler - INFO - Added job "restart_webhook" to job store "default"
+2025-01-14 23:02:28,732 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 23:02:28,733 - __main__ - INFO - Bot started
+2025-01-14 23:02:35,996 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
