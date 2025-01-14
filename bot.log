@@ -56,3 +56,112 @@
 2025-01-14 21:06:03,186 - apscheduler.scheduler - INFO - Added job "restart_webhook" to job store "default"
 2025-01-14 21:06:03,187 - apscheduler.scheduler - INFO - Scheduler started
 2025-01-14 21:06:03,188 - __main__ - INFO - Bot started
+2025-01-14 21:10:56,196 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-01-14 21:10:56,216 - __main__ - INFO - Web server started on http://localhost:8000
+2025-01-14 21:10:56,647 - apscheduler.scheduler - INFO - Added job "restart_webhook" to job store "default"
+2025-01-14 21:10:56,647 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-14 21:10:56,648 - __main__ - INFO - Bot started
+2025-01-14 21:12:05,463 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 21:12:39,987 - __main__ - INFO - Обработка фото профиля для пользователя 279595017
+2025-01-14 21:12:40,183 - __main__ - INFO - Сохраняем file_path в БД: https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_3.jpg
+2025-01-14 21:13:26,653 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-14 21:15:56,200 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:20:56 UTC)" (scheduled at 2025-01-14 18:15:56.194275+00:00)
+2025-01-14 21:15:56,202 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 21:16:01,219 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:20:56 UTC)" executed successfully
+2025-01-14 21:20:56,207 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:25:56 UTC)" (scheduled at 2025-01-14 18:20:56.194275+00:00)
+2025-01-14 21:20:56,208 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 21:21:01,213 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:25:56 UTC)" executed successfully
+2025-01-14 21:25:56,210 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:30:56 UTC)" (scheduled at 2025-01-14 18:25:56.194275+00:00)
+2025-01-14 21:25:56,211 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 21:26:01,217 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:30:56 UTC)" executed successfully
+2025-01-14 21:30:56,202 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:35:56 UTC)" (scheduled at 2025-01-14 18:30:56.194275+00:00)
+2025-01-14 21:30:56,203 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 21:31:01,217 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:35:56 UTC)" executed successfully
+2025-01-14 21:31:37,709 - telegram.ext.Updater - ERROR - Error while getting Updates: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-01-14 21:31:37,710 - telegram.ext.Updater - ERROR - Exception happened while polling for updates.
+Traceback (most recent call last):
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_updater.py", line 688, in _network_loop_retry
+    if not await action_cb():
+           ^^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_updater.py", line 384, in polling_action_cb
+    raise exc
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_updater.py", line 373, in polling_action_cb
+    updates = await self.bot.get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_extbot.py", line 558, in get_updates
+    updates = await super().get_updates(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\_bot.py", line 525, in decorator
+    result = await func(self, *args, **kwargs)  # skipcq: PYL-E1102
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\_bot.py", line 3584, in get_updates
+    await self._post(
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\_bot.py", line 613, in _post
+    return await self._do_post(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_extbot.py", line 340, in _do_post
+    return await super()._do_post(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\_bot.py", line 641, in _do_post
+    return await request.post(
+           ^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\request\_baserequest.py", line 200, in post
+    result = await self._request_wrapper(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\slave\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\request\_baserequest.py", line 381, in _request_wrapper
+    raise Conflict(message)
+telegram.error.Conflict: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-01-14 21:35:56,229 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:40:56 UTC)" (scheduled at 2025-01-14 18:35:56.194275+00:00)
+2025-01-14 21:35:56,231 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 21:36:01,247 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:40:56 UTC)" executed successfully
+2025-01-14 21:40:56,205 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:45:56 UTC)" (scheduled at 2025-01-14 18:40:56.194275+00:00)
+2025-01-14 21:40:56,207 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 21:41:01,213 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:45:56 UTC)" executed successfully
+2025-01-14 21:45:56,209 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:50:56 UTC)" (scheduled at 2025-01-14 18:45:56.194275+00:00)
+2025-01-14 21:45:56,210 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 21:46:01,225 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:50:56 UTC)" executed successfully
+2025-01-14 21:50:56,206 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:55:56 UTC)" (scheduled at 2025-01-14 18:50:56.194275+00:00)
+2025-01-14 21:50:56,207 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 21:51:01,215 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 18:55:56 UTC)" executed successfully
+2025-01-14 21:55:56,209 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:00:56 UTC)" (scheduled at 2025-01-14 18:55:56.194275+00:00)
+2025-01-14 21:55:56,210 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 21:56:01,219 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:00:56 UTC)" executed successfully
+2025-01-14 22:00:56,200 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:05:56 UTC)" (scheduled at 2025-01-14 19:00:56.194275+00:00)
+2025-01-14 22:00:56,201 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 22:01:01,210 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:05:56 UTC)" executed successfully
+2025-01-14 22:05:56,207 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:10:56 UTC)" (scheduled at 2025-01-14 19:05:56.194275+00:00)
+2025-01-14 22:05:56,208 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 22:06:01,224 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:10:56 UTC)" executed successfully
+2025-01-14 22:10:56,213 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:15:56 UTC)" (scheduled at 2025-01-14 19:10:56.194275+00:00)
+2025-01-14 22:10:56,214 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 22:11:01,229 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:15:56 UTC)" executed successfully
+2025-01-14 22:15:56,205 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:20:56 UTC)" (scheduled at 2025-01-14 19:15:56.194275+00:00)
+2025-01-14 22:15:56,207 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 22:16:01,225 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:20:56 UTC)" executed successfully
+2025-01-14 22:20:56,195 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:25:56 UTC)" (scheduled at 2025-01-14 19:20:56.194275+00:00)
+2025-01-14 22:20:56,197 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 22:21:01,199 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:25:56 UTC)" executed successfully
+2025-01-14 22:25:56,211 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:30:56 UTC)" (scheduled at 2025-01-14 19:25:56.194275+00:00)
+2025-01-14 22:25:56,212 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 22:26:01,216 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:30:56 UTC)" executed successfully
+2025-01-14 22:30:56,197 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:35:56 UTC)" (scheduled at 2025-01-14 19:30:56.194275+00:00)
+2025-01-14 22:30:56,199 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 22:31:01,218 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:35:56 UTC)" executed successfully
+2025-01-14 22:35:56,209 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:40:56 UTC)" (scheduled at 2025-01-14 19:35:56.194275+00:00)
+2025-01-14 22:35:56,210 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 22:36:01,222 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:40:56 UTC)" executed successfully
+2025-01-14 22:40:56,203 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:45:56 UTC)" (scheduled at 2025-01-14 19:40:56.194275+00:00)
+2025-01-14 22:40:56,205 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 22:41:01,212 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:45:56 UTC)" executed successfully
+2025-01-14 22:45:56,208 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:50:56 UTC)" (scheduled at 2025-01-14 19:45:56.194275+00:00)
+2025-01-14 22:45:56,209 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 22:46:01,221 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:50:56 UTC)" executed successfully
+2025-01-14 22:50:56,198 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:55:56 UTC)" (scheduled at 2025-01-14 19:50:56.194275+00:00)
+2025-01-14 22:50:56,200 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 22:51:01,214 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 19:55:56 UTC)" executed successfully
+2025-01-14 22:55:56,204 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 20:00:56 UTC)" (scheduled at 2025-01-14 19:55:56.194275+00:00)
+2025-01-14 22:55:56,207 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 22:56:01,216 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 20:00:56 UTC)" executed successfully
+2025-01-14 23:00:56,205 - apscheduler.executors.default - INFO - Running job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 20:05:56 UTC)" (scheduled at 2025-01-14 20:00:56.194275+00:00)
+2025-01-14 23:00:56,207 - __main__ - ERROR - Ошибка при перезапуске бота: This Application is already running!
+2025-01-14 23:01:01,225 - apscheduler.executors.default - INFO - Job "restart_webhook (trigger: interval[0:05:00], next run at: 2025-01-14 20:05:56 UTC)" executed successfully
