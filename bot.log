@@ -550,3 +550,14 @@ RuntimeError: There is no current event loop in thread 'MainThread'.
 2025-01-15 13:21:43,851 - apscheduler.scheduler - INFO - Scheduler started
 2025-01-15 13:22:12,603 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
 2025-01-15 13:22:12,605 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': None}, 'goals': [], 'restrictions': []}
+2025-01-15 13:23:32,190 - __main__ - INFO - Starting bot...
+2025-01-15 13:23:32,583 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-15 13:23:38,888 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-15 13:23:38,890 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': None}, 'goals': [], 'restrictions': []}
+2025-01-15 13:23:49,571 - __main__ - INFO - Обработка фото профиля для пользователя 279595017
+2025-01-15 13:23:49,846 - __main__ - INFO - Сохраняем file_path в БД: https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_8.jpg
+2025-01-15 13:23:49,847 - database - INFO - Обновляем поля: {'photo_url': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_8.jpg'}
+2025-01-15 13:23:49,848 - database - INFO - SQL запрос: UPDATE users SET photo_url = ? WHERE user_id = ?, значения: ['https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_8.jpg', 279595017]
+2025-01-15 13:23:49,852 - database - INFO - Результат обновления: <sqlite3.Row object at 0x000002ED9A4FA230>
+2025-01-15 13:23:58,887 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-15 13:23:58,888 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_8.jpg'}, 'goals': [], 'restrictions': []}

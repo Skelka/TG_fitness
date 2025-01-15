@@ -2508,14 +2508,26 @@
                         .map(input => input.value)
                 };
 
+                console.log('Подготовленные данные профиля:', profile);
+                
                 const data = JSON.stringify({
                     type: 'profile_update',
                     data: profile
                 });
 
-                // Просто отправляем данные
-                tg.sendData(data);
-                tg.close();
+                // Показываем подтверждение перед отправкой
+                tg.showConfirm('Сохранить изменения?', (confirmed) => {
+                    if (confirmed) {
+                        try {
+                            tg.sendData(data);
+                            tg.showAlert('Данные успешно сохранены!', () => {
+                                tg.close();
+                            });
+                        } catch (error) {
+                            tg.showAlert('Ошибка при сохранении: ' + error.message);
+                        }
+                    }
+                });
 
             } catch (error) {
                 console.error('Ошибка:', error);
@@ -2534,6 +2546,19 @@
         document.querySelectorAll('.goal-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 btn.classList.toggle('active');
+                // Сохраняем цели при изменении
+                const goals = Array.from(document.querySelectorAll('.goal-btn.active'))
+                    .map(btn => btn.dataset.goal);
+                saveProfileField('goals', goals);
+            });
+        });
+
+        // Обработчики для чекбоксов ограничений
+        document.querySelectorAll('input[name="restrictions"]').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                const restrictions = Array.from(document.querySelectorAll('input[name="restrictions"]:checked'))
+                    .map(input => input.value);
+                saveProfileField('restrictions', restrictions);
             });
         });
 
