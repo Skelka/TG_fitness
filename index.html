@@ -2008,7 +2008,7 @@
 
         .save-button {
             position: fixed;
-            bottom: 20px;
+            bottom: 70px;
             left: 50%;
             transform: translateX(-50%);
             background: #7C5AF1;
@@ -2019,6 +2019,8 @@
             font-size: 16px;
             cursor: pointer;
             z-index: 1000;
+            width: calc(100% - 40px);
+            max-width: 400px;
         }
     </style>
 </head>
@@ -2508,14 +2510,34 @@
                         .map(input => input.value)
                 };
 
+                // Проверяем наличие данных
+                if (!profile.age && !profile.height && !profile.weight) {
+                    tg.showPopup({
+                        title: 'Ошибка',
+                        message: 'Заполните хотя бы одно поле с данными'
+                    });
+                    return;
+                }
+
                 const data = JSON.stringify({
                     type: 'profile_update',
                     data: profile
                 });
 
-                // Просто отправляем данные
-                tg.sendData(data);
-                tg.close();
+                // Показываем подтверждение перед сохранением
+                tg.showPopup({
+                    title: 'Сохранение',
+                    message: 'Сохранить изменения?',
+                    buttons: [
+                        {type: 'ok', text: 'Сохранить'},
+                        {type: 'cancel', text: 'Отмена'}
+                    ]
+                }, (buttonId) => {
+                    if (buttonId === 'ok') {
+                        tg.sendData(data);
+                        tg.close();
+                    }
+                });
 
             } catch (error) {
                 console.error('Ошибка:', error);
@@ -2688,20 +2710,8 @@
 
         // Функция для сохранения отдельных полей
         function saveProfileField(field, value) {
-            const tg = window.Telegram.WebApp;
-            try {
-                const data = {
-                    type: 'profile_update',
-                    data: {
-                        [field]: value
-                    }
-                };
-                
-                tg.sendData(JSON.stringify(data));
-                console.log(`Сохранено поле ${field}:`, value);
-            } catch (error) {
-                console.error(`Ошибка сохранения поля ${field}:`, error);
-            }
+            // Просто сохраняем значение в поле, без отправки
+            console.log(`Изменено поле ${field}:`, value);
         }
 
         // Функция для сохранения уровня подготовки
@@ -2712,7 +2722,6 @@
             const selectedBtn = document.querySelector(`.level-btn[data-level="${level}"]`);
             if (selectedBtn) {
                 selectedBtn.classList.add('active');
-                saveProfileField('fitness_level', level);
             }
         }
 
