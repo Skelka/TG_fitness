@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html>
 <head>
@@ -92,107 +91,9 @@
         </div>
     </div>
 
-    <script src="js/app.js"></script>
-    <script src="js/workout.js"></script>
-    <script src="js/profile.js"></script>
+    <!-- Важно: порядок подключения скриптов имеет значение -->
+    <script src="js/app.js"></script>      <!-- Основные функции и состояние -->
+    <script src="js/profile.js"></script>  <!-- Функции профиля -->
+    <script src="js/workout.js"></script>  <!-- Функции тренировок -->
 </body>
-=======
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitness Tracker</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-    <div id="app">
-        <div id="loading" style="display: none;">
-            <div class="spinner"></div>
-        </div>
-
-        <!-- Главное меню -->
-        <div class="section" id="main-menu">
-            <div class="menu-item" onclick="showSection('workout')">
-                <i class="icon workout-icon"></i>
-                <span>Тренировка</span>
-            </div>
-            <div class="menu-item" onclick="showSection('profile')">
-                <i class="icon profile-icon"></i>
-                <span>Профиль</span>
-            </div>
-            <div class="menu-item" onclick="showSection('statistics')">
-                <i class="icon stats-icon"></i>
-                <span>Статистика</span>
-            </div>
-        </div>
-
-        <!-- Секция тренировки -->
-        <div class="section hidden" id="workout-section">
-            <div class="workout-types">
-                <button class="workout-type" data-type="cardio">Кардио</button>
-                <button class="workout-type" data-type="strength">Силовая</button>
-                <button class="workout-type" data-type="yoga">Йога</button>
-            </div>
-            <div id="active-workout" class="hidden">
-                <div class="timer">00:00</div>
-                <div class="workout-stats">
-                    <div class="stat">
-                        <span class="label">Калории</span>
-                        <span class="value" id="calories">0</span>
-                    </div>
-                </div>
-                <button class="btn-finish" onclick="finishWorkout()">Завершить</button>
-            </div>
-        </div>
-
-        <!-- Секция профиля -->
-        <div class="section hidden" id="profile-section">
-            <form id="profile-form">
-                <div class="form-group">
-                    <label>Возраст</label>
-                    <input type="number" name="age" required>
-                </div>
-                <div class="form-group">
-                    <label>Рост (см)</label>
-                    <input type="number" name="height" required>
-                </div>
-                <div class="form-group">
-                    <label>Вес (кг)</label>
-                    <input type="number" name="weight" required>
-                </div>
-                <div class="form-group">
-                    <label>Уровень подготовки</label>
-                    <select name="fitness_level" required>
-                        <option value="beginner">Начинающий</option>
-                        <option value="intermediate">Средний</option>
-                        <option value="advanced">Продвинутый</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn-save">Сохранить</button>
-            </form>
-        </div>
-
-        <!-- Секция статистики -->
-        <div class="section hidden" id="statistics-section">
-            <div class="stats-summary">
-                <div class="stat-card">
-                    <span class="stat-label">Тренировок</span>
-                    <span class="stat-value" id="total-workouts">0</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">Калорий сожжено</span>
-                    <span class="stat-value" id="total-calories">0</span>
-                </div>
-            </div>
-            <div id="workout-history"></div>
-        </div>
-    </div>
-
-    <script src="js/app.js"></script>
-    <script src="js/workout.js"></script>
-    <script src="js/profile.js"></script>
-</body>
->>>>>>> 14f3ba79ce7643c2429781e250c7293da79353c9
 </html> 
