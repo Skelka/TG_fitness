@@ -536,3 +536,7 @@ RuntimeError: There is no current event loop in thread 'MainThread'.
 2025-01-15 13:13:30,507 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': None}, 'goals': [], 'restrictions': []}
 2025-01-15 13:16:29,178 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
 2025-01-15 13:16:29,179 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': None}, 'goals': [], 'restrictions': []}
+2025-01-15 13:17:35,033 - __main__ - INFO - Starting bot...
+2025-01-15 13:17:36,277 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-15 13:18:29,177 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-15 13:18:29,180 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': None}, 'goals': [], 'restrictions': []}
