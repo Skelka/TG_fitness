@@ -32,9 +32,9 @@
         <!-- Секция тренировки -->
         <div class="section hidden" id="workout-section">
             <div class="workout-types">
-                <button class="workout-type" data-type="cardio">Кардио</button>
-                <button class="workout-type" data-type="strength">Силовая</button>
-                <button class="workout-type" data-type="yoga">Йога</button>
+                <button class="workout-type" data-type="cardio" onclick="startWorkout('cardio')">Кардио</button>
+                <button class="workout-type" data-type="strength" onclick="startWorkout('strength')">Силовая</button>
+                <button class="workout-type" data-type="yoga" onclick="startWorkout('yoga')">Йога</button>
             </div>
             <div id="active-workout" class="hidden">
                 <div class="timer">00:00</div>
@@ -50,18 +50,24 @@
 
         <!-- Секция профиля -->
         <div class="section hidden" id="profile-section">
-            <form id="profile-form">
+            <form id="profile-form" onsubmit="saveProfile(event)">
+                <div class="profile-photo">
+                    <img id="profile-image" src="img/default-avatar.png" alt="Profile Photo">
+                    <button type="button" onclick="uploadProfilePhoto()" class="btn-upload">
+                        Загрузить фото
+                    </button>
+                </div>
                 <div class="form-group">
                     <label>Возраст</label>
-                    <input type="number" name="age" required>
+                    <input type="number" name="age" required min="14" max="100">
                 </div>
                 <div class="form-group">
                     <label>Рост (см)</label>
-                    <input type="number" name="height" required>
+                    <input type="number" name="height" required min="100" max="250">
                 </div>
                 <div class="form-group">
                     <label>Вес (кг)</label>
-                    <input type="number" name="weight" required>
+                    <input type="number" name="weight" required min="30" max="300">
                 </div>
                 <div class="form-group">
                     <label>Уровень подготовки</label>
@@ -95,5 +101,35 @@
     <script src="js/app.js"></script>      <!-- Основные функции и состояние -->
     <script src="js/profile.js"></script>  <!-- Функции профиля -->
     <script src="js/workout.js"></script>  <!-- Функции тренировок -->
+
+    <script>
+    // Функция для загрузки фото профиля
+    function uploadProfilePhoto() {
+        if (tg.WebApp.platform === 'tdesktop') {
+            // Для десктопной версии
+            tg.showPopup({
+                title: 'Загрузка фото',
+                message: 'Используйте мобильное приложение для загрузки фото'
+            });
+        } else {
+            // Для мобильной версии
+            tg.expand();
+            tg.showScanQrPopup({
+                text: 'Выберите фото'
+            }, function(file) {
+                if (file) {
+                    document.getElementById('profile-image').src = URL.createObjectURL(file);
+                }
+            });
+        }
+    }
+
+    // Инициализация WebApp
+    window.addEventListener('load', function() {
+        tg.ready();
+        // Устанавливаем основной цвет кнопок
+        document.documentElement.style.setProperty('--tg-theme-button-color', tg.MainButton.color);
+    });
+    </script>
 </body>
 </html> 

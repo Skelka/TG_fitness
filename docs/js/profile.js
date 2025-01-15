@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // Загрузка профиля
 async function loadProfile() {
     try {
@@ -6,6 +5,11 @@ async function loadProfile() {
         if (profile) {
             fillProfileForm(profile);
             state.profile = profile;
+            
+            // Загружаем фото профиля, если есть
+            if (profile.photo) {
+                document.getElementById('profile-image').src = profile.photo;
+            }
         }
     } catch (error) {
         handleError(error);
@@ -17,19 +21,25 @@ function fillProfileForm(profile) {
     const form = document.getElementById('profile-form');
     for (const [key, value] of Object.entries(profile)) {
         const input = form.elements[key];
-        if (input) {
+        if (input && key !== 'photo') {
             input.value = value;
         }
     }
 }
 
 // Сохранение профиля
-async function saveProfile(formData) {
+async function saveProfile(event) {
+    event.preventDefault();
+    
     try {
         loading.show();
+        const formData = new FormData(event.target);
         const profileData = {
             type: 'profile_update',
-            data: Object.fromEntries(formData)
+            data: {
+                ...Object.fromEntries(formData),
+                photo: document.getElementById('profile-image').src
+            }
         };
 
         if (navigator.onLine) {
@@ -41,6 +51,7 @@ async function saveProfile(formData) {
         state.profile = profileData.data;
         
         tg.showAlert('Профиль успешно обновлен!');
+        showSection('main-menu');
     } catch (error) {
         handleError(error);
     } finally {
@@ -52,61 +63,5 @@ async function saveProfile(formData) {
 document.getElementById('profile-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    await saveProfile(formData);
-=======
-// Загрузка профиля
-async function loadProfile() {
-    try {
-        const profile = JSON.parse(localStorage.getItem('profile'));
-        if (profile) {
-            fillProfileForm(profile);
-            state.profile = profile;
-        }
-    } catch (error) {
-        handleError(error);
-    }
-}
-
-// Заполнение формы профиля
-function fillProfileForm(profile) {
-    const form = document.getElementById('profile-form');
-    for (const [key, value] of Object.entries(profile)) {
-        const input = form.elements[key];
-        if (input) {
-            input.value = value;
-        }
-    }
-}
-
-// Сохранение профиля
-async function saveProfile(formData) {
-    try {
-        loading.show();
-        const profileData = {
-            type: 'profile_update',
-            data: Object.fromEntries(formData)
-        };
-
-        if (navigator.onLine) {
-            await sendDataToBot(profileData);
-        }
-        
-        // Сохраняем локально в любом случае
-        localStorage.setItem('profile', JSON.stringify(profileData.data));
-        state.profile = profileData.data;
-        
-        tg.showAlert('Профиль успешно обновлен!');
-    } catch (error) {
-        handleError(error);
-    } finally {
-        loading.hide();
-    }
-}
-
-// Обработчик отправки формы профиля
-document.getElementById('profile-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    await saveProfile(formData);
->>>>>>> 14f3ba79ce7643c2429781e250c7293da79353c9
+    await saveProfile(e);
 }); 
