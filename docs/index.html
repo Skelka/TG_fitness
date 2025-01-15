@@ -141,11 +141,55 @@
         </div>
     </div>
 
-    <!-- Важно: порядок подключения скриптов имеет значение -->
+    <!-- Перенесем скрипт инициализации перед подключением других скриптов -->
+    <script>
+    // Глобальная инициализация
+    window.addEventListener('DOMContentLoaded', function() {
+        // Инициализируем Telegram WebApp
+        window.tg = window.Telegram.WebApp;
+        window.tg.ready();
+        
+        // Инициализируем обработчики
+        window.initEventHandlers = function() {
+            // Обработчики для целей
+            window.toggleGoal = function(goalType) {
+                const goals = JSON.parse(localStorage.getItem('goals') || '{}');
+                goals[goalType] = !goals[goalType];
+                localStorage.setItem('goals', JSON.stringify(goals));
+                updateGoalsUI();
+            };
+
+            // Обработчики для ограничений
+            window.toggleRestriction = function(restrictionType) {
+                const restrictions = JSON.parse(localStorage.getItem('restrictions') || '{}');
+                restrictions[restrictionType] = !restrictions[restrictionType];
+                localStorage.setItem('restrictions', JSON.stringify(restrictions));
+                updateRestrictionsUI();
+            };
+
+            // Обработчики для уведомлений
+            window.updateNotificationSettings = function(type, enabled) {
+                const notifications = JSON.parse(localStorage.getItem('notifications') || '{}');
+                notifications[type] = enabled;
+                localStorage.setItem('notifications', JSON.stringify(notifications));
+            };
+
+            // Обработчик для трекеров
+            window.connectTracker = function(type) {
+                tg.showAlert(`Подключение ${type} будет доступно в следующем обновлении`);
+            };
+        };
+
+        // Запускаем инициализацию
+        initEventHandlers();
+    });
+    </script>
+
+    <!-- Подключаем скрипты -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="js/app.js" defer></script>      <!-- Основные функции и состояние -->
-    <script src="js/profile.js" defer></script>  <!-- Функции профиля -->
-    <script src="js/workout.js" defer></script>  <!-- Функции тренировок -->
+    <script src="js/app.js" defer></script>
+    <script src="js/profile.js" defer></script>
+    <script src="js/workout.js" defer></script>
 
     <script>
     // Функция для загрузки фото профиля
