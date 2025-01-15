@@ -2006,19 +2006,22 @@
             background: #3D3D3D;
         }
 
-        /* Стили для кнопки сохранения */
+        /* Добавим стили для кнопки сохранения */
         .save-button {
-            background: #7C5AF1;
+            position: fixed;
+            bottom: 70px; /* Оставляем место для нижней навигации */
+            left: 0;
+            right: 0;
+            padding: 15px;
+            background-color: #7C5AF1;
             color: white;
             border: none;
-            border-radius: 8px;
-            padding: 12px 24px;
             font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
-            width: calc(100% - 40px);
-            max-width: 400px;
-            margin: 20px auto;
-            display: block;
+            z-index: 100;
+            margin: 0 20px;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -2156,8 +2159,10 @@
                     <div class="profile-section">
                         <h3>Ограничения</h3>
                         <div class="restrictions-group">
-                            <input type="checkbox" id="joints" value="joints">
-                            <label for="joints">Проблемы с суставами</label>
+                            <label for="joints">
+                                <input type="checkbox" id="joints" name="restrictions" value="joints">
+                                Проблемы с суставами
+                            </label>
                             <label for="back">
                                 <input type="checkbox" id="back" name="restrictions" value="back">
                                 Проблемы со спиной
@@ -2500,20 +2505,18 @@
                     height: document.getElementById('height').value,
                     weight: document.getElementById('weight').value,
                     fitness_level: document.querySelector('.level-btn.active')?.dataset.level,
-                    goals: Array.from(document.querySelectorAll('.goal-btn.active'))
-                        .map(btn => btn.dataset.goal),
-                    restrictions: Array.from(document.querySelectorAll('input[name="restrictions"]:checked'))
-                        .map(input => input.value)
+                    goals: Array.from(document.querySelectorAll('.goal-btn.active')).map(btn => btn.dataset.goal) || [],
+                    restrictions: Array.from(document.querySelectorAll('input[name="restrictions"]:checked')).map(input => input.value) || []
                 };
 
-                console.log('Сохраняемые данные:', profile);
+                console.log('Сохраняем профиль:', profile);
 
                 const data = JSON.stringify({
                     type: 'profile_update',
                     data: profile
                 });
 
-                // Просто отправляем данные и закрываем
+                // Просто отправляем данные
                 tg.sendData(data);
                 tg.close();
 
@@ -2521,8 +2524,7 @@
                 console.error('Ошибка:', error);
                 tg.showPopup({
                     title: 'Ошибка',
-                    message: 'Не удалось сохранить данные: ' + error.message,
-                    buttons: [{type: 'ok'}]
+                    message: 'Не удалось сохранить данные: ' + error.message
                 });
             }
         }
@@ -2536,8 +2538,8 @@
         });
 
         document.querySelectorAll('.goal-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                this.classList.toggle('active');
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
             });
         });
 
@@ -2733,34 +2735,9 @@
                         document.getElementById('height').value = data.personalInfo.height || '';
                         document.getElementById('weight').value = data.personalInfo.weight || '';
                         
-                        // Загружаем фото профиля
-                        if (data.personalInfo.photo) {
-                            const photoUrl = data.personalInfo.photo;
-                            const profilePhoto = document.getElementById('profile-photo');
-                            if (profilePhoto) {
-                                profilePhoto.src = photoUrl;
-                            }
-                        }
-                        
                         // Устанавливаем уровень подготовки
                         if (data.personalInfo.fitnessLevel) {
                             saveFitnessLevel(data.personalInfo.fitnessLevel);
-                        }
-                        
-                        // Устанавливаем цели
-                        if (data.goals && Array.isArray(data.goals)) {
-                            data.goals.forEach(goal => {
-                                const goalBtn = document.querySelector(`.goal-btn[data-goal="${goal}"]`);
-                                if (goalBtn) goalBtn.classList.add('active');
-                            });
-                        }
-                        
-                        // Устанавливаем ограничения
-                        if (data.restrictions && Array.isArray(data.restrictions)) {
-                            data.restrictions.forEach(restriction => {
-                                const checkbox = document.querySelector(`input[value="${restriction}"]`);
-                                if (checkbox) checkbox.checked = true;
-                            });
                         }
                     }
                 }
