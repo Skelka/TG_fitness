@@ -2006,22 +2006,19 @@
             background: #3D3D3D;
         }
 
-        /* Добавим стили для кнопки сохранения */
         .save-button {
             position: fixed;
-            bottom: 70px; /* Оставляем место для нижней навигации */
-            left: 0;
-            right: 0;
-            padding: 15px;
-            background-color: #7C5AF1;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #7C5AF1;
             color: white;
             border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
             font-size: 16px;
-            font-weight: bold;
             cursor: pointer;
-            z-index: 100;
-            margin: 0 20px;
-            border-radius: 10px;
+            z-index: 1000;
         }
     </style>
 </head>
@@ -2505,11 +2502,11 @@
                     height: document.getElementById('height').value,
                     weight: document.getElementById('weight').value,
                     fitness_level: document.querySelector('.level-btn.active')?.dataset.level,
-                    goals: Array.from(document.querySelectorAll('.goal-btn.active')).map(btn => btn.dataset.goal) || [],
-                    restrictions: Array.from(document.querySelectorAll('input[name="restrictions"]:checked')).map(input => input.value) || []
+                    goals: Array.from(document.querySelectorAll('.goal-btn.active'))
+                        .map(btn => btn.dataset.goal),
+                    restrictions: Array.from(document.querySelectorAll('input[name="restrictions"]:checked'))
+                        .map(input => input.value)
                 };
-
-                console.log('Сохраняем профиль:', profile);
 
                 const data = JSON.stringify({
                     type: 'profile_update',
