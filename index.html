@@ -2508,34 +2508,22 @@
                         .map(input => input.value)
                 };
 
-                // Отправляем данные через URL
-                const encodedData = encodeURIComponent(JSON.stringify({
+                const data = JSON.stringify({
                     type: 'profile_update',
                     data: profile
-                }));
-                
-                fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        chat_id: tg.initDataUnsafe.user.id,
-                        text: encodedData
-                    })
-                })
-                .then(response => response.json())
-                .then(result => {
-                    if (result.ok) {
+                });
+
+                // Показываем подтверждение
+                tg.showConfirm('Сохранить изменения?', (confirmed) => {
+                    if (confirmed) {
+                        // Отправляем данные через WebApp API
+                        tg.sendData(data);
+                        // Показываем уведомление об успехе
                         tg.showAlert('Данные успешно сохранены!', () => {
+                            // Закрываем приложение после подтверждения
                             tg.close();
                         });
-                    } else {
-                        throw new Error('Ошибка при сохранении данных');
                     }
-                })
-                .catch(error => {
-                    tg.showAlert('Ошибка при сохранении: ' + error.message);
                 });
 
             } catch (error) {
