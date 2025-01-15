@@ -2513,18 +2513,9 @@
                     data: profile
                 });
 
-                // Используем MainButton для отправки данных
-                tg.MainButton.setText('Сохранить');
-                tg.MainButton.show();
-                tg.MainButton.onClick(() => {
-                    try {
-                        tg.sendData(data);
-                        tg.showAlert('Данные успешно сохранены!');
-                        tg.close();
-                    } catch (error) {
-                        tg.showAlert('Ошибка при сохранении: ' + error.message);
-                    }
-                });
+                // Просто отправляем данные
+                tg.sendData(data);
+                tg.close();
 
             } catch (error) {
                 console.error('Ошибка:', error);
