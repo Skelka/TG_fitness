@@ -1,33 +1,57 @@
 // Инициализация Telegram WebApp
-const tg = window.Telegram.WebApp;
-tg.expand();
+let tg;
 
-// Состояние приложения
-const state = {
-    currentSection: 'main-menu',
-    workoutInProgress: false,
-    profile: null,
-    statistics: null
-};
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Инициализируем Telegram WebApp
+        tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
 
-// Показ/скрытие индикатора загрузки
-const loading = {
-    show() {
-        document.getElementById('loading').style.display = 'flex';
-    },
-    hide() {
-        document.getElementById('loading').style.display = 'none';
+        // Инициализируем состояние приложения
+        window.state = {
+            currentSection: 'main-menu',
+            workoutInProgress: false,
+            profile: null,
+            statistics: null
+        };
+
+        // Инициализируем индикатор загрузки
+        window.loading = {
+            show() {
+                document.getElementById('loading').style.display = 'flex';
+            },
+            hide() {
+                document.getElementById('loading').style.display = 'none';
+            }
+        };
+
+        // Загружаем данные
+        loading.show();
+        await Promise.all([
+            loadProfile(),
+            loadStatistics()
+        ]);
+        loading.hide();
+
+        // Устанавливаем тему
+        document.documentElement.style.setProperty('--tg-theme-button-color', tg.MainButton.color);
+        
+        // Инициализируем обработчики офлайн режима
+        initOfflineHandlers();
+        
+    } catch (error) {
+        console.error('Initialization error:', error);
+        tg?.showAlert('Ошибка инициализации приложения');
     }
-};
+});
 
 // Переключение между секциями
 function showSection(sectionId) {
-    // Скрываем все секции
     document.querySelectorAll('.section').forEach(section => {
         section.classList.add('hidden');
     });
     
-    // Показываем нужную секцию
     const section = document.getElementById(`${sectionId}-section`);
     if (section) {
         section.classList.remove('hidden');
@@ -41,46 +65,16 @@ function handleError(error) {
     tg.showAlert(`Произошла ошибка: ${error.message}`);
 }
 
-// Инициализация приложения
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        loading.show();
-        // Загружаем профиль и статистику
-        await Promise.all([
-            loadProfile(),
-            loadStatistics()
-        ]);
-        loading.hide();
-    } catch (error) {
-        handleError(error);
-        loading.hide();
-    }
-});
+// Инициализация обработчиков офлайн режима
+function initOfflineHandlers() {
+    window.addEventListener('online', () => {
+        tg.showAlert('Подключение восстановлено');
+        syncData();
+    });
 
-// Обработка офлайн режима
-window.addEventListener('online', () => {
-    tg.showAlert('Подключение восстановлено');
-    // Синхронизируем данные
-    syncData();
-});
-
-window.addEventListener('offline', () => {
-    tg.showAlert('Отсутствует подключение к интернету. Приложение работает в офлайн режиме.');
-});
-
-// Функция синхронизации данных
-async function syncData() {
-    const cachedData = localStorage.getItem('cachedData');
-    if (cachedData) {
-        try {
-            const data = JSON.parse(cachedData);
-            // Отправляем накопленные данные
-            await sendDataToBot(data);
-            localStorage.removeItem('cachedData');
-        } catch (error) {
-            handleError(error);
-        }
-    }
+    window.addEventListener('offline', () => {
+        tg.showAlert('Отсутствует подключение к интернету. Приложение работает в офлайн режиме.');
+    });
 }
 
 // Отправка данных боту
@@ -89,7 +83,6 @@ async function sendDataToBot(data) {
         tg.sendData(JSON.stringify(data));
         return true;
     } catch (error) {
-        // Если отправка не удалась, сохраняем локально
         const cachedData = JSON.parse(localStorage.getItem('cachedData') || '[]');
         cachedData.push({
             ...data,
@@ -97,6 +90,20 @@ async function sendDataToBot(data) {
         });
         localStorage.setItem('cachedData', JSON.stringify(cachedData));
         throw error;
+    }
+}
+
+// Синхронизация данных
+async function syncData() {
+    const cachedData = localStorage.getItem('cachedData');
+    if (cachedData) {
+        try {
+            const data = JSON.parse(cachedData);
+            await sendDataToBot(data);
+            localStorage.removeItem('cachedData');
+        } catch (error) {
+            handleError(error);
+        }
     }
 }
 
