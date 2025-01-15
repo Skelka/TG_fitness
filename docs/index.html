@@ -95,6 +95,50 @@
             </div>
             <div id="workout-history"></div>
         </div>
+
+        <!-- В секции настроек -->
+        <div class="settings-section">
+            <h3>Подключенные трекеры</h3>
+            <div class="trackers">
+                <button onclick="connectTracker('googlefit')" class="tracker-button">
+                    <img src="img/googlefit-logo.png" alt="Google Fit">
+                    Подключить Google Fit
+                </button>
+                <button onclick="connectTracker('fitbit')" class="tracker-button">
+                    <img src="img/fitbit-logo.png" alt="Fitbit">
+                    Подключить Fitbit
+                </button>
+            </div>
+            
+            <h3>Цели тренировок</h3>
+            <div class="goals">
+                <div class="goal-item" onclick="toggleGoal('weight')" data-goal="weight">
+                    Снижение веса
+                </div>
+                <div class="goal-item" onclick="toggleGoal('muscle')" data-goal="muscle">
+                    Набор мышечной массы
+                </div>
+            </div>
+            
+            <h3>Ограничения</h3>
+            <div class="restrictions">
+                <div class="restriction-item" onclick="toggleRestriction('joints')" data-restriction="joints">
+                    Проблемы с суставами
+                </div>
+            </div>
+            
+            <h3>Уведомления</h3>
+            <div class="notifications">
+                <label>
+                    <input type="checkbox" onchange="updateNotificationSettings('workout_reminder', this.checked)">
+                    Напоминания о тренировках
+                </label>
+                <label>
+                    <input type="checkbox" onchange="updateNotificationSettings('goal_updates', this.checked)">
+                    Обновления целей
+                </label>
+            </div>
+        </div>
     </div>
 
     <!-- Важно: порядок подключения скриптов имеет значение -->
