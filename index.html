@@ -2506,7 +2506,6 @@
                         .map(input => input.value) || []
                 };
 
-                // Проверяем, что данные собраны корректно
                 console.log('Сохраняемые данные:', profile);
 
                 const data = JSON.stringify({
@@ -2514,15 +2513,23 @@
                     data: profile
                 });
 
-                // Отправляем данные
-                tg.sendData(data);
-                tg.close();
+                tg.showPopup({
+                    title: 'Успешно',
+                    message: 'Данные профиля сохранены',
+                    buttons: [{type: 'ok'}]
+                }, () => {
+                    tg.sendData(data);
+                    setTimeout(() => {
+                        tg.close();
+                    }, 500);
+                });
 
             } catch (error) {
                 console.error('Ошибка:', error);
                 tg.showPopup({
                     title: 'Ошибка',
-                    message: 'Не удалось сохранить данные: ' + error.message
+                    message: 'Не удалось сохранить данные: ' + error.message,
+                    buttons: [{type: 'ok'}]
                 });
             }
         }
@@ -2795,55 +2802,6 @@
             tg.ready(); // Сообщаем WebApp что мы готовы принимать данные
             tg.expand(); // Раскрываем на всю высоту
         });
-
-        function saveProfile() {
-            try {
-                const tg = window.Telegram.WebApp;
-                
-                const profile = {
-                    age: document.getElementById('age').value,
-                    height: document.getElementById('height').value,
-                    weight: document.getElementById('weight').value,
-                    fitness_level: document.querySelector('.level-btn.active')?.dataset.level,
-                    goals: Array.from(document.querySelectorAll('.goals-buttons .goal-btn.active'))
-                        .map(btn => btn.dataset.goal) || [],
-                    restrictions: Array.from(document.querySelectorAll('.restrictions-group input[type="checkbox"]:checked'))
-                        .map(input => input.value) || []
-                };
-
-                console.log('Сохраняемые данные:', profile);
-
-                const data = JSON.stringify({
-                    type: 'profile_update',
-                    data: profile
-                });
-
-                // Показываем индикатор сохранения
-                tg.MainButton.setText('Сохранение...');
-                tg.MainButton.show();
-                tg.MainButton.disable();
-
-                // Отправляем данные
-                tg.sendData(data);
-                
-                // Показываем уведомление об успешном сохранении
-                tg.showPopup({
-                    title: 'Успешно',
-                    message: 'Данные профиля сохранены',
-                    buttons: [{type: 'ok'}]
-                }, () => {
-                    tg.close();
-                });
-
-            } catch (error) {
-                console.error('Ошибка:', error);
-                tg.showPopup({
-                    title: 'Ошибка',
-                    message: 'Не удалось сохранить данные: ' + error.message,
-                    buttons: [{type: 'ok'}]
-                });
-            }
-        }
     </script>
 </body>
 </html>
