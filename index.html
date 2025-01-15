@@ -2513,16 +2513,19 @@
                     data: profile
                 });
 
-                tg.showPopup({
-                    title: 'Успешно',
-                    message: 'Данные профиля сохранены',
-                    buttons: [{type: 'ok'}]
-                }, () => {
-                    tg.sendData(data);
-                    setTimeout(() => {
+                // Сначала отправляем данные
+                tg.sendData(data);
+                
+                // После отправки показываем уведомление и закрываем
+                setTimeout(() => {
+                    tg.showPopup({
+                        title: 'Успешно',
+                        message: 'Данные профиля сохранены',
+                        buttons: [{type: 'ok'}]
+                    }, () => {
                         tg.close();
-                    }, 500);
-                });
+                    });
+                }, 100);
 
             } catch (error) {
                 console.error('Ошибка:', error);
