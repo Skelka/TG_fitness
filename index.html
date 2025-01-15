@@ -2513,16 +2513,22 @@
                     data: profile
                 });
 
-                // Просто отправляем данные
-                tg.sendData(data);
-                tg.close();
+                // Используем MainButton для отправки данных
+                tg.MainButton.setText('Сохранить');
+                tg.MainButton.show();
+                tg.MainButton.onClick(() => {
+                    try {
+                        tg.sendData(data);
+                        tg.showAlert('Данные успешно сохранены!');
+                        tg.close();
+                    } catch (error) {
+                        tg.showAlert('Ошибка при сохранении: ' + error.message);
+                    }
+                });
 
             } catch (error) {
                 console.error('Ошибка:', error);
-                tg.showPopup({
-                    title: 'Ошибка',
-                    message: 'Не удалось сохранить данные: ' + error.message
-                });
+                tg.showAlert('Не удалось отправить данные: ' + error.message);
             }
         }
 
