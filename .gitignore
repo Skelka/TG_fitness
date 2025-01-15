@@ -1,34 +1,56 @@
-# Python files
+# Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+*.so
 .Python
 env/
-venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logs
+*.log
+bot.log
+
+# Environment
 .env
+.venv
+venv/
+ENV/
 
 # Database
-fitness.db
 *.db
 *.sqlite3
 
-# Bot files
-bot.py
-database.py
-server.py
-
-# System files
-.DS_Store
-Thumbs.db
-
-# IDE files
+# IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 
-# Only track web app files
-!index.html
-!images/
-!.github/workflows/deploy.yml 
+# OS
+.DS_Store
+Thumbs.db
+
+# Bot-specific files (игнорируем файлы бота)
+bot.py
+database.py
+server.py
+requirements.txt
+update.sh
+
+# Explicitly keep WebApp files (явно сохраняем файлы WebApp)
+!docs/
+!docs/**/* 
