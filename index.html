@@ -2513,35 +2513,22 @@
                     data: profile
                 });
 
-                // Показываем предупреждение перед закрытием
-                tg.showPopup({
-                    title: 'Сохранение данных',
-                    message: 'Для сохранения данных приложение будет закрыто. Продолжить?',
-                    buttons: [
-                        {
-                            type: 'ok',
-                            text: 'Сохранить'
-                        },
-                        {
-                            type: 'cancel',
-                            text: 'Отмена'
-                        }
-                    ]
-                }, (buttonId) => {
-                    if (buttonId === 'ok') {
+                // Используем MainButton для отправки данных
+                tg.MainButton.setText('Сохранить');
+                tg.MainButton.show();
+                tg.MainButton.onClick(() => {
+                    try {
                         tg.sendData(data);
-                        // Закрываем приложение
+                        tg.showAlert('Данные успешно сохранены!');
                         tg.close();
+                    } catch (error) {
+                        tg.showAlert('Ошибка при сохранении: ' + error.message);
                     }
                 });
 
             } catch (error) {
                 console.error('Ошибка:', error);
-                tg.showPopup({
-                    title: 'Ошибка',
-                    message: 'Не удалось отправить данные: ' + error.message,
-                    buttons: [{type: 'ok'}]
-                });
+                tg.showAlert('Не удалось отправить данные: ' + error.message);
             }
         }
 
