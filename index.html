@@ -1015,7 +1015,7 @@
 
         .profile-container {
             padding: 20px;
-            padding-bottom: 80px;
+            padding-bottom: 140px;
         }
 
         .profile-header {
@@ -2008,19 +2008,20 @@
 
         .save-button {
             position: fixed;
-            bottom: 70px;
+            bottom: 80px;  /* Отступ от нижней навигации */
             left: 50%;
             transform: translateX(-50%);
             background: #7C5AF1;
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 12px 24px;
+            padding: 16px 24px;
             font-size: 16px;
             cursor: pointer;
             z-index: 1000;
             width: calc(100% - 40px);
             max-width: 400px;
+            margin-bottom: 10px;  /* Дополнительный отступ снизу */
         }
     </style>
 </head>
@@ -2512,10 +2513,7 @@
 
                 // Проверяем наличие данных
                 if (!profile.age && !profile.height && !profile.weight) {
-                    tg.showPopup({
-                        title: 'Ошибка',
-                        message: 'Заполните хотя бы одно поле с данными'
-                    });
+                    tg.showAlert('Заполните хотя бы одно поле с данными');
                     return;
                 }
 
@@ -2524,27 +2522,22 @@
                     data: profile
                 });
 
-                // Показываем подтверждение перед сохранением
-                tg.showPopup({
-                    title: 'Сохранение',
-                    message: 'Сохранить изменения?',
-                    buttons: [
-                        {type: 'ok', text: 'Сохранить'},
-                        {type: 'cancel', text: 'Отмена'}
-                    ]
-                }, (buttonId) => {
-                    if (buttonId === 'ok') {
+                // Используем MainButton для подтверждения
+                tg.MainButton.setText('Подтвердить сохранение');
+                tg.MainButton.show();
+                tg.MainButton.onClick(() => {
+                    try {
                         tg.sendData(data);
+                        tg.showAlert('Данные сохранены!');
                         tg.close();
+                    } catch (error) {
+                        tg.showAlert('Ошибка при сохранении: ' + error.message);
                     }
                 });
 
             } catch (error) {
                 console.error('Ошибка:', error);
-                tg.showPopup({
-                    title: 'Ошибка',
-                    message: 'Не удалось сохранить данные: ' + error.message
-                });
+                tg.showAlert('Не удалось сохранить данные: ' + error.message);
             }
         }
 
