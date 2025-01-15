@@ -1015,7 +1015,7 @@
 
         .profile-container {
             padding: 20px;
-            padding-bottom: 140px;
+            padding-bottom: 80px;
         }
 
         .profile-header {
@@ -2006,22 +2006,27 @@
             background: #3D3D3D;
         }
 
+        /* Стили для кнопки сохранения */
         .save-button {
             position: fixed;
-            bottom: 80px;  /* Отступ от нижней навигации */
+            bottom: 70px;  /* Увеличиваем отступ снизу, чтобы не перекрывать нижнюю навигацию */
             left: 50%;
             transform: translateX(-50%);
             background: #7C5AF1;
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 16px 24px;
+            padding: 12px 24px;
             font-size: 16px;
             cursor: pointer;
             z-index: 1000;
-            width: calc(100% - 40px);
-            max-width: 400px;
-            margin-bottom: 10px;  /* Дополнительный отступ снизу */
+            width: calc(100% - 40px);  /* Ширина кнопки с отступами по бокам */
+            max-width: 400px;  /* Максимальная ширина */
+        }
+
+        /* Добавим отступ для контента, чтобы кнопка не перекрывала контент */
+        .profile-container {
+            padding-bottom: 100px;  /* Отступ для кнопки */
         }
     </style>
 </head>
@@ -2505,39 +2510,30 @@
                     height: document.getElementById('height').value,
                     weight: document.getElementById('weight').value,
                     fitness_level: document.querySelector('.level-btn.active')?.dataset.level,
-                    goals: Array.from(document.querySelectorAll('.goal-btn.active'))
-                        .map(btn => btn.dataset.goal),
-                    restrictions: Array.from(document.querySelectorAll('input[name="restrictions"]:checked'))
-                        .map(input => input.value)
+                    goals: Array.from(document.querySelectorAll('.goals-buttons .goal-btn.active'))
+                        .map(btn => btn.dataset.goal) || [],
+                    restrictions: Array.from(document.querySelectorAll('.restrictions-group input[type="checkbox"]:checked'))
+                        .map(input => input.value) || []
                 };
 
-                // Проверяем наличие данных
-                if (!profile.age && !profile.height && !profile.weight) {
-                    tg.showAlert('Заполните хотя бы одно поле с данными');
-                    return;
-                }
+                // Проверяем, что данные собраны корректно
+                console.log('Сохраняемые данные:', profile);
 
                 const data = JSON.stringify({
                     type: 'profile_update',
                     data: profile
                 });
 
-                // Используем MainButton для подтверждения
-                tg.MainButton.setText('Подтвердить сохранение');
-                tg.MainButton.show();
-                tg.MainButton.onClick(() => {
-                    try {
-                        tg.sendData(data);
-                        tg.showAlert('Данные сохранены!');
-                        tg.close();
-                    } catch (error) {
-                        tg.showAlert('Ошибка при сохранении: ' + error.message);
-                    }
-                });
+                // Отправляем данные
+                tg.sendData(data);
+                tg.close();
 
             } catch (error) {
                 console.error('Ошибка:', error);
-                tg.showAlert('Не удалось сохранить данные: ' + error.message);
+                tg.showPopup({
+                    title: 'Ошибка',
+                    message: 'Не удалось сохранить данные: ' + error.message
+                });
             }
         }
 
@@ -2550,8 +2546,8 @@
         });
 
         document.querySelectorAll('.goal-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                btn.classList.toggle('active');
+            btn.addEventListener('click', function() {
+                this.classList.toggle('active');
             });
         });
 
@@ -2703,8 +2699,20 @@
 
         // Функция для сохранения отдельных полей
         function saveProfileField(field, value) {
-            // Просто сохраняем значение в поле, без отправки
-            console.log(`Изменено поле ${field}:`, value);
+            const tg = window.Telegram.WebApp;
+            try {
+                const data = {
+                    type: 'profile_update',
+                    data: {
+                        [field]: value
+                    }
+                };
+                
+                tg.sendData(JSON.stringify(data));
+                console.log(`Сохранено поле ${field}:`, value);
+            } catch (error) {
+                console.error(`Ошибка сохранения поля ${field}:`, error);
+            }
         }
 
         // Функция для сохранения уровня подготовки
@@ -2715,6 +2723,7 @@
             const selectedBtn = document.querySelector(`.level-btn[data-level="${level}"]`);
             if (selectedBtn) {
                 selectedBtn.classList.add('active');
+                saveProfileField('fitness_level', level);
             }
         }
 

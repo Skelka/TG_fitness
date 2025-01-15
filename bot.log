@@ -494,3 +494,7 @@ RuntimeError: There is no current event loop in thread 'MainThread'.
 2025-01-15 12:42:04,649 - apscheduler.scheduler - INFO - Scheduler started
 2025-01-15 12:42:47,575 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
 2025-01-15 12:42:47,578 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': 30, 'height': 180.0, 'weight': 59.0, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_7.jpg'}, 'goals': [], 'restrictions': []}
+2025-01-15 12:46:04,122 - __main__ - INFO - Starting bot...
+2025-01-15 12:46:04,364 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-15 12:46:46,886 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-15 12:46:46,889 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': 30, 'height': 180.0, 'weight': 59.0, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_7.jpg'}, 'goals': [], 'restrictions': []}
