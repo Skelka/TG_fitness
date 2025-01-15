@@ -2508,21 +2508,32 @@
                         .map(input => input.value)
                 };
 
+                console.log('Подготовленные данные профиля:', profile);
+
                 const data = JSON.stringify({
                     type: 'profile_update',
                     data: profile
                 });
 
+                console.log('Отправляем данные в бот:', data);
+
                 // Показываем подтверждение
                 tg.showConfirm('Сохранить изменения?', (confirmed) => {
                     if (confirmed) {
-                        // Отправляем данные через WebApp API
-                        tg.sendData(data);
-                        // Показываем уведомление об успехе
-                        tg.showAlert('Данные успешно сохранены!', () => {
-                            // Закрываем приложение после подтверждения
-                            tg.close();
-                        });
+                        try {
+                            // Отправляем данные через WebApp API
+                            tg.sendData(data);
+                            console.log('Данные отправлены в бот');
+                            
+                            // Показываем уведомление об успехе
+                            tg.showAlert('Данные успешно сохранены!', () => {
+                                // Закрываем приложение после подтверждения
+                                tg.close();
+                            });
+                        } catch (error) {
+                            console.error('Ошибка при отправке данных:', error);
+                            tg.showAlert('Ошибка при сохранении: ' + error.message);
+                        }
                     }
                 });
 
