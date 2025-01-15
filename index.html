@@ -2508,25 +2508,34 @@
                         .map(input => input.value)
                 };
 
-                console.log('Подготовленные данные профиля:', profile);
-                
-                const data = JSON.stringify({
+                // Отправляем данные через URL
+                const encodedData = encodeURIComponent(JSON.stringify({
                     type: 'profile_update',
                     data: profile
-                });
-
-                // Показываем подтверждение перед отправкой
-                tg.showConfirm('Сохранить изменения?', (confirmed) => {
-                    if (confirmed) {
-                        try {
-                            tg.sendData(data);
-                            tg.showAlert('Данные успешно сохранены!', () => {
-                                tg.close();
-                            });
-                        } catch (error) {
-                            tg.showAlert('Ошибка при сохранении: ' + error.message);
-                        }
+                }));
+                
+                fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: tg.initDataUnsafe.user.id,
+                        text: encodedData
+                    })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.ok) {
+                        tg.showAlert('Данные успешно сохранены!', () => {
+                            tg.close();
+                        });
+                    } else {
+                        throw new Error('Ошибка при сохранении данных');
                     }
+                })
+                .catch(error => {
+                    tg.showAlert('Ошибка при сохранении: ' + error.message);
                 });
 
             } catch (error) {

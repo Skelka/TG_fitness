@@ -561,3 +561,7 @@ RuntimeError: There is no current event loop in thread 'MainThread'.
 2025-01-15 13:23:49,852 - database - INFO - Результат обновления: <sqlite3.Row object at 0x000002ED9A4FA230>
 2025-01-15 13:23:58,887 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
 2025-01-15 13:23:58,888 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_8.jpg'}, 'goals': [], 'restrictions': []}
+2025-01-15 13:27:49,372 - __main__ - INFO - Starting bot...
+2025-01-15 13:27:49,672 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-15 13:28:28,416 - __main__ - INFO - Пользователь my_br0 (ID: 279595017) запустил бота
+2025-01-15 13:28:28,418 - __main__ - INFO - Подготовленные данные для веб-приложения: {'personalInfo': {'age': None, 'height': None, 'weight': None, 'fitnessLevel': None, 'photo': 'https://api.telegram.org/file/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/photos/file_8.jpg'}, 'goals': [], 'restrictions': []}
