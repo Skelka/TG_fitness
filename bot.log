@@ -1,0 +1,509 @@
+2025-01-15 16:23:07,565 - __main__ - ERROR - Ошибка при запуске бота: 
+2025-01-15 16:25:07,510 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:25:07,511 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:25:12,512 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:25:12,512 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:25:17,513 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:25:17,513 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:25:22,515 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:25:22,515 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:25:27,516 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:25:27,516 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:25:32,517 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:25:32,517 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:25:37,519 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:25:37,519 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:25:42,519 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:25:42,519 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:25:47,520 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:25:47,520 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:25:52,522 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:25:52,522 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:25:57,523 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:25:57,523 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:26:13,767 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:26:13,768 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:26:18,769 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:26:18,769 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:26:23,770 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:26:23,770 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:26:28,771 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:26:28,771 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:26:33,772 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:26:33,772 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:26:38,773 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:26:38,773 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:26:43,774 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:26:43,774 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:26:48,775 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:26:48,775 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:26:53,776 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:26:53,776 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:26:58,777 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:26:58,777 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:27:03,779 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:27:03,779 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:27:08,780 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:27:08,780 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:27:13,781 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:27:13,781 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:27:18,781 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:27:18,781 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:27:23,782 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:27:23,782 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:27:28,783 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:27:28,783 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:27:33,784 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:27:33,784 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:27:38,785 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:27:38,785 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:27:43,786 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:27:43,786 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:27:48,786 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:27:48,786 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:27:53,787 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:27:53,787 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:27:58,789 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:27:58,789 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:28:03,790 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:28:03,790 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:28:08,791 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:28:08,791 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:28:13,792 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:28:13,792 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:28:18,793 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:28:18,793 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:28:23,794 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:28:23,794 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:28:28,800 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:28:28,800 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:28:33,801 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:28:33,802 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:28:38,802 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:28:38,802 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:28:43,803 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:28:43,803 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:28:48,804 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:28:48,805 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:28:53,806 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:28:53,806 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:28:58,813 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:28:58,813 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:29:03,814 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:29:03,814 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:29:08,815 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:29:08,815 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:29:13,816 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:29:13,816 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:29:18,817 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:29:18,818 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:29:23,818 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:29:23,821 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:29:28,821 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:29:28,822 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:29:33,822 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:29:33,823 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:29:38,824 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:29:38,824 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:29:43,825 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:29:43,825 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:29:48,826 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:29:48,826 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:29:53,831 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:29:53,831 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:29:58,832 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:29:58,832 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:30:03,834 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:30:03,835 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:30:08,836 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:30:08,836 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:30:13,837 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:30:13,839 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:30:18,840 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:30:18,840 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:30:23,841 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:30:23,841 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:30:28,843 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:30:28,843 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:30:33,843 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:30:33,843 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:30:38,852 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:30:38,853 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:30:43,855 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:30:43,855 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:30:48,856 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:30:48,856 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:30:53,857 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:30:53,857 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:30:58,859 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:30:58,859 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:31:03,859 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:31:03,859 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:31:08,861 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:31:08,861 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:31:13,862 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:31:13,862 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:31:18,863 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:31:18,864 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:31:23,865 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:31:23,865 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:31:28,866 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:31:28,866 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:31:33,867 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:31:33,867 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:31:38,868 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:31:38,868 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:31:43,869 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:31:43,869 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:31:48,870 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:31:48,870 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:31:53,871 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:31:53,871 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:31:58,872 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:31:58,872 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:32:03,873 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:32:03,873 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:32:15,964 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:32:15,966 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:32:20,966 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:32:20,966 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:32:25,967 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:32:25,967 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:32:30,968 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:32:30,968 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:32:35,969 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:32:35,969 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:32:40,970 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:32:40,970 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:33:07,928 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:33:07,929 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:33:12,930 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:33:12,930 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:33:17,931 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:33:17,932 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:33:22,933 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:33:22,933 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:33:27,933 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:33:27,934 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:33:32,934 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:33:32,934 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:33:37,985 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:33:37,986 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:33:42,988 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:33:42,988 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:33:47,991 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:33:47,992 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:33:52,993 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:33:52,993 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:33:57,994 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:33:57,994 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:34:02,996 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:34:02,996 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:34:07,997 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:34:07,998 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:34:12,998 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:34:12,998 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:34:18,000 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:34:18,000 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:34:23,001 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:34:23,001 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:34:28,002 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:34:28,002 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:34:33,003 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:34:33,003 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:34:38,004 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:34:38,005 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:34:43,005 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:34:43,005 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:34:48,006 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:34:48,007 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:34:53,008 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:34:53,008 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:34:58,009 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:34:58,009 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:35:03,012 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:35:03,015 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:35:08,094 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:35:08,095 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:35:13,097 - __main__ - ERROR - Ошибка при запуске бота: 'function' object has no attribute 'signal'
+2025-01-15 16:35:13,097 - __main__ - INFO - Попытка перезапуска бота...
+2025-01-15 16:39:24,857 - __main__ - INFO - Бот запускается
+2025-01-15 16:39:25,162 - httpx - INFO - HTTP Request: POST https://api.telegram.org/botyour_bot_token_here/getMe "HTTP/1.1 404 Not Found"
+2025-01-15 16:39:25,170 - __main__ - ERROR - Ошибка при запуске бота: The token `your_bot_token_here` was rejected by the server.
+2025-01-15 16:45:08,890 - __main__ - INFO - Инициализация бота...
+2025-01-15 16:45:13,389 - __main__ - INFO - Путь к .env файлу: C:\Users\slave\Desktop\TGbot\TG_fitness\.env
+2025-01-15 16:45:13,389 - __main__ - INFO - Файл .env существует: True
+2025-01-15 16:45:13,389 - __main__ - INFO - Токен найден
+2025-01-15 16:45:14,276 - __main__ - INFO - Бот запускается
+2025-01-15 16:45:14,558 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getMe "HTTP/1.1 200 OK"
+2025-01-15 16:45:14,631 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/deleteWebhook "HTTP/1.1 200 OK"
+2025-01-15 16:45:14,637 - apscheduler.scheduler - INFO - Scheduler started
+2025-01-15 16:45:14,638 - telegram.ext.Application - INFO - Application started
+2025-01-15 16:45:20,652 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:45:20,916 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/sendMessage "HTTP/1.1 200 OK"
+2025-01-15 16:45:28,190 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:45:28,515 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/answerCallbackQuery "HTTP/1.1 200 OK"
+2025-01-15 16:45:28,721 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/editMessageText "HTTP/1.1 200 OK"
+2025-01-15 16:45:31,430 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:45:40,666 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:45:40,960 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/sendMessage "HTTP/1.1 200 OK"
+2025-01-15 16:45:42,456 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:45:52,532 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:46:02,604 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:46:12,680 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:46:22,760 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:46:32,869 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:46:42,961 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:46:53,035 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:47:03,111 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:47:13,178 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:47:23,254 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:47:33,321 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:47:43,394 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:47:53,475 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:48:03,559 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:48:13,662 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:48:23,733 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:48:33,806 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:48:43,899 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:48:53,988 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:49:04,060 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:49:14,132 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:49:24,205 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:49:34,277 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:49:44,348 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:49:54,421 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:50:04,499 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:50:14,611 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:50:24,697 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:50:34,777 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:50:44,860 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:50:54,935 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:51:05,020 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:51:15,085 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:51:25,158 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:51:35,295 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:51:45,364 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:51:55,474 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:52:05,554 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:52:15,640 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:52:25,707 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:52:35,773 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:52:45,851 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:52:55,928 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:53:06,050 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:53:16,115 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:53:26,184 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:53:36,264 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:53:46,332 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:53:56,396 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:54:06,475 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:54:16,547 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:54:26,617 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:54:36,698 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:54:46,791 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:54:56,871 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:55:06,941 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:55:17,014 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:55:27,088 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:55:37,153 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:55:47,222 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:55:57,289 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:56:07,396 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:56:17,477 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:56:27,557 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:56:37,632 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:56:48,097 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:56:58,196 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:57:08,297 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:57:18,361 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:57:28,434 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:57:38,499 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:57:48,575 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:57:58,651 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:58:08,718 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:58:18,799 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:58:28,864 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:58:38,930 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:58:49,006 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:58:59,072 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:59:09,164 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:59:19,233 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:59:29,308 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:59:39,382 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:59:49,453 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 16:59:59,519 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:00:09,599 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:00:19,690 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:00:29,763 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:00:39,860 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:00:49,990 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:01:00,164 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:01:10,242 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:01:20,309 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:01:30,376 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:01:40,453 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:01:50,784 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:02:00,921 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:02:10,984 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:02:21,047 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:02:31,130 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:02:41,196 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:02:51,263 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:03:01,331 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:03:11,406 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:03:21,474 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:03:31,561 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:03:41,622 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:03:51,684 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:04:01,757 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:04:11,844 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:04:21,933 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:04:31,994 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:04:42,056 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:04:52,128 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:05:02,195 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:05:12,274 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:05:22,347 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:05:32,418 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:05:42,503 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:05:52,569 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:06:02,633 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:06:12,774 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:06:22,835 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:06:32,902 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:06:42,964 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:06:53,078 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:07:03,156 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:07:13,218 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:07:23,280 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:07:33,343 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:07:43,414 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:07:53,477 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:08:03,543 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:08:13,622 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:08:23,701 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:08:33,802 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:08:43,868 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:08:53,956 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:09:04,046 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:09:14,111 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:09:24,173 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:09:34,233 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:09:44,297 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:09:54,375 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:10:04,442 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:10:14,516 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:10:24,584 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:10:34,646 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:10:44,709 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:10:54,793 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:11:04,864 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:11:14,928 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:11:24,996 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:11:35,069 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:11:45,134 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:11:55,197 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:12:05,281 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:12:15,354 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:12:25,420 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:12:35,492 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:12:45,555 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:12:56,772 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:13:07,917 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:13:17,979 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:13:28,044 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:13:38,104 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:13:48,172 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:13:58,245 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:14:08,313 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:14:18,392 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:14:28,459 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:14:38,531 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:14:48,656 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:14:58,724 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:15:08,810 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:15:18,878 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:15:33,825 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:15:44,277 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:15:54,348 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:16:04,455 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:16:14,518 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:16:24,581 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:16:34,644 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:16:44,704 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:16:54,767 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:17:04,859 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:17:14,920 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:17:24,996 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:17:35,063 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:17:45,154 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:17:55,215 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:18:05,277 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:18:15,340 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:18:25,413 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:18:35,490 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:18:45,722 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:18:55,806 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:19:05,912 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:19:15,983 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:19:26,058 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:19:36,151 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:19:46,226 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:19:56,297 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:20:06,373 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:20:16,443 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:20:26,524 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:20:36,596 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:20:46,662 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:20:56,745 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:21:06,813 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:21:16,887 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:21:26,968 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:21:37,040 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:21:47,116 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:21:57,221 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:22:07,308 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:22:17,395 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:22:27,870 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:22:37,937 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:22:48,006 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:22:58,072 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:23:08,145 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:23:18,236 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:23:28,312 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:23:38,405 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:23:48,480 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:23:58,573 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:24:08,668 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:24:18,738 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:24:28,855 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:24:38,935 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:24:49,035 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:24:59,110 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:25:09,183 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:25:19,316 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:25:29,415 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:25:39,496 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:25:49,573 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:25:59,654 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:26:05,873 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:26:06,130 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/sendMessage "HTTP/1.1 200 OK"
+2025-01-15 17:26:12,814 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:26:13,012 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/answerCallbackQuery "HTTP/1.1 200 OK"
+2025-01-15 17:26:13,128 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/editMessageText "HTTP/1.1 200 OK"
+2025-01-15 17:26:16,071 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:26:26,150 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:26:36,244 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:26:46,324 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:26:56,411 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:27:06,488 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:27:16,568 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:27:26,650 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:27:36,744 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:27:46,822 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:27:56,916 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:28:06,991 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:28:17,090 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:28:27,218 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
+2025-01-15 17:28:37,310 - httpx - INFO - HTTP Request: POST https://api.telegram.org/bot7786352409:AAFV11N3bOgKUenHakNTivjEOK8D963To7o/getUpdates "HTTP/1.1 200 OK"
