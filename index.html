@@ -2512,13 +2512,27 @@
                     type: 'profile_update',
                     data: profile
                 });
-                
-                // Используем MainButton для отправки данных
-                tg.MainButton.setText('Сохранить');
-                tg.MainButton.show();
-                tg.MainButton.onClick(() => {
-                    tg.sendData(data);
-                    tg.MainButton.hide();
+
+                // Показываем предупреждение перед закрытием
+                tg.showPopup({
+                    title: 'Сохранение данных',
+                    message: 'Для сохранения данных приложение будет закрыто. Продолжить?',
+                    buttons: [
+                        {
+                            type: 'ok',
+                            text: 'Сохранить'
+                        },
+                        {
+                            type: 'cancel',
+                            text: 'Отмена'
+                        }
+                    ]
+                }, (buttonId) => {
+                    if (buttonId === 'ok') {
+                        tg.sendData(data);
+                        // Закрываем приложение
+                        tg.close();
+                    }
                 });
 
             } catch (error) {
