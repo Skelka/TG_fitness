@@ -2500,10 +2500,10 @@
                     height: document.getElementById('height').value,
                     weight: document.getElementById('weight').value,
                     fitness_level: document.querySelector('.level-btn.active')?.dataset.level,
-                    goals: Array.from(document.querySelectorAll('.goals-buttons .goal-btn.active'))
-                        .map(btn => btn.dataset.goal) || [],
-                    restrictions: Array.from(document.querySelectorAll('.restrictions-group input[type="checkbox"]:checked'))
-                        .map(input => input.value) || []
+                    goals: Array.from(document.querySelectorAll('.goal-btn.active'))
+                        .map(btn => btn.dataset.goal),
+                    restrictions: Array.from(document.querySelectorAll('input[name="restrictions"]:checked'))
+                        .map(input => input.value)
                 };
 
                 console.log('Сохраняемые данные:', profile);
@@ -2513,19 +2513,9 @@
                     data: profile
                 });
 
-                // Сначала отправляем данные
+                // Просто отправляем данные и закрываем
                 tg.sendData(data);
-                
-                // После отправки показываем уведомление и закрываем
-                setTimeout(() => {
-                    tg.showPopup({
-                        title: 'Успешно',
-                        message: 'Данные профиля сохранены',
-                        buttons: [{type: 'ok'}]
-                    }, () => {
-                        tg.close();
-                    });
-                }, 100);
+                tg.close();
 
             } catch (error) {
                 console.error('Ошибка:', error);
