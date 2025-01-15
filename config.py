@@ -1,1 +1,0 @@
-WEBAPP_URL = "https://your-webapp-url.com"  # URL вашего WebApp 
