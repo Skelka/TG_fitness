@@ -141,69 +141,72 @@
         </div>
     </div>
 
-    <!-- Перенесем скрипт инициализации перед подключением других скриптов -->
+    <!-- Инициализация приложения -->
     <script>
-    // Глобальная инициализация
-    window.addEventListener('DOMContentLoaded', function() {
-        // Инициализируем Telegram WebApp
-        window.tg = window.Telegram.WebApp;
-        window.tg.ready();
-        
-        // Инициализируем обработчики
-        window.initEventHandlers = function() {
-            // Обработчики для целей
-            window.toggleGoal = function(goalType) {
-                const goals = JSON.parse(localStorage.getItem('goals') || '{}');
-                goals[goalType] = !goals[goalType];
-                localStorage.setItem('goals', JSON.stringify(goals));
-                updateGoalsUI();
-            };
+    // Глобальные функции
+    window.tg = window.Telegram.WebApp;
+    window.tg.ready();
+    window.tg.expand();
 
-            // Обработчики для ограничений
-            window.toggleRestriction = function(restrictionType) {
-                const restrictions = JSON.parse(localStorage.getItem('restrictions') || '{}');
-                restrictions[restrictionType] = !restrictions[restrictionType];
-                localStorage.setItem('restrictions', JSON.stringify(restrictions));
-                updateRestrictionsUI();
-            };
+    // Функции для работы с целями
+    window.toggleGoal = function(goalType) {
+        const goals = JSON.parse(localStorage.getItem('goals') || '{}');
+        goals[goalType] = !goals[goalType];
+        localStorage.setItem('goals', JSON.stringify(goals));
+        updateGoalsUI();
+    };
 
-            // Обработчики для уведомлений
-            window.updateNotificationSettings = function(type, enabled) {
-                const notifications = JSON.parse(localStorage.getItem('notifications') || '{}');
-                notifications[type] = enabled;
-                localStorage.setItem('notifications', JSON.stringify(notifications));
-            };
+    // Функции для работы с ограничениями
+    window.toggleRestriction = function(restrictionType) {
+        const restrictions = JSON.parse(localStorage.getItem('restrictions') || '{}');
+        restrictions[restrictionType] = !restrictions[restrictionType];
+        localStorage.setItem('restrictions', JSON.stringify(restrictions));
+        updateRestrictionsUI();
+    };
 
-            // Обработчик для трекеров
-            window.connectTracker = function(type) {
-                tg.showAlert(`Подключение ${type} будет доступно в следующем обновлении`);
-            };
-        };
+    // Функции для работы с уведомлениями
+    window.updateNotificationSettings = function(type, enabled) {
+        const notifications = JSON.parse(localStorage.getItem('notifications') || '{}');
+        notifications[type] = enabled;
+        localStorage.setItem('notifications', JSON.stringify(notifications));
+    };
 
-        // Запускаем инициализацию
-        initEventHandlers();
-    });
-    </script>
+    // Функции для работы с трекерами
+    window.connectTracker = function(type) {
+        window.tg.showAlert(`Подключение ${type} будет доступно в следующем обновлении`);
+    };
 
-    <!-- Подключаем скрипты -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="js/app.js" defer></script>
-    <script src="js/profile.js" defer></script>
-    <script src="js/workout.js" defer></script>
+    // Функции для работы с UI
+    window.updateGoalsUI = function() {
+        const goals = JSON.parse(localStorage.getItem('goals') || '{}');
+        Object.keys(goals).forEach(goalType => {
+            const element = document.querySelector(`[data-goal="${goalType}"]`);
+            if (element) {
+                element.classList.toggle('active', goals[goalType]);
+            }
+        });
+    };
 
-    <script>
+    window.updateRestrictionsUI = function() {
+        const restrictions = JSON.parse(localStorage.getItem('restrictions') || '{}');
+        Object.keys(restrictions).forEach(restrictionType => {
+            const element = document.querySelector(`[data-restriction="${restrictionType}"]`);
+            if (element) {
+                element.classList.toggle('active', restrictions[restrictionType]);
+            }
+        });
+    };
+
     // Функция для загрузки фото профиля
-    function uploadProfilePhoto() {
-        if (tg.WebApp.platform === 'tdesktop') {
-            // Для десктопной версии
-            tg.showPopup({
+    window.uploadProfilePhoto = function() {
+        if (window.tg.platform === 'tdesktop') {
+            window.tg.showPopup({
                 title: 'Загрузка фото',
                 message: 'Используйте мобильное приложение для загрузки фото'
             });
         } else {
-            // Для мобильной версии
-            tg.expand();
-            tg.showScanQrPopup({
+            window.tg.expand();
+            window.tg.showScanQrPopup({
                 text: 'Выберите фото'
             }, function(file) {
                 if (file) {
@@ -211,14 +214,22 @@
                 }
             });
         }
-    }
+    };
 
-    // Инициализация WebApp
-    window.addEventListener('load', function() {
-        tg.ready();
-        // Устанавливаем основной цвет кнопок
-        document.documentElement.style.setProperty('--tg-theme-button-color', tg.MainButton.color);
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        // Устанавливаем тему
+        document.documentElement.style.setProperty('--tg-theme-button-color', window.tg.MainButton.color);
+        
+        // Загружаем начальные данные
+        window.updateGoalsUI();
+        window.updateRestrictionsUI();
     });
     </script>
+
+    <!-- Подключаем остальные скрипты -->
+    <script src="js/app.js" defer></script>
+    <script src="js/profile.js" defer></script>
+    <script src="js/workout.js" defer></script>
 </body>
 </html> 
