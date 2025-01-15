@@ -164,4 +164,54 @@ function updateStatistics(workoutData) {
     localStorage.setItem('statistics', JSON.stringify(stats));
     state.statistics = stats;
     updateStatisticsUI(stats);
+}
+
+// Обработчики для трекеров
+window.connectTracker = function(type) {
+    tg.showAlert(`Подключение ${type} будет доступно в следующем обновлении`);
+};
+
+// Обработчики для целей
+window.toggleGoal = function(goalType) {
+    const goals = JSON.parse(localStorage.getItem('goals') || '{}');
+    goals[goalType] = !goals[goalType];
+    localStorage.setItem('goals', JSON.stringify(goals));
+    updateGoalsUI();
+};
+
+// Обработчики для ограничений
+window.toggleRestriction = function(restrictionType) {
+    const restrictions = JSON.parse(localStorage.getItem('restrictions') || '{}');
+    restrictions[restrictionType] = !restrictions[restrictionType];
+    localStorage.setItem('restrictions', JSON.stringify(restrictions));
+    updateRestrictionsUI();
+};
+
+// Обработчики для уведомлений
+window.updateNotificationSettings = function(type, enabled) {
+    const notifications = JSON.parse(localStorage.getItem('notifications') || '{}');
+    notifications[type] = enabled;
+    localStorage.setItem('notifications', JSON.stringify(notifications));
+};
+
+// Обновление UI для целей
+function updateGoalsUI() {
+    const goals = JSON.parse(localStorage.getItem('goals') || '{}');
+    Object.keys(goals).forEach(goalType => {
+        const element = document.querySelector(`[data-goal="${goalType}"]`);
+        if (element) {
+            element.classList.toggle('active', goals[goalType]);
+        }
+    });
+}
+
+// Обновление UI для ограничений
+function updateRestrictionsUI() {
+    const restrictions = JSON.parse(localStorage.getItem('restrictions') || '{}');
+    Object.keys(restrictions).forEach(restrictionType => {
+        const element = document.querySelector(`[data-restriction="${restrictionType}"]`);
+        if (element) {
+            element.classList.toggle('active', restrictions[restrictionType]);
+        }
+    });
 } 
