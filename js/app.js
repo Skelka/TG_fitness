@@ -356,6 +356,7 @@ function initApp() {
     setupEventListeners();
     setupProgramHandlers();
     loadProfile();
+    loadActiveProgram();
 }
 
 // Добавим функцию для запуска тренировки
@@ -613,14 +614,12 @@ function showProgramDetails(programId) {
     const program = programData[programId];
     if (!program) return;
 
-    let detailsHtml = `
+    // Показываем основную информацию
+    const mainInfo = `
         <div class="program-details-content">
             <div class="program-header">
-                <span class="material-symbols-rounded">${program.icon}</span>
-                <div class="program-title">
-                    <h3>${program.title}</h3>
-                    <span class="program-duration">${program.duration}</span>
-                </div>
+                <h3>${program.title}</h3>
+                <span class="program-duration">${program.duration}</span>
             </div>
             
             <p class="program-description">${program.description}</p>
@@ -639,47 +638,124 @@ function showProgramDetails(programId) {
                     <span>${program.difficulty}</span>
                 </div>
             </div>
+        </div>
+    `;
 
-            <div class="program-results">
-                <h4>Ожидаемые результаты:</h4>
-                <ul>
-                    ${program.results.map(result => `
-                        <li><span class="material-symbols-rounded">check_circle</span>${result}</li>
-                    `).join('')}
-                </ul>
-            </div>
+    tg.showPopup({
+        title: 'О программе',
+        message: mainInfo,
+        buttons: [
+            {type: 'default', text: 'Результаты ➜', id: `results_${programId}`},
+            {type: 'default', text: 'Расписание ➜', id: `schedule_${programId}`},
+            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`},
+            {type: 'cancel', text: 'Закрыть'}
+        ]
+    });
 
-            <div class="program-schedule">
-                <h4>Расписание тренировок:</h4>
-                <div class="workouts-list">
-                    ${program.workouts.map(workout => `
-                        <div class="workout-item">
-                            <div class="workout-day">День ${workout.day}</div>
-                            <div class="workout-info">
-                                <h5>${workout.title}</h5>
-                                <div class="workout-meta">
-                                    <span><span class="material-symbols-rounded">schedule</span>${workout.duration} мин</span>
-                                    <span><span class="material-symbols-rounded">fitness_center</span>${workout.type}</span>
-                                </div>
+    // Обработчик кнопок попапа
+    tg.onEvent('popupButtonClicked', (button_id) => {
+        if (button_id.startsWith('results_')) {
+            showProgramResults(programId);
+        } else if (button_id.startsWith('schedule_')) {
+            showProgramSchedule(programId);
+        } else if (button_id.startsWith('start_program_')) {
+            startProgram(programId);
+        }
+    });
+}
+
+// Функция показа результатов программы
+function showProgramResults(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    const resultsInfo = `
+        <div class="program-results">
+            <h4>Ожидаемые результаты:</h4>
+            <ul>
+                ${program.results.map(result => `
+                    <li><span class="material-symbols-rounded">check_circle</span>${result}</li>
+                `).join('')}
+            </ul>
+        </div>
+    `;
+
+    tg.showPopup({
+        title: 'Ожидаемые результаты',
+        message: resultsInfo,
+        buttons: [
+            {type: 'default', text: '⬅️ Назад', id: `back_to_main_${programId}`},
+            {type: 'default', text: 'Расписание ➜', id: `schedule_${programId}`},
+            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`}
+        ]
+    });
+}
+
+// Функция показа расписания программы
+function showProgramSchedule(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    const scheduleInfo = `
+        <div class="program-schedule">
+            <div class="workouts-list">
+                ${program.workouts.map(workout => `
+                    <div class="workout-item">
+                        <div class="workout-day">День ${workout.day}</div>
+                        <div class="workout-info">
+                            <h5>${workout.title}</h5>
+                            <div class="workout-meta">
+                                <span>${workout.duration} мин • ${workout.type}</span>
                             </div>
                         </div>
-                    `).join('')}
-                </div>
+                    </div>
+                `).join('')}
             </div>
         </div>
     `;
 
     tg.showPopup({
-        title: 'Детали программы',
-        message: detailsHtml,
+        title: 'Расписание тренировок',
+        message: scheduleInfo,
         buttons: [
-            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`},
-            {type: 'cancel', text: 'Закрыть'}
+            {type: 'default', text: '⬅️ Назад', id: `back_to_main_${programId}`},
+            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`}
         ]
     });
 }
 
-// Функция начала программы
+// Функция обновления прогресса программы
+function updateProgramProgress(progress) {
+    const programCard = document.querySelector(`.program-card[data-program="${progress.programId}"]`);
+    if (!programCard) return;
+
+    const progressBar = programCard.querySelector('.progress');
+    const progressText = programCard.querySelector('.progress-text');
+    
+    if (progress.status === 'active') {
+        // Вычисляем прогресс
+        const program = programData[progress.programId];
+        const totalWorkouts = program.workouts.length;
+        const completedWorkouts = progress.completedWorkouts.length;
+        const progressPercent = (completedWorkouts / totalWorkouts) * 100;
+
+        // Обновляем UI
+        if (progressBar) {
+            progressBar.style.width = `${progressPercent}%`;
+        }
+        if (progressText) {
+            progressText.textContent = `Прогресс: ${completedWorkouts}/${totalWorkouts} тренировок`;
+        }
+
+        // Обновляем кнопки
+        const startBtn = programCard.querySelector('.start-btn');
+        if (startBtn) {
+            startBtn.textContent = 'Продолжить';
+        }
+    }
+}
+
+// Обновляем функцию startProgram
 async function startProgram(programId) {
     try {
         const profile = await getStorageItem('profile')
@@ -699,6 +775,9 @@ async function startProgram(programId) {
         }
 
         const program = programData[programId];
+        if (!program) {
+            throw new Error('Программа не найдена');
+        }
         
         // Создаем объект прогресса программы
         const programProgress = {
@@ -712,6 +791,9 @@ async function startProgram(programId) {
         // Сохраняем прогресс в CloudStorage
         await setStorageItem('activeProgram', JSON.stringify(programProgress));
 
+        // Обновляем UI
+        updateProgramProgress(programProgress);
+
         // Показываем сообщение об успешном начале программы
         tg.showPopup({
             title: 'Программа начата!',
@@ -719,17 +801,46 @@ async function startProgram(programId) {
             buttons: [{
                 type: 'default',
                 text: 'Начать первую тренировку',
-                id: `start_workout_${program.workouts[0].id}`
+                id: `start_workout_${programId}_1`
             }]
         });
 
-        // Обновляем UI
-        updateProgramProgress(programProgress);
-        
     } catch (error) {
         console.error('Ошибка при запуске программы:', error);
-        showError(error);
+        // Используем более информативное сообщение об ошибке
+        tg.showPopup({
+            title: 'Ошибка',
+            message: 'Не удалось запустить программу. Попробуйте позже.',
+            buttons: [{type: 'ok'}]
+        });
     }
+}
+
+// Добавим функцию загрузки активной программы при инициализации
+async function loadActiveProgram() {
+    try {
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+        
+        if (activeProgram) {
+            updateProgramProgress(activeProgram);
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке активной программы:', error);
+    }
+}
+
+// Обновляем функцию initApp
+function initApp() {
+    console.log('Версия WebApp:', tg.version);
+    console.log('Платформа:', tg.platform);
+    console.log('Инициализация WebApp:', tg.initData);
+    console.log('Доступные методы WebApp:', Object.keys(tg));
+
+    setupEventListeners();
+    setupProgramHandlers();
+    loadProfile();
+    loadActiveProgram();
 }
 
 // Обновляем обработчики событий
