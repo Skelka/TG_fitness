@@ -6,12 +6,14 @@ tg.enableClosingConfirmation();
 // Загрузка данных профиля
 async function loadProfile() {
     try {
-        const data = await tg.CloudStorage.getItem('profile');
-        console.log('Получены сырые данные:', data);
+        // Получаем данные из initData
+        const initData = tg.initDataUnsafe;
+        console.log('InitData:', initData);
         
-        if (data && data.result) {  // Проверяем наличие result
+        // Если есть start_param, пробуем использовать его как профиль
+        if (initData.start_param) {
             try {
-                const profile = JSON.parse(data.result);  // Парсим result
+                const profile = JSON.parse(decodeURIComponent(initData.start_param));
                 console.log('Загружены данные профиля:', profile);
                 
                 // Заполняем форму
@@ -22,23 +24,15 @@ async function loadProfile() {
                 document.getElementById('weight').value = profile.weight || '';
                 document.getElementById('goal').value = profile.goal || 'maintenance';
                 
-                // Показываем уведомление об успехе
                 tg.HapticFeedback.notificationOccurred('success');
             } catch (parseError) {
                 console.error('Ошибка при разборе данных профиля:', parseError);
-                // Если данных нет или они некорректны, просто продолжаем с пустой формой
             }
         } else {
             console.log('Данные профиля не найдены, используем пустую форму');
         }
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
-        tg.HapticFeedback.notificationOccurred('error');
-        tg.showPopup({
-            title: 'Ошибка',
-            message: 'Не удалось загрузить данные профиля',
-            buttons: [{type: 'ok'}]
-        });
     }
 }
 
@@ -54,21 +48,22 @@ async function saveProfile() {
             goal: document.getElementById('goal').value || 'maintenance'
         };
 
-        // Сохраняем в CloudStorage
-        const result = await tg.CloudStorage.setItem('profile', JSON.stringify(profileData));
-        console.log('Результат сохранения:', result);
-        
-        if (result && result.result === true) {
-            // Показываем уведомление об успехе
-            tg.HapticFeedback.notificationOccurred('success');
-            tg.showPopup({
-                title: 'Успех',
-                message: 'Данные профиля сохранены',
-                buttons: [{type: 'ok'}]
-            });
-        } else {
-            throw new Error('Не удалось сохранить данные');
-        }
+        // Отправляем данные через WebApp
+        tg.sendData(JSON.stringify({
+            action: 'save_profile',
+            profile: profileData
+        }));
+
+        // Показываем уведомление об успехе
+        tg.HapticFeedback.notificationOccurred('success');
+        tg.showPopup({
+            title: 'Успех',
+            message: 'Данные профиля сохранены',
+            buttons: [{type: 'ok'}]
+        });
+
+        // Закрываем WebApp через секунду
+        setTimeout(() => tg.close(), 1000);
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
         tg.HapticFeedback.notificationOccurred('error');
