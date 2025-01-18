@@ -14,11 +14,19 @@ function sendToBot(data, shouldClose = false) {
         };
         
         console.log('Отправка данных боту:', finalData);
-        tg.WebApp.sendData(JSON.stringify(finalData));
         
-        if (shouldClose) {
-            setTimeout(() => tg.close(), 1000);
-        }
+        // Используем MainButton для отправки данных
+        tg.MainButton.setText('Отправка...');
+        tg.MainButton.show();
+        tg.MainButton.onClick(() => {
+            tg.sendData(JSON.stringify(finalData));
+            tg.MainButton.hide();
+            
+            if (shouldClose) {
+                setTimeout(() => tg.close(), 1000);
+            }
+        });
+        tg.MainButton.click();
     } catch (error) {
         console.error('Ошибка при отправке данных:', error);
         tg.showPopup({
@@ -219,9 +227,17 @@ async function loadWorkouts() {
             <p>Загрузка тренировок...</p>
         </div>
     `;
-    sendToBot({
-        action: 'get_workouts'
+    
+    // Отправляем запрос через MainButton
+    tg.MainButton.setText('Загрузка тренировок...');
+    tg.MainButton.show();
+    tg.MainButton.onClick(() => {
+        sendToBot({
+            action: 'get_workouts'
+        });
+        tg.MainButton.hide();
     });
+    tg.MainButton.click();
 }
 
 function requestWorkouts() {
@@ -241,9 +257,17 @@ async function loadStats() {
             <p>Загрузка статистики...</p>
         </div>
     `;
-    sendToBot({
-        action: 'get_weight_history'
+    
+    // Отправляем запрос через MainButton
+    tg.MainButton.setText('Загрузка статистики...');
+    tg.MainButton.show();
+    tg.MainButton.onClick(() => {
+        sendToBot({
+            action: 'get_weight_history'
+        });
+        tg.MainButton.hide();
     });
+    tg.MainButton.click();
 }
 
 function requestStats() {
@@ -295,9 +319,17 @@ async function loadProfile() {
                 <p>Загрузка профиля...</p>
             </div>
         `;
-        sendToBot({
-            action: 'get_profile'
+        
+        // Отправляем запрос через MainButton
+        tg.MainButton.setText('Загрузка профиля...');
+        tg.MainButton.show();
+        tg.MainButton.onClick(() => {
+            sendToBot({
+                action: 'get_profile'
+            });
+            tg.MainButton.hide();
         });
+        tg.MainButton.click();
     }
 }
 
