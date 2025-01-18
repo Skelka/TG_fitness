@@ -132,25 +132,23 @@ function loadSection(sectionName) {
     currentSection = sectionName;
 }
 
+// Функция для отправки данных боту
+function sendToBotAndClose(data) {
+    tg.sendData(JSON.stringify(data));
+    tg.close();
+}
+
 // Загрузка тренировок
 async function loadWorkouts() {
     const workoutHistory = document.getElementById('workout-history');
     try {
         workoutHistory.innerHTML = '<p>Загрузка тренировок...</p>';
-        
-        // Отправляем данные через BackButton
-        tg.BackButton.show();
-        tg.onEvent('backButtonClicked', () => {
-            tg.sendData(JSON.stringify({
-                action: 'get_workouts'
-            }));
-            tg.BackButton.hide();
+        sendToBotAndClose({
+            action: 'get_workouts'
         });
-        tg.BackButton.onClick();
     } catch (error) {
         console.error('Ошибка при загрузке тренировок:', error);
         workoutHistory.innerHTML = '<p>Ошибка при загрузке тренировок</p>';
-        tg.BackButton.hide();
     }
 }
 
@@ -159,19 +157,12 @@ async function loadStats() {
     const weightChart = document.getElementById('weight-chart');
     try {
         weightChart.innerHTML = '<p>Загрузка статистики...</p>';
-        
-        tg.BackButton.show();
-        tg.onEvent('backButtonClicked', () => {
-            tg.sendData(JSON.stringify({
-                action: 'get_weight_history'
-            }));
-            tg.BackButton.hide();
+        sendToBotAndClose({
+            action: 'get_weight_history'
         });
-        tg.BackButton.onClick();
     } catch (error) {
         console.error('Ошибка при загрузке статистики:', error);
         weightChart.innerHTML = '<p>Ошибка при загрузке статистики</p>';
-        tg.BackButton.hide();
     }
 }
 
@@ -213,15 +204,9 @@ async function loadProfile() {
         if (form) {
             form.innerHTML = '<p>Загрузка данных профиля...</p>';
         }
-
-        tg.BackButton.show();
-        tg.onEvent('backButtonClicked', () => {
-            tg.sendData(JSON.stringify({
-                action: 'get_profile'
-            }));
-            tg.BackButton.hide();
+        sendToBotAndClose({
+            action: 'get_profile'
         });
-        tg.BackButton.onClick();
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
         tg.showPopup({
@@ -229,7 +214,6 @@ async function loadProfile() {
             message: 'Не удалось загрузить профиль',
             buttons: [{type: 'ok'}]
         });
-        tg.BackButton.hide();
     }
 }
 
@@ -248,17 +232,7 @@ async function saveProfile() {
     };
 
     try {
-        tg.BackButton.show();
-        tg.onEvent('backButtonClicked', () => {
-            tg.sendData(JSON.stringify(formData));
-            tg.BackButton.hide();
-            tg.showPopup({
-                title: 'Успех',
-                message: 'Профиль сохранен!',
-                buttons: [{type: 'ok'}]
-            });
-        });
-        tg.BackButton.onClick();
+        sendToBotAndClose(formData);
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
         tg.showPopup({
@@ -266,7 +240,6 @@ async function saveProfile() {
             message: 'Произошла ошибка при сохранении',
             buttons: [{type: 'ok'}]
         });
-        tg.BackButton.hide();
     }
 }
 
