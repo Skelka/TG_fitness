@@ -56,15 +56,9 @@ async function saveProfile() {
 
         console.log('Подготовленные данные для отправки:', profileData);
 
-        // Получаем query_id из initData
-        const initData = new URLSearchParams(tg.initData);
-        const queryId = initData.get('query_id');
-        console.log('Query ID:', queryId);
-
         const sendData = {
             action: 'save_profile',
-            profile: profileData,
-            _query_id: queryId  // Добавляем query_id
+            profile: profileData
         };
         console.log('Отправляем данные:', sendData);
 
@@ -72,14 +66,12 @@ async function saveProfile() {
         tg.sendData(JSON.stringify(sendData));
         console.log('Данные отправлены');
 
+        // Показываем уведомление об успехе
         tg.HapticFeedback.notificationOccurred('success');
         tg.showPopup({
             title: 'Успех',
             message: 'Данные профиля сохранены',
-            buttons: [{
-                type: 'ok',
-                id: 'close_app'
-            }]
+            buttons: [{type: 'ok'}]
         });
 
     } catch (error) {
