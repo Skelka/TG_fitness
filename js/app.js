@@ -6,30 +6,29 @@ tg.enableClosingConfirmation();
 // Загрузка данных профиля
 async function loadProfile() {
     try {
-        // Получаем данные из initData
-        const initData = tg.initDataUnsafe;
-        console.log('InitData:', initData);
+        // Получаем параметры из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const profile = {
+            name: urlParams.get('name') || '',
+            age: parseInt(urlParams.get('age')) || 0,
+            gender: urlParams.get('gender') || 'male',
+            height: parseFloat(urlParams.get('height')) || 0,
+            weight: parseFloat(urlParams.get('weight')) || 0,
+            goal: urlParams.get('goal') || 'maintenance'
+        };
         
-        // Если есть start_param, пробуем использовать его как профиль
-        if (initData.start_param) {
-            try {
-                const profile = JSON.parse(decodeURIComponent(initData.start_param));
-                console.log('Загружены данные профиля:', profile);
-                
-                // Заполняем форму
-                document.getElementById('name').value = profile.name || '';
-                document.getElementById('age').value = profile.age || '';
-                document.getElementById('gender').value = profile.gender || 'male';
-                document.getElementById('height').value = profile.height || '';
-                document.getElementById('weight').value = profile.weight || '';
-                document.getElementById('goal').value = profile.goal || 'maintenance';
-                
-                tg.HapticFeedback.notificationOccurred('success');
-            } catch (parseError) {
-                console.error('Ошибка при разборе данных профиля:', parseError);
-            }
-        } else {
-            console.log('Данные профиля не найдены, используем пустую форму');
+        console.log('Загружены данные профиля:', profile);
+        
+        // Заполняем форму
+        document.getElementById('name').value = profile.name;
+        document.getElementById('age').value = profile.age;
+        document.getElementById('gender').value = profile.gender;
+        document.getElementById('height').value = profile.height;
+        document.getElementById('weight').value = profile.weight;
+        document.getElementById('goal').value = profile.goal;
+        
+        if (profile.name || profile.age || profile.height || profile.weight) {
+            tg.HapticFeedback.notificationOccurred('success');
         }
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
@@ -54,7 +53,6 @@ async function saveProfile() {
             profile: profileData
         }));
 
-        // Показываем уведомление об успехе
         tg.HapticFeedback.notificationOccurred('success');
         tg.showPopup({
             title: 'Успех',
