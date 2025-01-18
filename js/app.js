@@ -929,46 +929,52 @@ async function startProgram(programId) {
     const program = programData[programId];
     if (!program) return;
 
-    // Создаем объект прогресса программы
-    const programProgress = {
-        programId: programId,
-        startDate: Date.now(),
-        currentDay: 1,
-        completedWorkouts: [],
-        plannedWorkouts: []
-    };
+    try {
+        // Создаем объект прогресса программы
+        const programProgress = {
+            programId: programId,
+            startDate: Date.now(),
+            currentDay: 1,
+            completedWorkouts: [],
+            plannedWorkouts: []
+        };
 
-    // Планируем все тренировки
-    const startDate = new Date();
-    program.workouts.forEach((workout, index) => {
-        const workoutDate = new Date(startDate);
-        workoutDate.setDate(workoutDate.getDate() + index);
-        
-        programProgress.plannedWorkouts.push({
-            day: workout.day,
-            plannedDate: workoutDate.getTime()
+        // Планируем все тренировки
+        const startDate = new Date();
+        for (const workout of program.workouts) {
+            const workoutDate = new Date(startDate);
+            workoutDate.setDate(workoutDate.getDate() + workout.day - 1);
+            
+            programProgress.plannedWorkouts.push({
+                day: workout.day,
+                plannedDate: workoutDate.getTime()
+            });
+
+            // Добавляем в календарь без await
+            addWorkoutToCalendar(workout, workoutDate).catch(console.error);
+        }
+
+        // Сохраняем прогресс
+        await setStorageItem('activeProgram', JSON.stringify(programProgress));
+
+        // Обновляем статистику
+        updateStatistics(programProgress);
+
+        // Показываем сообщение о начале программы
+        tg.showPopup({
+            title: 'Программа начата!',
+            message: `Вы начали программу "${program.title}". Первая тренировка запланирована на сегодня.`,
+            buttons: [{
+                type: 'default',
+                text: 'Начать тренировку',
+                id: `start_workout_${programId}_1`
+            }]
         });
 
-        // Добавляем в календарь
-        addWorkoutToCalendar(workout, workoutDate);
-    });
-
-    // Сохраняем прогресс
-    await setStorageItem('activeProgram', JSON.stringify(programProgress));
-
-    // Обновляем статистику
-    updateStatistics(programProgress);
-
-    // Показываем сообщение о начале программы
-    tg.showPopup({
-        title: 'Программа начата!',
-        message: `Вы начали программу "${program.title}". Тренировки добавлены в календарь.`,
-        buttons: [{
-            type: 'default',
-            text: 'Начать тренировку',
-            id: `start_workout_${programId}_1`
-        }]
-    });
+    } catch (error) {
+        console.error('Ошибка при запуске программы:', error);
+        showError(error);
+    }
 }
 
 // Функция обновления статистики
@@ -1434,20 +1440,28 @@ document.addEventListener('DOMContentLoaded', () => {
 // Функция для добавления тренировки в календарь
 async function addWorkoutToCalendar(workout, date) {
     try {
+        // Проверяем поддержку календаря
+        if (!tg.platform.toLowerCase().includes('android') && !tg.platform.toLowerCase().includes('ios')) {
+            console.log('Платформа не поддерживает добавление в календарь');
+            return;
+        }
+
         const calendarEvent = {
             title: `Тренировка: ${workout.title}`,
             description: `Длительность: ${workout.duration} мин\nТип: ${workout.type}\n\nУпражнения:\n${
                 workout.exercises.map(ex => `- ${ex.name} (${ex.sets}×${ex.reps})`).join('\n')
             }`,
-            startDate: date,
-            endDate: new Date(date.getTime() + workout.duration * 60000)
+            start_date: Math.floor(date.getTime() / 1000),
+            end_date: Math.floor((date.getTime() + workout.duration * 60000) / 1000)
         };
 
-        await tg.WebApp.requestWriteAccess();
-        await tg.WebApp.addToCalendar(calendarEvent);
+        // Используем CloudStorage для сохранения расписания
+        await tg.CloudStorage.setItem(`workout_${workout.day}`, JSON.stringify(calendarEvent));
+        
+        console.log('Тренировка сохранена:', calendarEvent);
         
     } catch (error) {
-        console.error('Ошибка при добавлении в календарь:', error);
-        showError(error);
+        console.error('Ошибка при сохранении тренировки:', error);
+        // Не показываем ошибку пользователю, просто логируем
     }
 } 
