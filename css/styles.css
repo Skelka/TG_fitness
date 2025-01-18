@@ -132,13 +132,17 @@ input:focus, select:focus {
 }
 
 .workout-card {
-    display: flex;
-    align-items: center;
-    background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+    background: var(--tg-theme-secondary-bg-color);
     padding: 16px;
     margin-bottom: 12px;
-    border-radius: 12px;
+    border-radius: 16px;
+    display: flex;
     gap: 16px;
+    transition: transform 0.2s;
+}
+
+.workout-card:active {
+    transform: scale(0.98);
 }
 
 .workout-icon {
@@ -244,4 +248,57 @@ input:focus, select:focus {
     margin: 0;
     color: var(--tg-theme-hint-color, #999);
     font-size: 14px;
+}
+
+.period-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.period-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--tg-theme-button-color, #40a7e3);
+    background: none;
+    color: var(--tg-theme-button-color, #40a7e3);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.period-btn.active {
+    background: var(--tg-theme-button-color, #40a7e3);
+    color: var(--tg-theme-button-text-color, #fff);
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+.workout-category {
+    margin-bottom: 24px;
+}
+
+.workout-category h2 {
+    font-size: 20px;
+    margin-bottom: 16px;
+    color: var(--tg-theme-text-color);
+    padding-left: 8px;
+}
+
+.workout-details {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+}
+
+.workout-details span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 } 

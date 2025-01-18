@@ -6,6 +6,7 @@
     <title>Фитнес Профиль</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
@@ -30,37 +31,78 @@
 
         <div class="tab-content active" id="workouts">
             <div class="workouts-list">
-                <div class="workout-card">
-                    <div class="workout-icon">🏃</div>
-                    <div class="workout-info">
-                        <h3>Кардио</h3>
-                        <p>30 минут бега</p>
-                        <button class="start-workout-btn">
-                            <i class="btn-icon">▶️</i>
-                            <span>Начать</span>
-                        </button>
+                <!-- Силовые тренировки -->
+                <div class="workout-category">
+                    <h2>Силовые тренировки</h2>
+                    <div class="workout-card">
+                        <div class="workout-icon">💪</div>
+                        <div class="workout-info">
+                            <h3>Тренировка верхней части тела</h3>
+                            <p>Жим лежа, подтягивания, бицепс</p>
+                            <div class="workout-details">
+                                <span>🕒 45 мин</span>
+                                <span>🔥 350 ккал</span>
+                            </div>
+                            <button class="start-workout-btn">
+                                <i class="btn-icon">▶️</i>
+                                <span>Начать</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="workout-card">
+                        <div class="workout-icon">🦵</div>
+                        <div class="workout-info">
+                            <h3>Тренировка ног</h3>
+                            <p>Приседания, выпады, жим ногами</p>
+                            <div class="workout-details">
+                                <span>🕒 40 мин</span>
+                                <span>🔥 400 ккал</span>
+                            </div>
+                            <button class="start-workout-btn">
+                                <i class="btn-icon">▶️</i>
+                                <span>Начать</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="workout-card">
-                    <div class="workout-icon">💪</div>
-                    <div class="workout-info">
-                        <h3>Силовая</h3>
-                        <p>Тренировка верхней части тела</p>
-                        <button class="start-workout-btn">
-                            <i class="btn-icon">▶️</i>
-                            <span>Начать</span>
-                        </button>
+
+                <!-- Кардио тренировки -->
+                <div class="workout-category">
+                    <h2>Кардио</h2>
+                    <div class="workout-card">
+                        <div class="workout-icon">🏃</div>
+                        <div class="workout-info">
+                            <h3>Интервальный бег</h3>
+                            <p>HIIT тренировка</p>
+                            <div class="workout-details">
+                                <span>🕒 30 мин</span>
+                                <span>🔥 300 ккал</span>
+                            </div>
+                            <button class="start-workout-btn">
+                                <i class="btn-icon">▶️</i>
+                                <span>Начать</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="workout-card">
-                    <div class="workout-icon">🧘</div>
-                    <div class="workout-info">
-                        <h3>Растяжка</h3>
-                        <p>15 минут растяжки</p>
-                        <button class="start-workout-btn">
-                            <i class="btn-icon">▶️</i>
-                            <span>Начать</span>
-                        </button>
+
+                <!-- Растяжка -->
+                <div class="workout-category">
+                    <h2>Растяжка</h2>
+                    <div class="workout-card">
+                        <div class="workout-icon">🧘</div>
+                        <div class="workout-info">
+                            <h3>Общая растяжка</h3>
+                            <p>Растяжка всего тела</p>
+                            <div class="workout-details">
+                                <span>🕒 20 мин</span>
+                                <span>🌟 Начальный</span>
+                            </div>
+                            <button class="start-workout-btn">
+                                <i class="btn-icon">▶️</i>
+                                <span>Начать</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -70,11 +112,14 @@
             <div class="stats-container">
                 <div class="stat-card">
                     <h3>Вес</h3>
-                    <div class="chart-placeholder">График изменения веса</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Тренировки</h3>
-                    <div class="chart-placeholder">График активности</div>
+                    <div class="period-selector">
+                        <button class="period-btn active" data-period="week">Неделя</button>
+                        <button class="period-btn" data-period="month">Месяц</button>
+                        <button class="period-btn" data-period="year">Год</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="weightChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>

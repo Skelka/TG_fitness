@@ -9,6 +9,15 @@ tg.enableClosingConfirmation();
 mainButton.setText('Сохранить профиль');
 mainButton.hide();
 
+// Добавим глобальную переменную для хранения графика
+let weightChart = null;
+
+// Инициализация
+tg.expand();
+tg.enableClosingConfirmation();
+mainButton.setText('Сохранить профиль');
+mainButton.hide();
+
 // Функции для работы с CloudStorage
 async function getStorageItem(key) {
     return new Promise((resolve) => {
@@ -140,38 +149,84 @@ function fillProfileForm(profile) {
 }
 
 // Функция обновления графика веса
-function updateWeightChart(weightHistory) {
-    const chartPlaceholder = document.querySelector('#stats .chart-placeholder');
-    if (!chartPlaceholder) return;
+function updateWeightChart(weightHistory, period = 'week') {
+    const canvas = document.getElementById('weightChart');
+    if (!canvas) return;
 
-    // Очищаем placeholder
-    chartPlaceholder.innerHTML = '';
+    // Подготавливаем данные в зависимости от периода
+    const now = new Date();
+    const filteredData = filterDataByPeriod(weightHistory, period);
+    const { labels, values } = prepareChartData(filteredData, period);
 
-    if (weightHistory.length === 0) {
-        chartPlaceholder.textContent = 'Нет данных для отображения';
-        return;
+    // Если график уже существует, уничтожаем его
+    if (weightChart) {
+        weightChart.destroy();
     }
 
-    // Создаем простое текстовое представление истории веса
-    const weightList = document.createElement('div');
-    weightList.style.padding = '10px';
-    weightList.style.width = '100%';
+    // Создаем новый график
+    weightChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Вес (кг)',
+                data: values,
+                borderColor: getComputedStyle(document.documentElement)
+                    .getPropertyValue('--tg-theme-button-color').trim() || '#40a7e3',
+                backgroundColor: 'rgba(64, 167, 227, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        callback: value => `${value} кг`
+                    }
+                }
+            }
+        }
+    });
+}
 
-    weightHistory.slice(-5).forEach(record => {
+// Функция фильтрации данных по периоду
+function filterDataByPeriod(data, period) {
+    const now = new Date();
+    const periods = {
+        week: now.getTime() - 7 * 24 * 60 * 60 * 1000,
+        month: now.getTime() - 30 * 24 * 60 * 60 * 1000,
+        year: now.getTime() - 365 * 24 * 60 * 60 * 1000
+    };
+
+    return data.filter(record => record.date >= periods[period]);
+}
+
+// Функция подготовки данных для графика
+function prepareChartData(data, period) {
+    const labels = [];
+    const values = [];
+    const formats = {
+        week: { day: '2-digit', month: '2-digit' },
+        month: { day: '2-digit', month: '2-digit' },
+        year: { month: 'short' }
+    };
+
+    data.forEach(record => {
         const date = new Date(record.date);
-        const dateStr = date.toLocaleDateString('ru-RU');
-        const item = document.createElement('div');
-        item.style.display = 'flex';
-        item.style.justifyContent = 'space-between';
-        item.style.marginBottom = '8px';
-        item.innerHTML = `
-            <span>${dateStr}</span>
-            <span>${record.weight} кг</span>
-        `;
-        weightList.appendChild(item);
+        labels.push(date.toLocaleDateString('ru-RU', formats[period]));
+        values.push(record.weight);
     });
 
-    chartPlaceholder.appendChild(weightList);
+    return { labels, values };
 }
 
 // Обновляем обработчик переключения вкладок
@@ -211,6 +266,27 @@ function setupTabHandlers() {
             }
 
             tg.HapticFeedback.selectionChanged();
+        });
+    });
+
+    // Добавляем обработчики для кнопок периода
+    const periodButtons = document.querySelectorAll('.period-btn');
+    periodButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+            // Обновляем активную кнопку
+            periodButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            // Загружаем данные и обновляем график
+            try {
+                const weightHistory = await getStorageItem('weightHistory')
+                    .then(data => data ? JSON.parse(data) : []);
+                updateWeightChart(weightHistory, button.dataset.period);
+                tg.HapticFeedback.selectionChanged();
+            } catch (e) {
+                console.error('Ошибка при обновлении графика:', e);
+                showError(e);
+            }
         });
     });
 }
@@ -279,4 +355,63 @@ function initApp() {
 
     setupEventListeners();
     loadProfile();
+}
+
+// Добавим функцию для запуска тренировки
+async function startWorkout(workoutId) {
+    try {
+        // Получаем текущий профиль
+        const profile = await getStorageItem('profile')
+            .then(data => data ? JSON.parse(data) : null);
+            
+        if (!profile) {
+            tg.showPopup({
+                title: 'Заполните профиль',
+                message: 'Для начала тренировки необходимо заполнить профиль',
+                buttons: [
+                    {
+                        type: 'default',
+                        text: 'Заполнить профиль',
+                        id: 'fill_profile'
+                    }
+                ]
+            });
+            return;
+        }
+
+        // Показываем детали тренировки
+        tg.showPopup({
+            title: 'Начать тренировку',
+            message: 'Выберите длительность и сложность тренировки',
+            buttons: [
+                {
+                    type: 'default',
+                    text: 'Начать',
+                    id: 'start_workout'
+                },
+                {
+                    type: 'cancel',
+                    text: 'Отмена'
+                }
+            ]
+        });
+    } catch (error) {
+        console.error('Ошибка при запуске тренировки:', error);
+        showError(error);
+    }
+}
+
+// Обновим обработчики событий
+function setupWorkoutHandlers() {
+    const workoutButtons = document.querySelectorAll('.start-workout-btn');
+    workoutButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const workoutCard = button.closest('.workout-card');
+            const workoutTitle = workoutCard.querySelector('h3').textContent;
+            
+            tg.HapticFeedback.impactOccurred('medium');
+            startWorkout(workoutTitle);
+        });
+    });
 } 
