@@ -222,3 +222,81 @@ button:hover {
         font-size: 20px;
     }
 } 
+
+/* Стили для статистики */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 16px;
+    background: var(--tg-theme-bg-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.stat-label {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+    margin-top: 4px;
+}
+
+/* Стили для выбора типа тренировки */
+.workout-types {
+    display: grid;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.workout-type-btn {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: var(--secondary-color);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.workout-type-btn:hover {
+    transform: translateY(-2px);
+}
+
+.workout-icon {
+    font-size: 24px;
+    margin-right: 12px;
+}
+
+.workout-name {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+/* Стили для списка веса */
+.weight-list {
+    margin-top: 16px;
+}
+
+.weight-item {
+    padding: 12px;
+    border-bottom: 1px solid var(--secondary-color);
+    color: var(--tg-theme-text-color);
+}
+
+/* Стили для советов */
+.tip-content {
+    margin-top: 12px;
+    line-height: 1.5;
+    color: var(--tg-theme-text-color);
+} 
