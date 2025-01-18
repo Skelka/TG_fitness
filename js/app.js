@@ -401,17 +401,203 @@ async function startWorkout(workoutId) {
     }
 }
 
+// Данные о тренировках
+const workoutData = {
+    // Силовые тренировки
+    upper_body: {
+        id: 'upper_body',
+        title: 'Тренировка верхней части тела',
+        category: 'strength',
+        difficulty: 'medium',
+        duration: 45,
+        calories: 350,
+        description: 'Комплексная тренировка для развития мышц верхней части тела',
+        exercises: [
+            {
+                name: 'Жим лежа',
+                sets: 3,
+                reps: '10-12',
+                rest: 90,
+                technique: 'Опускайте штангу до касания груди, локти под 45°',
+                video: 'url_to_video'
+            },
+            {
+                name: 'Подтягивания',
+                sets: 3,
+                reps: '8-10',
+                rest: 120,
+                technique: 'Полная амплитуда, подбородок над перекладиной',
+                video: 'url_to_video'
+            },
+            {
+                name: 'Сгибания на бицепс',
+                sets: 3,
+                reps: '12-15',
+                rest: 60,
+                technique: 'Контролируйте опускание, локти зафиксированы',
+                video: 'url_to_video'
+            }
+        ],
+        equipment: ['Штанга', 'Турник', 'Гантели'],
+        tips: [
+            'Разминка перед тренировкой обязательна',
+            'Следите за дыханием',
+            'Увеличивайте вес постепенно'
+        ]
+    },
+    legs: {
+        id: 'legs',
+        title: 'Тренировка ног',
+        category: 'strength',
+        difficulty: 'hard',
+        duration: 40,
+        calories: 400,
+        description: 'Интенсивная тренировка для развития силы и выносливости ног',
+        exercises: [
+            {
+                name: 'Приседания со штангой',
+                sets: 4,
+                reps: '8-10',
+                rest: 120,
+                technique: 'Глубина до параллели с полом, спина прямая',
+                video: 'url_to_video'
+            },
+            {
+                name: 'Выпады с гантелями',
+                sets: 3,
+                reps: '12 на ногу',
+                rest: 90,
+                technique: 'Колено заднее ноги почти касается пола',
+                video: 'url_to_video'
+            }
+        ],
+        equipment: ['Штанга', 'Гантели'],
+        tips: [
+            'Особое внимание разминке коленей',
+            'Контролируйте технику на каждом повторении',
+            'Растяжка после тренировки обязательна'
+        ]
+    },
+    // Кардио тренировки
+    hiit_running: {
+        id: 'hiit_running',
+        title: 'Интервальный бег',
+        category: 'cardio',
+        difficulty: 'medium',
+        duration: 30,
+        calories: 300,
+        description: 'Интервальная тренировка для сжигания жира и улучшения выносливости',
+        intervals: [
+            { type: 'Разминка', duration: 5, intensity: 'Легкая ходьба' },
+            { type: 'Интервал 1', duration: 1, intensity: 'Спринт' },
+            { type: 'Отдых', duration: 1, intensity: 'Ходьба' },
+            // повторить 6 раз
+            { type: 'Заминка', duration: 5, intensity: 'Легкая ходьба' }
+        ],
+        tips: [
+            'Контролируйте пульс',
+            'Пейте воду между интервалами',
+            'Прекратите при сильной усталости'
+        ]
+    }
+    // ... остальные тренировки
+};
+
+// Функция показа деталей тренировки
+function showWorkoutDetails(workoutId) {
+    const workout = workoutData[workoutId];
+    if (!workout) return;
+
+    let detailsHtml = `
+        <div class="workout-details-content">
+            <h3>${workout.title}</h3>
+            <p class="workout-description">${workout.description}</p>
+            
+            <div class="workout-info-grid">
+                <div class="info-item">
+                    <span class="material-symbols-rounded">schedule</span>
+                    <span>${workout.duration} мин</span>
+                </div>
+                <div class="info-item">
+                    <span class="material-symbols-rounded">local_fire_department</span>
+                    <span>${workout.calories} ккал</span>
+                </div>
+                <div class="info-item">
+                    <span class="material-symbols-rounded">fitness_center</span>
+                    <span>${workout.difficulty}</span>
+                </div>
+            </div>`;
+
+    if (workout.exercises) {
+        detailsHtml += `
+            <h4>Упражнения:</h4>
+            <div class="exercises-list">
+                ${workout.exercises.map(ex => `
+                    <div class="exercise-item">
+                        <h5>${ex.name}</h5>
+                        <p>${ex.sets} подхода × ${ex.reps} повторений</p>
+                        <p>Отдых: ${ex.rest} сек</p>
+                    </div>
+                `).join('')}
+            </div>`;
+    }
+
+    if (workout.intervals) {
+        detailsHtml += `
+            <h4>Интервалы:</h4>
+            <div class="intervals-list">
+                ${workout.intervals.map(int => `
+                    <div class="interval-item">
+                        <span>${int.type}</span>
+                        <span>${int.duration} мин - ${int.intensity}</span>
+                    </div>
+                `).join('')}
+            </div>`;
+    }
+
+    detailsHtml += `
+            <div class="workout-tips">
+                <h4>Советы:</h4>
+                <ul>
+                    ${workout.tips.map(tip => `<li>${tip}</li>`).join('')}
+                </ul>
+            </div>
+        </div>
+    `;
+
+    tg.showPopup({
+        title: 'Детали тренировки',
+        message: detailsHtml,
+        buttons: [
+            {type: 'default', text: 'Начать', id: `start_${workoutId}`},
+            {type: 'cancel', text: 'Закрыть'}
+        ]
+    });
+}
+
 // Обновим обработчики событий
 function setupWorkoutHandlers() {
-    const workoutButtons = document.querySelectorAll('.start-workout-btn');
-    workoutButtons.forEach(button => {
+    document.querySelectorAll('.workout-btn').forEach(button => {
         button.addEventListener('click', (e) => {
             e.preventDefault();
             const workoutCard = button.closest('.workout-card');
             const workoutTitle = workoutCard.querySelector('h3').textContent;
+            const workoutId = getWorkoutIdByTitle(workoutTitle);
             
-            tg.HapticFeedback.impactOccurred('medium');
-            startWorkout(workoutTitle);
+            if (button.classList.contains('info-btn')) {
+                tg.HapticFeedback.impactOccurred('medium');
+                showWorkoutDetails(workoutId);
+            } else if (button.classList.contains('start-btn')) {
+                tg.HapticFeedback.impactOccurred('medium');
+                startWorkout(workoutId);
+            }
         });
     });
+}
+
+// Вспомогательная функция для получения ID тренировки по заголовку
+function getWorkoutIdByTitle(title) {
+    return Object.keys(workoutData).find(key => 
+        workoutData[key].title === title
+    );
 } 

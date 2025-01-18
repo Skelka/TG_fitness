@@ -483,4 +483,73 @@ input:focus, select:focus {
 
 .legend-dot.planned {
     background: var(--tg-theme-button-color);
+}
+
+.workout-details-content {
+    padding: 16px;
+}
+
+.workout-description {
+    margin: 12px 0;
+    color: var(--tg-theme-text-color);
+}
+
+.workout-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.exercises-list, .intervals-list {
+    margin: 16px 0;
+}
+
+.exercise-item, .interval-item {
+    background: var(--tg-theme-secondary-bg-color);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.exercise-item h5 {
+    margin: 0 0 8px 0;
+    color: var(--tg-theme-text-color);
+}
+
+.exercise-item p, .interval-item span {
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+    margin: 4px 0;
+}
+
+.workout-tips {
+    margin-top: 20px;
+}
+
+.workout-tips ul {
+    list-style: none;
+    padding: 0;
+}
+
+.workout-tips li {
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+    margin: 8px 0;
+    padding-left: 24px;
+    position: relative;
+}
+
+.workout-tips li::before {
+    content: '•';
+    position: absolute;
+    left: 8px;
+    color: var(--tg-theme-button-color);
 } 
