@@ -101,7 +101,7 @@ async function saveProfile() {
             height: parseFloat(formData.get('height')) || 0,
             weight: parseFloat(formData.get('weight')) || 0,
             goal: formData.get('goal'),
-            // Получаем массивы выбранных значений
+            level: formData.get('level'),
             workoutPlaces: formData.getAll('workout_place'),
             equipment: formData.getAll('equipment'),
             lastUpdated: Date.now()
@@ -175,6 +175,14 @@ function fillProfileForm(profile) {
         equipmentInputs.forEach(input => {
             input.checked = profile.equipment.includes(input.value);
         });
+    }
+
+    // Заполняем уровень подготовки
+    if (profile.level) {
+        const levelInput = form.querySelector(`input[name="level"][value="${profile.level}"]`);
+        if (levelInput) {
+            levelInput.checked = true;
+        }
     }
 }
 
