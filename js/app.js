@@ -3,74 +3,54 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.enableClosingConfirmation();
 
-// Настройка MainButton для загрузки профиля
-const mainButton = window.Telegram.WebApp.MainButton;
-mainButton.setText('Получить данные профиля');
-mainButton.show();
-
 // Загрузка данных профиля
-function loadProfile() {
+async function loadProfile() {
     try {
-        // Запрашиваем данные у бота через API
-        fetch('/api/get_profile', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'User-Id': tg.initDataUnsafe.user.id
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Получены данные профиля:', data);
-            if (data.status === 'success' && data.profile) {
-                // Заполняем форму данными профиля
-                const profile = data.profile;
-                document.getElementById('name').value = profile.name || '';
-                document.getElementById('age').value = profile.age || '';
-                document.getElementById('gender').value = profile.gender || 'male';
-                document.getElementById('height').value = profile.height || '';
-                document.getElementById('weight').value = profile.weight || '';
-                document.getElementById('goal').value = profile.goal || 'maintenance';
-                
-                // Скрываем кнопку после загрузки данных
-                mainButton.hide();
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка при получении данных:', error);
-            tg.showPopup({
-                title: 'Ошибка',
-                message: 'Не удалось загрузить данные профиля',
-                buttons: [{type: 'ok'}]
-            });
-        });
+        const data = await tg.CloudStorage.getItem('profile');
+        if (data) {
+            const profile = JSON.parse(data);
+            console.log('Загружены данные профиля:', profile);
+            
+            // Заполняем форму
+            document.getElementById('name').value = profile.name || '';
+            document.getElementById('age').value = profile.age || '';
+            document.getElementById('gender').value = profile.gender || 'male';
+            document.getElementById('height').value = profile.height || '';
+            document.getElementById('weight').value = profile.weight || '';
+            document.getElementById('goal').value = profile.goal || 'maintenance';
+            
+            // Показываем уведомление
+            tg.HapticFeedback.notificationOccurred('success');
+        }
     } catch (error) {
-        console.error('Ошибка:', error);
+        console.error('Ошибка при загрузке профиля:', error);
+        tg.HapticFeedback.notificationOccurred('error');
+        tg.showPopup({
+            title: 'Ошибка',
+            message: 'Не удалось загрузить данные профиля',
+            buttons: [{type: 'ok'}]
+        });
     }
 }
 
-// Настраиваем обработчик нажатия на кнопку
-mainButton.onClick(loadProfile);
-
-// Сохранение профиля (отправка данных боту)
+// Сохранение профиля
 async function saveProfile() {
-    const formData = {
-        action: 'save_profile',
-        profile: {
+    try {
+        const profileData = {
             name: document.getElementById('name').value || '',
             age: parseInt(document.getElementById('age').value) || 0,
             gender: document.getElementById('gender').value || 'male',
             height: parseFloat(document.getElementById('height').value) || 0,
             weight: parseFloat(document.getElementById('weight').value) || 0,
             goal: document.getElementById('goal').value || 'maintenance'
-        }
-    };
+        };
 
-    try {
-        console.log('Отправка данных профиля:', formData);
-        tg.sendData(JSON.stringify(formData));
-        console.log('Данные успешно отправлены');
+        // Сохраняем в CloudStorage
+        await tg.CloudStorage.setItem('profile', JSON.stringify(profileData));
+        console.log('Профиль сохранен:', profileData);
         
+        // Показываем уведомление об успехе
+        tg.HapticFeedback.notificationOccurred('success');
         tg.showPopup({
             title: 'Успех',
             message: 'Данные профиля сохранены',
@@ -78,6 +58,7 @@ async function saveProfile() {
         });
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
+        tg.HapticFeedback.notificationOccurred('error');
         tg.showPopup({
             title: 'Ошибка',
             message: 'Произошла ошибка при сохранении',
@@ -88,6 +69,7 @@ async function saveProfile() {
 
 // Настройка обработчиков событий
 function setupEventListeners() {
+    // Форма
     document.addEventListener('submit', function(e) {
         if (e.target.id === 'profile-form') {
             e.preventDefault();
@@ -95,7 +77,7 @@ function setupEventListeners() {
         }
     });
 
-    // Добавляем обработчик для скрытия клавиатуры
+    // Скрытие клавиатуры
     document.addEventListener('click', function(e) {
         if (!e.target.matches('input') && !e.target.matches('select')) {
             if (document.activeElement instanceof HTMLInputElement || 
@@ -105,10 +87,11 @@ function setupEventListeners() {
         }
     });
 
-    // Добавляем обработчик для input type="number"
+    // Выделение текста в числовых полях
     document.addEventListener('focus', function(e) {
         if (e.target.type === 'number') {
             e.target.select();
+            tg.HapticFeedback.selectionChanged();
         }
     }, true);
 }
@@ -116,6 +99,5 @@ function setupEventListeners() {
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
-    // Автоматически загружаем данные при старте
     loadProfile();
 }); 
