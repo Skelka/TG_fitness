@@ -336,6 +336,23 @@ function setupEventListeners() {
 
     // Добавляем новые обработчики
     setupTabHandlers();
+
+    // Обработка событий попапа
+    tg.onEvent('popupClosed', (button_id) => {
+        if (button_id && button_id.startsWith('start_workout_')) {
+            const [_, programId, day] = button_id.split('_').slice(2);
+            startWorkout(programId, parseInt(day));
+        }
+    });
+
+    // Обработка кнопок в интерфейсе тренировки
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('complete-btn')) {
+            completeWorkout();
+        } else if (e.target.classList.contains('pause-btn')) {
+            toggleWorkoutPause();
+        }
+    });
 }
 
 // Инициализация при загрузке
@@ -625,15 +642,24 @@ function showProgramDetails(programId) {
         💪 Сложность: ${program.difficulty}
     `;
 
+    // Ограничиваем количество кнопок до 3
+    const buttons = [
+        {
+            id: `start_program_${programId}`,
+            type: 'default',
+            text: 'Начать программу'
+        },
+        {
+            id: `schedule_${programId}`,
+            type: 'default',
+            text: 'Расписание'
+        }
+    ];
+
     tg.showPopup({
-        title: 'О программе',
+        title: program.title,
         message: mainInfo,
-        buttons: [
-            {type: 'default', text: 'Результаты ➜', id: `results_${programId}`},
-            {type: 'default', text: 'Расписание ➜', id: `schedule_${programId}`},
-            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`},
-            {type: 'cancel', text: 'Закрыть'}
-        ]
+        buttons: buttons
     });
 }
 
@@ -737,63 +763,30 @@ function updateProgramProgress(progress) {
 
 // Обновляем функцию startProgram
 async function startProgram(programId) {
-    try {
-        const profile = await getStorageItem('profile')
-            .then(data => data ? JSON.parse(data) : null);
-            
-        if (!profile) {
-            tg.showPopup({
-                title: 'Заполните профиль',
-                message: 'Для начала программы необходимо заполнить профиль',
-                buttons: [{
-                    type: 'default',
-                    text: 'Заполнить профиль',
-                    id: 'fill_profile'
-                }]
-            });
-            return;
-        }
+    const program = programData[programId];
+    if (!program) return;
 
-        const program = programData[programId];
-        if (!program) {
-            throw new Error('Программа не найдена');
-        }
-        
-        // Создаем объект прогресса программы
-        const programProgress = {
-            programId,
-            startDate: Date.now(),
-            currentWeek: 1,
-            completedWorkouts: [],
-            status: 'active'
-        };
+    // Создаем объект прогресса программы
+    const programProgress = {
+        programId: programId,
+        startDate: Date.now(),
+        currentDay: 1,
+        completedWorkouts: []
+    };
 
-        // Сохраняем прогресс в CloudStorage
-        await setStorageItem('activeProgram', JSON.stringify(programProgress));
+    // Сохраняем прогресс
+    await setStorageItem('activeProgram', JSON.stringify(programProgress));
 
-        // Обновляем UI
-        updateProgramProgress(programProgress);
-
-        // Показываем сообщение об успешном начале программы
-        tg.showPopup({
-            title: 'Программа начата!',
-            message: `Вы начали программу "${program.title}". Первая тренировка запланирована на сегодня.`,
-            buttons: [{
-                type: 'default',
-                text: 'Начать первую тренировку',
-                id: `start_workout_${programId}_1`
-            }]
-        });
-
-    } catch (error) {
-        console.error('Ошибка при запуске программы:', error);
-        // Используем более информативное сообщение об ошибке
-        tg.showPopup({
-            title: 'Ошибка',
-            message: 'Не удалось запустить программу. Попробуйте позже.',
-            buttons: [{type: 'ok'}]
-        });
-    }
+    // Показываем сообщение о начале программы
+    tg.showPopup({
+        title: 'Программа начата!',
+        message: `Вы начали программу "${program.title}". Первая тренировка запланирована на сегодня.`,
+        buttons: [{
+            type: 'default',
+            text: 'Начать тренировку',
+            id: `start_workout_${programId}_1`
+        }]
+    });
 }
 
 // Добавим функцию загрузки активной программы при инициализации
