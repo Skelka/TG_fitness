@@ -86,15 +86,15 @@ async function saveProfile() {
         tg.sendData(dataString);
         console.log('Данные отправлены');
 
-        // Показываем кнопку "Назад"
-        backButton.show();
-        mainButton.hide();
-
+        // Показываем уведомление об успехе
         tg.HapticFeedback.notificationOccurred('success');
         tg.showPopup({
             title: 'Успех',
             message: 'Данные профиля сохранены',
-            buttons: [{type: 'ok'}]
+            buttons: [{
+                type: 'ok',
+                id: 'close_app'
+            }]
         });
 
     } catch (error) {
@@ -149,6 +149,13 @@ function setupEventListeners() {
     // Обработчик нажатия на BackButton
     backButton.onClick(() => {
         tg.close();
+    });
+
+    // Обработчик закрытия попапа
+    tg.onEvent('popupClosed', (event) => {
+        if (event.button_id === 'close_app') {
+            tg.close();
+        }
     });
 }
 
