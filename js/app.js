@@ -133,9 +133,11 @@ function loadSection(sectionName) {
 }
 
 // Функция для отправки данных боту
-function sendToBotAndClose(data) {
+function sendToBot(data, shouldClose = false) {
     tg.sendData(JSON.stringify(data));
-    tg.close();
+    if (shouldClose) {
+        tg.close();
+    }
 }
 
 // Загрузка тренировок
@@ -143,7 +145,7 @@ async function loadWorkouts() {
     const workoutHistory = document.getElementById('workout-history');
     try {
         workoutHistory.innerHTML = '<p>Загрузка тренировок...</p>';
-        sendToBotAndClose({
+        sendToBot({
             action: 'get_workouts'
         });
     } catch (error) {
@@ -157,7 +159,7 @@ async function loadStats() {
     const weightChart = document.getElementById('weight-chart');
     try {
         weightChart.innerHTML = '<p>Загрузка статистики...</p>';
-        sendToBotAndClose({
+        sendToBot({
             action: 'get_weight_history'
         });
     } catch (error) {
@@ -204,7 +206,7 @@ async function loadProfile() {
         if (form) {
             form.innerHTML = '<p>Загрузка данных профиля...</p>';
         }
-        sendToBotAndClose({
+        sendToBot({
             action: 'get_profile'
         });
     } catch (error) {
@@ -232,7 +234,8 @@ async function saveProfile() {
     };
 
     try {
-        sendToBotAndClose(formData);
+        // При сохранении закрываем приложение
+        sendToBot(formData, true);
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
         tg.showPopup({
