@@ -70,14 +70,14 @@
     <template id="profile-template">
         <div class="section profile-section">
             <h2>Профиль</h2>
-            <form id="profile-form">
+            <form id="profile-form" novalidate>
                 <div class="input-group">
                     <label for="name">Имя</label>
-                    <input type="text" id="name" required>
+                    <input type="text" id="name" autocomplete="name" required>
                 </div>
                 <div class="input-group">
                     <label for="age">Возраст</label>
-                    <input type="number" id="age" min="14" max="100" required>
+                    <input type="number" id="age" min="14" max="100" autocomplete="off" required>
                 </div>
                 <div class="input-group">
                     <label for="gender">Пол</label>
@@ -88,11 +88,11 @@
                 </div>
                 <div class="input-group">
                     <label for="height">Рост (см)</label>
-                    <input type="number" id="height" min="100" max="250" required>
+                    <input type="number" id="height" min="100" max="250" autocomplete="off" required>
                 </div>
                 <div class="input-group">
                     <label for="weight">Вес (кг)</label>
-                    <input type="number" id="weight" min="30" max="200" required>
+                    <input type="number" id="weight" min="30" max="200" autocomplete="off" required>
                 </div>
                 <div class="input-group">
                     <label for="goal">Цель</label>
