@@ -71,27 +71,11 @@ function loadSection(sectionName) {
 async function loadWorkouts() {
     const workoutHistory = document.getElementById('workout-history');
     try {
-        // Показываем заглушку
         workoutHistory.innerHTML = '<p>Загрузка тренировок...</p>';
         
-        // Запрашиваем данные у бота
-        if (tg.WebApp.initData) {
-            const workouts = await tg.WebApp.sendData(JSON.stringify({
-                action: 'get_workouts'
-            }));
-            
-            if (workouts) {
-                workoutHistory.innerHTML = workouts.map(workout => `
-                    <div class="workout-item">
-                        <div class="card-title">${workout.type}</div>
-                        <div class="card-subtitle">
-                            ${new Date(workout.date).toLocaleDateString()} • ${workout.duration} мин
-                        </div>
-                        <div>Сожжено калорий: ${workout.calories_burned}</div>
-                    </div>
-                `).join('') || '<p>Нет записей о тренировках</p>';
-            }
-        }
+        tg.sendData(JSON.stringify({
+            action: 'get_workouts'
+        }));
     } catch (error) {
         console.error('Ошибка при загрузке тренировок:', error);
         workoutHistory.innerHTML = '<p>Ошибка при загрузке тренировок</p>';
@@ -104,24 +88,9 @@ async function loadStats() {
     try {
         weightChart.innerHTML = '<p>Загрузка статистики...</p>';
         
-        if (tg.WebApp.initData) {
-            const history = await tg.WebApp.sendData(JSON.stringify({
-                action: 'get_weight_history'
-            }));
-            
-            if (history) {
-                weightChart.innerHTML = `
-                    <h3>История изменения веса</h3>
-                    <div class="weight-list">
-                        ${history.map(entry => `
-                            <div class="weight-item">
-                                ${entry.weight} кг • ${new Date(entry.date).toLocaleDateString()}
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-        }
+        tg.sendData(JSON.stringify({
+            action: 'get_weight_history'
+        }));
     } catch (error) {
         console.error('Ошибка при загрузке статистики:', error);
         weightChart.innerHTML = '<p>Ошибка при загрузке статистики</p>';
@@ -162,17 +131,15 @@ function loadTips() {
 // Загрузка профиля
 async function loadProfile() {
     try {
-        if (tg.WebApp.initData) {
-            const profile = await tg.WebApp.sendData(JSON.stringify({
-                action: 'get_profile'
-            }));
-            
-            if (profile) {
-                Object.keys(profile).forEach(key => {
-                    const input = document.getElementById(key);
-                    if (input) input.value = profile[key];
-                });
-            }
+        // Отправляем данные напрямую через tg.sendData
+        tg.sendData(JSON.stringify({
+            action: 'get_profile'
+        }));
+        
+        // Показываем сообщение о загрузке
+        const form = document.getElementById('profile-form');
+        if (form) {
+            form.innerHTML = '<p>Загрузка данных профиля...</p>';
         }
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
@@ -199,14 +166,15 @@ async function saveProfile() {
     };
 
     try {
-        if (tg.WebApp.initData) {
-            await tg.WebApp.sendData(JSON.stringify(formData));
-            tg.showPopup({
-                title: 'Успех',
-                message: 'Профиль успешно сохранен!',
-                buttons: [{type: 'ok'}]
-            });
-        }
+        // Отправляем данные напрямую через tg.sendData
+        tg.sendData(JSON.stringify(formData));
+        
+        // Показываем сообщение об успехе
+        tg.showPopup({
+            title: 'Успех',
+            message: 'Профиль сохранен!',
+            buttons: [{type: 'ok'}]
+        });
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
         tg.showPopup({
