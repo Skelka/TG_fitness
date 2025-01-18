@@ -182,10 +182,19 @@ async function sendDataToBot(data) {
     }
 
     try {
+        // Используем MainButton для отправки данных
+        tg.MainButton.setText('Отправка...');
+        tg.MainButton.show();
+        tg.MainButton.disable();
+        
         await tg.sendData(JSON.stringify(data));
+        
+        // Скрываем кнопку после отправки
+        tg.MainButton.hide();
         return true;
     } catch (error) {
         console.error('Ошибка при отправке данных:', error);
+        tg.MainButton.hide();
         return false;
     }
 }
@@ -210,22 +219,13 @@ function addMessageHandler(callback) {
 // Загрузка профиля
 async function loadProfile() {
     try {
+        // Отправляем запрос на получение данных профиля
         const success = await sendDataToBot({
             action: 'get_profile'
         });
         
-        if (success) {
-            tg.WebApp.onEvent('message', function(message) {
-                try {
-                    const profile = JSON.parse(message.text);
-                    Object.keys(profile).forEach(key => {
-                        const input = document.getElementById(key);
-                        if (input) input.value = profile[key];
-                    });
-                } catch (e) {
-                    console.error('Ошибка при разборе данных профиля:', e);
-                }
-            });
+        if (!success) {
+            console.error('Не удалось отправить запрос на получение профиля');
         }
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
@@ -249,13 +249,25 @@ async function saveProfile() {
     try {
         const success = await sendDataToBot(formData);
         if (success) {
-            tg.showAlert('Профиль успешно сохранен!');
+            tg.showPopup({
+                title: 'Успех',
+                message: 'Профиль успешно сохранен!',
+                buttons: [{type: 'ok'}]
+            });
         } else {
-            tg.showAlert('Ошибка при сохранении профиля');
+            tg.showPopup({
+                title: 'Ошибка',
+                message: 'Не удалось сохранить профиль',
+                buttons: [{type: 'ok'}]
+            });
         }
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
-        tg.showAlert('Произошла ошибка при сохранении');
+        tg.showPopup({
+            title: 'Ошибка',
+            message: 'Произошла ошибка при сохранении',
+            buttons: [{type: 'ok'}]
+        });
     }
 }
 
