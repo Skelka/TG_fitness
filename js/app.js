@@ -182,15 +182,19 @@ async function sendDataToBot(data) {
     }
 
     try {
-        // Используем MainButton для отправки данных
+        // Показываем индикатор загрузки
         tg.MainButton.setText('Отправка...');
         tg.MainButton.show();
         tg.MainButton.disable();
+
+        // Отправляем данные
+        tg.sendData(JSON.stringify(data));
         
-        await tg.sendData(JSON.stringify(data));
+        // Скрываем кнопку
+        setTimeout(() => {
+            tg.MainButton.hide();
+        }, 1000);
         
-        // Скрываем кнопку после отправки
-        tg.MainButton.hide();
         return true;
     } catch (error) {
         console.error('Ошибка при отправке данных:', error);
@@ -219,16 +223,28 @@ function addMessageHandler(callback) {
 // Загрузка профиля
 async function loadProfile() {
     try {
+        // Показываем индикатор загрузки
+        tg.MainButton.setText('Загрузка...');
+        tg.MainButton.show();
+        tg.MainButton.disable();
+
         // Отправляем запрос на получение данных профиля
         const success = await sendDataToBot({
             action: 'get_profile'
         });
-        
+
         if (!success) {
             console.error('Не удалось отправить запрос на получение профиля');
         }
+
+        // Скрываем индикатор через секунду
+        setTimeout(() => {
+            tg.MainButton.hide();
+        }, 1000);
+
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
+        tg.MainButton.hide();
     }
 }
 
@@ -252,12 +268,6 @@ async function saveProfile() {
             tg.showPopup({
                 title: 'Успех',
                 message: 'Профиль успешно сохранен!',
-                buttons: [{type: 'ok'}]
-            });
-        } else {
-            tg.showPopup({
-                title: 'Ошибка',
-                message: 'Не удалось сохранить профиль',
                 buttons: [{type: 'ok'}]
             });
         }
@@ -293,4 +303,20 @@ function startNewWorkout() {
             </div>
         </div>
     `;
-} 
+}
+
+// Обработчик для получения данных от бота
+tg.onEvent('message', function(message) {
+    try {
+        const data = JSON.parse(message.text);
+        if (data.action === 'profile_data') {
+            // Заполняем форму данными профиля
+            Object.keys(data.profile).forEach(key => {
+                const input = document.getElementById(key);
+                if (input) input.value = data.profile[key];
+            });
+        }
+    } catch (e) {
+        console.error('Ошибка при обработке сообщения от бота:', e);
+    }
+}); 
