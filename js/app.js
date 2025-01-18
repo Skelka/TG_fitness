@@ -60,19 +60,16 @@ async function saveProfile() {
         };
         console.log('Отправляем данные:', sendData);
 
-        // Отправляем данные через WebApp
-        tg.sendData(JSON.stringify(sendData));
-        console.log('Данные отправлены');
+        // Отправляем данные через инлайн режим
+        const dataString = JSON.stringify(sendData);
+        tg.switchInlineQuery(dataString, ['users']);
 
         tg.HapticFeedback.notificationOccurred('success');
         tg.showPopup({
-            title: 'Успех',
-            message: 'Данные профиля сохранены',
+            title: 'Данные отправлены',
+            message: 'Пожалуйста, отправьте сообщение в чат',
             buttons: [{type: 'ok'}]
         });
-
-        // Закрываем WebApp через секунду
-        setTimeout(() => tg.close(), 1000);
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
         tg.HapticFeedback.notificationOccurred('error');
