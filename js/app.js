@@ -605,4 +605,147 @@ function getWorkoutIdByTitle(title) {
     return Object.keys(workoutData).find(key => 
         workoutData[key].title === title
     );
+}
+
+// Функция показа деталей программы
+function showProgramDetails(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    let detailsHtml = `
+        <div class="program-details-content">
+            <div class="program-header">
+                <span class="material-symbols-rounded">${program.icon}</span>
+                <div class="program-title">
+                    <h3>${program.title}</h3>
+                    <span class="program-duration">${program.duration}</span>
+                </div>
+            </div>
+            
+            <p class="program-description">${program.description}</p>
+            
+            <div class="program-info-grid">
+                <div class="info-item">
+                    <span class="material-symbols-rounded">calendar_month</span>
+                    <span>${program.schedule}</span>
+                </div>
+                <div class="info-item">
+                    <span class="material-symbols-rounded">local_fire_department</span>
+                    <span>${program.calories_per_week}</span>
+                </div>
+                <div class="info-item">
+                    <span class="material-symbols-rounded">fitness_center</span>
+                    <span>${program.difficulty}</span>
+                </div>
+            </div>
+
+            <div class="program-results">
+                <h4>Ожидаемые результаты:</h4>
+                <ul>
+                    ${program.results.map(result => `
+                        <li><span class="material-symbols-rounded">check_circle</span>${result}</li>
+                    `).join('')}
+                </ul>
+            </div>
+
+            <div class="program-schedule">
+                <h4>Расписание тренировок:</h4>
+                <div class="workouts-list">
+                    ${program.workouts.map(workout => `
+                        <div class="workout-item">
+                            <div class="workout-day">День ${workout.day}</div>
+                            <div class="workout-info">
+                                <h5>${workout.title}</h5>
+                                <div class="workout-meta">
+                                    <span><span class="material-symbols-rounded">schedule</span>${workout.duration} мин</span>
+                                    <span><span class="material-symbols-rounded">fitness_center</span>${workout.type}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+
+    tg.showPopup({
+        title: 'Детали программы',
+        message: detailsHtml,
+        buttons: [
+            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`},
+            {type: 'cancel', text: 'Закрыть'}
+        ]
+    });
+}
+
+// Функция начала программы
+async function startProgram(programId) {
+    try {
+        const profile = await getStorageItem('profile')
+            .then(data => data ? JSON.parse(data) : null);
+            
+        if (!profile) {
+            tg.showPopup({
+                title: 'Заполните профиль',
+                message: 'Для начала программы необходимо заполнить профиль',
+                buttons: [{
+                    type: 'default',
+                    text: 'Заполнить профиль',
+                    id: 'fill_profile'
+                }]
+            });
+            return;
+        }
+
+        const program = programData[programId];
+        
+        // Создаем объект прогресса программы
+        const programProgress = {
+            programId,
+            startDate: Date.now(),
+            currentWeek: 1,
+            completedWorkouts: [],
+            status: 'active'
+        };
+
+        // Сохраняем прогресс в CloudStorage
+        await setStorageItem('activeProgram', JSON.stringify(programProgress));
+
+        // Показываем сообщение об успешном начале программы
+        tg.showPopup({
+            title: 'Программа начата!',
+            message: `Вы начали программу "${program.title}". Первая тренировка запланирована на сегодня.`,
+            buttons: [{
+                type: 'default',
+                text: 'Начать первую тренировку',
+                id: `start_workout_${program.workouts[0].id}`
+            }]
+        });
+
+        // Обновляем UI
+        updateProgramProgress(programProgress);
+        
+    } catch (error) {
+        console.error('Ошибка при запуске программы:', error);
+        showError(error);
+    }
+}
+
+// Обновляем обработчики событий
+function setupProgramHandlers() {
+    document.querySelectorAll('.program-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const programCard = button.closest('.program-card');
+            const programId = programCard.dataset.program;
+            
+            if (button.classList.contains('info-btn')) {
+                tg.HapticFeedback.impactOccurred('medium');
+                showProgramDetails(programId);
+            } else if (button.classList.contains('start-btn')) {
+                tg.HapticFeedback.impactOccurred('medium');
+                startProgram(programId);
+            }
+        });
+    });
 } 

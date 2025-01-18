@@ -630,4 +630,91 @@ input:focus, select:focus {
     display: flex;
     gap: 12px;
     margin-top: 16px;
+}
+
+.program-details-content {
+    padding: 16px;
+}
+
+.program-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.program-header .material-symbols-rounded {
+    font-size: 48px;
+    color: var(--tg-theme-button-color);
+}
+
+.program-title h3 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.program-description {
+    margin: 16px 0;
+    color: var(--tg-theme-text-color);
+    line-height: 1.5;
+}
+
+.program-results {
+    margin: 24px 0;
+}
+
+.program-results ul {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+}
+
+.program-results li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+    color: var(--tg-theme-text-color);
+}
+
+.program-results .material-symbols-rounded {
+    color: #4CAF50;
+    font-size: 20px;
+}
+
+.program-schedule {
+    margin-top: 24px;
+}
+
+.workout-item {
+    display: flex;
+    gap: 16px;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 12px;
+    margin: 8px 0;
+}
+
+.workout-day {
+    font-weight: 600;
+    color: var(--tg-theme-button-color);
+    min-width: 80px;
+}
+
+.workout-meta {
+    display: flex;
+    gap: 16px;
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.workout-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.workout-meta .material-symbols-rounded {
+    font-size: 16px;
 } 
