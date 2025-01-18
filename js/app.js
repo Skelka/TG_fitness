@@ -127,13 +127,6 @@ function setupEventListeners() {
     backButton.onClick(() => {
         tg.close();
     });
-
-    // Обработчик закрытия попапа
-    tg.onEvent('popupClosed', (event) => {
-        if (event.button_id === 'close_app') {
-            tg.close();
-        }
-    });
 }
 
 // Инициализация при загрузке
