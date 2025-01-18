@@ -6,7 +6,6 @@ tg.enableClosingConfirmation();
 // Функция для отправки данных боту
 function sendToBot(data, shouldClose = false) {
     try {
-        // Добавляем информацию о платформе
         const finalData = {
             ...data,
             platform: tg.platform,
@@ -15,18 +14,11 @@ function sendToBot(data, shouldClose = false) {
         };
         
         console.log('Отправка данных боту:', finalData);
+        tg.sendData(JSON.stringify(finalData));
         
-        // Используем MainButton для отправки
-        tg.MainButton.setText('Отправка...');
-        tg.MainButton.show();
-        tg.MainButton.onClick(() => {
-            tg.sendData(JSON.stringify(finalData));
-            tg.MainButton.hide();
-            if (shouldClose) {
-                setTimeout(() => tg.close(), 1000);
-            }
-        });
-        tg.MainButton.click();
+        if (shouldClose) {
+            setTimeout(() => tg.close(), 1000);
+        }
     } catch (error) {
         console.error('Ошибка при отправке данных:', error);
         tg.showPopup({
@@ -189,29 +181,39 @@ function loadSection(sectionName) {
 // Загрузка тренировок
 async function loadWorkouts() {
     const workoutHistory = document.getElementById('workout-history');
-    try {
-        workoutHistory.innerHTML = '<p>Загрузка тренировок...</p>';
-        sendToBot({
-            action: 'get_workouts'
-        });
-    } catch (error) {
-        console.error('Ошибка при загрузке тренировок:', error);
-        workoutHistory.innerHTML = '<p>Ошибка при загрузке тренировок</p>';
-    }
+    workoutHistory.innerHTML = `
+        <div class="workout-empty">
+            <p>Нажмите кнопку для загрузки тренировок</p>
+            <button onclick="requestWorkouts()" class="load-btn">Загрузить тренировки</button>
+        </div>
+    `;
+}
+
+function requestWorkouts() {
+    const workoutHistory = document.getElementById('workout-history');
+    workoutHistory.innerHTML = '<p>Загрузка тренировок...</p>';
+    sendToBot({
+        action: 'get_workouts'
+    });
 }
 
 // Загрузка статистики
 async function loadStats() {
     const weightChart = document.getElementById('weight-chart');
-    try {
-        weightChart.innerHTML = '<p>Загрузка статистики...</p>';
-        sendToBot({
-            action: 'get_weight_history'
-        });
-    } catch (error) {
-        console.error('Ошибка при загрузке статистики:', error);
-        weightChart.innerHTML = '<p>Ошибка при загрузке статистики</p>';
-    }
+    weightChart.innerHTML = `
+        <div class="stats-empty">
+            <p>Нажмите кнопку для загрузки статистики</p>
+            <button onclick="requestStats()" class="load-btn">Загрузить статистику</button>
+        </div>
+    `;
+}
+
+function requestStats() {
+    const weightChart = document.getElementById('weight-chart');
+    weightChart.innerHTML = '<p>Загрузка статистики...</p>';
+    sendToBot({
+        action: 'get_weight_history'
+    });
 }
 
 // Загрузка советов
@@ -247,20 +249,23 @@ function loadTips() {
 
 // Загрузка профиля
 async function loadProfile() {
-    try {
-        const form = document.getElementById('profile-form');
-        if (form) {
-            form.innerHTML = '<p>Загрузка данных профиля...</p>';
-        }
+    const form = document.getElementById('profile-form');
+    if (form) {
+        form.innerHTML = `
+            <div class="profile-empty">
+                <p>Нажмите кнопку для загрузки профиля</p>
+                <button onclick="requestProfile()" class="load-btn">Загрузить профиль</button>
+            </div>
+        `;
+    }
+}
+
+function requestProfile() {
+    const form = document.getElementById('profile-form');
+    if (form) {
+        form.innerHTML = '<p>Загрузка данных профиля...</p>';
         sendToBot({
             action: 'get_profile'
-        });
-    } catch (error) {
-        console.error('Ошибка при загрузке профиля:', error);
-        tg.showPopup({
-            title: 'Ошибка',
-            message: 'Не удалось загрузить профиль',
-            buttons: [{type: 'ok'}]
         });
     }
 }

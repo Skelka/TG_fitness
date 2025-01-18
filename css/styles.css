@@ -337,3 +337,29 @@ select {
     background-size: 16px;
     padding-right: 32px;
 } 
+
+.load-btn {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: opacity 0.2s;
+}
+
+.load-btn:hover {
+    opacity: 0.9;
+}
+
+.workout-empty,
+.stats-empty,
+.profile-empty {
+    text-align: center;
+    padding: 32px;
+    background: var(--secondary-color);
+    border-radius: 12px;
+    margin-top: 20px;
+} 
