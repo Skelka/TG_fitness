@@ -50,12 +50,14 @@ label {
 }
 
 input, select {
+    width: 100%;
     padding: 12px;
     border: 1px solid var(--tg-theme-hint-color, #ddd);
     border-radius: 8px;
     font-size: 16px;
     background-color: var(--tg-theme-bg-color, #fff);
     color: var(--tg-theme-text-color, #000);
+    text-align: center;
 }
 
 input:focus, select:focus {
@@ -830,8 +832,8 @@ input:focus, select:focus {
 .input-group-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 16px;
+    margin-bottom: 16px;
 }
 
 .checkbox-group {
@@ -860,8 +862,9 @@ input:focus, select:focus {
 
 .equipment-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
+    margin-top: 8px;
 }
 
 .equipment-item {
@@ -873,6 +876,7 @@ input:focus, select:focus {
     background: var(--tg-theme-bg-color);
     border-radius: 12px;
     cursor: pointer;
+    text-align: center;
 }
 
 .equipment-item input {
@@ -880,13 +884,13 @@ input:focus, select:focus {
 }
 
 .equipment-icon {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--tg-theme-secondary-bg-color);
-    border-radius: 12px;
+    border-radius: 10px;
     transition: all 0.3s;
 }
 
@@ -896,6 +900,26 @@ input:focus, select:focus {
 }
 
 .equipment-label {
-    font-size: 12px;
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.2;
+    margin-top: 4px;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
     text-align: center;
 } 
