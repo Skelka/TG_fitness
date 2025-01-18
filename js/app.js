@@ -66,13 +66,8 @@ async function saveProfile() {
         tg.sendData(JSON.stringify(sendData));
         console.log('Данные отправлены');
 
-        // Показываем уведомление об успехе
+        // Только вибрация при успехе
         tg.HapticFeedback.notificationOccurred('success');
-        tg.showPopup({
-            title: 'Успех',
-            message: 'Данные профиля сохранены',
-            buttons: [{type: 'ok'}]
-        });
 
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
