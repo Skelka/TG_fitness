@@ -44,11 +44,17 @@ async function saveProfile() {
             goal: document.getElementById('goal').value || 'maintenance'
         };
 
-        // Отправляем данные через WebApp
-        tg.sendData(JSON.stringify({
+        console.log('Подготовленные данные для отправки:', profileData);
+
+        const sendData = {
             action: 'save_profile',
             profile: profileData
-        }));
+        };
+        console.log('Отправляем данные:', sendData);
+
+        // Отправляем данные через WebApp
+        tg.sendData(JSON.stringify(sendData));
+        console.log('Данные отправлены');
 
         tg.HapticFeedback.notificationOccurred('success');
         tg.showPopup({
