@@ -8,7 +8,18 @@ let currentSection = 'workouts';
 // Загрузка раздела при запуске
 document.addEventListener('DOMContentLoaded', () => {
     loadSection('workouts');
+    setupEventListeners();
 });
+
+// Настройка обработчиков событий
+function setupEventListeners() {
+    document.addEventListener('submit', function(e) {
+        if (e.target.id === 'profile-form') {
+            e.preventDefault();
+            saveProfile();
+        }
+    });
+}
 
 // Функция загрузки раздела
 function loadSection(sectionName) {
@@ -165,11 +176,12 @@ function loadTips() {
 
 // Вспомогательная функция для отправки данных боту
 async function sendDataToBot(data) {
+    if (!tg || typeof tg.sendData !== 'function') {
+        console.error('Telegram WebApp не инициализирован корректно');
+        return false;
+    }
+
     try {
-        if (!tg || typeof tg.sendData !== 'function') {
-            console.error('Telegram WebApp не инициализирован корректно');
-            return false;
-        }
         await tg.sendData(JSON.stringify(data));
         return true;
     } catch (error) {
@@ -195,27 +207,55 @@ function addMessageHandler(callback) {
     tg.WebApp.onEvent('message', messageHandler);
 }
 
+// Загрузка профиля
+async function loadProfile() {
+    try {
+        const success = await sendDataToBot({
+            action: 'get_profile'
+        });
+        
+        if (success) {
+            tg.WebApp.onEvent('message', function(message) {
+                try {
+                    const profile = JSON.parse(message.text);
+                    Object.keys(profile).forEach(key => {
+                        const input = document.getElementById(key);
+                        if (input) input.value = profile[key];
+                    });
+                } catch (e) {
+                    console.error('Ошибка при разборе данных профиля:', e);
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке профиля:', error);
+    }
+}
+
 // Сохранение профиля
-async function saveProfile(event) {
-    event.preventDefault();
-    
+async function saveProfile() {
     const formData = {
         action: 'save_profile',
         profile: {
-            name: document.getElementById('name').value,
-            age: parseInt(document.getElementById('age').value),
-            gender: document.getElementById('gender').value,
-            height: parseFloat(document.getElementById('height').value),
-            weight: parseFloat(document.getElementById('weight').value),
-            goal: document.getElementById('goal').value
+            name: document.getElementById('name').value || '',
+            age: parseInt(document.getElementById('age').value) || 0,
+            gender: document.getElementById('gender').value || 'male',
+            height: parseFloat(document.getElementById('height').value) || 0,
+            weight: parseFloat(document.getElementById('weight').value) || 0,
+            goal: document.getElementById('goal').value || 'maintenance'
         }
     };
 
-    const success = await sendDataToBot(formData);
-    if (success) {
-        tg.showAlert('Профиль успешно сохранен!');
-    } else {
-        tg.showAlert('Ошибка при сохранении профиля');
+    try {
+        const success = await sendDataToBot(formData);
+        if (success) {
+            tg.showAlert('Профиль успешно сохранен!');
+        } else {
+            tg.showAlert('Ошибка при сохранении профиля');
+        }
+    } catch (error) {
+        console.error('Ошибка при сохранении профиля:', error);
+        tg.showAlert('Произошла ошибка при сохранении');
     }
 }
 
@@ -241,29 +281,4 @@ function startNewWorkout() {
             </div>
         </div>
     `;
-}
-
-// Загрузка профиля
-async function loadProfile() {
-    try {
-        const success = await sendDataToBot({
-            action: 'get_profile'
-        });
-        
-        if (success) {
-            addMessageHandler((message) => {
-                try {
-                    const profile = JSON.parse(message.text);
-                    Object.keys(profile).forEach(key => {
-                        const input = document.getElementById(key);
-                        if (input) input.value = profile[key];
-                    });
-                } catch (e) {
-                    console.error('Ошибка при разборе данных профиля:', e);
-                }
-            });
-        }
-    } catch (error) {
-        console.error('Ошибка при загрузке профиля:', error);
-    }
 } 
