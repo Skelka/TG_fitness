@@ -848,100 +848,43 @@ input:focus, select:focus {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    width: 100%;
 }
 
 .checkbox-label {
+    flex: 1;
+    min-width: fit-content;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
+    justify-content: center;
+    padding: 8px 16px;
     background: var(--tg-theme-bg-color);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s;
+    text-align: center;
 }
 
 .checkbox-label input {
     display: none;
 }
 
-.checkbox-label input:checked + span {
-    color: var(--tg-theme-button-text-color);
-}
-
-.checkbox-label input:checked {
-    background: var(--tg-theme-button-color);
+.checkbox-label span {
+    white-space: nowrap;
+    transition: all 0.3s;
 }
 
 /* Стили для выбранного состояния */
-.checkbox-label input:checked + span,
-.checkbox-label input[type="radio"]:checked + span {
-    color: var(--tg-theme-button-text-color);
-}
-
-.checkbox-label input:checked,
-.checkbox-label input[type="radio"]:checked {
-    background: var(--tg-theme-button-color);
-}
-
-/* Стиль для контейнера метки при выбранном состоянии */
-.checkbox-label input:checked ~ span,
-.checkbox-label input[type="radio"]:checked ~ span {
+.checkbox-label input:checked ~ span {
     background: var(--tg-theme-button-color);
     color: var(--tg-theme-button-text-color);
-}
-
-/* Обновляем стиль для самой метки */
-.checkbox-label span {
-    padding: 4px 8px;
+    padding: 4px 12px;
     border-radius: 6px;
-    transition: all 0.3s;
 }
 
+/* Убираем старые стили для equipment-grid */
 .equipment-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-top: 8px;
-}
-
-.equipment-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 12px;
-    background: var(--tg-theme-bg-color);
-    border-radius: 12px;
-    cursor: pointer;
-    text-align: center;
-}
-
-.equipment-item input {
     display: none;
-}
-
-.equipment-icon {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: 10px;
-    transition: all 0.3s;
-}
-
-.equipment-item input:checked + .equipment-icon {
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-}
-
-.equipment-label {
-    font-size: 14px;
-    text-align: center;
-    line-height: 1.2;
-    margin-top: 4px;
 }
 
 input[type="number"] {
