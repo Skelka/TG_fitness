@@ -14,12 +14,21 @@ mainButton.hide();
 async function loadProfile() {
     try {
         // Пробуем загрузить данные из CloudStorage
-        const result = await tg.CloudStorage.getItem('profile');
+        const result = await new Promise((resolve) => {
+            tg.CloudStorage.getItem('profile', (error, value) => {
+                if (error) {
+                    console.error('Ошибка при получении данных:', error);
+                    resolve(null);
+                } else {
+                    resolve(value);
+                }
+            });
+        });
+
         console.log('Результат из CloudStorage:', result);
         
-        // Проверяем, что получили значение
-        if (result && result.value) {
-            const profile = JSON.parse(result.value);
+        if (result) {
+            const profile = JSON.parse(result);
             console.log('Загружены данные из CloudStorage:', profile);
             
             // Заполняем форму
@@ -62,7 +71,16 @@ async function saveProfile() {
         console.log('Подготовленные данные для сохранения:', profileData);
 
         // Сохраняем в CloudStorage
-        const result = await tg.CloudStorage.setItem('profile', JSON.stringify(profileData));
+        const result = await new Promise((resolve, reject) => {
+            tg.CloudStorage.setItem('profile', JSON.stringify(profileData), (error, success) => {
+                if (error || !success) {
+                    reject(error || new Error('Failed to save data'));
+                } else {
+                    resolve(success);
+                }
+            });
+        });
+
         console.log('Результат сохранения в CloudStorage:', result);
 
         // Отправляем уведомление боту о том, что данные обновлены
@@ -167,12 +185,21 @@ function initApp() {
     async function loadProfile() {
         try {
             // Пробуем загрузить данные из CloudStorage
-            const result = await tg.CloudStorage.getItem('profile');
+            const result = await new Promise((resolve) => {
+                tg.CloudStorage.getItem('profile', (error, value) => {
+                    if (error) {
+                        console.error('Ошибка при получении данных:', error);
+                        resolve(null);
+                    } else {
+                        resolve(value);
+                    }
+                });
+            });
+
             console.log('Результат из CloudStorage:', result);
             
-            // Проверяем, что получили значение
-            if (result && result.value) {
-                const profile = JSON.parse(result.value);
+            if (result) {
+                const profile = JSON.parse(result);
                 console.log('Загружены данные из CloudStorage:', profile);
                 
                 // Заполняем форму
@@ -215,7 +242,16 @@ function initApp() {
             console.log('Подготовленные данные для сохранения:', profileData);
 
             // Сохраняем в CloudStorage
-            const result = await tg.CloudStorage.setItem('profile', JSON.stringify(profileData));
+            const result = await new Promise((resolve, reject) => {
+                tg.CloudStorage.setItem('profile', JSON.stringify(profileData), (error, success) => {
+                    if (error || !success) {
+                        reject(error || new Error('Failed to save data'));
+                    } else {
+                        resolve(success);
+                    }
+                });
+            });
+
             console.log('Результат сохранения в CloudStorage:', result);
 
             // Отправляем уведомление боту о том, что данные обновлены
