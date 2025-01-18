@@ -74,7 +74,9 @@ async function loadProfile() {
         const formData = {
             action: 'get_profile'
         };
+        console.log('Отправка запроса на получение профиля:', formData);
         tg.sendData(JSON.stringify(formData));
+        console.log('Запрос отправлен');
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
         tg.showPopup({
@@ -87,6 +89,7 @@ async function loadProfile() {
 
 // Обработчик ответа от бота
 tg.onEvent('message', function(event) {
+    console.log('Сработал обработчик сообщений');
     console.log('Получено сообщение от бота:', event);
     try {
         const response = JSON.parse(event.text);
@@ -111,6 +114,11 @@ tg.onEvent('message', function(event) {
     } catch (error) {
         console.error('Ошибка при обработке ответа:', error);
     }
+});
+
+// Также добавим обработчик всех событий для отладки
+tg.onEvent('*', function(event) {
+    console.log('Получено событие:', event);
 });
 
 // Инициализация при загрузке
