@@ -14,19 +14,19 @@
         </div>
         
         <nav class="bottom-nav">
-            <button class="nav-btn" data-section="workouts">
+            <button onclick="loadSection('workouts')" class="nav-btn">
                 <i class="icon-workout"></i>
                 Тренировки
             </button>
-            <button class="nav-btn" data-section="stats">
+            <button onclick="loadSection('stats')" class="nav-btn">
                 <i class="icon-stats"></i>
                 Статистика
             </button>
-            <button class="nav-btn" data-section="tips">
+            <button onclick="loadSection('tips')" class="nav-btn">
                 <i class="icon-tips"></i>
                 Советы
             </button>
-            <button class="nav-btn" data-section="profile">
+            <button onclick="loadSection('profile')" class="nav-btn">
                 <i class="icon-profile"></i>
                 Профиль
             </button>
@@ -37,7 +37,7 @@
     <template id="workouts-template">
         <div class="section workouts-section">
             <h2>Тренировки</h2>
-            <button class="add-btn" id="start-workout-btn">Начать тренировку</button>
+            <button class="add-btn" onclick="startNewWorkout()">Начать тренировку</button>
             <div class="workout-history" id="workout-history">
                 <!-- История тренировок будет загружена динамически -->
             </div>
@@ -70,7 +70,7 @@
     <template id="profile-template">
         <div class="section profile-section">
             <h2>Профиль</h2>
-            <form id="profile-form">
+            <form id="profile-form" onsubmit="saveProfile(event)">
                 <div class="input-group">
                     <label for="name">Имя</label>
                     <input type="text" id="name" required>

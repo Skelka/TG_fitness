@@ -5,43 +5,47 @@ tg.expand();
 // Текущий активный раздел
 let currentSection = 'workouts';
 
-// Вспомогательная функция для отправки данных боту
-async function sendDataToBot(data) {
-    try {
-        await tg.sendData(JSON.stringify(data));
-        return true;
-    } catch (error) {
-        console.error('Ошибка при отправке данных:', error);
-        return false;
-    }
-}
+// Загрузка раздела при запуске
+document.addEventListener('DOMContentLoaded', () => {
+    loadSection('workouts');
+});
 
-// Загрузка профиля
-async function loadProfile() {
-    try {
-        const success = await sendDataToBot({
-            action: 'get_profile'
-        });
-        
-        if (success) {
-            const messageHandler = function(message) {
-                try {
-                    const profile = JSON.parse(message.text);
-                    Object.keys(profile).forEach(key => {
-                        const input = document.getElementById(key);
-                        if (input) input.value = profile[key];
-                    });
-                    tg.WebApp.offEvent('message', messageHandler);
-                } catch (e) {
-                    console.error('Ошибка при разборе данных профиля:', e);
-                }
-            };
-            
-            tg.WebApp.onEvent('message', messageHandler);
-        }
-    } catch (error) {
-        console.error('Ошибка при загрузке профиля:', error);
+// Функция загрузки раздела
+function loadSection(sectionName) {
+    // Обновляем активную кнопку навигации
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[onclick="loadSection('${sectionName}')"]`).classList.add('active');
+
+    // Получаем шаблон раздела
+    const template = document.getElementById(`${sectionName}-template`);
+    const content = document.getElementById('main-content');
+    
+    // Клонируем содержимое шаблона
+    const clone = template.content.cloneNode(true);
+    
+    // Очищаем и добавляем новый контент с анимацией
+    content.innerHTML = '';
+    content.appendChild(clone);
+    
+    // Загружаем данные для раздела
+    switch(sectionName) {
+        case 'workouts':
+            loadWorkouts();
+            break;
+        case 'stats':
+            loadStats();
+            break;
+        case 'tips':
+            loadTips();
+            break;
+        case 'profile':
+            loadProfile();
+            break;
     }
+    
+    currentSection = sectionName;
 }
 
 // Загрузка тренировок
@@ -65,6 +69,7 @@ async function loadWorkouts() {
                             <div>Сожжено калорий: ${workout.calories_burned}</div>
                         </div>
                     `).join('') || '<p>Нет записей о тренировках</p>';
+                    // Удаляем обработчик после успешного получения данных
                     tg.WebApp.offEvent('message', messageHandler);
                 } catch (e) {
                     console.error('Ошибка при разборе данных тренировок:', e);
@@ -103,6 +108,7 @@ async function loadStats() {
                             `).join('')}
                         </div>
                     `;
+                    // Удаляем обработчик после успешного получения данных
                     tg.WebApp.offEvent('message', messageHandler);
                 } catch (e) {
                     console.error('Ошибка при разборе данных веса:', e);
@@ -119,6 +125,7 @@ async function loadStats() {
 // Загрузка советов
 function loadTips() {
     const tipsContainer = document.getElementById('tips-container');
+    // Временные статические советы
     const tips = [
         {
             category: "Питание",
@@ -146,6 +153,17 @@ function loadTips() {
     `).join('');
 }
 
+// Вспомогательная функция для отправки данных боту
+async function sendDataToBot(data) {
+    try {
+        await tg.sendData(JSON.stringify(data));
+        return true;
+    } catch (error) {
+        console.error('Ошибка при отправке данных:', error);
+        return false;
+    }
+}
+
 // Сохранение профиля
 async function saveProfile(event) {
     event.preventDefault();
@@ -170,45 +188,6 @@ async function saveProfile(event) {
     }
 }
 
-// Функция загрузки раздела
-function loadSection(sectionName) {
-    // Обновляем активную кнопку навигации
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    // Ищем кнопку по data-атрибуту вместо onclick
-    document.querySelector(`.nav-btn[data-section="${sectionName}"]`).classList.add('active');
-
-    // Получаем шаблон раздела
-    const template = document.getElementById(`${sectionName}-template`);
-    const content = document.getElementById('main-content');
-    
-    // Клонируем содержимое шаблона
-    const clone = template.content.cloneNode(true);
-    
-    // Очищаем и добавляем новый контент с анимацией
-    content.innerHTML = '';
-    content.appendChild(clone);
-    
-    // Загружаем данные для раздела
-    switch(sectionName) {
-        case 'workouts':
-            loadWorkouts();
-            break;
-        case 'stats':
-            loadStats();
-            break;
-        case 'tips':
-            loadTips();
-            break;
-        case 'profile':
-            loadProfile();
-            break;
-    }
-    
-    currentSection = sectionName;
-}
-
 // Начало новой тренировки
 function startNewWorkout() {
     const workoutTypes = [
@@ -223,7 +202,7 @@ function startNewWorkout() {
             <h2>Выберите тип тренировки</h2>
             <div class="workout-types">
                 ${workoutTypes.map(type => `
-                    <button class="workout-type-btn" data-workout-type="${type.id}">
+                    <button onclick="selectWorkout('${type.id}')" class="workout-type-btn">
                         <span class="workout-icon">${type.icon}</span>
                         <span class="workout-name">${type.name}</span>
                     </button>
@@ -231,46 +210,33 @@ function startNewWorkout() {
             </div>
         </div>
     `;
-
-    // Добавляем обработчики для кнопок выбора типа тренировки
-    document.querySelectorAll('.workout-type-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            selectWorkout(btn.dataset.workoutType);
-        });
-    });
 }
 
-// Добавим функцию selectWorkout, если её еще нет
-function selectWorkout(workoutType) {
-    // Здесь будет логика выбора тренировки
-    console.log('Выбран тип тренировки:', workoutType);
-    // Можно добавить переход к форме создания тренировки
-}
-
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    // Добавляем обработчики для навигации
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            loadSection(btn.dataset.section);
+async function loadProfile() {
+    try {
+        const success = await sendDataToBot({
+            action: 'get_profile'
         });
-    });
-
-    // Добавляем обработчик для формы профиля
-    document.addEventListener('submit', (e) => {
-        if (e.target.id === 'profile-form') {
-            e.preventDefault();
-            saveProfile(e);
+        
+        if (success) {
+            // Устанавливаем обработчик сообщений только один раз
+            const messageHandler = function(message) {
+                try {
+                    const profile = JSON.parse(message.text);
+                    Object.keys(profile).forEach(key => {
+                        const input = document.getElementById(key);
+                        if (input) input.value = profile[key];
+                    });
+                    // Удаляем обработчик после успешного получения данных
+                    tg.WebApp.offEvent('message', messageHandler);
+                } catch (e) {
+                    console.error('Ошибка при разборе данных профиля:', e);
+                }
+            };
+            
+            tg.WebApp.onEvent('message', messageHandler);
         }
-    });
-
-    // Добавляем обработчик для кнопки начала тренировки
-    document.addEventListener('click', (e) => {
-        if (e.target.id === 'start-workout-btn') {
-            startNewWorkout();
-        }
-    });
-
-    // Загружаем начальный раздел
-    loadSection('workouts');
-}); 
+    } catch (error) {
+        console.error('Ошибка при загрузке профиля:', error);
+    }
+} 
