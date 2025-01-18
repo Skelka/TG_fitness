@@ -1,9 +1,37 @@
 // Инициализация Telegram WebApp
 const tg = window.Telegram.WebApp;
 tg.expand();
+tg.enableClosingConfirmation();
+
+// Функция для отправки данных боту
+function sendToBot(data, shouldClose = false) {
+    try {
+        // Добавляем информацию о платформе
+        const finalData = {
+            ...data,
+            platform: tg.platform,
+            version: tg.version
+        };
+        
+        console.log('Отправка данных боту:', finalData);
+        tg.sendData(JSON.stringify(finalData));
+        
+        if (shouldClose && tg.platform === 'web') {
+            setTimeout(() => tg.close(), 1000);
+        }
+    } catch (error) {
+        console.error('Ошибка при отправке данных:', error);
+        tg.showPopup({
+            title: 'Ошибка',
+            message: 'Не удалось отправить данные',
+            buttons: [{type: 'ok'}]
+        });
+    }
+}
 
 // Обработчик событий от бота
 tg.onEvent('message', function(event) {
+    console.log('Получено событие от бота:', event);
     try {
         const data = JSON.parse(event.data);
         console.log('Получены данные от бота:', data);
@@ -84,6 +112,24 @@ function setupEventListeners() {
             saveProfile();
         }
     });
+
+    // Добавляем обработчик для скрытия клавиатуры
+    document.addEventListener('click', function(e) {
+        if (!e.target.matches('input') && !e.target.matches('select')) {
+            // Скрываем клавиатуру, убирая фокус с активного элемента
+            if (document.activeElement instanceof HTMLInputElement || 
+                document.activeElement instanceof HTMLSelectElement) {
+                document.activeElement.blur();
+            }
+        }
+    });
+
+    // Добавляем обработчик для input type="number"
+    document.addEventListener('focus', function(e) {
+        if (e.target.type === 'number') {
+            e.target.select(); // Выделяем текущее значение при фокусе
+        }
+    }, true);
 }
 
 // Функция загрузки раздела
@@ -130,14 +176,6 @@ function loadSection(sectionName) {
     }
     
     currentSection = sectionName;
-}
-
-// Функция для отправки данных боту
-function sendToBot(data, shouldClose = false) {
-    tg.sendData(JSON.stringify(data));
-    if (shouldClose) {
-        tg.close();
-    }
 }
 
 // Загрузка тренировок
