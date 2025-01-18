@@ -13,14 +13,11 @@ mainButton.hide();
 // Загрузка данных профиля
 async function loadProfile() {
     try {
-        // Получаем параметр data из URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const encodedData = urlParams.get('data');
-        
-        if (encodedData) {
-            // Декодируем и парсим JSON
-            const profile = JSON.parse(decodeURIComponent(encodedData));
-            console.log('Загружены данные профиля:', profile);
+        // Сначала пробуем загрузить из CloudStorage
+        const storedData = await tg.CloudStorage.getItem('profile');
+        if (storedData) {
+            const profile = JSON.parse(storedData);
+            console.log('Загружены данные из CloudStorage:', profile);
             
             // Заполняем форму
             document.getElementById('name').value = profile.name || '';
@@ -30,7 +27,28 @@ async function loadProfile() {
             document.getElementById('weight').value = profile.weight || '';
             document.getElementById('goal').value = profile.goal || 'maintenance';
             
-            if (profile.name || profile.age || profile.height || profile.weight) {
+            tg.HapticFeedback.notificationOccurred('success');
+        } else {
+            // Если в CloudStorage нет данных, пробуем загрузить из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedData = urlParams.get('data');
+            
+            if (encodedData) {
+                const profile = JSON.parse(decodeURIComponent(encodedData));
+                console.log('Загружены данные из URL:', profile);
+                
+                // Заполняем форму и сохраняем в CloudStorage
+                document.getElementById('name').value = profile.name || '';
+                document.getElementById('age').value = profile.age || '';
+                document.getElementById('gender').value = profile.gender || 'male';
+                document.getElementById('height').value = profile.height || '';
+                document.getElementById('weight').value = profile.weight || '';
+                document.getElementById('goal').value = profile.goal || 'maintenance';
+                
+                // Сохраняем в CloudStorage
+                await tg.CloudStorage.setItem('profile', JSON.stringify(profile));
+                console.log('Данные из URL сохранены в CloudStorage');
+                
                 tg.HapticFeedback.notificationOccurred('success');
             }
         }
@@ -54,19 +72,19 @@ async function saveProfile() {
             goal: document.getElementById('goal').value || 'maintenance'
         };
 
-        console.log('Подготовленные данные для отправки:', profileData);
+        console.log('Подготовленные данные для сохранения:', profileData);
 
+        // Сохраняем в CloudStorage
+        await tg.CloudStorage.setItem('profile', JSON.stringify(profileData));
+        console.log('Данные сохранены в CloudStorage');
+
+        // Отправляем уведомление боту о том, что данные обновлены
         const sendData = {
-            action: 'save_profile',
-            profile: profileData
+            action: 'profile_updated',
+            timestamp: Date.now()
         };
-        console.log('Отправляем данные:', sendData);
-
-        // Отправляем данные через WebApp
+        
         tg.sendData(JSON.stringify(sendData));
-        console.log('Данные отправлены');
-
-        // Только вибрация при успехе
         tg.HapticFeedback.notificationOccurred('success');
 
     } catch (error) {
