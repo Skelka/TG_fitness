@@ -3,8 +3,10 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.enableClosingConfirmation();
 
-// Настройка MainButton
+// Настройка кнопок
 const mainButton = tg.MainButton;
+const backButton = tg.BackButton;
+
 mainButton.setText('Сохранить профиль');
 mainButton.hide();
 
@@ -60,14 +62,18 @@ async function saveProfile() {
         };
         console.log('Отправляем данные:', sendData);
 
-        // Отправляем данные через инлайн режим
-        const dataString = JSON.stringify(sendData);
-        tg.switchInlineQuery(dataString, ['users']);
+        // Отправляем данные через WebApp
+        tg.sendData(JSON.stringify(sendData));
+        console.log('Данные отправлены');
+
+        // Показываем кнопку "Назад"
+        backButton.show();
+        mainButton.hide();
 
         tg.HapticFeedback.notificationOccurred('success');
         tg.showPopup({
-            title: 'Данные отправлены',
-            message: 'Пожалуйста, отправьте сообщение в чат',
+            title: 'Успех',
+            message: 'Данные профиля сохранены',
             buttons: [{type: 'ok'}]
         });
     } catch (error) {
@@ -88,10 +94,10 @@ function setupEventListeners() {
     const formInputs = form.querySelectorAll('input, select');
     formInputs.forEach(input => {
         input.addEventListener('input', () => {
-            // Показываем кнопку, если есть какие-то данные
             const hasData = Array.from(formInputs).some(input => input.value);
             if (hasData) {
                 mainButton.show();
+                backButton.hide();
             } else {
                 mainButton.hide();
             }
@@ -118,6 +124,11 @@ function setupEventListeners() {
 
     // Обработчик нажатия на MainButton
     mainButton.onClick(saveProfile);
+
+    // Обработчик нажатия на BackButton
+    backButton.onClick(() => {
+        tg.close();
+    });
 }
 
 // Инициализация при загрузке
