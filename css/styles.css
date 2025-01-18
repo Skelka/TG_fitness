@@ -83,29 +83,40 @@ input:focus, select:focus {
 .tabs {
     display: flex;
     justify-content: space-around;
-    margin-bottom: 20px;
+    margin: -16px -16px 20px -16px;
     background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-    padding: 10px;
-    border-radius: 10px;
+    padding: 12px;
+    position: sticky;
+    top: -16px;
+    z-index: 100;
+    backdrop-filter: blur(10px);
 }
 
 .tab-btn {
-    padding: 8px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 12px;
     border: none;
     background: none;
     color: var(--tg-theme-text-color, #000);
-    font-size: 14px;
+    font-size: 12px;
     cursor: pointer;
     opacity: 0.7;
-    transition: opacity 0.3s;
+    transition: all 0.3s;
+    gap: 4px;
+    border-radius: 8px;
+}
+
+.tab-icon {
+    font-size: 24px;
+    margin-bottom: 2px;
 }
 
 .tab-btn.active {
     opacity: 1;
-    font-weight: bold;
     background: var(--tg-theme-button-color, #40a7e3);
     color: var(--tg-theme-button-text-color, #fff);
-    border-radius: 5px;
 }
 
 .tab-content {
@@ -117,31 +128,81 @@ input:focus, select:focus {
 }
 
 .workout-card {
+    display: flex;
+    align-items: center;
     background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    gap: 16px;
+}
+
+.workout-icon {
+    font-size: 32px;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--tg-theme-bg-color, #fff);
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.workout-info {
+    flex-grow: 1;
+}
+
+.workout-info h3 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+}
+
+.workout-info p {
+    margin: 0 0 12px 0;
+    color: var(--tg-theme-hint-color, #999);
+    font-size: 14px;
 }
 
 .start-workout-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     background: var(--tg-theme-button-color, #40a7e3);
     color: var(--tg-theme-button-text-color, #fff);
     border: none;
     padding: 8px 16px;
-    border-radius: 5px;
-    margin-top: 10px;
+    border-radius: 8px;
+    font-size: 14px;
     cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.start-workout-btn:active {
+    opacity: 0.8;
+}
+
+.btn-icon {
+    font-size: 16px;
 }
 
 .stats-container {
     display: grid;
-    gap: 15px;
+    gap: 12px;
 }
 
 .stat-card {
     background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-    padding: 15px;
-    border-radius: 10px;
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.stat-card h3 {
+    margin: 0 0 12px 0;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .chart-placeholder {
@@ -156,7 +217,27 @@ input:focus, select:focus {
 
 .tip-card {
     background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.tip-card:active {
+    transform: scale(0.98);
+}
+
+.tip-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tip-card p {
+    margin: 0;
+    color: var(--tg-theme-hint-color, #999);
+    font-size: 14px;
 } 

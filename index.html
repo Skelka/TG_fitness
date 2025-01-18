@@ -10,64 +10,58 @@
 <body>
     <div class="container">
         <nav class="tabs">
-            <button class="tab-btn active" data-tab="profile">Профиль</button>
-            <button class="tab-btn" data-tab="workouts">Тренировки</button>
-            <button class="tab-btn" data-tab="stats">Статистика</button>
-            <button class="tab-btn" data-tab="tips">Советы</button>
+            <button class="tab-btn active" data-tab="workouts">
+                <i class="tab-icon">🏋️</i>
+                <span>Тренировки</span>
+            </button>
+            <button class="tab-btn" data-tab="stats">
+                <i class="tab-icon">📊</i>
+                <span>Статистика</span>
+            </button>
+            <button class="tab-btn" data-tab="tips">
+                <i class="tab-icon">💡</i>
+                <span>Советы</span>
+            </button>
+            <button class="tab-btn" data-tab="profile">
+                <i class="tab-icon">👤</i>
+                <span>Профиль</span>
+            </button>
         </nav>
 
-        <div class="tab-content active" id="profile">
-            <form id="profile-form" class="profile-form">
-                <div class="input-group">
-                    <label for="name">Имя</label>
-                    <input type="text" id="name" name="name" autocomplete="name" required>
-                </div>
-                <div class="input-group">
-                    <label for="age">Возраст</label>
-                    <input type="number" id="age" name="age" autocomplete="off" required>
-                </div>
-                <div class="input-group">
-                    <label for="gender">Пол</label>
-                    <select id="gender" name="gender" autocomplete="sex" required>
-                        <option value="male">Мужской</option>
-                        <option value="female">Женский</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label for="height">Рост (см)</label>
-                    <input type="number" id="height" name="height" autocomplete="off" required>
-                </div>
-                <div class="input-group">
-                    <label for="weight">Вес (кг)</label>
-                    <input type="number" id="weight" name="weight" autocomplete="off" required>
-                </div>
-                <div class="input-group">
-                    <label for="goal">Цель</label>
-                    <select id="goal" name="goal" autocomplete="off" required>
-                        <option value="weight_loss">Похудение</option>
-                        <option value="muscle_gain">Набор массы</option>
-                        <option value="maintenance">Поддержание формы</option>
-                    </select>
-                </div>
-            </form>
-        </div>
-
-        <div class="tab-content" id="workouts">
+        <div class="tab-content active" id="workouts">
             <div class="workouts-list">
                 <div class="workout-card">
-                    <h3>Кардио</h3>
-                    <p>30 минут бега</p>
-                    <button class="start-workout-btn">Начать</button>
+                    <div class="workout-icon">🏃</div>
+                    <div class="workout-info">
+                        <h3>Кардио</h3>
+                        <p>30 минут бега</p>
+                        <button class="start-workout-btn">
+                            <i class="btn-icon">▶️</i>
+                            <span>Начать</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="workout-card">
-                    <h3>Силовая</h3>
-                    <p>Тренировка верхней части тела</p>
-                    <button class="start-workout-btn">Начать</button>
+                    <div class="workout-icon">💪</div>
+                    <div class="workout-info">
+                        <h3>Силовая</h3>
+                        <p>Тренировка верхней части тела</p>
+                        <button class="start-workout-btn">
+                            <i class="btn-icon">▶️</i>
+                            <span>Начать</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="workout-card">
-                    <h3>Растяжка</h3>
-                    <p>15 минут растяжки</p>
-                    <button class="start-workout-btn">Начать</button>
+                    <div class="workout-icon">🧘</div>
+                    <div class="workout-info">
+                        <h3>Растяжка</h3>
+                        <p>15 минут растяжки</p>
+                        <button class="start-workout-btn">
+                            <i class="btn-icon">▶️</i>
+                            <span>Начать</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
