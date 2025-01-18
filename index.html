@@ -216,37 +216,121 @@
         </div>
 
         <div class="tab-content" id="profile">
+            <div class="profile-header">
+                <div class="profile-photo">
+                    <img src="https://via.placeholder.com/100" alt="Profile photo" id="profile-photo">
+                    <!-- Фото будем брать из Telegram -->
+                </div>
+                <div class="profile-info">
+                    <h3 id="profile-name">Имя пользователя</h3>
+                    <!-- Имя будем брать из Telegram -->
+                    <span class="profile-status">Новичок</span>
+                </div>
+            </div>
+
             <form id="profile-form" class="profile-form">
-                <div class="input-group">
-                    <label for="name">Имя</label>
-                    <input type="text" id="name" name="name" autocomplete="name" required>
+                <div class="form-section">
+                    <h4>Основные параметры</h4>
+                    <div class="input-group-row">
+                        <div class="input-group">
+                            <label for="age">Возраст</label>
+                            <input type="number" id="age" name="age" autocomplete="off" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="gender">Пол</label>
+                            <select id="gender" name="gender" required>
+                                <option value="male">Мужской</option>
+                                <option value="female">Женский</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group-row">
+                        <div class="input-group">
+                            <label for="height">Рост (см)</label>
+                            <input type="number" id="height" name="height" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="weight">Вес (кг)</label>
+                            <input type="number" id="weight" name="weight" required>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label for="age">Возраст</label>
-                    <input type="number" id="age" name="age" autocomplete="off" required>
+
+                <div class="form-section">
+                    <h4>Цели и предпочтения</h4>
+                    <div class="input-group">
+                        <label for="goal">Основная цель</label>
+                        <select id="goal" name="goal" required>
+                            <option value="weight_loss">Похудение</option>
+                            <option value="muscle_gain">Набор массы</option>
+                            <option value="maintenance">Поддержание формы</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Место для тренировок</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="workout_place" value="home">
+                                <span>Дома</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="workout_place" value="gym">
+                                <span>В зале</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="workout_place" value="outdoor">
+                                <span>На улице</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label for="gender">Пол</label>
-                    <select id="gender" name="gender" autocomplete="sex" required>
-                        <option value="male">Мужской</option>
-                        <option value="female">Женский</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label for="height">Рост (см)</label>
-                    <input type="number" id="height" name="height" autocomplete="off" required>
-                </div>
-                <div class="input-group">
-                    <label for="weight">Вес (кг)</label>
-                    <input type="number" id="weight" name="weight" autocomplete="off" required>
-                </div>
-                <div class="input-group">
-                    <label for="goal">Цель</label>
-                    <select id="goal" name="goal" autocomplete="off" required>
-                        <option value="weight_loss">Похудение</option>
-                        <option value="muscle_gain">Набор массы</option>
-                        <option value="maintenance">Поддержание формы</option>
-                    </select>
+
+                <div class="form-section">
+                    <h4>Доступное оборудование</h4>
+                    <div class="equipment-grid">
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="dumbbells">
+                            <span class="equipment-icon">
+                                <span class="material-symbols-rounded">exercise</span>
+                            </span>
+                            <span class="equipment-label">Гантели</span>
+                        </label>
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="barbell">
+                            <span class="equipment-icon">
+                                <span class="material-symbols-rounded">fitness_center</span>
+                            </span>
+                            <span class="equipment-label">Штанга</span>
+                        </label>
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="kettlebell">
+                            <span class="equipment-icon">
+                                <span class="material-symbols-rounded">sports_gymnastics</span>
+                            </span>
+                            <span class="equipment-label">Гири</span>
+                        </label>
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="mat">
+                            <span class="equipment-icon">
+                                <span class="material-symbols-rounded">floor_mat</span>
+                            </span>
+                            <span class="equipment-label">Коврик</span>
+                        </label>
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="resistance_bands">
+                            <span class="equipment-icon">
+                                <span class="material-symbols-rounded">line_curve</span>
+                            </span>
+                            <span class="equipment-label">Резинки</span>
+                        </label>
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="pull_up_bar">
+                            <span class="equipment-icon">
+                                <span class="material-symbols-rounded">horizontal_rule</span>
+                            </span>
+                            <span class="equipment-label">Турник</span>
+                        </label>
+                    </div>
                 </div>
             </form>
         </div>

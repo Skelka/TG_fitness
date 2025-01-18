@@ -47,26 +47,42 @@ async function setStorageItem(key, value) {
 // Загрузка данных профиля
 async function loadProfile() {
     try {
+        // Получаем данные пользователя из Telegram
+        const user = tg.initDataUnsafe?.user;
+        if (user) {
+            document.getElementById('profile-name').textContent = user.first_name;
+            // Если есть фото профиля
+            if (user.photo_url) {
+                document.getElementById('profile-photo').src = user.photo_url;
+            }
+        }
+
+        // Загружаем сохраненные данные профиля
         const result = await getStorageItem('profile');
-        console.log('Результат из CloudStorage:', result);
-        
         if (result) {
             const profile = JSON.parse(result);
-            console.log('Загружены данные из CloudStorage:', profile);
-            window.profileData = profile;
-
-            if (document.getElementById('profile').classList.contains('active')) {
-                fillProfileForm(profile);
-            }
-            
-            tg.HapticFeedback.notificationOccurred('success');
-        } else {
-            console.log('Нет сохраненных данных в CloudStorage');
+            fillProfileForm(profile);
+            updateProfileStatus(profile);
         }
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
         showError(error);
     }
+}
+
+// Функция обновления статуса профиля
+function updateProfileStatus(profile) {
+    const statusElement = document.querySelector('.profile-status');
+    if (!statusElement) return;
+
+    // Определяем статус на основе заполненности профиля и активности
+    let status = 'Новичок';
+    if (profile.completedWorkouts > 20) {
+        status = 'Продвинутый';
+    } else if (profile.completedWorkouts > 5) {
+        status = 'Опытный';
+    }
+    statusElement.textContent = status;
 }
 
 // Сохранение профиля
@@ -75,38 +91,25 @@ async function saveProfile() {
         mainButton.setText('Сохранение...');
         mainButton.showProgress();
 
+        const form = document.getElementById('profile-form');
+        const formData = new FormData(form);
+
         const profileData = {
-            name: document.getElementById('name').value || '',
-            age: parseInt(document.getElementById('age').value) || 0,
-            gender: document.getElementById('gender').value || 'male',
-            height: parseFloat(document.getElementById('height').value) || 0,
-            weight: parseFloat(document.getElementById('weight').value) || 0,
-            goal: document.getElementById('goal').value || 'maintenance',
+            age: parseInt(formData.get('age')) || 0,
+            gender: formData.get('gender'),
+            height: parseFloat(formData.get('height')) || 0,
+            weight: parseFloat(formData.get('weight')) || 0,
+            goal: formData.get('goal'),
+            workoutPlaces: formData.getAll('workout_place'),
+            equipment: formData.getAll('equipment'),
             lastUpdated: Date.now()
         };
 
-        // Загружаем историю веса
-        let weightHistory = [];
-        const storedHistory = await getStorageItem('weightHistory');
-        if (storedHistory) {
-            weightHistory = JSON.parse(storedHistory);
-        }
-
-        // Добавляем новую запись веса
-        weightHistory.push({
-            weight: profileData.weight,
-            date: Date.now()
-        });
-
         // Сохраняем данные
         await setStorageItem('profile', JSON.stringify(profileData));
-        await setStorageItem('weightHistory', JSON.stringify(weightHistory));
 
         // Обновляем UI
-        window.profileData = profileData;
-        if (document.getElementById('stats').classList.contains('active')) {
-            updateWeightChart(weightHistory);
-        }
+        updateProfileStatus(profileData);
 
         // Показываем успешное сохранение
         tg.HapticFeedback.notificationOccurred('success');
