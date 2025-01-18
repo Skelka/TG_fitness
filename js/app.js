@@ -3,7 +3,56 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.enableClosingConfirmation();
 
-// Сохранение профиля
+// Настройка MainButton для загрузки профиля
+const mainButton = window.Telegram.WebApp.MainButton;
+mainButton.setText('Получить данные профиля');
+mainButton.show();
+
+// Загрузка данных профиля
+function loadProfile() {
+    try {
+        // Запрашиваем данные у бота через API
+        fetch('/api/get_profile', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'User-Id': tg.initDataUnsafe.user.id
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Получены данные профиля:', data);
+            if (data.status === 'success' && data.profile) {
+                // Заполняем форму данными профиля
+                const profile = data.profile;
+                document.getElementById('name').value = profile.name || '';
+                document.getElementById('age').value = profile.age || '';
+                document.getElementById('gender').value = profile.gender || 'male';
+                document.getElementById('height').value = profile.height || '';
+                document.getElementById('weight').value = profile.weight || '';
+                document.getElementById('goal').value = profile.goal || 'maintenance';
+                
+                // Скрываем кнопку после загрузки данных
+                mainButton.hide();
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка при получении данных:', error);
+            tg.showPopup({
+                title: 'Ошибка',
+                message: 'Не удалось загрузить данные профиля',
+                buttons: [{type: 'ok'}]
+            });
+        });
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+}
+
+// Настраиваем обработчик нажатия на кнопку
+mainButton.onClick(loadProfile);
+
+// Сохранение профиля (отправка данных боту)
 async function saveProfile() {
     const formData = {
         action: 'save_profile',
@@ -18,19 +67,15 @@ async function saveProfile() {
     };
 
     try {
-        console.log('Отправка данных:', formData);
+        console.log('Отправка данных профиля:', formData);
         tg.sendData(JSON.stringify(formData));
         console.log('Данные успешно отправлены');
         
-        // Показываем сообщение об успехе
         tg.showPopup({
             title: 'Успех',
             message: 'Данные профиля сохранены',
             buttons: [{type: 'ok'}]
         });
-        
-        // Закрываем мини-приложение через секунду
-        setTimeout(() => tg.close(), 1000);
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
         tg.showPopup({
@@ -68,61 +113,9 @@ function setupEventListeners() {
     }, true);
 }
 
-// Загрузка данных профиля при старте
-async function loadProfile() {
-    try {
-        const formData = {
-            action: 'get_profile'
-        };
-        console.log('Отправка запроса на получение профиля:', formData);
-        tg.sendData(JSON.stringify(formData));
-        console.log('Запрос отправлен');
-    } catch (error) {
-        console.error('Ошибка при загрузке профиля:', error);
-        tg.showPopup({
-            title: 'Ошибка',
-            message: 'Не удалось загрузить данные профиля',
-            buttons: [{type: 'ok'}]
-        });
-    }
-}
-
-// Обработчик ответа от бота
-tg.onEvent('message', function(event) {
-    console.log('Сработал обработчик сообщений');
-    console.log('Получено сообщение от бота:', event);
-    try {
-        const response = JSON.parse(event.text);
-        console.log('Разобранный ответ:', response);
-        
-        if (response.status === 'success' && response.profile) {
-            // Заполняем форму данными профиля
-            const profile = response.profile;
-            document.getElementById('name').value = profile.name || '';
-            document.getElementById('age').value = profile.age || '';
-            document.getElementById('gender').value = profile.gender || 'male';
-            document.getElementById('height').value = profile.height || '';
-            document.getElementById('weight').value = profile.weight || '';
-            document.getElementById('goal').value = profile.goal || 'maintenance';
-        } else if (response.status === 'error') {
-            tg.showPopup({
-                title: 'Ошибка',
-                message: response.message || 'Произошла ошибка',
-                buttons: [{type: 'ok'}]
-            });
-        }
-    } catch (error) {
-        console.error('Ошибка при обработке ответа:', error);
-    }
-});
-
-// Также добавим обработчик всех событий для отладки
-tg.onEvent('*', function(event) {
-    console.log('Получено событие:', event);
-});
-
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
-    loadProfile(); // Загружаем данные при старте
+    // Автоматически загружаем данные при старте
+    loadProfile();
 }); 
