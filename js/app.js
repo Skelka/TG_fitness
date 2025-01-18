@@ -57,7 +57,7 @@ async function loadWorkouts() {
         });
         
         if (success) {
-            tg.WebApp.onEvent('message', function(message) {
+            const messageHandler = function(message) {
                 try {
                     const workouts = JSON.parse(message.text);
                     workoutHistory.innerHTML = workouts.map(workout => `
@@ -69,11 +69,15 @@ async function loadWorkouts() {
                             <div>Сожжено калорий: ${workout.calories_burned}</div>
                         </div>
                     `).join('') || '<p>Нет записей о тренировках</p>';
+                    // Удаляем обработчик после успешного получения данных
+                    tg.WebApp.offEvent('message', messageHandler);
                 } catch (e) {
                     console.error('Ошибка при разборе данных тренировок:', e);
                     workoutHistory.innerHTML = '<p>Ошибка при загрузке тренировок</p>';
                 }
-            });
+            };
+            
+            tg.WebApp.onEvent('message', messageHandler);
         }
     } catch (error) {
         workoutHistory.innerHTML = '<p>Ошибка при загрузке тренировок</p>';
@@ -86,13 +90,12 @@ async function loadStats() {
     const workoutStats = document.getElementById('workout-stats');
     
     try {
-        // Загрузка истории веса
         const success = await sendDataToBot({
             action: 'get_weight_history'
         });
         
         if (success) {
-            tg.WebApp.onEvent('message', function(message) {
+            const messageHandler = function(message) {
                 try {
                     const weightData = JSON.parse(message.text);
                     weightChart.innerHTML = `
@@ -105,10 +108,14 @@ async function loadStats() {
                             `).join('')}
                         </div>
                     `;
+                    // Удаляем обработчик после успешного получения данных
+                    tg.WebApp.offEvent('message', messageHandler);
                 } catch (e) {
                     console.error('Ошибка при разборе данных веса:', e);
                 }
-            });
+            };
+            
+            tg.WebApp.onEvent('message', messageHandler);
         }
     } catch (error) {
         weightChart.innerHTML = '<p>Ошибка при загрузке статистики</p>';
@@ -203,4 +210,33 @@ function startNewWorkout() {
             </div>
         </div>
     `;
+}
+
+async function loadProfile() {
+    try {
+        const success = await sendDataToBot({
+            action: 'get_profile'
+        });
+        
+        if (success) {
+            // Устанавливаем обработчик сообщений только один раз
+            const messageHandler = function(message) {
+                try {
+                    const profile = JSON.parse(message.text);
+                    Object.keys(profile).forEach(key => {
+                        const input = document.getElementById(key);
+                        if (input) input.value = profile[key];
+                    });
+                    // Удаляем обработчик после успешного получения данных
+                    tg.WebApp.offEvent('message', messageHandler);
+                } catch (e) {
+                    console.error('Ошибка при разборе данных профиля:', e);
+                }
+            };
+            
+            tg.WebApp.onEvent('message', messageHandler);
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке профиля:', error);
+    }
 } 
