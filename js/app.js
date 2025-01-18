@@ -355,6 +355,7 @@ function initApp() {
 
     setupEventListeners();
     setupProgramHandlers();
+    setupPopupHandlers();
     loadProfile();
     loadActiveProgram();
 }
@@ -614,31 +615,14 @@ function showProgramDetails(programId) {
     const program = programData[programId];
     if (!program) return;
 
-    // Показываем основную информацию
+    // Показываем основную информацию в более компактном виде
     const mainInfo = `
-        <div class="program-details-content">
-            <div class="program-header">
-                <h3>${program.title}</h3>
-                <span class="program-duration">${program.duration}</span>
-            </div>
-            
-            <p class="program-description">${program.description}</p>
-            
-            <div class="program-info-grid">
-                <div class="info-item">
-                    <span class="material-symbols-rounded">calendar_month</span>
-                    <span>${program.schedule}</span>
-                </div>
-                <div class="info-item">
-                    <span class="material-symbols-rounded">local_fire_department</span>
-                    <span>${program.calories_per_week}</span>
-                </div>
-                <div class="info-item">
-                    <span class="material-symbols-rounded">fitness_center</span>
-                    <span>${program.difficulty}</span>
-                </div>
-            </div>
-        </div>
+        <b>${program.title}</b>
+        ${program.description}
+
+        📅 ${program.schedule}
+        🔥 ${program.calories_per_week}
+        💪 Сложность: ${program.difficulty}
     `;
 
     tg.showPopup({
@@ -651,17 +635,6 @@ function showProgramDetails(programId) {
             {type: 'cancel', text: 'Закрыть'}
         ]
     });
-
-    // Обработчик кнопок попапа
-    tg.onEvent('popupButtonClicked', (button_id) => {
-        if (button_id.startsWith('results_')) {
-            showProgramResults(programId);
-        } else if (button_id.startsWith('schedule_')) {
-            showProgramSchedule(programId);
-        } else if (button_id.startsWith('start_program_')) {
-            startProgram(programId);
-        }
-    });
 }
 
 // Функция показа результатов программы
@@ -669,16 +642,9 @@ function showProgramResults(programId) {
     const program = programData[programId];
     if (!program) return;
 
-    const resultsInfo = `
-        <div class="program-results">
-            <h4>Ожидаемые результаты:</h4>
-            <ul>
-                ${program.results.map(result => `
-                    <li><span class="material-symbols-rounded">check_circle</span>${result}</li>
-                `).join('')}
-            </ul>
-        </div>
-    `;
+    const resultsInfo = program.results
+        .map(result => `✅ ${result}`)
+        .join('\n');
 
     tg.showPopup({
         title: 'Ожидаемые результаты',
@@ -696,23 +662,9 @@ function showProgramSchedule(programId) {
     const program = programData[programId];
     if (!program) return;
 
-    const scheduleInfo = `
-        <div class="program-schedule">
-            <div class="workouts-list">
-                ${program.workouts.map(workout => `
-                    <div class="workout-item">
-                        <div class="workout-day">День ${workout.day}</div>
-                        <div class="workout-info">
-                            <h5>${workout.title}</h5>
-                            <div class="workout-meta">
-                                <span>${workout.duration} мин • ${workout.type}</span>
-                            </div>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-    `;
+    const scheduleInfo = program.workouts
+        .map(workout => `День ${workout.day}: ${workout.title}\n${workout.duration} мин • ${workout.type}`)
+        .join('\n\n');
 
     tg.showPopup({
         title: 'Расписание тренировок',
@@ -721,6 +673,34 @@ function showProgramSchedule(programId) {
             {type: 'default', text: '⬅️ Назад', id: `back_to_main_${programId}`},
             {type: 'default', text: 'Начать программу', id: `start_program_${programId}`}
         ]
+    });
+}
+
+// Обновим обработчик событий попапа
+function setupPopupHandlers() {
+    tg.onEvent('popupButtonClicked', (button_id) => {
+        const [action, ...params] = button_id.split('_');
+        
+        switch(action) {
+            case 'results':
+                showProgramResults(params[0]);
+                break;
+            case 'schedule':
+                showProgramSchedule(params[0]);
+                break;
+            case 'start':
+                if (params[0] === 'workout') {
+                    // Начало конкретной тренировки
+                    const [programId, workoutDay] = params.slice(1);
+                    startWorkoutSession(programId, parseInt(workoutDay));
+                } else if (params[0] === 'program') {
+                    startProgram(params[1]);
+                }
+                break;
+            case 'back':
+                showProgramDetails(params[0]);
+                break;
+        }
     });
 }
 
@@ -839,6 +819,7 @@ function initApp() {
 
     setupEventListeners();
     setupProgramHandlers();
+    setupPopupHandlers();
     loadProfile();
     loadActiveProgram();
 }
@@ -876,4 +857,179 @@ function setupProgramHandlers() {
             }
         });
     });
+}
+
+// Добавим функцию для начала конкретной тренировки
+function startWorkoutSession(programId, workoutDay) {
+    const program = programData[programId];
+    const workout = program.workouts.find(w => w.day === workoutDay);
+    
+    if (!workout) {
+        console.error('Тренировка не найдена:', programId, workoutDay);
+        return;
+    }
+
+    // Показываем экран подготовки к тренировке
+    tg.showPopup({
+        title: 'Подготовка к тренировке',
+        message: `
+${workout.title}
+Длительность: ${workout.duration} мин
+Тип: ${workout.type}
+
+Подготовьте:
+- Удобную одежду
+- Воду
+- Коврик для упражнений
+        `,
+        buttons: [
+            {
+                type: 'default',
+                text: 'Начать тренировку',
+                id: `begin_workout_${programId}_${workoutDay}`
+            },
+            {
+                type: 'cancel',
+                text: 'Отложить'
+            }
+        ]
+    });
+
+    // Добавляем обработчик для начала тренировки
+    tg.onEvent('popupButtonClicked', async (button_id) => {
+        if (button_id === `begin_workout_${programId}_${workoutDay}`) {
+            // Загружаем текущий прогресс
+            const activeProgram = await getStorageItem('activeProgram')
+                .then(data => data ? JSON.parse(data) : null);
+
+            if (!activeProgram) return;
+
+            // Показываем интерфейс тренировки
+            showWorkoutInterface(workout, activeProgram);
+        }
+    });
+}
+
+// Функция для отображения интерфейса тренировки
+function showWorkoutInterface(workout, programProgress) {
+    // Создаем временный интерфейс для тренировки
+    const workoutHtml = `
+        <div class="workout-session">
+            <h2>${workout.title}</h2>
+            <div class="workout-timer">
+                <span class="time-remaining">${workout.duration}:00</span>
+            </div>
+            <div class="workout-progress">
+                <div class="progress-bar">
+                    <div class="progress" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="workout-controls">
+                <button class="workout-btn pause-btn">
+                    <span class="material-symbols-rounded">pause</span>
+                    Пауза
+                </button>
+                <button class="workout-btn stop-btn">
+                    <span class="material-symbols-rounded">stop</span>
+                    Завершить
+                </button>
+            </div>
+        </div>
+    `;
+
+    // Заменяем содержимое основного контейнера
+    const mainContainer = document.querySelector('.container');
+    mainContainer.innerHTML = workoutHtml;
+
+    // Добавляем стили для интерфейса тренировки
+    const style = document.createElement('style');
+    style.textContent = `
+        .workout-session {
+            padding: 20px;
+            text-align: center;
+        }
+        .workout-timer {
+            font-size: 48px;
+            margin: 32px 0;
+        }
+        .workout-controls {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 32px;
+        }
+        .workout-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .pause-btn {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+        }
+        .stop-btn {
+            background: var(--tg-theme-secondary-bg-color);
+            color: var(--tg-theme-text-color);
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Инициализируем таймер
+    let timeRemaining = workout.duration * 60;
+    let timerInterval = setInterval(() => {
+        timeRemaining--;
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        document.querySelector('.time-remaining').textContent = 
+            `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        const progress = 100 - (timeRemaining / (workout.duration * 60) * 100);
+        document.querySelector('.progress').style.width = `${progress}%`;
+
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            completeWorkout(workout, programProgress);
+        }
+    }, 1000);
+
+    // Добавляем обработчики для кнопок
+    document.querySelector('.pause-btn').addEventListener('click', () => {
+        // Добавить логику паузы
+    });
+
+    document.querySelector('.stop-btn').addEventListener('click', () => {
+        clearInterval(timerInterval);
+        completeWorkout(workout, programProgress);
+    });
+}
+
+// Функция завершения тренировки
+async function completeWorkout(workout, programProgress) {
+    // Обновляем прогресс программы
+    programProgress.completedWorkouts.push({
+        day: workout.day,
+        completedAt: Date.now()
+    });
+
+    // Сохраняем обновленный прогресс
+    await setStorageItem('activeProgram', JSON.stringify(programProgress));
+
+    // Показываем сообщение о завершении
+    tg.showPopup({
+        title: 'Тренировка завершена!',
+        message: 'Поздравляем! Вы успешно завершили тренировку.',
+        buttons: [{
+            type: 'default',
+            text: 'Продолжить',
+            id: 'return_to_main'
+        }]
+    });
+
+    // Возвращаемся на главный экран
+    location.reload();
 } 
