@@ -27,6 +27,7 @@ body {
 .container {
     max-width: 600px;
     margin: 0 auto;
+    padding-bottom: 70px;
 }
 
 .profile-form {
@@ -83,13 +84,16 @@ input:focus, select:focus {
 .tabs {
     display: flex;
     justify-content: space-around;
-    margin: -16px -16px 20px -16px;
+    margin: 0;
     background: var(--tg-theme-secondary-bg-color, #f0f0f0);
     padding: 12px;
-    position: sticky;
-    top: -16px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     z-index: 100;
     backdrop-filter: blur(10px);
+    border-top: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
 }
 
 .tab-btn {

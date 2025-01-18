@@ -13,7 +13,6 @@ mainButton.hide();
 // Загрузка данных профиля
 async function loadProfile() {
     try {
-        // Пробуем загрузить данные из CloudStorage
         const result = await new Promise((resolve) => {
             tg.CloudStorage.getItem('profile', (error, value) => {
                 if (error) {
@@ -31,21 +30,18 @@ async function loadProfile() {
             const profile = JSON.parse(result);
             console.log('Загружены данные из CloudStorage:', profile);
             
-            // Заполняем форму
-            document.getElementById('name').value = profile.name || '';
-            document.getElementById('age').value = profile.age || '';
-            document.getElementById('gender').value = profile.gender || 'male';
-            document.getElementById('height').value = profile.height || '';
-            document.getElementById('weight').value = profile.weight || '';
-            document.getElementById('goal').value = profile.goal || 'maintenance';
+            // Сохраняем данные в глобальную переменную
+            window.profileData = profile;
+
+            // Заполняем форму только если мы на вкладке профиля
+            if (document.getElementById('profile').classList.contains('active')) {
+                fillProfileForm(profile);
+            }
             
             tg.HapticFeedback.notificationOccurred('success');
         } else {
             console.log('Нет сохраненных данных в CloudStorage');
         }
-        
-        // Показываем кнопку после загрузки данных
-        mainButton.show();
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
         tg.showPopup({
@@ -54,6 +50,20 @@ async function loadProfile() {
             buttons: [{type: 'ok'}]
         });
     }
+}
+
+// Функция для заполнения формы профиля
+function fillProfileForm(profile) {
+    const form = document.getElementById('profile-form');
+    if (!form) return;
+
+    const fields = ['name', 'age', 'gender', 'height', 'weight', 'goal'];
+    fields.forEach(field => {
+        const input = document.getElementById(field);
+        if (input) {
+            input.value = profile[field] || '';
+        }
+    });
 }
 
 // Сохранение профиля
@@ -197,7 +207,6 @@ function initApp() {
     // Загрузка данных профиля
     async function loadProfile() {
         try {
-            // Пробуем загрузить данные из CloudStorage
             const result = await new Promise((resolve) => {
                 tg.CloudStorage.getItem('profile', (error, value) => {
                     if (error) {
@@ -215,21 +224,18 @@ function initApp() {
                 const profile = JSON.parse(result);
                 console.log('Загружены данные из CloudStorage:', profile);
                 
-                // Заполняем форму
-                document.getElementById('name').value = profile.name || '';
-                document.getElementById('age').value = profile.age || '';
-                document.getElementById('gender').value = profile.gender || 'male';
-                document.getElementById('height').value = profile.height || '';
-                document.getElementById('weight').value = profile.weight || '';
-                document.getElementById('goal').value = profile.goal || 'maintenance';
+                // Сохраняем данные в глобальную переменную
+                window.profileData = profile;
+
+                // Заполняем форму только если мы на вкладке профиля
+                if (document.getElementById('profile').classList.contains('active')) {
+                    fillProfileForm(profile);
+                }
                 
                 tg.HapticFeedback.notificationOccurred('success');
             } else {
                 console.log('Нет сохраненных данных в CloudStorage');
             }
-            
-            // Показываем кнопку после загрузки данных
-            mainButton.show();
         } catch (error) {
             console.error('Ошибка при загрузке профиля:', error);
             tg.showPopup({
@@ -300,36 +306,30 @@ function initApp() {
         }
     }
 
-    // Добавляем обработчик переключения вкладок
+    // Обновляем обработчик переключения вкладок
     function setupTabHandlers() {
         const tabs = document.querySelectorAll('.tab-btn');
         const contents = document.querySelectorAll('.tab-content');
 
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                // Убираем активный класс у всех вкладок
                 tabs.forEach(t => t.classList.remove('active'));
                 contents.forEach(c => c.classList.remove('active'));
 
-                // Добавляем активный класс выбранной вкладке
                 tab.classList.add('active');
                 const tabId = tab.dataset.tab;
-                document.getElementById(tabId).classList.add('active');
+                const tabContent = document.getElementById(tabId);
+                tabContent.classList.add('active');
 
-                // Показываем/скрываем главную кнопку
-                if (tabId === 'profile') {
-                    const form = document.getElementById('profile-form');
-                    const hasData = Array.from(form.querySelectorAll('input, select'))
-                        .some(input => input.value);
-                    if (hasData) {
-                        mainButton.show();
-                    }
+                // Если переключились на профиль и есть сохраненные данные, заполняем форму
+                if (tabId === 'profile' && window.profileData) {
+                    fillProfileForm(window.profileData);
                     mainButton.setText('Сохранить профиль');
+                    mainButton.show();
                 } else {
                     mainButton.hide();
                 }
 
-                // Вибрация при переключении
                 tg.HapticFeedback.selectionChanged();
             });
         });
