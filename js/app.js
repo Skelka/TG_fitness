@@ -525,6 +525,126 @@ const programData = {
                 exercises: [/*...*/]
             }
         ]
+    },
+    maintenance: {
+        id: 'maintenance',
+        title: 'Поддержание формы',
+        description: 'Программа для поддержания текущей формы и улучшения общего тонуса',
+        duration: '6 недель',
+        difficulty: 'medium',
+        category: 'maintenance',
+        icon: 'sports_gymnastics',
+        schedule: '3 тренировки в неделю',
+        calories_per_week: '2500-3000 ккал',
+        results: [
+            'Поддержание текущего веса',
+            'Улучшение мышечного тонуса',
+            'Повышение выносливости'
+        ],
+        workouts: [
+            {
+                day: 1,
+                type: 'full_body',
+                title: 'Общая тренировка',
+                duration: 45,
+                exercises: [
+                    {
+                        name: 'Приседания с собственным весом',
+                        sets: 3,
+                        reps: '15',
+                        rest: 60
+                    },
+                    {
+                        name: 'Отжимания',
+                        sets: 3,
+                        reps: '12',
+                        rest: 60
+                    },
+                    {
+                        name: 'Планка',
+                        sets: 3,
+                        reps: '45 сек',
+                        rest: 45
+                    },
+                    {
+                        name: 'Выпады',
+                        sets: 3,
+                        reps: '12 на ногу',
+                        rest: 60
+                    },
+                    {
+                        name: 'Берпи',
+                        sets: 3,
+                        reps: '10',
+                        rest: 60
+                    }
+                ]
+            },
+            {
+                day: 3,
+                type: 'cardio',
+                title: 'Кардио + Ядро',
+                duration: 40,
+                exercises: [
+                    {
+                        name: 'Прыжки на скакалке',
+                        sets: 3,
+                        reps: '2 мин',
+                        rest: 60
+                    },
+                    {
+                        name: 'Скручивания',
+                        sets: 3,
+                        reps: '20',
+                        rest: 45
+                    },
+                    {
+                        name: 'Бег на месте с высоким подниманием колен',
+                        sets: 3,
+                        reps: '1 мин',
+                        rest: 60
+                    },
+                    {
+                        name: 'Русские скручивания',
+                        sets: 3,
+                        reps: '15',
+                        rest: 45
+                    }
+                ]
+            },
+            {
+                day: 5,
+                type: 'strength',
+                title: 'Силовая тренировка',
+                duration: 50,
+                exercises: [
+                    {
+                        name: 'Приседания с прыжком',
+                        sets: 4,
+                        reps: '12',
+                        rest: 60
+                    },
+                    {
+                        name: 'Отжимания с широкой постановкой',
+                        sets: 4,
+                        reps: '10',
+                        rest: 60
+                    },
+                    {
+                        name: 'Подъемы корпуса',
+                        sets: 4,
+                        reps: '15',
+                        rest: 45
+                    },
+                    {
+                        name: 'Обратные отжимания от стула',
+                        sets: 4,
+                        reps: '12',
+                        rest: 60
+                    }
+                ]
+            }
+        ]
     }
 };
 
