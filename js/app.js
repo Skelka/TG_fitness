@@ -62,8 +62,28 @@ async function saveProfile() {
         };
         console.log('Отправляем данные:', sendData);
 
+        // Проверяем, что метод sendData доступен
+        if (typeof tg.sendData !== 'function') {
+            throw new Error('Метод sendData не доступен');
+        }
+
+        // Проверяем размер данных (не более 4096 байт)
+        const dataString = JSON.stringify(sendData);
+        if (dataString.length > 4096) {
+            throw new Error('Данные слишком большие');
+        }
+
+        // Проверяем, что все данные корректно сериализуются
+        try {
+            JSON.parse(dataString);
+        } catch (e) {
+            throw new Error('Ошибка сериализации данных');
+        }
+
+        console.log('Отправляем строку данных:', dataString);
+        
         // Отправляем данные через WebApp
-        tg.sendData(JSON.stringify(sendData));
+        tg.sendData(dataString);
         console.log('Данные отправлены');
 
         // Показываем кнопку "Назад"
@@ -76,12 +96,13 @@ async function saveProfile() {
             message: 'Данные профиля сохранены',
             buttons: [{type: 'ok'}]
         });
+
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
         tg.HapticFeedback.notificationOccurred('error');
         tg.showPopup({
             title: 'Ошибка',
-            message: 'Произошла ошибка при сохранении',
+            message: `Произошла ошибка при сохранении: ${error.message}`,
             buttons: [{type: 'ok'}]
         });
     }
@@ -133,6 +154,22 @@ function setupEventListeners() {
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
-    setupEventListeners();
-    loadProfile();
+    try {
+        // Проверяем, что WebApp инициализирован
+        if (!window.Telegram || !window.Telegram.WebApp) {
+            throw new Error('Telegram WebApp не инициализирован');
+        }
+
+        // Проверяем версию WebApp
+        console.log('Версия WebApp:', tg.version);
+        console.log('Платформа:', tg.platform);
+        console.log('Инициализация WebApp:', tg.initData);
+        console.log('Доступные методы WebApp:', Object.keys(tg));
+
+        setupEventListeners();
+        loadProfile();
+    } catch (error) {
+        console.error('Ошибка инициализации:', error);
+        alert('Ошибка инициализации приложения: ' + error.message);
+    }
 }); 
