@@ -2,6 +2,71 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
+// Обработчик событий от бота
+tg.onEvent('message', function(event) {
+    try {
+        const data = JSON.parse(event.data);
+        console.log('Получены данные от бота:', data);
+        
+        // Обработка данных в зависимости от действия
+        switch(data.action) {
+            case 'profile_data':
+                updateProfile(data.profile);
+                break;
+            case 'workouts_data':
+                updateWorkouts(data.workouts);
+                break;
+            case 'weight_history_data':
+                updateWeightHistory(data.history);
+                break;
+        }
+    } catch (error) {
+        console.error('Ошибка при обработке сообщения:', error);
+    }
+});
+
+// Функции обновления UI
+function updateProfile(profile) {
+    const form = document.getElementById('profile-form');
+    if (form && profile) {
+        Object.keys(profile).forEach(key => {
+            const input = document.getElementById(key);
+            if (input) input.value = profile[key];
+        });
+    }
+}
+
+function updateWorkouts(workouts) {
+    const workoutHistory = document.getElementById('workout-history');
+    if (workoutHistory && workouts) {
+        workoutHistory.innerHTML = workouts.map(workout => `
+            <div class="workout-item">
+                <div class="card-title">${workout.type}</div>
+                <div class="card-subtitle">
+                    ${new Date(workout.date).toLocaleDateString()} • ${workout.duration} мин
+                </div>
+                <div>Сожжено калорий: ${workout.calories_burned}</div>
+            </div>
+        `).join('') || '<p>Нет записей о тренировках</p>';
+    }
+}
+
+function updateWeightHistory(history) {
+    const weightChart = document.getElementById('weight-chart');
+    if (weightChart && history) {
+        weightChart.innerHTML = `
+            <h3>История изменения веса</h3>
+            <div class="weight-list">
+                ${history.map(entry => `
+                    <div class="weight-item">
+                        ${entry.weight} кг • ${new Date(entry.date).toLocaleDateString()}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+}
+
 // Текущий активный раздел
 let currentSection = 'workouts';
 
@@ -73,20 +138,19 @@ async function loadWorkouts() {
     try {
         workoutHistory.innerHTML = '<p>Загрузка тренировок...</p>';
         
-        // Используем MainButton для отправки
-        tg.MainButton.setText('Загрузка тренировок...');
-        tg.MainButton.show();
-        tg.MainButton.onClick(() => {
+        // Отправляем данные через BackButton
+        tg.BackButton.show();
+        tg.onEvent('backButtonClicked', () => {
             tg.sendData(JSON.stringify({
                 action: 'get_workouts'
             }));
-            tg.MainButton.hide();
+            tg.BackButton.hide();
         });
-        tg.MainButton.click();
+        tg.BackButton.onClick();
     } catch (error) {
         console.error('Ошибка при загрузке тренировок:', error);
         workoutHistory.innerHTML = '<p>Ошибка при загрузке тренировок</p>';
-        tg.MainButton.hide();
+        tg.BackButton.hide();
     }
 }
 
@@ -96,19 +160,18 @@ async function loadStats() {
     try {
         weightChart.innerHTML = '<p>Загрузка статистики...</p>';
         
-        tg.MainButton.setText('Загрузка статистики...');
-        tg.MainButton.show();
-        tg.MainButton.onClick(() => {
+        tg.BackButton.show();
+        tg.onEvent('backButtonClicked', () => {
             tg.sendData(JSON.stringify({
                 action: 'get_weight_history'
             }));
-            tg.MainButton.hide();
+            tg.BackButton.hide();
         });
-        tg.MainButton.click();
+        tg.BackButton.onClick();
     } catch (error) {
         console.error('Ошибка при загрузке статистики:', error);
         weightChart.innerHTML = '<p>Ошибка при загрузке статистики</p>';
-        tg.MainButton.hide();
+        tg.BackButton.hide();
     }
 }
 
@@ -151,15 +214,14 @@ async function loadProfile() {
             form.innerHTML = '<p>Загрузка данных профиля...</p>';
         }
 
-        tg.MainButton.setText('Загрузка профиля...');
-        tg.MainButton.show();
-        tg.MainButton.onClick(() => {
+        tg.BackButton.show();
+        tg.onEvent('backButtonClicked', () => {
             tg.sendData(JSON.stringify({
                 action: 'get_profile'
             }));
-            tg.MainButton.hide();
+            tg.BackButton.hide();
         });
-        tg.MainButton.click();
+        tg.BackButton.onClick();
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
         tg.showPopup({
@@ -167,7 +229,7 @@ async function loadProfile() {
             message: 'Не удалось загрузить профиль',
             buttons: [{type: 'ok'}]
         });
-        tg.MainButton.hide();
+        tg.BackButton.hide();
     }
 }
 
@@ -186,18 +248,17 @@ async function saveProfile() {
     };
 
     try {
-        tg.MainButton.setText('Сохранение...');
-        tg.MainButton.show();
-        tg.MainButton.onClick(() => {
+        tg.BackButton.show();
+        tg.onEvent('backButtonClicked', () => {
             tg.sendData(JSON.stringify(formData));
-            tg.MainButton.hide();
+            tg.BackButton.hide();
             tg.showPopup({
                 title: 'Успех',
                 message: 'Профиль сохранен!',
                 buttons: [{type: 'ok'}]
             });
         });
-        tg.MainButton.click();
+        tg.BackButton.onClick();
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
         tg.showPopup({
@@ -205,7 +266,7 @@ async function saveProfile() {
             message: 'Произошла ошибка при сохранении',
             buttons: [{type: 'ok'}]
         });
-        tg.MainButton.hide();
+        tg.BackButton.hide();
     }
 }
 
