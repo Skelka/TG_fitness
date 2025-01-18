@@ -56,37 +56,22 @@ async function saveProfile() {
 
         console.log('Подготовленные данные для отправки:', profileData);
 
+        // Получаем query_id из initData
+        const initData = new URLSearchParams(tg.initData);
+        const queryId = initData.get('query_id');
+        console.log('Query ID:', queryId);
+
         const sendData = {
             action: 'save_profile',
-            profile: profileData
+            profile: profileData,
+            _query_id: queryId  // Добавляем query_id
         };
         console.log('Отправляем данные:', sendData);
 
-        // Проверяем, что метод sendData доступен
-        if (typeof tg.sendData !== 'function') {
-            throw new Error('Метод sendData не доступен');
-        }
-
-        // Проверяем размер данных (не более 4096 байт)
-        const dataString = JSON.stringify(sendData);
-        if (dataString.length > 4096) {
-            throw new Error('Данные слишком большие');
-        }
-
-        // Проверяем, что все данные корректно сериализуются
-        try {
-            JSON.parse(dataString);
-        } catch (e) {
-            throw new Error('Ошибка сериализации данных');
-        }
-
-        console.log('Отправляем строку данных:', dataString);
-        
         // Отправляем данные через WebApp
-        tg.sendData(dataString);
+        tg.sendData(JSON.stringify(sendData));
         console.log('Данные отправлены');
 
-        // Показываем уведомление об успехе
         tg.HapticFeedback.notificationOccurred('success');
         tg.showPopup({
             title: 'Успех',
