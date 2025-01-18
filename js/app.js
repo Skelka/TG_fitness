@@ -136,51 +136,61 @@ async function loadTips() {
     }
 }
 
-// Загрузка профиля
+// В начало файла добавим функции для работы с ботом
+async function sendDataToBot(data) {
+    try {
+        await tg.sendData(JSON.stringify(data));
+        return true;
+    } catch (error) {
+        console.error('Ошибка при отправке данных:', error);
+        return false;
+    }
+}
+
+// Обновим функции загрузки данных
 async function loadProfile() {
     try {
-        const response = await fetch(`/api/user/${tg.initDataUnsafe.user.id}`);
-        const profile = await response.json();
-        
-        // Заполняем форму данными пользователя
-        Object.keys(profile).forEach(key => {
-            const input = document.getElementById(key);
-            if (input) input.value = profile[key];
+        const success = await sendDataToBot({
+            action: 'get_profile'
         });
+        
+        if (success) {
+            tg.WebApp.onEvent('message', function(message) {
+                try {
+                    const profile = JSON.parse(message.text);
+                    Object.keys(profile).forEach(key => {
+                        const input = document.getElementById(key);
+                        if (input) input.value = profile[key];
+                    });
+                } catch (e) {
+                    console.error('Ошибка при разборе данных профиля:', e);
+                }
+            });
+        }
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
     }
 }
 
-// Сохранение профиля
 async function saveProfile(event) {
     event.preventDefault();
     
     const formData = {
-        user_id: tg.initDataUnsafe.user.id,
-        name: document.getElementById('name').value,
-        age: parseInt(document.getElementById('age').value),
-        gender: document.getElementById('gender').value,
-        height: parseFloat(document.getElementById('height').value),
-        weight: parseFloat(document.getElementById('weight').value),
-        goal: document.getElementById('goal').value
-    };
-    
-    try {
-        const response = await fetch('/api/user/update', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
-        });
-        
-        if (response.ok) {
-            tg.showAlert('Профиль успешно сохранен!');
-        } else {
-            throw new Error('Ошибка при сохранении');
+        action: 'save_profile',
+        profile: {
+            name: document.getElementById('name').value,
+            age: parseInt(document.getElementById('age').value),
+            gender: document.getElementById('gender').value,
+            height: parseFloat(document.getElementById('height').value),
+            weight: parseFloat(document.getElementById('weight').value),
+            goal: document.getElementById('goal').value
         }
-    } catch (error) {
+    };
+
+    const success = await sendDataToBot(formData);
+    if (success) {
+        tg.showAlert('Профиль успешно сохранен!');
+    } else {
         tg.showAlert('Ошибка при сохранении профиля');
     }
 }
@@ -206,6 +216,6 @@ function startNewWorkout() {
                     </button>
                 `).join('')}
             </div>
-        </div>
+                </div>
     `;
 } 
