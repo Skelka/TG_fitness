@@ -3,35 +3,105 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.enableClosingConfirmation();
 
-// Функция для отправки данных боту
-function sendToBot(data, shouldClose = false) {
+// Функция для запроса данных у бота
+async function requestData(action) {
     try {
-        const finalData = {
-            ...data,
-            platform: tg.platform,
-            version: tg.version,
-            initData: tg.initData
-        };
-        
-        console.log('Отправка данных боту:', finalData);
-        
-        // Используем MainButton для отправки данных
-        tg.MainButton.setText('Отправка...');
-        tg.MainButton.show();
-        tg.MainButton.onClick(() => {
-            tg.sendData(JSON.stringify(finalData));
-            tg.MainButton.hide();
-            
-            if (shouldClose) {
-                setTimeout(() => tg.close(), 1000);
+        const response = await fetch(`${WEBAPP_URL}/api/${action}`, {
+            method: 'GET',
+            headers: {
+                'Telegram-User-Id': tg.initDataUnsafe.user.id,
+                'Content-Type': 'application/json'
             }
         });
-        tg.MainButton.click();
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Получены данные:', data);
+        
+        switch(action) {
+            case 'get_profile':
+                updateProfile(data.profile);
+                break;
+            case 'get_workouts':
+                updateWorkouts(data.workouts);
+                break;
+            case 'get_weight_history':
+                updateWeightHistory(data.history);
+                break;
+        }
     } catch (error) {
-        console.error('Ошибка при отправке данных:', error);
+        console.error('Ошибка при получении данных:', error);
         tg.showPopup({
             title: 'Ошибка',
-            message: 'Не удалось отправить данные',
+            message: 'Не удалось загрузить данные',
+            buttons: [{type: 'ok'}]
+        });
+    }
+}
+
+// Загрузка тренировок
+async function loadWorkouts() {
+    const workoutHistory = document.getElementById('workout-history');
+    workoutHistory.innerHTML = `
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Загрузка тренировок...</p>
+        </div>
+    `;
+    await requestData('get_workouts');
+}
+
+// Загрузка статистики
+async function loadStats() {
+    const weightChart = document.getElementById('weight-chart');
+    weightChart.innerHTML = `
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Загрузка статистики...</p>
+        </div>
+    `;
+    await requestData('get_weight_history');
+}
+
+// Загрузка профиля
+async function loadProfile() {
+    const form = document.getElementById('profile-form');
+    if (form) {
+        form.innerHTML = `
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <p>Загрузка профиля...</p>
+            </div>
+        `;
+        await requestData('get_profile');
+    }
+}
+
+// Сохранение профиля остается через sendData
+async function saveProfile() {
+    const formData = {
+        action: 'save_profile',
+        profile: {
+            name: document.getElementById('name').value || '',
+            age: parseInt(document.getElementById('age').value) || 0,
+            gender: document.getElementById('gender').value || 'male',
+            height: parseFloat(document.getElementById('height').value) || 0,
+            weight: parseFloat(document.getElementById('weight').value) || 0,
+            goal: document.getElementById('goal').value || 'maintenance'
+        }
+    };
+
+    try {
+        tg.sendData(JSON.stringify(formData));
+        setTimeout(() => tg.close(), 1000);
+    } catch (error) {
+        console.error('Ошибка при сохранении профиля:', error);
+        tg.showPopup({
+            title: 'Ошибка',
+            message: 'Произошла ошибка при сохранении',
             buttons: [{type: 'ok'}]
         });
     }
@@ -218,66 +288,6 @@ function loadSection(sectionName) {
     currentSection = sectionName;
 }
 
-// Загрузка тренировок
-async function loadWorkouts() {
-    const workoutHistory = document.getElementById('workout-history');
-    workoutHistory.innerHTML = `
-        <div class="loading-container">
-            <div class="loading-spinner"></div>
-            <p>Загрузка тренировок...</p>
-        </div>
-    `;
-    
-    // Отправляем запрос через MainButton
-    tg.MainButton.setText('Загрузка тренировок...');
-    tg.MainButton.show();
-    tg.MainButton.onClick(() => {
-        sendToBot({
-            action: 'get_workouts'
-        });
-        tg.MainButton.hide();
-    });
-    tg.MainButton.click();
-}
-
-function requestWorkouts() {
-    const workoutHistory = document.getElementById('workout-history');
-    workoutHistory.innerHTML = '<p>Загрузка тренировок...</p>';
-    sendToBot({
-        action: 'get_workouts'
-    });
-}
-
-// Загрузка статистики
-async function loadStats() {
-    const weightChart = document.getElementById('weight-chart');
-    weightChart.innerHTML = `
-        <div class="loading-container">
-            <div class="loading-spinner"></div>
-            <p>Загрузка статистики...</p>
-        </div>
-    `;
-    
-    // Отправляем запрос через MainButton
-    tg.MainButton.setText('Загрузка статистики...');
-    tg.MainButton.show();
-    tg.MainButton.onClick(() => {
-        sendToBot({
-            action: 'get_weight_history'
-        });
-        tg.MainButton.hide();
-    });
-    tg.MainButton.click();
-}
-
-function requestStats() {
-    const weightChart = document.getElementById('weight-chart');
-    weightChart.innerHTML = '<p>Загрузка статистики...</p>';
-    sendToBot({
-        action: 'get_weight_history'
-    });
-}
-
 // Загрузка советов
 function loadTips() {
     const tipsContainer = document.getElementById('tips-container');
@@ -307,67 +317,6 @@ function loadTips() {
             <div class="tip-content">${tip.content}</div>
         </div>
     `).join('');
-}
-
-// Загрузка профиля
-async function loadProfile() {
-    const form = document.getElementById('profile-form');
-    if (form) {
-        form.innerHTML = `
-            <div class="loading-container">
-                <div class="loading-spinner"></div>
-                <p>Загрузка профиля...</p>
-            </div>
-        `;
-        
-        // Отправляем запрос через MainButton
-        tg.MainButton.setText('Загрузка профиля...');
-        tg.MainButton.show();
-        tg.MainButton.onClick(() => {
-            sendToBot({
-                action: 'get_profile'
-            });
-            tg.MainButton.hide();
-        });
-        tg.MainButton.click();
-    }
-}
-
-function requestProfile() {
-    const form = document.getElementById('profile-form');
-    if (form) {
-        form.innerHTML = '<p>Загрузка данных профиля...</p>';
-        sendToBot({
-            action: 'get_profile'
-        });
-    }
-}
-
-// Сохранение профиля
-async function saveProfile() {
-    const formData = {
-        action: 'save_profile',
-        profile: {
-            name: document.getElementById('name').value || '',
-            age: parseInt(document.getElementById('age').value) || 0,
-            gender: document.getElementById('gender').value || 'male',
-            height: parseFloat(document.getElementById('height').value) || 0,
-            weight: parseFloat(document.getElementById('weight').value) || 0,
-            goal: document.getElementById('goal').value || 'maintenance'
-        }
-    };
-
-    try {
-        // При сохранении закрываем приложение
-        sendToBot(formData, true);
-    } catch (error) {
-        console.error('Ошибка при сохранении профиля:', error);
-        tg.showPopup({
-            title: 'Ошибка',
-            message: 'Произошла ошибка при сохранении',
-            buttons: [{type: 'ok'}]
-        });
-    }
 }
 
 // Начало новой тренировки
