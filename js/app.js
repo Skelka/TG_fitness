@@ -6,8 +6,10 @@ tg.enableClosingConfirmation();
 // Функция для отправки запроса боту
 function requestFromBot(action) {
     try {
+        const queryId = new URLSearchParams(window.location.search).get('tgWebAppStartParam');
         tg.sendData(JSON.stringify({
             action: action,
+            query_id: queryId,
             user_id: tg.initDataUnsafe.user.id
         }));
     } catch (error) {
@@ -85,28 +87,29 @@ async function saveProfile() {
     }
 }
 
-// Обработчик сообщений от бота
-window.addEventListener('message', function(event) {
-    console.log('Получено сообщение:', event.data);
-    try {
-        const data = JSON.parse(event.data);
-        console.log('Разобранные данные:', data);
-        
-        switch(data.action) {
-            case 'profile_data':
-                updateProfile(data.profile);
-                break;
-            case 'workouts_data':
-                updateWorkouts(data.workouts);
-                break;
-            case 'weight_history_data':
-                updateWeightHistory(data.history);
-                break;
-            default:
-                console.log('Неизвестный тип данных:', data.action);
+// Обработчик ответа от бота
+tg.onEvent('mainButtonClicked', function() {
+    console.log('Получен ответ от бота');
+    const data = tg.initDataUnsafe.start_param;
+    if (data) {
+        try {
+            const parsedData = JSON.parse(data);
+            console.log('Разобранные данные:', parsedData);
+            
+            switch(parsedData.action) {
+                case 'profile_data':
+                    updateProfile(parsedData.profile);
+                    break;
+                case 'workouts_data':
+                    updateWorkouts(parsedData.workouts);
+                    break;
+                case 'weight_history_data':
+                    updateWeightHistory(parsedData.history);
+                    break;
+            }
+        } catch (error) {
+            console.error('Ошибка при обработке данных:', error);
         }
-    } catch (error) {
-        console.error('Ошибка при обработке сообщения:', error);
     }
 });
 
