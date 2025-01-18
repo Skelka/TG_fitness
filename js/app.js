@@ -85,6 +85,34 @@ async function loadProfile() {
     }
 }
 
+// Обработчик ответа от бота
+tg.onEvent('message', function(event) {
+    console.log('Получено сообщение от бота:', event);
+    try {
+        const response = JSON.parse(event.text);
+        console.log('Разобранный ответ:', response);
+        
+        if (response.status === 'success' && response.profile) {
+            // Заполняем форму данными профиля
+            const profile = response.profile;
+            document.getElementById('name').value = profile.name || '';
+            document.getElementById('age').value = profile.age || '';
+            document.getElementById('gender').value = profile.gender || 'male';
+            document.getElementById('height').value = profile.height || '';
+            document.getElementById('weight').value = profile.weight || '';
+            document.getElementById('goal').value = profile.goal || 'maintenance';
+        } else if (response.status === 'error') {
+            tg.showPopup({
+                title: 'Ошибка',
+                message: response.message || 'Произошла ошибка',
+                buttons: [{type: 'ok'}]
+            });
+        }
+    } catch (error) {
+        console.error('Ошибка при обработке ответа:', error);
+    }
+});
+
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
