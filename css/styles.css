@@ -363,8 +363,8 @@ input:focus, select:focus {
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: 16px;
+    margin: 20px 0;
 }
 
 .stat-mini-card {
@@ -894,12 +894,15 @@ input:focus, select:focus {
 }
 
 input[type="number"] {
+    appearance: textfield;
     -moz-appearance: textfield;
+    -webkit-appearance: textfield;
 }
 
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
+    appearance: none;
     margin: 0;
 }
 
@@ -966,4 +969,128 @@ input[type="number"]::-webkit-inner-spin-button {
 .goal-item input:checked + .goal-icon,
 .equipment-item input:checked + .equipment-icon {
     transform: scale(1.05);
+}
+
+.workout-session {
+    padding: 20px;
+}
+
+.workout-timer {
+    font-size: 48px;
+    text-align: center;
+    margin: 24px 0;
+}
+
+.workout-progress {
+    margin: 24px 0;
+}
+
+.workout-progress .progress-bar {
+    height: 4px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.workout-progress .progress {
+    height: 100%;
+    background: var(--tg-theme-button-color);
+    transition: width 0.3s ease;
+}
+
+.exercises-list {
+    margin: 24px 0;
+}
+
+.exercise-item {
+    background: var(--tg-theme-secondary-bg-color);
+    padding: 16px;
+    border-radius: 12px;
+    margin: 8px 0;
+}
+
+.exercise-item.active {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.workout-controls {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.workout-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.pause-btn {
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+}
+
+.complete-btn {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.workout-btn:active {
+    opacity: 0.8;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.stat-item {
+    background: var(--tg-theme-secondary-bg-color);
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+}
+
+.workout-types {
+    margin-top: 20px;
+}
+
+.workout-type {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.type-label {
+    color: var(--tg-theme-text-color);
+}
+
+.type-count {
+    font-weight: bold;
 } 
