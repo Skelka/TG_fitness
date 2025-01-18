@@ -3,6 +3,11 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.enableClosingConfirmation();
 
+// Настройка MainButton
+const mainButton = tg.MainButton;
+mainButton.setText('Сохранить профиль');
+mainButton.hide();
+
 // Загрузка данных профиля
 async function loadProfile() {
     try {
@@ -27,6 +32,9 @@ async function loadProfile() {
                 tg.HapticFeedback.notificationOccurred('success');
             }
         }
+        
+        // Показываем кнопку после загрузки данных
+        mainButton.show();
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
     }
@@ -78,12 +86,19 @@ async function saveProfile() {
 
 // Настройка обработчиков событий
 function setupEventListeners() {
-    // Форма
-    document.addEventListener('submit', function(e) {
-        if (e.target.id === 'profile-form') {
-            e.preventDefault();
-            saveProfile();
-        }
+    // Обработчик изменения полей формы
+    const form = document.getElementById('profile-form');
+    const formInputs = form.querySelectorAll('input, select');
+    formInputs.forEach(input => {
+        input.addEventListener('input', () => {
+            // Показываем кнопку, если есть какие-то данные
+            const hasData = Array.from(formInputs).some(input => input.value);
+            if (hasData) {
+                mainButton.show();
+            } else {
+                mainButton.hide();
+            }
+        });
     });
 
     // Скрытие клавиатуры
@@ -103,6 +118,9 @@ function setupEventListeners() {
             tg.HapticFeedback.selectionChanged();
         }
     }, true);
+
+    // Обработчик нажатия на MainButton
+    mainButton.onClick(saveProfile);
 }
 
 // Инициализация при загрузке
