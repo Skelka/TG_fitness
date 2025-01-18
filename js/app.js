@@ -59,6 +59,10 @@ async function loadProfile() {
 // Сохранение профиля
 async function saveProfile() {
     try {
+        // Меняем текст кнопки
+        mainButton.setText('Сохранение...');
+        mainButton.showProgress();
+
         const profileData = {
             name: document.getElementById('name').value || '',
             age: parseInt(document.getElementById('age').value) || 0,
@@ -83,7 +87,7 @@ async function saveProfile() {
 
         console.log('Результат сохранения в CloudStorage:', result);
 
-        // Отправляем уведомление боту о том, что данные обновлены
+        // Отправляем уведомление боту
         const sendData = {
             action: 'profile_updated',
             timestamp: Date.now()
@@ -92,8 +96,17 @@ async function saveProfile() {
         tg.sendData(JSON.stringify(sendData));
         tg.HapticFeedback.notificationOccurred('success');
 
+        // Показываем статус "Сохранено"
+        mainButton.hideProgress();
+        mainButton.setText('Сохранено ✓');
+        setTimeout(() => {
+            mainButton.setText('Сохранить профиль');
+        }, 2000);
+
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
+        mainButton.hideProgress();
+        mainButton.setText('Сохранить профиль');
         tg.HapticFeedback.notificationOccurred('error');
         tg.showPopup({
             title: 'Ошибка',
@@ -230,6 +243,10 @@ function initApp() {
     // Сохранение профиля
     async function saveProfile() {
         try {
+            // Меняем текст кнопки
+            mainButton.setText('Сохранение...');
+            mainButton.showProgress();
+
             const profileData = {
                 name: document.getElementById('name').value || '',
                 age: parseInt(document.getElementById('age').value) || 0,
@@ -254,7 +271,7 @@ function initApp() {
 
             console.log('Результат сохранения в CloudStorage:', result);
 
-            // Отправляем уведомление боту о том, что данные обновлены
+            // Отправляем уведомление боту
             const sendData = {
                 action: 'profile_updated',
                 timestamp: Date.now()
@@ -263,8 +280,17 @@ function initApp() {
             tg.sendData(JSON.stringify(sendData));
             tg.HapticFeedback.notificationOccurred('success');
 
+            // Показываем статус "Сохранено"
+            mainButton.hideProgress();
+            mainButton.setText('Сохранено ✓');
+            setTimeout(() => {
+                mainButton.setText('Сохранить профиль');
+            }, 2000);
+
         } catch (error) {
             console.error('Ошибка при сохранении профиля:', error);
+            mainButton.hideProgress();
+            mainButton.setText('Сохранить профиль');
             tg.HapticFeedback.notificationOccurred('error');
             tg.showPopup({
                 title: 'Ошибка',
@@ -274,47 +300,103 @@ function initApp() {
         }
     }
 
-    // Настройка обработчиков событий
-    function setupEventListeners() {
-        // Обработчик изменения полей формы
-        const form = document.getElementById('profile-form');
-        const formInputs = form.querySelectorAll('input, select');
-        formInputs.forEach(input => {
-            input.addEventListener('input', () => {
-                const hasData = Array.from(formInputs).some(input => input.value);
-                if (hasData) {
-                    mainButton.show();
-                    backButton.hide();
+    // Добавляем обработчик переключения вкладок
+    function setupTabHandlers() {
+        const tabs = document.querySelectorAll('.tab-btn');
+        const contents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Убираем активный класс у всех вкладок
+                tabs.forEach(t => t.classList.remove('active'));
+                contents.forEach(c => c.classList.remove('active'));
+
+                // Добавляем активный класс выбранной вкладке
+                tab.classList.add('active');
+                const tabId = tab.dataset.tab;
+                document.getElementById(tabId).classList.add('active');
+
+                // Показываем/скрываем главную кнопку
+                if (tabId === 'profile') {
+                    const form = document.getElementById('profile-form');
+                    const hasData = Array.from(form.querySelectorAll('input, select'))
+                        .some(input => input.value);
+                    if (hasData) {
+                        mainButton.show();
+                    }
+                    mainButton.setText('Сохранить профиль');
                 } else {
                     mainButton.hide();
                 }
+
+                // Вибрация при переключении
+                tg.HapticFeedback.selectionChanged();
             });
         });
+    }
 
-        // Скрытие клавиатуры
-        document.addEventListener('click', function(e) {
-            if (!e.target.matches('input') && !e.target.matches('select')) {
-                if (document.activeElement instanceof HTMLInputElement || 
-                    document.activeElement instanceof HTMLSelectElement) {
-                    document.activeElement.blur();
-                }
-            }
+    // Обработчики для тренировок
+    function setupWorkoutHandlers() {
+        const workoutButtons = document.querySelectorAll('.start-workout-btn');
+        workoutButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const workoutCard = button.closest('.workout-card');
+                const workoutTitle = workoutCard.querySelector('h3').textContent;
+                
+                tg.HapticFeedback.impactOccurred('medium');
+                tg.showPopup({
+                    title: 'Начать тренировку',
+                    message: `Вы хотите начать тренировку "${workoutTitle}"?`,
+                    buttons: [
+                        {
+                            type: 'destructive',
+                            text: 'Отмена'
+                        },
+                        {
+                            type: 'default',
+                            text: 'Начать',
+                            id: 'start_workout'
+                        }
+                    ]
+                });
+            });
         });
+    }
 
-        // Выделение текста в числовых полях
-        document.addEventListener('focus', function(e) {
-            if (e.target.type === 'number') {
-                e.target.select();
+    // Обработчик для советов
+    function setupTipsHandlers() {
+        const tipCards = document.querySelectorAll('.tip-card');
+        tipCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const title = card.querySelector('h3').textContent;
+                const content = card.querySelector('p').textContent;
+                
                 tg.HapticFeedback.selectionChanged();
+                tg.showPopup({
+                    title: title,
+                    message: content,
+                    buttons: [{type: 'ok'}]
+                });
+            });
+        });
+    }
+
+    // Обновляем setupEventListeners
+    function setupEventListeners() {
+        // ... существующие обработчики ...
+
+        // Добавляем новые обработчики
+        setupTabHandlers();
+        setupWorkoutHandlers();
+        setupTipsHandlers();
+
+        // Обработчик закрытия попапов
+        tg.onEvent('popupClosed', (event) => {
+            if (event.button_id === 'start_workout') {
+                // Здесь будет логика начала тренировки
+                tg.HapticFeedback.notificationOccurred('success');
+                tg.showAlert('Тренировка начата! (демо)');
             }
-        }, true);
-
-        // Обработчик нажатия на MainButton
-        mainButton.onClick(saveProfile);
-
-        // Обработчик нажатия на BackButton
-        backButton.onClick(() => {
-            tg.close();
         });
     }
 
