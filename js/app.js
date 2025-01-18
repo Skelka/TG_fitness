@@ -401,106 +401,111 @@ async function startWorkout(workoutId) {
     }
 }
 
-// Данные о тренировках
-const workoutData = {
-    // Силовые тренировки
-    upper_body: {
-        id: 'upper_body',
-        title: 'Тренировка верхней части тела',
-        category: 'strength',
+// Данные о программах тренировок
+const programData = {
+    weight_loss: {
+        id: 'weight_loss',
+        title: 'Похудение',
+        description: 'Программа для снижения веса и улучшения метаболизма',
+        duration: '8 недель',
         difficulty: 'medium',
-        duration: 45,
-        calories: 350,
-        description: 'Комплексная тренировка для развития мышц верхней части тела',
-        exercises: [
-            {
-                name: 'Жим лежа',
-                sets: 3,
-                reps: '10-12',
-                rest: 90,
-                technique: 'Опускайте штангу до касания груди, локти под 45°',
-                video: 'url_to_video'
-            },
-            {
-                name: 'Подтягивания',
-                sets: 3,
-                reps: '8-10',
-                rest: 120,
-                technique: 'Полная амплитуда, подбородок над перекладиной',
-                video: 'url_to_video'
-            },
-            {
-                name: 'Сгибания на бицепс',
-                sets: 3,
-                reps: '12-15',
-                rest: 60,
-                technique: 'Контролируйте опускание, локти зафиксированы',
-                video: 'url_to_video'
-            }
+        category: 'weight_loss',
+        icon: 'monitor_weight',
+        schedule: '3-4 тренировки в неделю',
+        calories_per_week: '3500-4000 ккал',
+        results: [
+            'Снижение веса 0.5-1 кг в неделю',
+            'Улучшение выносливости',
+            'Ускорение метаболизма'
         ],
-        equipment: ['Штанга', 'Турник', 'Гантели'],
-        tips: [
-            'Разминка перед тренировкой обязательна',
-            'Следите за дыханием',
-            'Увеличивайте вес постепенно'
+        workouts: [
+            {
+                day: 1,
+                type: 'cardio',
+                title: 'HIIT кардио',
+                duration: 30,
+                exercises: [/*...*/]
+            },
+            {
+                day: 2,
+                type: 'strength',
+                title: 'Круговая тренировка',
+                duration: 45,
+                exercises: [/*...*/]
+            },
+            {
+                day: 4,
+                type: 'cardio',
+                title: 'Интервальный бег',
+                duration: 40,
+                exercises: [/*...*/]
+            }
         ]
     },
-    legs: {
-        id: 'legs',
-        title: 'Тренировка ног',
-        category: 'strength',
+    beginner: {
+        id: 'beginner',
+        title: 'Для начинающих',
+        description: 'Базовая программа для знакомства с фитнесом',
+        duration: '4 недели',
+        difficulty: 'easy',
+        category: 'beginner',
+        icon: 'fitness_center',
+        schedule: '3 тренировки в неделю',
+        calories_per_week: '2000-2500 ккал',
+        results: [
+            'Освоение базовых упражнений',
+            'Развитие силы и выносливости',
+            'Формирование привычки к тренировкам'
+        ],
+        workouts: [
+            {
+                day: 1,
+                type: 'full_body',
+                title: 'Общая тренировка',
+                duration: 40,
+                exercises: [/*...*/]
+            },
+            {
+                day: 3,
+                type: 'cardio',
+                title: 'Кардио + растяжка',
+                duration: 30,
+                exercises: [/*...*/]
+            }
+        ]
+    },
+    muscle_gain: {
+        id: 'muscle_gain',
+        title: 'Набор мышечной массы',
+        description: 'Программа для увеличения мышечной массы и силы',
+        duration: '12 недель',
         difficulty: 'hard',
-        duration: 40,
-        calories: 400,
-        description: 'Интенсивная тренировка для развития силы и выносливости ног',
-        exercises: [
+        category: 'muscle_gain',
+        icon: 'exercise',
+        schedule: '4-5 тренировок в неделю',
+        calories_per_week: '4000-4500 ккал',
+        results: [
+            'Увеличение мышечной массы',
+            'Рост силовых показателей',
+            'Улучшение рельефа тела'
+        ],
+        workouts: [
             {
-                name: 'Приседания со штангой',
-                sets: 4,
-                reps: '8-10',
-                rest: 120,
-                technique: 'Глубина до параллели с полом, спина прямая',
-                video: 'url_to_video'
+                day: 1,
+                type: 'strength',
+                title: 'Грудь + Трицепс',
+                duration: 60,
+                exercises: [/*...*/]
             },
             {
-                name: 'Выпады с гантелями',
-                sets: 3,
-                reps: '12 на ногу',
-                rest: 90,
-                technique: 'Колено заднее ноги почти касается пола',
-                video: 'url_to_video'
+                day: 2,
+                type: 'strength',
+                title: 'Спина + Бицепс',
+                duration: 60,
+                exercises: [/*...*/]
             }
-        ],
-        equipment: ['Штанга', 'Гантели'],
-        tips: [
-            'Особое внимание разминке коленей',
-            'Контролируйте технику на каждом повторении',
-            'Растяжка после тренировки обязательна'
-        ]
-    },
-    // Кардио тренировки
-    hiit_running: {
-        id: 'hiit_running',
-        title: 'Интервальный бег',
-        category: 'cardio',
-        difficulty: 'medium',
-        duration: 30,
-        calories: 300,
-        description: 'Интервальная тренировка для сжигания жира и улучшения выносливости',
-        intervals: [
-            { type: 'Разминка', duration: 5, intensity: 'Легкая ходьба' },
-            { type: 'Интервал 1', duration: 1, intensity: 'Спринт' },
-            { type: 'Отдых', duration: 1, intensity: 'Ходьба' },
-            // повторить 6 раз
-            { type: 'Заминка', duration: 5, intensity: 'Легкая ходьба' }
-        ],
-        tips: [
-            'Контролируйте пульс',
-            'Пейте воду между интервалами',
-            'Прекратите при сильной усталости'
         ]
     }
-    // ... остальные тренировки
 };
 
 // Функция показа деталей тренировки

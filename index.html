@@ -36,183 +36,41 @@
         </nav>
 
         <div class="tab-content active" id="workouts">
-            <div class="workouts-list">
-                <!-- Силовые тренировки -->
-                <div class="workout-category">
-                    <h2>Силовые тренировки</h2>
-                    <div class="workout-card">
-                        <div class="workout-icon">
-                            <span class="material-symbols-rounded">fitness_center</span>
-                        </div>
-                        <div class="workout-info">
-                            <div class="workout-header">
-                                <h3>Тренировка верхней части тела</h3>
-                                <span class="difficulty-badge">Средний</span>
-                            </div>
-                            <p>Жим лежа, подтягивания, бицепс</p>
-                            <div class="workout-details">
-                                <span><span class="material-symbols-rounded">schedule</span>45 мин</span>
-                                <span><span class="material-symbols-rounded">local_fire_department</span>350 ккал</span>
-                                <span><span class="material-symbols-rounded">fitness_center</span>3 подхода</span>
-                            </div>
-                            <div class="workout-actions">
-                                <button class="workout-btn info-btn">
-                                    <span class="material-symbols-rounded">info</span>
-                                    Детали
-                                </button>
-                                <button class="workout-btn start-btn">
-                                    <span class="material-symbols-rounded">play_arrow</span>
-                                    Начать
-                                </button>
-                            </div>
-                        </div>
+            <div class="programs-list">
+                <div class="program-card" data-program="weight_loss">
+                    <div class="program-icon">
+                        <span class="material-symbols-rounded">monitor_weight</span>
                     </div>
-                    <div class="workout-card">
-                        <div class="workout-icon">
-                            <span class="material-symbols-rounded">sprint</span>
+                    <div class="program-info">
+                        <div class="program-header">
+                            <h3>Похудение</h3>
+                            <span class="program-duration">8 недель</span>
                         </div>
-                        <div class="workout-info">
-                            <div class="workout-header">
-                                <h3>Тренировка ног</h3>
-                                <span class="difficulty-badge">Сложный</span>
+                        <p>Программа для снижения веса и улучшения метаболизма</p>
+                        <div class="program-details">
+                            <span><span class="material-symbols-rounded">calendar_month</span>3-4 тренировки/нед</span>
+                            <span><span class="material-symbols-rounded">fitness_center</span>Средний</span>
+                        </div>
+                        <div class="program-progress">
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 0%"></div>
                             </div>
-                            <p>Приседания, выпады, жим ногами</p>
-                            <div class="workout-details">
-                                <span><span class="material-symbols-rounded">schedule</span>40 мин</span>
-                                <span><span class="material-symbols-rounded">local_fire_department</span>400 ккал</span>
-                                <span><span class="material-symbols-rounded">fitness_center</span>4 подхода</span>
-                            </div>
-                            <div class="workout-actions">
-                                <button class="workout-btn info-btn">
-                                    <span class="material-symbols-rounded">info</span>
-                                    Детали
-                                </button>
-                                <button class="workout-btn start-btn">
-                                    <span class="material-symbols-rounded">play_arrow</span>
-                                    Начать
-                                </button>
-                            </div>
+                            <span class="progress-text">Не начато</span>
+                        </div>
+                        <div class="program-actions">
+                            <button class="program-btn info-btn">
+                                <span class="material-symbols-rounded">info</span>
+                                Подробнее
+                            </button>
+                            <button class="program-btn start-btn">
+                                <span class="material-symbols-rounded">play_arrow</span>
+                                Начать
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Кардио тренировки -->
-                <div class="workout-category">
-                    <h2>Кардио</h2>
-                    <div class="workout-card">
-                        <div class="workout-icon">
-                            <span class="material-symbols-rounded">directions_run</span>
-                        </div>
-                        <div class="workout-info">
-                            <div class="workout-header">
-                                <h3>Интервальный бег</h3>
-                                <span class="difficulty-badge">Средний</span>
-                            </div>
-                            <p>HIIT тренировка с чередованием бега и ходьбы</p>
-                            <div class="workout-details">
-                                <span><span class="material-symbols-rounded">schedule</span>30 мин</span>
-                                <span><span class="material-symbols-rounded">local_fire_department</span>300 ккал</span>
-                                <span><span class="material-symbols-rounded">repeat</span>6 интервалов</span>
-                            </div>
-                            <div class="workout-actions">
-                                <button class="workout-btn info-btn">
-                                    <span class="material-symbols-rounded">info</span>
-                                    Детали
-                                </button>
-                                <button class="workout-btn start-btn">
-                                    <span class="material-symbols-rounded">play_arrow</span>
-                                    Начать
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="workout-card">
-                        <div class="workout-icon">
-                            <span class="material-symbols-rounded">pedal_bike</span>
-                        </div>
-                        <div class="workout-info">
-                            <div class="workout-header">
-                                <h3>Велотренировка</h3>
-                                <span class="difficulty-badge">Начальный</span>
-                            </div>
-                            <p>Кардио на велотренажёре</p>
-                            <div class="workout-details">
-                                <span><span class="material-symbols-rounded">schedule</span>25 мин</span>
-                                <span><span class="material-symbols-rounded">local_fire_department</span>200 ккал</span>
-                                <span><span class="material-symbols-rounded">speed</span>Средний темп</span>
-                            </div>
-                            <div class="workout-actions">
-                                <button class="workout-btn info-btn">
-                                    <span class="material-symbols-rounded">info</span>
-                                    Детали
-                                </button>
-                                <button class="workout-btn start-btn">
-                                    <span class="material-symbols-rounded">play_arrow</span>
-                                    Начать
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Растяжка -->
-                <div class="workout-category">
-                    <h2>Растяжка</h2>
-                    <div class="workout-card">
-                        <div class="workout-icon">
-                            <span class="material-symbols-rounded">self_improvement</span>
-                        </div>
-                        <div class="workout-info">
-                            <div class="workout-header">
-                                <h3>Общая растяжка</h3>
-                                <span class="difficulty-badge">Начальный</span>
-                            </div>
-                            <p>Комплекс упражнений для всего тела</p>
-                            <div class="workout-details">
-                                <span><span class="material-symbols-rounded">schedule</span>20 мин</span>
-                                <span><span class="material-symbols-rounded">fitness_center</span>10 упражнений</span>
-                                <span><span class="material-symbols-rounded">psychology</span>Расслабление</span>
-                            </div>
-                            <div class="workout-actions">
-                                <button class="workout-btn info-btn">
-                                    <span class="material-symbols-rounded">info</span>
-                                    Детали
-                                </button>
-                                <button class="workout-btn start-btn">
-                                    <span class="material-symbols-rounded">play_arrow</span>
-                                    Начать
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="workout-card">
-                        <div class="workout-icon">
-                            <span class="material-symbols-rounded">yoga</span>
-                        </div>
-                        <div class="workout-info">
-                            <div class="workout-header">
-                                <h3>Йога для начинающих</h3>
-                                <span class="difficulty-badge">Начальный</span>
-                            </div>
-                            <p>Базовые асаны и дыхательные упражнения</p>
-                            <div class="workout-details">
-                                <span><span class="material-symbols-rounded">schedule</span>30 мин</span>
-                                <span><span class="material-symbols-rounded">self_improvement</span>8 поз</span>
-                                <span><span class="material-symbols-rounded">psychology</span>Медитация</span>
-                            </div>
-                            <div class="workout-actions">
-                                <button class="workout-btn info-btn">
-                                    <span class="material-symbols-rounded">info</span>
-                                    Детали
-                                </button>
-                                <button class="workout-btn start-btn">
-                                    <span class="material-symbols-rounded">play_arrow</span>
-                                    Начать
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Аналогично для других программ -->
             </div>
         </div>
 

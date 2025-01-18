@@ -552,4 +552,82 @@ input:focus, select:focus {
     position: absolute;
     left: 8px;
     color: var(--tg-theme-button-color);
+}
+
+.program-card {
+    background: var(--tg-theme-bg-color);
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
+    border: var(--card-border);
+}
+
+.program-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.program-duration {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+    background: var(--tg-theme-secondary-bg-color);
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.program-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--tg-theme-button-color);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.program-icon .material-symbols-rounded {
+    font-size: 32px;
+    color: var(--tg-theme-button-text-color);
+}
+
+.program-details {
+    display: flex;
+    gap: 16px;
+    margin: 12px 0;
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+}
+
+.program-progress {
+    margin: 16px 0;
+}
+
+.progress-bar {
+    height: 6px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: var(--tg-theme-button-color);
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color);
+    margin-top: 4px;
+    display: block;
+}
+
+.program-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
 } 
