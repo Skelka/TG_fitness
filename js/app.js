@@ -244,18 +244,18 @@ function setupTabHandlers() {
             const tabContent = document.getElementById(tabId);
             tabContent.classList.add('active');
 
-            if (tabId === 'profile' && window.profileData) {
+            // При переключении на вкладку с программами
+            if (tabId === 'workouts') {
+                setupProgramHandlers(); // Переинициализируем обработчики
+                mainButton.hide();
+            } else if (tabId === 'profile' && window.profileData) {
                 fillProfileForm(window.profileData);
                 mainButton.setText('Сохранить профиль');
                 mainButton.show();
             } else if (tabId === 'stats') {
-                // Загружаем и отображаем историю веса
                 try {
-                    const weightHistory = await new Promise((resolve) => {
-                        tg.CloudStorage.getItem('weightHistory', (error, value) => {
-                            resolve(value ? JSON.parse(value) : []);
-                        });
-                    });
+                    const weightHistory = await getStorageItem('weightHistory')
+                        .then(data => data ? JSON.parse(data) : []);
                     updateWeightChart(weightHistory);
                 } catch (e) {
                     console.error('Ошибка при загрузке истории веса:', e);
@@ -354,6 +354,7 @@ function initApp() {
     console.log('Доступные методы WebApp:', Object.keys(tg));
 
     setupEventListeners();
+    setupProgramHandlers();
     loadProfile();
 }
 
@@ -733,11 +734,16 @@ async function startProgram(programId) {
 
 // Обновляем обработчики событий
 function setupProgramHandlers() {
+    // Обработчики для кнопок в карточках программ
     document.querySelectorAll('.program-btn').forEach(button => {
         button.addEventListener('click', (e) => {
             e.preventDefault();
+            e.stopPropagation();
+            
             const programCard = button.closest('.program-card');
             const programId = programCard.dataset.program;
+            
+            console.log('Нажата кнопка:', button.className, 'для программы:', programId);
             
             if (button.classList.contains('info-btn')) {
                 tg.HapticFeedback.impactOccurred('medium');
@@ -745,6 +751,17 @@ function setupProgramHandlers() {
             } else if (button.classList.contains('start-btn')) {
                 tg.HapticFeedback.impactOccurred('medium');
                 startProgram(programId);
+            }
+        });
+    });
+
+    // Добавляем обработчик для всей карточки программы
+    document.querySelectorAll('.program-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.program-btn')) {
+                const programId = card.dataset.program;
+                tg.HapticFeedback.impactOccurred('medium');
+                showProgramDetails(programId);
             }
         });
     });
