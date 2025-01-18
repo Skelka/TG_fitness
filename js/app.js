@@ -865,29 +865,33 @@ function showProgramSchedule(programId) {
 
 // Обновим обработчик событий попапа
 function setupPopupHandlers() {
-    tg.onEvent('popupButtonClicked', (button_id) => {
-        if (button_id.startsWith('start_workout_')) {
-            // Извлекаем programId и workoutDay из button_id
-            const [_, __, programId, workoutDay] = button_id.split('_');
-            startWorkoutSession(programId, parseInt(workoutDay));
-        } else {
-            const [action, ...params] = button_id.split('_');
-            
-            switch(action) {
-                case 'results':
-                    showProgramResults(params[0]);
-                    break;
-                case 'schedule':
-                    showProgramSchedule(params[0]);
-                    break;
-                case 'start':
-                    if (params[0] === 'program') {
-                        startProgram(params[1]);
-                    }
-                    break;
-                case 'back':
-                    showProgramDetails(params[0]);
-                    break;
+    tg.onEvent('popupClosed', (event) => {
+        console.log('Popup closed with event:', event);
+        if (event && event.button_id) {
+            if (event.button_id.startsWith('start_workout_')) {
+                // Извлекаем programId и workoutDay из button_id
+                const [_, __, programId, workoutDay] = event.button_id.split('_');
+                console.log('Starting workout:', programId, workoutDay);
+                startWorkoutSession(programId, parseInt(workoutDay));
+            } else {
+                const [action, ...params] = event.button_id.split('_');
+                
+                switch(action) {
+                    case 'results':
+                        showProgramResults(params[0]);
+                        break;
+                    case 'schedule':
+                        showProgramSchedule(params[0]);
+                        break;
+                    case 'start':
+                        if (params[0] === 'program') {
+                            startProgram(params[1]);
+                        }
+                        break;
+                    case 'back':
+                        showProgramDetails(params[0]);
+                        break;
+                }
             }
         }
     });
@@ -947,11 +951,11 @@ async function startProgram(programId) {
             
             programProgress.plannedWorkouts.push({
                 day: workout.day,
-                plannedDate: workoutDate.getTime()
+                plannedDate: workoutDate.getTime(),
+                title: workout.title,
+                duration: workout.duration,
+                type: workout.type
             });
-
-            // Добавляем в календарь без await
-            addWorkoutToCalendar(workout, workoutDate).catch(console.error);
         }
 
         // Сохраняем прогресс
@@ -959,6 +963,9 @@ async function startProgram(programId) {
 
         // Обновляем статистику
         updateStatistics(programProgress);
+
+        // Обновляем календарь
+        renderCalendar();
 
         // Показываем сообщение о начале программы
         tg.showPopup({
@@ -1116,16 +1123,24 @@ function setupProgramHandlers() {
 // Добавим функцию для начала конкретной тренировки
 function startWorkoutSession(programId, workoutDay) {
     try {
+        console.log('Starting workout session:', programId, workoutDay);
         const program = programData[programId];
-        const workout = program.workouts.find(w => w.day === workoutDay);
-        
-        if (!workout) {
-            showError(new Error('Тренировка не найдена'));
-            return;
+        if (!program) {
+            throw new Error('Программа не найдена');
         }
 
-        // Показываем интерфейс тренировки
+        const workout = program.workouts.find(w => w.day === workoutDay);
+        if (!workout) {
+            throw new Error('Тренировка не найдена');
+        }
+
+        // Переключаемся на вкладку тренировок
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => tab.style.display = 'none');
         const workoutsTab = document.getElementById('workouts');
+        workoutsTab.style.display = 'block';
+
+        // Показываем интерфейс тренировки
         workoutsTab.innerHTML = `
             <div class="workout-session">
                 <h2>${workout.title}</h2>
@@ -1164,6 +1179,8 @@ function startWorkoutSession(programId, workoutDay) {
 
         // Запускаем таймер
         startWorkoutTimer(workout.duration * 60);
+
+        console.log('Workout session started successfully');
 
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
@@ -1300,49 +1317,47 @@ function setupCheckboxHandlers() {
 
 // Функция для отображения календаря
 function renderCalendar() {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    
-    // Получаем название месяца
-    const monthNames = [
-        'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-        'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
-    ];
-    
-    // Обновляем заголовок календаря
-    document.querySelector('.calendar-header h2').textContent = 
-        `${monthNames[currentMonth]} ${currentYear}`;
-    
-    const firstDay = new Date(currentYear, currentMonth, 1);
-    const lastDay = new Date(currentYear, currentMonth + 1, 0);
-    
-    // Получаем контейнер для дней
-    const daysContainer = document.querySelector('.calendar-days');
-    daysContainer.innerHTML = '';
-    
-    // Добавляем пустые ячейки в начале (если месяц начинается не с понедельника)
-    let firstDayOfWeek = firstDay.getDay() || 7; // Преобразуем воскресенье (0) в 7
-    for (let i = 1; i < firstDayOfWeek; i++) {
-        daysContainer.appendChild(createDayElement(''));
-    }
-    
-    // Добавляем дни месяца
-    for (let day = 1; day <= lastDay.getDate(); day++) {
-        const dayElement = createDayElement(day);
-        
-        // Отмечаем текущий день
-        if (day === now.getDate() && 
-            currentMonth === now.getMonth() && 
-            currentYear === now.getFullYear()) {
-            dayElement.classList.add('today');
-        }
-        
-        daysContainer.appendChild(dayElement);
-    }
+    const calendarContainer = document.getElementById('calendar');
+    if (!calendarContainer) return;
 
-    // Загружаем и отмечаем дни тренировок
-    loadWorkoutDays();
+    // Получаем активную программу
+    getStorageItem('activeProgram')
+        .then(data => {
+            const programProgress = data ? JSON.parse(data) : null;
+            if (!programProgress) return;
+
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+
+            // Отрисовываем календарь с тренировками
+            const calendar = generateCalendar(currentYear, currentMonth, programProgress.plannedWorkouts);
+            calendarContainer.innerHTML = calendar;
+
+            // Добавляем обработчики для навигации по календарю
+            setupCalendarNavigation(programProgress.plannedWorkouts);
+        })
+        .catch(console.error);
+}
+
+// Функция генерации календаря с тренировками
+function generateCalendar(year, month, workouts) {
+    // ... существующий код генерации календаря ...
+
+    // Добавляем маркеры тренировок в соответствующие дни
+    workouts.forEach(workout => {
+        const workoutDate = new Date(workout.plannedDate);
+        if (workoutDate.getMonth() === month && workoutDate.getFullYear() === year) {
+            const day = workoutDate.getDate();
+            const dayCell = calendar.querySelector(`[data-date="${day}"]`);
+            if (dayCell) {
+                dayCell.classList.add('has-workout');
+                dayCell.setAttribute('data-workout', JSON.stringify(workout));
+            }
+        }
+    });
+
+    return calendar;
 }
 
 // Создаем элемент дня
