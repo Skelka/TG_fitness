@@ -234,5 +234,28 @@ function startNewWorkout() {
 
 // Загрузка раздела при запуске
 document.addEventListener('DOMContentLoaded', () => {
+    // Добавляем обработчики для навигации
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            loadSection(btn.dataset.section);
+        });
+    });
+
+    // Добавляем обработчик для формы профиля
+    document.addEventListener('submit', (e) => {
+        if (e.target.id === 'profile-form') {
+            e.preventDefault();
+            saveProfile();
+        }
+    });
+
+    // Добавляем обработчик для кнопки начала тренировки
+    document.addEventListener('click', (e) => {
+        if (e.target.id === 'start-workout-btn') {
+            startNewWorkout();
+        }
+    });
+
+    // Загружаем начальный раздел
     loadSection('workouts');
 }); 
