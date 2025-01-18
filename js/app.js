@@ -29,14 +29,13 @@ function sendToBot(data, shouldClose = false) {
     }
 }
 
-// Обработчик событий от бота
-tg.onEvent('message', function(event) {
-    console.log('Получено событие от бота:', event);
+// Обработчик сообщений от бота
+window.addEventListener('message', function(event) {
+    console.log('Получено сообщение:', event.data);
     try {
         const data = JSON.parse(event.data);
-        console.log('Получены данные от бота:', data);
+        console.log('Разобранные данные:', data);
         
-        // Обработка данных в зависимости от действия
         switch(data.action) {
             case 'profile_data':
                 updateProfile(data.profile);
@@ -47,20 +46,53 @@ tg.onEvent('message', function(event) {
             case 'weight_history_data':
                 updateWeightHistory(data.history);
                 break;
+            default:
+                console.log('Неизвестный тип данных:', data.action);
         }
     } catch (error) {
         console.error('Ошибка при обработке сообщения:', error);
     }
 });
 
-// Функции обновления UI
+// Функция для обновления профиля
 function updateProfile(profile) {
+    console.log('Обновление профиля:', profile);
     const form = document.getElementById('profile-form');
     if (form && profile) {
-        Object.keys(profile).forEach(key => {
-            const input = document.getElementById(key);
-            if (input) input.value = profile[key];
-        });
+        form.innerHTML = `
+            <div class="input-group">
+                <label for="name">Имя</label>
+                <input type="text" id="name" value="${profile.name || ''}" required>
+            </div>
+            <div class="input-group">
+                <label for="age">Возраст</label>
+                <input type="number" id="age" value="${profile.age || ''}" required>
+            </div>
+            <div class="input-group">
+                <label for="gender">Пол</label>
+                <select id="gender" required>
+                    <option value="male" ${profile.gender === 'male' ? 'selected' : ''}>Мужской</option>
+                    <option value="female" ${profile.gender === 'female' ? 'selected' : ''}>Женский</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="height">Рост (см)</label>
+                <input type="number" id="height" value="${profile.height || ''}" required>
+            </div>
+            <div class="input-group">
+                <label for="weight">Вес (кг)</label>
+                <input type="number" id="weight" value="${profile.weight || ''}" required>
+            </div>
+            <div class="input-group">
+                <label for="goal">Цель</label>
+                <select id="goal" required>
+                    <option value="weight_loss" ${profile.goal === 'weight_loss' ? 'selected' : ''}>Похудение</option>
+                    <option value="muscle_gain" ${profile.goal === 'muscle_gain' ? 'selected' : ''}>Набор массы</option>
+                    <option value="maintenance" ${profile.goal === 'maintenance' ? 'selected' : ''}>Поддержание формы</option>
+                </select>
+            </div>
+            <button type="submit" class="save-btn">Сохранить</button>
+        `;
     }
 }
 
