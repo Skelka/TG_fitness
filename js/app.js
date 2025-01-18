@@ -3,37 +3,15 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 tg.enableClosingConfirmation();
 
-// Функция для запроса данных у бота
-async function requestData(action) {
+// Функция для отправки запроса боту
+function requestFromBot(action) {
     try {
-        const response = await fetch(`${WEBAPP_URL}/api/${action}`, {
-            method: 'GET',
-            headers: {
-                'Telegram-User-Id': tg.initDataUnsafe.user.id,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Получены данные:', data);
-        
-        switch(action) {
-            case 'get_profile':
-                updateProfile(data.profile);
-                break;
-            case 'get_workouts':
-                updateWorkouts(data.workouts);
-                break;
-            case 'get_weight_history':
-                updateWeightHistory(data.history);
-                break;
-        }
+        tg.sendData(JSON.stringify({
+            action: action,
+            user_id: tg.initDataUnsafe.user.id
+        }));
     } catch (error) {
-        console.error('Ошибка при получении данных:', error);
+        console.error('Ошибка при запросе данных:', error);
         tg.showPopup({
             title: 'Ошибка',
             message: 'Не удалось загрузить данные',
@@ -51,7 +29,7 @@ async function loadWorkouts() {
             <p>Загрузка тренировок...</p>
         </div>
     `;
-    await requestData('get_workouts');
+    requestFromBot('get_workouts');
 }
 
 // Загрузка статистики
@@ -63,7 +41,7 @@ async function loadStats() {
             <p>Загрузка статистики...</p>
         </div>
     `;
-    await requestData('get_weight_history');
+    requestFromBot('get_weight_history');
 }
 
 // Загрузка профиля
@@ -76,7 +54,7 @@ async function loadProfile() {
                 <p>Загрузка профиля...</p>
             </div>
         `;
-        await requestData('get_profile');
+        requestFromBot('get_profile');
     }
 }
 
