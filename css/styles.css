@@ -857,7 +857,7 @@ input:focus, select:focus {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px;
+    padding: 8px 12px;
     background: var(--tg-theme-bg-color);
     border-radius: 8px;
     cursor: pointer;
@@ -865,24 +865,30 @@ input:focus, select:focus {
     text-align: center;
 }
 
-.checkbox-label span {
-    font-size: 14px;
-    line-height: 1.2;
-}
-
-/* Стили для выбранного состояния */
-.checkbox-label input:checked ~ span {
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-    padding: 4px 8px;
-    border-radius: 6px;
-}
-
-/* Убираем ненужные стили */
-.checkbox-group::-webkit-scrollbar {
+.checkbox-label input {
     display: none;
 }
 
+.checkbox-label span {
+    font-size: 14px;
+    line-height: 1.2;
+    transition: all 0.3s;
+}
+
+/* Стили для выбранного состояния */
+.checkbox-label input:checked {
+    background: var(--tg-theme-button-color);
+}
+
+.checkbox-label input:checked ~ span {
+    color: var(--tg-theme-button-text-color);
+}
+
+.checkbox-label:has(input:checked) {
+    background: var(--tg-theme-button-color);
+}
+
+/* Убираем ненужные стили */
 .equipment-grid {
     display: none;
 }
