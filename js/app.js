@@ -73,13 +73,20 @@ async function loadWorkouts() {
     try {
         workoutHistory.innerHTML = '<p>Загрузка тренировок...</p>';
         
-        // Просто отправляем запрос
-        tg.sendData(JSON.stringify({
-            action: 'get_workouts'
-        }));
+        // Используем MainButton для отправки
+        tg.MainButton.setText('Загрузка тренировок...');
+        tg.MainButton.show();
+        tg.MainButton.onClick(() => {
+            tg.sendData(JSON.stringify({
+                action: 'get_workouts'
+            }));
+            tg.MainButton.hide();
+        });
+        tg.MainButton.click();
     } catch (error) {
         console.error('Ошибка при загрузке тренировок:', error);
         workoutHistory.innerHTML = '<p>Ошибка при загрузке тренировок</p>';
+        tg.MainButton.hide();
     }
 }
 
@@ -89,13 +96,19 @@ async function loadStats() {
     try {
         weightChart.innerHTML = '<p>Загрузка статистики...</p>';
         
-        // Просто отправляем запрос
-        tg.sendData(JSON.stringify({
-            action: 'get_weight_history'
-        }));
+        tg.MainButton.setText('Загрузка статистики...');
+        tg.MainButton.show();
+        tg.MainButton.onClick(() => {
+            tg.sendData(JSON.stringify({
+                action: 'get_weight_history'
+            }));
+            tg.MainButton.hide();
+        });
+        tg.MainButton.click();
     } catch (error) {
         console.error('Ошибка при загрузке статистики:', error);
         weightChart.innerHTML = '<p>Ошибка при загрузке статистики</p>';
+        tg.MainButton.hide();
     }
 }
 
@@ -133,16 +146,20 @@ function loadTips() {
 // Загрузка профиля
 async function loadProfile() {
     try {
-        // Показываем сообщение о загрузке
         const form = document.getElementById('profile-form');
         if (form) {
             form.innerHTML = '<p>Загрузка данных профиля...</p>';
         }
 
-        // Просто отправляем запрос
-        tg.sendData(JSON.stringify({
-            action: 'get_profile'
-        }));
+        tg.MainButton.setText('Загрузка профиля...');
+        tg.MainButton.show();
+        tg.MainButton.onClick(() => {
+            tg.sendData(JSON.stringify({
+                action: 'get_profile'
+            }));
+            tg.MainButton.hide();
+        });
+        tg.MainButton.click();
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
         tg.showPopup({
@@ -150,6 +167,7 @@ async function loadProfile() {
             message: 'Не удалось загрузить профиль',
             buttons: [{type: 'ok'}]
         });
+        tg.MainButton.hide();
     }
 }
 
@@ -168,14 +186,18 @@ async function saveProfile() {
     };
 
     try {
-        // Просто отправляем данные
-        tg.sendData(JSON.stringify(formData));
-        
-        tg.showPopup({
-            title: 'Успех',
-            message: 'Профиль сохранен!',
-            buttons: [{type: 'ok'}]
+        tg.MainButton.setText('Сохранение...');
+        tg.MainButton.show();
+        tg.MainButton.onClick(() => {
+            tg.sendData(JSON.stringify(formData));
+            tg.MainButton.hide();
+            tg.showPopup({
+                title: 'Успех',
+                message: 'Профиль сохранен!',
+                buttons: [{type: 'ok'}]
+            });
         });
+        tg.MainButton.click();
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
         tg.showPopup({
@@ -183,6 +205,7 @@ async function saveProfile() {
             message: 'Произошла ошибка при сохранении',
             buttons: [{type: 'ok'}]
         });
+        tg.MainButton.hide();
     }
 }
 
