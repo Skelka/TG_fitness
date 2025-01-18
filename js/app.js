@@ -176,7 +176,8 @@ function loadSection(sectionName) {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.querySelector(`[onclick="loadSection('${sectionName}')"]`).classList.add('active');
+    // Ищем кнопку по data-атрибуту вместо onclick
+    document.querySelector(`.nav-btn[data-section="${sectionName}"]`).classList.add('active');
 
     // Получаем шаблон раздела
     const template = document.getElementById(`${sectionName}-template`);
@@ -222,7 +223,7 @@ function startNewWorkout() {
             <h2>Выберите тип тренировки</h2>
             <div class="workout-types">
                 ${workoutTypes.map(type => `
-                    <button onclick="selectWorkout('${type.id}')" class="workout-type-btn">
+                    <button class="workout-type-btn" data-workout-type="${type.id}">
                         <span class="workout-icon">${type.icon}</span>
                         <span class="workout-name">${type.name}</span>
                     </button>
@@ -230,9 +231,23 @@ function startNewWorkout() {
             </div>
         </div>
     `;
+
+    // Добавляем обработчики для кнопок выбора типа тренировки
+    document.querySelectorAll('.workout-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            selectWorkout(btn.dataset.workoutType);
+        });
+    });
 }
 
-// Загрузка раздела при запуске
+// Добавим функцию selectWorkout, если её еще нет
+function selectWorkout(workoutType) {
+    // Здесь будет логика выбора тренировки
+    console.log('Выбран тип тренировки:', workoutType);
+    // Можно добавить переход к форме создания тренировки
+}
+
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     // Добавляем обработчики для навигации
     document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -245,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('submit', (e) => {
         if (e.target.id === 'profile-form') {
             e.preventDefault();
-            saveProfile();
+            saveProfile(e);
         }
     });
 
