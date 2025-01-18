@@ -1,6 +1,40 @@
-// Инициализация Telegram WebApp
+// Инициализация Telegram WebApp и получение user_id из URL
 const tg = window.Telegram.WebApp;
 tg.expand();
+
+// Получаем user_id из URL
+const urlParams = new URLSearchParams(window.location.search);
+const encodedUser = urlParams.get('user');
+const userId = encodedUser ? atob(encodedUser) : null;
+
+if (!userId) {
+    console.error('User ID не найден в URL');
+}
+
+// Функция для работы с API
+async function fetchAPI(endpoint, data = null) {
+    const baseUrl = 'https://your-backend-api.com'; // URL вашего API
+    const url = `${baseUrl}${endpoint}?user_id=${userId}`;
+    
+    try {
+        const response = await fetch(url, {
+            method: data ? 'POST' : 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: data ? JSON.stringify(data) : undefined
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Ошибка при запросе к API:', error);
+        return null;
+    }
+}
 
 // Текущий активный раздел
 let currentSection = 'workouts';
@@ -223,48 +257,32 @@ function addMessageHandler(callback) {
 // Загрузка профиля
 async function loadProfile() {
     try {
-        // Показываем индикатор загрузки
-        tg.MainButton.setText('Загрузка...');
-        tg.MainButton.show();
-        tg.MainButton.disable();
-
-        // Отправляем запрос на получение данных профиля
-        const success = await sendDataToBot({
-            action: 'get_profile'
-        });
-
-        if (!success) {
-            console.error('Не удалось отправить запрос на получение профиля');
+        const profile = await fetchAPI('/api/profile');
+        if (profile) {
+            Object.keys(profile).forEach(key => {
+                const input = document.getElementById(key);
+                if (input) input.value = profile[key];
+            });
         }
-
-        // Скрываем индикатор через секунду
-        setTimeout(() => {
-            tg.MainButton.hide();
-        }, 1000);
-
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
-        tg.MainButton.hide();
     }
 }
 
 // Сохранение профиля
 async function saveProfile() {
     const formData = {
-        action: 'save_profile',
-        profile: {
-            name: document.getElementById('name').value || '',
-            age: parseInt(document.getElementById('age').value) || 0,
-            gender: document.getElementById('gender').value || 'male',
-            height: parseFloat(document.getElementById('height').value) || 0,
-            weight: parseFloat(document.getElementById('weight').value) || 0,
-            goal: document.getElementById('goal').value || 'maintenance'
-        }
+        name: document.getElementById('name').value || '',
+        age: parseInt(document.getElementById('age').value) || 0,
+        gender: document.getElementById('gender').value || 'male',
+        height: parseFloat(document.getElementById('height').value) || 0,
+        weight: parseFloat(document.getElementById('weight').value) || 0,
+        goal: document.getElementById('goal').value || 'maintenance'
     };
 
     try {
-        const success = await sendDataToBot(formData);
-        if (success) {
+        const result = await fetchAPI('/api/profile/update', formData);
+        if (result && result.success) {
             tg.showPopup({
                 title: 'Успех',
                 message: 'Профиль успешно сохранен!',
