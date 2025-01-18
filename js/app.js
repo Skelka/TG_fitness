@@ -14,11 +14,12 @@ mainButton.hide();
 async function loadProfile() {
     try {
         // Пробуем загрузить данные из CloudStorage
-        const storedData = await tg.CloudStorage.getItem('profile');
-        console.log('Данные из CloudStorage:', storedData);
+        const result = await tg.CloudStorage.getItem('profile');
+        console.log('Результат из CloudStorage:', result);
         
-        if (storedData) {
-            const profile = JSON.parse(storedData);
+        // Проверяем, что получили значение
+        if (result && result.value) {
+            const profile = JSON.parse(result.value);
             console.log('Загружены данные из CloudStorage:', profile);
             
             // Заполняем форму
@@ -30,6 +31,8 @@ async function loadProfile() {
             document.getElementById('goal').value = profile.goal || 'maintenance';
             
             tg.HapticFeedback.notificationOccurred('success');
+        } else {
+            console.log('Нет сохраненных данных в CloudStorage');
         }
         
         // Показываем кнопку после загрузки данных
@@ -59,8 +62,8 @@ async function saveProfile() {
         console.log('Подготовленные данные для сохранения:', profileData);
 
         // Сохраняем в CloudStorage
-        await tg.CloudStorage.setItem('profile', JSON.stringify(profileData));
-        console.log('Данные сохранены в CloudStorage');
+        const result = await tg.CloudStorage.setItem('profile', JSON.stringify(profileData));
+        console.log('Результат сохранения в CloudStorage:', result);
 
         // Отправляем уведомление боту о том, что данные обновлены
         const sendData = {
