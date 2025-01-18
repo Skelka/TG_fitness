@@ -163,29 +163,37 @@
                     <div class="stat-icon">
                         <span class="material-symbols-rounded">calendar_month</span>
                     </div>
-                    <div class="stat-value">12</div>
-                    <div class="stat-label">Тренировок в этом месяце</div>
+                    <div class="stat-content">
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">Тренировок в месяце</div>
+                    </div>
                 </div>
                 <div class="stat-mini-card">
                     <div class="stat-icon">
                         <span class="material-symbols-rounded">local_fire_department</span>
                     </div>
-                    <div class="stat-value">4,800</div>
-                    <div class="stat-label">Ккал сожжено</div>
+                    <div class="stat-content">
+                        <div class="stat-value">4,800</div>
+                        <div class="stat-label">Ккал сожжено</div>
+                    </div>
                 </div>
                 <div class="stat-mini-card">
                     <div class="stat-icon">
                         <span class="material-symbols-rounded">timer</span>
                     </div>
-                    <div class="stat-value">8ч 30м</div>
-                    <div class="stat-label">Общее время</div>
+                    <div class="stat-content">
+                        <div class="stat-value">8ч 30м</div>
+                        <div class="stat-label">Общее время</div>
+                    </div>
                 </div>
                 <div class="stat-mini-card">
                     <div class="stat-icon">
                         <span class="material-symbols-rounded">trending_up</span>
                     </div>
-                    <div class="stat-value">85%</div>
-                    <div class="stat-label">Достижение цели</div>
+                    <div class="stat-content">
+                        <div class="stat-value">85%</div>
+                        <div class="stat-label">Достижение цели</div>
+                    </div>
                 </div>
             </div>
             
@@ -258,28 +266,22 @@
 
                 <div class="form-section">
                     <h4>Цели и предпочтения</h4>
-                    <div class="goals-grid">
-                        <label class="goal-item">
-                            <input type="radio" name="goal" value="weight_loss">
-                            <span class="goal-icon">
-                                <span class="material-symbols-rounded">weight</span>
-                            </span>
-                            <span class="goal-label">Похудение</span>
-                        </label>
-                        <label class="goal-item">
-                            <input type="radio" name="goal" value="muscle_gain">
-                            <span class="goal-icon">
-                                <span class="material-symbols-rounded">exercise</span>
-                            </span>
-                            <span class="goal-label">Набор массы</span>
-                        </label>
-                        <label class="goal-item">
-                            <input type="radio" name="goal" value="maintenance">
-                            <span class="goal-icon">
-                                <span class="material-symbols-rounded">monitoring</span>
-                            </span>
-                            <span class="goal-label">Поддержание</span>
-                        </label>
+                    <div class="input-group">
+                        <label>Основная цель</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="radio" name="goal" value="weight_loss">
+                                <span>Похудение</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="radio" name="goal" value="muscle_gain">
+                                <span>Набор массы</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="radio" name="goal" value="maintenance">
+                                <span>Поддержание</span>
+                            </label>
+                        </div>
                     </div>
                     <div class="input-group">
                         <label>Место для тренировок</label>

@@ -145,13 +145,21 @@ function fillProfileForm(profile) {
     if (!form) return;
 
     // Заполняем основные поля
-    const fields = ['age', 'gender', 'height', 'weight', 'goal'];
+    const fields = ['age', 'gender', 'height', 'weight'];
     fields.forEach(field => {
         const input = form.querySelector(`[name="${field}"]`);
         if (input) {
             input.value = profile[field] || '';
         }
     });
+
+    // Заполняем цель (радио-кнопки)
+    if (profile.goal) {
+        const goalInput = form.querySelector(`input[name="goal"][value="${profile.goal}"]`);
+        if (goalInput) {
+            goalInput.checked = true;
+        }
+    }
 
     // Заполняем места для тренировок
     if (profile.workoutPlaces) {
@@ -1176,6 +1184,14 @@ async function completeWorkout(workout, programProgress) {
 function setupCheckboxHandlers() {
     const form = document.getElementById('profile-form');
     if (!form) return;
+
+    // Обработчики для радио-кнопок целей
+    const goalInputs = form.querySelectorAll('input[name="goal"]');
+    goalInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            mainButton.show();
+        });
+    });
 
     // Обработчики для чекбоксов мест тренировок
     const workoutPlaceInputs = form.querySelectorAll('input[name="workout_place"]');

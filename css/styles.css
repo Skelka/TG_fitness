@@ -363,16 +363,19 @@ input:focus, select:focus {
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    gap: 12px;
     margin-bottom: 24px;
 }
 
 .stat-mini-card {
     background: var(--tg-theme-bg-color);
-    padding: 16px;
+    padding: 12px;
     border-radius: 16px;
     box-shadow: var(--card-shadow);
     border: var(--card-border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .stat-mini-card .stat-icon {
@@ -383,18 +386,23 @@ input:focus, select:focus {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 12px;
+    flex-shrink: 0;
+}
+
+.stat-mini-card .stat-content {
+    flex: 1;
 }
 
 .stat-mini-card .stat-value {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 600;
-    margin: 8px 0;
+    margin-bottom: 2px;
 }
 
 .stat-mini-card .stat-label {
-    font-size: 14px;
+    font-size: 12px;
     color: var(--tg-theme-hint-color);
+    line-height: 1.2;
 }
 
 /* Стили для календаря */
@@ -850,6 +858,7 @@ input:focus, select:focus {
     background: var(--tg-theme-bg-color);
     border-radius: 8px;
     cursor: pointer;
+    transition: all 0.3s;
 }
 
 .checkbox-label input {
@@ -857,7 +866,36 @@ input:focus, select:focus {
 }
 
 .checkbox-label input:checked + span {
-    color: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.checkbox-label input:checked {
+    background: var(--tg-theme-button-color);
+}
+
+/* Стили для выбранного состояния */
+.checkbox-label input:checked + span,
+.checkbox-label input[type="radio"]:checked + span {
+    color: var(--tg-theme-button-text-color);
+}
+
+.checkbox-label input:checked,
+.checkbox-label input[type="radio"]:checked {
+    background: var(--tg-theme-button-color);
+}
+
+/* Стиль для контейнера метки при выбранном состоянии */
+.checkbox-label input:checked ~ span,
+.checkbox-label input[type="radio"]:checked ~ span {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+/* Обновляем стиль для самой метки */
+.checkbox-label span {
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.3s;
 }
 
 .equipment-grid {
