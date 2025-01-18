@@ -68,18 +68,30 @@
                         </div>
                     </div>
                     <div class="workout-card">
-                        <div class="workout-icon">🦵</div>
+                        <div class="workout-icon">
+                            <span class="material-symbols-rounded">sprint</span>
+                        </div>
                         <div class="workout-info">
-                            <h3>Тренировка ног</h3>
+                            <div class="workout-header">
+                                <h3>Тренировка ног</h3>
+                                <span class="difficulty-badge">Сложный</span>
+                            </div>
                             <p>Приседания, выпады, жим ногами</p>
                             <div class="workout-details">
-                                <span>🕒 40 мин</span>
-                                <span>🔥 400 ккал</span>
+                                <span><span class="material-symbols-rounded">schedule</span>40 мин</span>
+                                <span><span class="material-symbols-rounded">local_fire_department</span>400 ккал</span>
+                                <span><span class="material-symbols-rounded">fitness_center</span>4 подхода</span>
                             </div>
-                            <button class="start-workout-btn">
-                                <i class="btn-icon">▶️</i>
-                                <span>Начать</span>
-                            </button>
+                            <div class="workout-actions">
+                                <button class="workout-btn info-btn">
+                                    <span class="material-symbols-rounded">info</span>
+                                    Детали
+                                </button>
+                                <button class="workout-btn start-btn">
+                                    <span class="material-symbols-rounded">play_arrow</span>
+                                    Начать
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -126,18 +138,81 @@
             </div>
         </div>
 
+        <div class="tab-content" id="calendar">
+            <div class="calendar-header">
+                <button class="calendar-nav-btn">
+                    <span class="material-symbols-rounded">chevron_left</span>
+                </button>
+                <h2>Декабрь 2023</h2>
+                <button class="calendar-nav-btn">
+                    <span class="material-symbols-rounded">chevron_right</span>
+                </button>
+            </div>
+            <div class="calendar-weekdays">
+                <span>Пн</span>
+                <span>Вт</span>
+                <span>Ср</span>
+                <span>Чт</span>
+                <span>Пт</span>
+                <span>Сб</span>
+                <span>Вс</span>
+            </div>
+            <div class="calendar-days">
+                <!-- Дни будут добавляться динамически -->
+            </div>
+            <div class="calendar-legend">
+                <div class="legend-item">
+                    <span class="legend-dot completed"></span>
+                    <span>Тренировка выполнена</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot planned"></span>
+                    <span>Запланировано</span>
+                </div>
+            </div>
+        </div>
+
         <div class="tab-content" id="stats">
-            <div class="stats-container">
-                <div class="stat-card">
-                    <h3>Вес</h3>
-                    <div class="period-selector">
-                        <button class="period-btn active" data-period="week">Неделя</button>
-                        <button class="period-btn" data-period="month">Месяц</button>
-                        <button class="period-btn" data-period="year">Год</button>
+            <div class="stats-grid">
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">calendar_month</span>
                     </div>
-                    <div class="chart-container">
-                        <canvas id="weightChart"></canvas>
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Тренировок в этом месяце</div>
+                </div>
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">local_fire_department</span>
                     </div>
+                    <div class="stat-value">4,800</div>
+                    <div class="stat-label">Ккал сожжено</div>
+                </div>
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">timer</span>
+                    </div>
+                    <div class="stat-value">8ч 30м</div>
+                    <div class="stat-label">Общее время</div>
+                </div>
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">trending_up</span>
+                    </div>
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">Достижение цели</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Вес</h3>
+                <div class="period-selector">
+                    <button class="period-btn active" data-period="week">Неделя</button>
+                    <button class="period-btn" data-period="month">Месяц</button>
+                    <button class="period-btn" data-period="year">Год</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="weightChart"></canvas>
                 </div>
             </div>
         </div>
