@@ -73,6 +73,7 @@ async function loadWorkouts() {
     try {
         workoutHistory.innerHTML = '<p>Загрузка тренировок...</p>';
         
+        // Просто отправляем запрос
         tg.sendData(JSON.stringify({
             action: 'get_workouts'
         }));
@@ -88,6 +89,7 @@ async function loadStats() {
     try {
         weightChart.innerHTML = '<p>Загрузка статистики...</p>';
         
+        // Просто отправляем запрос
         tg.sendData(JSON.stringify({
             action: 'get_weight_history'
         }));
@@ -131,16 +133,16 @@ function loadTips() {
 // Загрузка профиля
 async function loadProfile() {
     try {
-        // Отправляем данные напрямую через tg.sendData
-        tg.sendData(JSON.stringify({
-            action: 'get_profile'
-        }));
-        
         // Показываем сообщение о загрузке
         const form = document.getElementById('profile-form');
         if (form) {
             form.innerHTML = '<p>Загрузка данных профиля...</p>';
         }
+
+        // Просто отправляем запрос
+        tg.sendData(JSON.stringify({
+            action: 'get_profile'
+        }));
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
         tg.showPopup({
@@ -166,10 +168,9 @@ async function saveProfile() {
     };
 
     try {
-        // Отправляем данные напрямую через tg.sendData
+        // Просто отправляем данные
         tg.sendData(JSON.stringify(formData));
         
-        // Показываем сообщение об успехе
         tg.showPopup({
             title: 'Успех',
             message: 'Профиль сохранен!',
