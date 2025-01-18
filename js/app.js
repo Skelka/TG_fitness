@@ -1281,6 +1281,10 @@ function setupWorkoutControls(workout, programId) {
 // Функция завершения тренировки
 async function completeWorkout(workout, programId) {
     try {
+        if (!workout || typeof workout.day === 'undefined') {
+            throw new Error('Некорректные данные тренировки');
+        }
+
         // Получаем текущий прогресс программы
         const result = await getStorageItem('activeProgram');
         let programProgress = result ? JSON.parse(result) : null;
@@ -1289,7 +1293,8 @@ async function completeWorkout(workout, programId) {
             programProgress = {
                 programId: programId,
                 startDate: Date.now(),
-                completedWorkouts: []
+                completedWorkouts: [],
+                plannedWorkouts: []
             };
         }
 
@@ -1302,23 +1307,32 @@ async function completeWorkout(workout, programId) {
         // Сохраняем обновленный прогресс
         await setStorageItem('activeProgram', JSON.stringify(programProgress));
 
+        // Обновляем статистику
+        updateStatistics(programProgress);
+
         // Показываем сообщение об успехе
-        tg.showPopup({
-            title: 'Тренировка завершена!',
-            message: 'Поздравляем! Вы успешно завершили тренировку.',
-            buttons: [{
-                type: 'default',
-                text: 'Продолжить',
-                id: 'return_to_main'
-            }]
-        });
+        try {
+            await tg.showPopup({
+                title: 'Тренировка завершена!',
+                message: 'Поздравляем! Вы успешно завершили тренировку.',
+                buttons: [{
+                    type: 'default',
+                    text: 'Продолжить',
+                    id: 'return_to_main'
+                }]
+            });
+        } catch (popupError) {
+            // Если попап уже открыт, просто логируем ошибку
+            console.log('Не удалось показать попап:', popupError);
+        }
 
         // Обновляем UI
         updateProgramProgress(programProgress);
 
     } catch (error) {
         console.error('Ошибка при завершении тренировки:', error);
-        showError(error);
+        // Не показываем ошибку пользователю через попап, чтобы избежать конфликтов
+        console.log('Ошибка:', error.message);
     }
 }
 
@@ -1379,21 +1393,62 @@ function renderCalendar() {
 
 // Функция генерации календаря с тренировками
 function generateCalendar(year, month, workouts) {
-    // ... существующий код генерации календаря ...
+    const now = new Date();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    
+    const monthNames = [
+        'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+        'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+    ];
 
-    // Добавляем маркеры тренировок в соответствующие дни
-    workouts.forEach(workout => {
-        const workoutDate = new Date(workout.plannedDate);
-        if (workoutDate.getMonth() === month && workoutDate.getFullYear() === year) {
-            const day = workoutDate.getDate();
-            const dayCell = calendar.querySelector(`[data-date="${day}"]`);
-            if (dayCell) {
-                dayCell.classList.add('has-workout');
-                dayCell.setAttribute('data-workout', JSON.stringify(workout));
-            }
+    let calendar = `
+        <div class="calendar-header">
+            <button class="calendar-nav-btn prev">←</button>
+            <h2>${monthNames[month]} ${year}</h2>
+            <button class="calendar-nav-btn next">→</button>
+        </div>
+        <div class="calendar-weekdays">
+            <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div>
+            <div>Пт</div><div>Сб</div><div>Вс</div>
+        </div>
+        <div class="calendar-days">
+    `;
+
+    // Добавляем пустые ячейки в начале
+    let firstDayOfWeek = firstDay.getDay() || 7;
+    for (let i = 1; i < firstDayOfWeek; i++) {
+        calendar += '<div class="calendar-day empty"></div>';
+    }
+
+    // Добавляем дни месяца
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+        let classes = ['calendar-day'];
+        if (day === now.getDate() && month === now.getMonth() && year === now.getFullYear()) {
+            classes.push('today');
         }
-    });
 
+        // Проверяем, есть ли тренировка в этот день
+        const workout = workouts?.find(w => {
+            const workoutDate = new Date(w.plannedDate);
+            return workoutDate.getDate() === day && 
+                   workoutDate.getMonth() === month && 
+                   workoutDate.getFullYear() === year;
+        });
+
+        if (workout) {
+            classes.push('has-workout');
+        }
+
+        calendar += `
+            <div class="${classes.join(' ')}" data-date="${day}">
+                ${day}
+                ${workout ? `<div class="workout-indicator"></div>` : ''}
+            </div>
+        `;
+    }
+
+    calendar += '</div>';
     return calendar;
 }
 
@@ -1515,5 +1570,29 @@ async function addWorkoutToCalendar(workout, date) {
     } catch (error) {
         console.error('Ошибка при сохранении тренировки:', error);
         // Не показываем ошибку пользователю, просто логируем
+    }
+}
+
+// Добавляем функцию setupCalendarNavigation
+function setupCalendarNavigation(workouts) {
+    const prevBtn = document.querySelector('.calendar-nav-btn.prev');
+    const nextBtn = document.querySelector('.calendar-nav-btn.next');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            const currentDate = new Date();
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            const calendar = generateCalendar(currentDate.getFullYear(), currentDate.getMonth(), workouts);
+            document.getElementById('calendar').innerHTML = calendar;
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            const currentDate = new Date();
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            const calendar = generateCalendar(currentDate.getFullYear(), currentDate.getMonth(), workouts);
+            document.getElementById('calendar').innerHTML = calendar;
+        });
     }
 } 
