@@ -45,8 +45,6 @@ function loadSection(sectionName) {
     
     // Клонируем содержимое шаблона
     const clone = template.content.cloneNode(true);
-    
-    // Очищаем и добавляем новый контент с анимацией
     content.innerHTML = '';
     content.appendChild(clone);
     
@@ -69,58 +67,30 @@ function loadSection(sectionName) {
     currentSection = sectionName;
 }
 
-// Вспомогательная функция для отправки данных боту
-async function sendDataToBot(data) {
-    if (!tg || typeof tg.sendData !== 'function') {
-        console.error('Telegram WebApp не инициализирован корректно');
-        return false;
-    }
-
-    return new Promise((resolve) => {
-        try {
-            // Устанавливаем обработчик ответа от бота
-            const messageHandler = (event) => {
-                if (event.data && typeof event.data === 'string') {
-                    try {
-                        const response = JSON.parse(event.data);
-                        tg.WebApp.offEvent('message', messageHandler);
-                        resolve(response);
-                    } catch (e) {
-                        console.error('Ошибка при разборе ответа:', e);
-                        resolve(null);
-                    }
-                }
-            };
-
-            tg.WebApp.onEvent('message', messageHandler);
-            
-            // Отправляем данные
-            tg.sendData(JSON.stringify(data));
-        } catch (error) {
-            console.error('Ошибка при отправке данных:', error);
-            resolve(null);
-        }
-    });
-}
-
 // Загрузка тренировок
 async function loadWorkouts() {
     const workoutHistory = document.getElementById('workout-history');
     try {
-        const response = await sendDataToBot({
-            action: 'get_workouts'
-        });
+        // Показываем заглушку
+        workoutHistory.innerHTML = '<p>Загрузка тренировок...</p>';
         
-        if (response) {
-            workoutHistory.innerHTML = response.map(workout => `
-                <div class="workout-item">
-                    <div class="card-title">${workout.type}</div>
-                    <div class="card-subtitle">
-                        ${new Date(workout.date).toLocaleDateString()} • ${workout.duration} мин
+        // Запрашиваем данные у бота
+        if (tg.WebApp.initData) {
+            const workouts = await tg.WebApp.sendData(JSON.stringify({
+                action: 'get_workouts'
+            }));
+            
+            if (workouts) {
+                workoutHistory.innerHTML = workouts.map(workout => `
+                    <div class="workout-item">
+                        <div class="card-title">${workout.type}</div>
+                        <div class="card-subtitle">
+                            ${new Date(workout.date).toLocaleDateString()} • ${workout.duration} мин
+                        </div>
+                        <div>Сожжено калорий: ${workout.calories_burned}</div>
                     </div>
-                    <div>Сожжено калорий: ${workout.calories_burned}</div>
-                </div>
-            `).join('') || '<p>Нет записей о тренировках</p>';
+                `).join('') || '<p>Нет записей о тренировках</p>';
+            }
         }
     } catch (error) {
         console.error('Ошибка при загрузке тренировок:', error);
@@ -131,24 +101,26 @@ async function loadWorkouts() {
 // Загрузка статистики
 async function loadStats() {
     const weightChart = document.getElementById('weight-chart');
-    const workoutStats = document.getElementById('workout-stats');
-    
     try {
-        const response = await sendDataToBot({
-            action: 'get_weight_history'
-        });
+        weightChart.innerHTML = '<p>Загрузка статистики...</p>';
         
-        if (response) {
-            weightChart.innerHTML = `
-                <h3>История изменения веса</h3>
-                <div class="weight-list">
-                    ${response.map(entry => `
-                        <div class="weight-item">
-                            ${entry.weight} кг • ${new Date(entry.date).toLocaleDateString()}
-                        </div>
-                    `).join('')}
-                </div>
-            `;
+        if (tg.WebApp.initData) {
+            const history = await tg.WebApp.sendData(JSON.stringify({
+                action: 'get_weight_history'
+            }));
+            
+            if (history) {
+                weightChart.innerHTML = `
+                    <h3>История изменения веса</h3>
+                    <div class="weight-list">
+                        ${history.map(entry => `
+                            <div class="weight-item">
+                                ${entry.weight} кг • ${new Date(entry.date).toLocaleDateString()}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
         }
     } catch (error) {
         console.error('Ошибка при загрузке статистики:', error);
@@ -190,15 +162,17 @@ function loadTips() {
 // Загрузка профиля
 async function loadProfile() {
     try {
-        const response = await sendDataToBot({
-            action: 'get_profile'
-        });
-
-        if (response && response.profile) {
-            Object.keys(response.profile).forEach(key => {
-                const input = document.getElementById(key);
-                if (input) input.value = response.profile[key];
-            });
+        if (tg.WebApp.initData) {
+            const profile = await tg.WebApp.sendData(JSON.stringify({
+                action: 'get_profile'
+            }));
+            
+            if (profile) {
+                Object.keys(profile).forEach(key => {
+                    const input = document.getElementById(key);
+                    if (input) input.value = profile[key];
+                });
+            }
         }
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
@@ -225,8 +199,8 @@ async function saveProfile() {
     };
 
     try {
-        const response = await sendDataToBot(formData);
-        if (response && response.success) {
+        if (tg.WebApp.initData) {
+            await tg.WebApp.sendData(JSON.stringify(formData));
             tg.showPopup({
                 title: 'Успех',
                 message: 'Профиль успешно сохранен!',
