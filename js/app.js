@@ -1216,4 +1216,143 @@ function setupCheckboxHandlers() {
             mainButton.show();
         });
     });
-} 
+}
+
+// Функция для отображения календаря
+function renderCalendar() {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // Получаем название месяца
+    const monthNames = [
+        'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+        'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+    ];
+    
+    // Обновляем заголовок календаря
+    document.querySelector('.calendar-header h2').textContent = 
+        `${monthNames[currentMonth]} ${currentYear}`;
+    
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    
+    // Получаем контейнер для дней
+    const daysContainer = document.querySelector('.calendar-days');
+    daysContainer.innerHTML = '';
+    
+    // Добавляем пустые ячейки в начале (если месяц начинается не с понедельника)
+    let firstDayOfWeek = firstDay.getDay() || 7; // Преобразуем воскресенье (0) в 7
+    for (let i = 1; i < firstDayOfWeek; i++) {
+        daysContainer.appendChild(createDayElement(''));
+    }
+    
+    // Добавляем дни месяца
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+        const dayElement = createDayElement(day);
+        
+        // Отмечаем текущий день
+        if (day === now.getDate() && 
+            currentMonth === now.getMonth() && 
+            currentYear === now.getFullYear()) {
+            dayElement.classList.add('today');
+        }
+        
+        daysContainer.appendChild(dayElement);
+    }
+
+    // Загружаем и отмечаем дни тренировок
+    loadWorkoutDays();
+}
+
+// Создаем элемент дня
+function createDayElement(day) {
+    const div = document.createElement('div');
+    div.className = 'calendar-day';
+    div.textContent = day;
+    return div;
+}
+
+// Загружаем дни тренировок
+async function loadWorkoutDays() {
+    try {
+        const result = await getStorageItem('activeProgram');
+        if (result) {
+            const program = JSON.parse(result);
+            
+            // Отмечаем выполненные тренировки
+            if (program.completedWorkouts) {
+                program.completedWorkouts.forEach(workout => {
+                    const date = new Date(workout.completedAt);
+                    markWorkoutDay(date, 'completed');
+                });
+            }
+            
+            // Отмечаем запланированные тренировки
+            if (program.workoutDays) {
+                program.workoutDays.forEach(workoutDay => {
+                    const date = new Date(workoutDay.date);
+                    if (date > new Date()) { // Только будущие тренировки
+                        markWorkoutDay(date, 'planned');
+                    }
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке дней тренировок:', error);
+    }
+}
+
+// Отмечаем день тренировки
+function markWorkoutDay(date, type) {
+    const days = document.querySelectorAll('.calendar-day');
+    const dayNumber = date.getDate();
+    
+    days.forEach(day => {
+        if (day.textContent === String(dayNumber)) {
+            // Добавляем иконку штанги
+            if (!day.querySelector('.workout-icon')) {
+                const icon = document.createElement('span');
+                icon.className = 'material-symbols-rounded workout-icon';
+                icon.textContent = 'fitness_center';
+                day.appendChild(icon);
+            }
+            day.classList.add(type);
+        }
+    });
+}
+
+// Обновляем стили для календаря
+const styles = `
+    .calendar-day {
+        position: relative;
+        min-height: 40px;
+    }
+    
+    .workout-icon {
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 14px;
+        color: var(--tg-theme-button-color);
+    }
+    
+    .calendar-day.completed .workout-icon {
+        color: #4CAF50;
+    }
+    
+    .calendar-day.planned .workout-icon {
+        color: var(--tg-theme-button-color);
+    }
+`;
+
+// Добавляем стили
+const styleSheet = document.createElement('style');
+styleSheet.textContent = styles;
+document.head.appendChild(styleSheet);
+
+// Вызываем рендер календаря при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    renderCalendar();
+}); 
