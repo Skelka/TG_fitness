@@ -258,13 +258,28 @@
 
                 <div class="form-section">
                     <h4>Цели и предпочтения</h4>
-                    <div class="input-group">
-                        <label for="goal">Основная цель</label>
-                        <select id="goal" name="goal" required>
-                            <option value="weight_loss">Похудение</option>
-                            <option value="muscle_gain">Набор массы</option>
-                            <option value="maintenance">Поддержание формы</option>
-                        </select>
+                    <div class="goals-grid">
+                        <label class="goal-item">
+                            <input type="radio" name="goal" value="weight_loss">
+                            <span class="goal-icon">
+                                <span class="material-symbols-rounded">weight</span>
+                            </span>
+                            <span class="goal-label">Похудение</span>
+                        </label>
+                        <label class="goal-item">
+                            <input type="radio" name="goal" value="muscle_gain">
+                            <span class="goal-icon">
+                                <span class="material-symbols-rounded">exercise</span>
+                            </span>
+                            <span class="goal-label">Набор массы</span>
+                        </label>
+                        <label class="goal-item">
+                            <input type="radio" name="goal" value="maintenance">
+                            <span class="goal-icon">
+                                <span class="material-symbols-rounded">monitoring</span>
+                            </span>
+                            <span class="goal-label">Поддержание</span>
+                        </label>
                     </div>
                     <div class="input-group">
                         <label>Место для тренировок</label>
@@ -305,14 +320,14 @@
                         <label class="equipment-item">
                             <input type="checkbox" name="equipment" value="kettlebell">
                             <span class="equipment-icon">
-                                <span class="material-symbols-rounded">sports_gymnastics</span>
+                                <span class="material-symbols-rounded">weight</span>
                             </span>
                             <span class="equipment-label">Гири</span>
                         </label>
                         <label class="equipment-item">
                             <input type="checkbox" name="equipment" value="mat">
                             <span class="equipment-icon">
-                                <span class="material-symbols-rounded">floor_mat</span>
+                                <span class="material-symbols-rounded">drag_handle</span>
                             </span>
                             <span class="equipment-label">Коврик</span>
                         </label>

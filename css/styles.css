@@ -922,4 +922,61 @@ input[type="number"]::-webkit-inner-spin-button {
     font-size: 14px;
     color: var(--tg-theme-hint-color);
     text-align: center;
+}
+
+/* Стили для сетки целей */
+.goals-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.goal-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: var(--tg-theme-bg-color);
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.goal-item input {
+    display: none;
+}
+
+.goal-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 12px;
+    transition: all 0.3s;
+}
+
+.goal-item input:checked + .goal-icon {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.goal-label {
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* Обновляем размеры иконок оборудования */
+.equipment-icon .material-symbols-rounded {
+    font-size: 24px;
+}
+
+/* Добавляем анимацию при выборе */
+.goal-item input:checked + .goal-icon,
+.equipment-item input:checked + .equipment-icon {
+    transform: scale(1.05);
 } 

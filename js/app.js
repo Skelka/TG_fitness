@@ -94,12 +94,14 @@ async function saveProfile() {
         const form = document.getElementById('profile-form');
         const formData = new FormData(form);
 
+        // Собираем все данные из формы
         const profileData = {
             age: parseInt(formData.get('age')) || 0,
             gender: formData.get('gender'),
             height: parseFloat(formData.get('height')) || 0,
             weight: parseFloat(formData.get('weight')) || 0,
             goal: formData.get('goal'),
+            // Получаем массивы выбранных значений
             workoutPlaces: formData.getAll('workout_place'),
             equipment: formData.getAll('equipment'),
             lastUpdated: Date.now()
@@ -142,13 +144,30 @@ function fillProfileForm(profile) {
     const form = document.getElementById('profile-form');
     if (!form) return;
 
-    const fields = ['name', 'age', 'gender', 'height', 'weight', 'goal'];
+    // Заполняем основные поля
+    const fields = ['age', 'gender', 'height', 'weight', 'goal'];
     fields.forEach(field => {
-        const input = document.getElementById(field);
+        const input = form.querySelector(`[name="${field}"]`);
         if (input) {
             input.value = profile[field] || '';
         }
     });
+
+    // Заполняем места для тренировок
+    if (profile.workoutPlaces) {
+        const workoutPlaceInputs = form.querySelectorAll('input[name="workout_place"]');
+        workoutPlaceInputs.forEach(input => {
+            input.checked = profile.workoutPlaces.includes(input.value);
+        });
+    }
+
+    // Заполняем доступное оборудование
+    if (profile.equipment) {
+        const equipmentInputs = form.querySelectorAll('input[name="equipment"]');
+        equipmentInputs.forEach(input => {
+            input.checked = profile.equipment.includes(input.value);
+        });
+    }
 }
 
 // Функция обновления графика веса
@@ -356,6 +375,9 @@ function setupEventListeners() {
             toggleWorkoutPause();
         }
     });
+
+    // Добавляем обработчики для чекбоксов
+    setupCheckboxHandlers();
 }
 
 // Инициализация при загрузке
@@ -1148,4 +1170,26 @@ async function completeWorkout(workout, programProgress) {
 
     // Возвращаемся на главный экран
     location.reload();
+}
+
+// Добавим функцию для обработки изменений в чекбоксах
+function setupCheckboxHandlers() {
+    const form = document.getElementById('profile-form');
+    if (!form) return;
+
+    // Обработчики для чекбоксов мест тренировок
+    const workoutPlaceInputs = form.querySelectorAll('input[name="workout_place"]');
+    workoutPlaceInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            mainButton.show();
+        });
+    });
+
+    // Обработчики для чекбоксов оборудования
+    const equipmentInputs = form.querySelectorAll('input[name="equipment"]');
+    equipmentInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            mainButton.show();
+        });
+    });
 } 
