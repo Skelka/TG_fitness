@@ -7,6 +7,8 @@
     --primary-color: #40a7e3;
     --secondary-color: #f5f5f5;
     --transition-speed: 0.3s;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --card-border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 * {
@@ -132,13 +134,15 @@ input:focus, select:focus {
 }
 
 .workout-card {
-    background: var(--tg-theme-secondary-bg-color);
-    padding: 16px;
-    margin-bottom: 12px;
-    border-radius: 16px;
+    background: var(--tg-theme-bg-color);
+    padding: 20px;
+    margin-bottom: 16px;
+    border-radius: 20px;
     display: flex;
-    gap: 16px;
-    transition: transform 0.2s;
+    gap: 20px;
+    transition: all 0.3s;
+    box-shadow: var(--card-shadow);
+    border: var(--card-border);
 }
 
 .workout-card:active {
@@ -146,15 +150,34 @@ input:focus, select:focus {
 }
 
 .workout-icon {
-    font-size: 32px;
-    width: 60px;
-    height: 60px;
+    width: 64px;
+    height: 64px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--tg-theme-bg-color, #fff);
-    border-radius: 50%;
+    background: var(--tg-theme-button-color);
+    border-radius: 16px;
     flex-shrink: 0;
+}
+
+.workout-icon .material-symbols-rounded {
+    font-size: 32px;
+    color: var(--tg-theme-button-text-color);
+}
+
+.workout-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.difficulty-badge {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-hint-color);
 }
 
 .workout-info {
@@ -170,6 +193,52 @@ input:focus, select:focus {
     margin: 0 0 12px 0;
     color: var(--tg-theme-hint-color, #999);
     font-size: 14px;
+}
+
+.workout-details {
+    display: flex;
+    gap: 16px;
+    margin: 12px 0;
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+}
+
+.workout-details span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.workout-details .material-symbols-rounded {
+    font-size: 18px;
+}
+
+.workout-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.workout-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.info-btn {
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+}
+
+.start-btn {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
 }
 
 .start-workout-btn {
@@ -289,16 +358,39 @@ input:focus, select:focus {
     padding-left: 8px;
 }
 
-.workout-details {
-    display: flex;
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
-    margin-bottom: 12px;
-    color: var(--tg-theme-hint-color);
-    font-size: 14px;
+    margin-bottom: 24px;
 }
 
-.workout-details span {
+.stat-mini-card {
+    background: var(--tg-theme-bg-color);
+    padding: 16px;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    border: var(--card-border);
+}
+
+.stat-mini-card .stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--tg-theme-button-color);
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.stat-mini-card .stat-value {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 8px 0;
+}
+
+.stat-mini-card .stat-label {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
 } 
