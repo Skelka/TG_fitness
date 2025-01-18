@@ -10,15 +10,23 @@ function sendToBot(data, shouldClose = false) {
         const finalData = {
             ...data,
             platform: tg.platform,
-            version: tg.version
+            version: tg.version,
+            initData: tg.initData
         };
         
         console.log('Отправка данных боту:', finalData);
-        tg.sendData(JSON.stringify(finalData));
         
-        if (shouldClose && tg.platform === 'web') {
-            setTimeout(() => tg.close(), 1000);
-        }
+        // Используем MainButton для отправки
+        tg.MainButton.setText('Отправка...');
+        tg.MainButton.show();
+        tg.MainButton.onClick(() => {
+            tg.sendData(JSON.stringify(finalData));
+            tg.MainButton.hide();
+            if (shouldClose) {
+                setTimeout(() => tg.close(), 1000);
+            }
+        });
+        tg.MainButton.click();
     } catch (error) {
         console.error('Ошибка при отправке данных:', error);
         tg.showPopup({
