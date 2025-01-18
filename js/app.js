@@ -987,33 +987,40 @@ async function startProgram(programId) {
 // Функция обновления статистики
 function updateStatistics(programProgress) {
     const stats = {
-        totalWorkouts: programProgress.completedWorkouts.length,
+        totalWorkouts: 0,
         totalMinutes: 0,
         totalCalories: 0,
         workoutsByType: {},
         completionRate: 0
     };
 
-    const program = programData[programProgress.programId];
-    
-    // Подсчитываем статистику по завершенным тренировкам
-    programProgress.completedWorkouts.forEach(completed => {
-        const workout = program.workouts.find(w => w.day === completed.day);
-        if (workout) {
-            stats.totalMinutes += workout.duration;
-            stats.totalCalories += workout.calories || 0;
-            stats.workoutsByType[workout.type] = (stats.workoutsByType[workout.type] || 0) + 1;
-        }
-    });
+    if (programProgress && programProgress.completedWorkouts) {
+        stats.totalWorkouts = programProgress.completedWorkouts.length;
 
-    // Вычисляем процент выполнения
-    const plannedWorkouts = programProgress.plannedWorkouts.filter(
-        w => w.plannedDate <= Date.now()
-    ).length;
-    
-    stats.completionRate = plannedWorkouts > 0 
-        ? (stats.totalWorkouts / plannedWorkouts) * 100 
-        : 0;
+        const program = programData[programProgress.programId];
+        if (program) {
+            // Подсчитываем статистику по завершенным тренировкам
+            programProgress.completedWorkouts.forEach(completed => {
+                const workout = program.workouts.find(w => w.day === completed.day);
+                if (workout) {
+                    stats.totalMinutes += workout.duration || 0;
+                    stats.totalCalories += workout.calories || 0;
+                    if (workout.type) {
+                        stats.workoutsByType[workout.type] = (stats.workoutsByType[workout.type] || 0) + 1;
+                    }
+                }
+            });
+
+            // Вычисляем процент выполнения
+            const plannedWorkouts = programProgress.plannedWorkouts.filter(
+                w => w.plannedDate <= Date.now()
+            ).length;
+            
+            stats.completionRate = plannedWorkouts > 0 
+                ? (stats.totalWorkouts / plannedWorkouts) * 100 
+                : 0;
+        }
+    }
 
     // Сохраняем статистику
     setStorageItem('workoutStats', JSON.stringify(stats));
@@ -1027,34 +1034,64 @@ function updateStatisticsUI(stats) {
     const statsContainer = document.getElementById('statistics');
     if (!statsContainer) return;
 
-    statsContainer.innerHTML = `
-        <div class="stats-grid">
-            <div class="stat-item">
-                <span class="stat-value">${stats.totalWorkouts}</span>
-                <span class="stat-label">Тренировок</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-value">${stats.totalMinutes}</span>
-                <span class="stat-label">Минут</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-value">${Math.round(stats.totalCalories)}</span>
-                <span class="stat-label">Калорий</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-value">${Math.round(stats.completionRate)}%</span>
-                <span class="stat-label">Выполнено</span>
-            </div>
-        </div>
-        <div class="workout-types">
-            ${Object.entries(stats.workoutsByType).map(([type, count]) => `
-                <div class="workout-type">
-                    <span class="type-label">${type}</span>
-                    <span class="type-count">${count}</span>
+    // Получаем активную программу для подсчета запланированных тренировок
+    getStorageItem('activeProgram')
+        .then(data => {
+            const programProgress = data ? JSON.parse(data) : null;
+            const plannedWorkouts = programProgress ? programProgress.plannedWorkouts.length : 0;
+
+            statsContainer.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-mini-card">
+                        <div class="stat-icon">
+                            <span class="material-symbols-rounded">calendar_month</span>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value">${plannedWorkouts}</span>
+                            <span class="stat-label">Тренировок в месяце</span>
+                        </div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <div class="stat-icon">
+                            <span class="material-symbols-rounded">local_fire_department</span>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value">${stats.totalCalories || 0}</span>
+                            <span class="stat-label">Ккал сожжено</span>
+                        </div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <div class="stat-icon">
+                            <span class="material-symbols-rounded">timer</span>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value">${formatDuration(stats.totalMinutes || 0)}</span>
+                            <span class="stat-label">Общее время</span>
+                        </div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <div class="stat-icon">
+                            <span class="material-symbols-rounded">trending_up</span>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value">${Math.round(stats.completionRate || 0)}%</span>
+                            <span class="stat-label">Достижение цели</span>
+                        </div>
+                    </div>
                 </div>
-            `).join('')}
-        </div>
-    `;
+            `;
+        })
+        .catch(console.error);
+}
+
+// Добавляем функцию форматирования времени
+function formatDuration(minutes) {
+    if (minutes < 60) {
+        return `${minutes}м`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}ч ${remainingMinutes}м`;
 }
 
 // Добавим функцию для загрузки активной программы при инициализации
