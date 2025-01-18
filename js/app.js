@@ -18,7 +18,18 @@ async function saveProfile() {
     };
 
     try {
+        console.log('Отправка данных:', formData);
         tg.sendData(JSON.stringify(formData));
+        console.log('Данные успешно отправлены');
+        
+        // Показываем сообщение об успехе
+        tg.showPopup({
+            title: 'Успех',
+            message: 'Данные профиля сохранены',
+            buttons: [{type: 'ok'}]
+        });
+        
+        // Закрываем мини-приложение через секунду
         setTimeout(() => tg.close(), 1000);
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
@@ -57,7 +68,25 @@ function setupEventListeners() {
     }, true);
 }
 
+// Загрузка данных профиля при старте
+async function loadProfile() {
+    try {
+        const formData = {
+            action: 'get_profile'
+        };
+        tg.sendData(JSON.stringify(formData));
+    } catch (error) {
+        console.error('Ошибка при загрузке профиля:', error);
+        tg.showPopup({
+            title: 'Ошибка',
+            message: 'Не удалось загрузить данные профиля',
+            buttons: [{type: 'ok'}]
+        });
+    }
+}
+
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
+    loadProfile(); // Загружаем данные при старте
 }); 
