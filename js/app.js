@@ -69,7 +69,6 @@ function fillProfileForm(profile) {
 // Сохранение профиля
 async function saveProfile() {
     try {
-        // Меняем текст кнопки
         mainButton.setText('Сохранение...');
         mainButton.showProgress();
 
@@ -79,34 +78,60 @@ async function saveProfile() {
             gender: document.getElementById('gender').value || 'male',
             height: parseFloat(document.getElementById('height').value) || 0,
             weight: parseFloat(document.getElementById('weight').value) || 0,
-            goal: document.getElementById('goal').value || 'maintenance'
+            goal: document.getElementById('goal').value || 'maintenance',
+            lastUpdated: Date.now()
         };
 
-        console.log('Подготовленные данные для сохранения:', profileData);
+        // Сохраняем историю веса
+        let weightHistory = [];
+        try {
+            const storedHistory = await new Promise((resolve) => {
+                tg.CloudStorage.getItem('weightHistory', (error, value) => {
+                    resolve(value ? JSON.parse(value) : []);
+                });
+            });
+            weightHistory = storedHistory;
+        } catch (e) {
+            console.error('Ошибка при загрузке истории веса:', e);
+        }
 
-        // Сохраняем в CloudStorage
-        const result = await new Promise((resolve, reject) => {
+        // Добавляем новую запись веса
+        weightHistory.push({
+            weight: profileData.weight,
+            date: Date.now()
+        });
+
+        // Сохраняем профиль
+        await new Promise((resolve, reject) => {
             tg.CloudStorage.setItem('profile', JSON.stringify(profileData), (error, success) => {
                 if (error || !success) {
-                    reject(error || new Error('Failed to save data'));
+                    reject(error || new Error('Failed to save profile'));
                 } else {
                     resolve(success);
                 }
             });
         });
 
-        console.log('Результат сохранения в CloudStorage:', result);
+        // Сохраняем историю веса
+        await new Promise((resolve, reject) => {
+            tg.CloudStorage.setItem('weightHistory', JSON.stringify(weightHistory), (error, success) => {
+                if (error || !success) {
+                    reject(error || new Error('Failed to save weight history'));
+                } else {
+                    resolve(success);
+                }
+            });
+        });
 
-        // Отправляем уведомление боту
-        const sendData = {
-            action: 'profile_updated',
-            timestamp: Date.now()
-        };
-        
-        tg.sendData(JSON.stringify(sendData));
+        // Обновляем график веса, если мы на вкладке статистики
+        if (document.getElementById('stats').classList.contains('active')) {
+            updateWeightChart(weightHistory);
+        }
+
+        // Обновляем сохраненные данные
+        window.profileData = profileData;
+
         tg.HapticFeedback.notificationOccurred('success');
-
-        // Показываем статус "Сохранено"
         mainButton.hideProgress();
         mainButton.setText('Сохранено ✓');
         setTimeout(() => {
@@ -114,16 +139,92 @@ async function saveProfile() {
         }, 2000);
 
     } catch (error) {
-        console.error('Ошибка при сохранении профиля:', error);
+        console.error('Ошибка при сохранении:', error);
         mainButton.hideProgress();
         mainButton.setText('Сохранить профиль');
         tg.HapticFeedback.notificationOccurred('error');
         tg.showPopup({
             title: 'Ошибка',
-            message: `Произошла ошибка при сохранении: ${error.message}`,
+            message: `Не удалось сохранить данные: ${error.message}`,
             buttons: [{type: 'ok'}]
         });
     }
+}
+
+// Функция обновления графика веса
+function updateWeightChart(weightHistory) {
+    const chartPlaceholder = document.querySelector('#stats .chart-placeholder');
+    if (!chartPlaceholder) return;
+
+    // Очищаем placeholder
+    chartPlaceholder.innerHTML = '';
+
+    if (weightHistory.length === 0) {
+        chartPlaceholder.textContent = 'Нет данных для отображения';
+        return;
+    }
+
+    // Создаем простое текстовое представление истории веса
+    const weightList = document.createElement('div');
+    weightList.style.padding = '10px';
+    weightList.style.width = '100%';
+
+    weightHistory.slice(-5).forEach(record => {
+        const date = new Date(record.date);
+        const dateStr = date.toLocaleDateString('ru-RU');
+        const item = document.createElement('div');
+        item.style.display = 'flex';
+        item.style.justifyContent = 'space-between';
+        item.style.marginBottom = '8px';
+        item.innerHTML = `
+            <span>${dateStr}</span>
+            <span>${record.weight} кг</span>
+        `;
+        weightList.appendChild(item);
+    });
+
+    chartPlaceholder.appendChild(weightList);
+}
+
+// Обновляем обработчик переключения вкладок
+function setupTabHandlers() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', async () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+
+            tab.classList.add('active');
+            const tabId = tab.dataset.tab;
+            const tabContent = document.getElementById(tabId);
+            tabContent.classList.add('active');
+
+            if (tabId === 'profile' && window.profileData) {
+                fillProfileForm(window.profileData);
+                mainButton.setText('Сохранить профиль');
+                mainButton.show();
+            } else if (tabId === 'stats') {
+                // Загружаем и отображаем историю веса
+                try {
+                    const weightHistory = await new Promise((resolve) => {
+                        tg.CloudStorage.getItem('weightHistory', (error, value) => {
+                            resolve(value ? JSON.parse(value) : []);
+                        });
+                    });
+                    updateWeightChart(weightHistory);
+                } catch (e) {
+                    console.error('Ошибка при загрузке истории веса:', e);
+                }
+                mainButton.hide();
+            } else {
+                mainButton.hide();
+            }
+
+            tg.HapticFeedback.selectionChanged();
+        });
+    });
 }
 
 // Настройка обработчиков событий
@@ -168,6 +269,9 @@ function setupEventListeners() {
     backButton.onClick(() => {
         tg.close();
     });
+
+    // Добавляем новые обработчики
+    setupTabHandlers();
 }
 
 // Инициализация при загрузке
@@ -249,7 +353,6 @@ function initApp() {
     // Сохранение профиля
     async function saveProfile() {
         try {
-            // Меняем текст кнопки
             mainButton.setText('Сохранение...');
             mainButton.showProgress();
 
@@ -259,34 +362,60 @@ function initApp() {
                 gender: document.getElementById('gender').value || 'male',
                 height: parseFloat(document.getElementById('height').value) || 0,
                 weight: parseFloat(document.getElementById('weight').value) || 0,
-                goal: document.getElementById('goal').value || 'maintenance'
+                goal: document.getElementById('goal').value || 'maintenance',
+                lastUpdated: Date.now()
             };
 
-            console.log('Подготовленные данные для сохранения:', profileData);
+            // Сохраняем историю веса
+            let weightHistory = [];
+            try {
+                const storedHistory = await new Promise((resolve) => {
+                    tg.CloudStorage.getItem('weightHistory', (error, value) => {
+                        resolve(value ? JSON.parse(value) : []);
+                    });
+                });
+                weightHistory = storedHistory;
+            } catch (e) {
+                console.error('Ошибка при загрузке истории веса:', e);
+            }
 
-            // Сохраняем в CloudStorage
-            const result = await new Promise((resolve, reject) => {
+            // Добавляем новую запись веса
+            weightHistory.push({
+                weight: profileData.weight,
+                date: Date.now()
+            });
+
+            // Сохраняем профиль
+            await new Promise((resolve, reject) => {
                 tg.CloudStorage.setItem('profile', JSON.stringify(profileData), (error, success) => {
                     if (error || !success) {
-                        reject(error || new Error('Failed to save data'));
+                        reject(error || new Error('Failed to save profile'));
                     } else {
                         resolve(success);
                     }
                 });
             });
 
-            console.log('Результат сохранения в CloudStorage:', result);
+            // Сохраняем историю веса
+            await new Promise((resolve, reject) => {
+                tg.CloudStorage.setItem('weightHistory', JSON.stringify(weightHistory), (error, success) => {
+                    if (error || !success) {
+                        reject(error || new Error('Failed to save weight history'));
+                    } else {
+                        resolve(success);
+                    }
+                });
+            });
 
-            // Отправляем уведомление боту
-            const sendData = {
-                action: 'profile_updated',
-                timestamp: Date.now()
-            };
-            
-            tg.sendData(JSON.stringify(sendData));
+            // Обновляем график веса, если мы на вкладке статистики
+            if (document.getElementById('stats').classList.contains('active')) {
+                updateWeightChart(weightHistory);
+            }
+
+            // Обновляем сохраненные данные
+            window.profileData = profileData;
+
             tg.HapticFeedback.notificationOccurred('success');
-
-            // Показываем статус "Сохранено"
             mainButton.hideProgress();
             mainButton.setText('Сохранено ✓');
             setTimeout(() => {
@@ -294,16 +423,51 @@ function initApp() {
             }, 2000);
 
         } catch (error) {
-            console.error('Ошибка при сохранении профиля:', error);
+            console.error('Ошибка при сохранении:', error);
             mainButton.hideProgress();
             mainButton.setText('Сохранить профиль');
             tg.HapticFeedback.notificationOccurred('error');
             tg.showPopup({
                 title: 'Ошибка',
-                message: `Произошла ошибка при сохранении: ${error.message}`,
+                message: `Не удалось сохранить данные: ${error.message}`,
                 buttons: [{type: 'ok'}]
             });
         }
+    }
+
+    // Функция обновления графика веса
+    function updateWeightChart(weightHistory) {
+        const chartPlaceholder = document.querySelector('#stats .chart-placeholder');
+        if (!chartPlaceholder) return;
+
+        // Очищаем placeholder
+        chartPlaceholder.innerHTML = '';
+
+        if (weightHistory.length === 0) {
+            chartPlaceholder.textContent = 'Нет данных для отображения';
+            return;
+        }
+
+        // Создаем простое текстовое представление истории веса
+        const weightList = document.createElement('div');
+        weightList.style.padding = '10px';
+        weightList.style.width = '100%';
+
+        weightHistory.slice(-5).forEach(record => {
+            const date = new Date(record.date);
+            const dateStr = date.toLocaleDateString('ru-RU');
+            const item = document.createElement('div');
+            item.style.display = 'flex';
+            item.style.justifyContent = 'space-between';
+            item.style.marginBottom = '8px';
+            item.innerHTML = `
+                <span>${dateStr}</span>
+                <span>${record.weight} кг</span>
+            `;
+            weightList.appendChild(item);
+        });
+
+        chartPlaceholder.appendChild(weightList);
     }
 
     // Обновляем обработчик переключения вкладок
@@ -312,7 +476,7 @@ function initApp() {
         const contents = document.querySelectorAll('.tab-content');
 
         tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
+            tab.addEventListener('click', async () => {
                 tabs.forEach(t => t.classList.remove('active'));
                 contents.forEach(c => c.classList.remove('active'));
 
@@ -321,11 +485,23 @@ function initApp() {
                 const tabContent = document.getElementById(tabId);
                 tabContent.classList.add('active');
 
-                // Если переключились на профиль и есть сохраненные данные, заполняем форму
                 if (tabId === 'profile' && window.profileData) {
                     fillProfileForm(window.profileData);
                     mainButton.setText('Сохранить профиль');
                     mainButton.show();
+                } else if (tabId === 'stats') {
+                    // Загружаем и отображаем историю веса
+                    try {
+                        const weightHistory = await new Promise((resolve) => {
+                            tg.CloudStorage.getItem('weightHistory', (error, value) => {
+                                resolve(value ? JSON.parse(value) : []);
+                            });
+                        });
+                        updateWeightChart(weightHistory);
+                    } catch (e) {
+                        console.error('Ошибка при загрузке истории веса:', e);
+                    }
+                    mainButton.hide();
                 } else {
                     mainButton.hide();
                 }
