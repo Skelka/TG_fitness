@@ -14,7 +14,7 @@ function sendToBot(data, shouldClose = false) {
         };
         
         console.log('Отправка данных боту:', finalData);
-        tg.sendData(JSON.stringify(finalData));
+        tg.WebApp.sendData(JSON.stringify(finalData));
         
         if (shouldClose) {
             setTimeout(() => tg.close(), 1000);
@@ -214,11 +214,14 @@ function loadSection(sectionName) {
 async function loadWorkouts() {
     const workoutHistory = document.getElementById('workout-history');
     workoutHistory.innerHTML = `
-        <div class="workout-empty">
-            <p>Нажмите кнопку для загрузки тренировок</p>
-            <button onclick="requestWorkouts()" class="load-btn">Загрузить тренировки</button>
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Загрузка тренировок...</p>
         </div>
     `;
+    sendToBot({
+        action: 'get_workouts'
+    });
 }
 
 function requestWorkouts() {
@@ -233,11 +236,14 @@ function requestWorkouts() {
 async function loadStats() {
     const weightChart = document.getElementById('weight-chart');
     weightChart.innerHTML = `
-        <div class="stats-empty">
-            <p>Нажмите кнопку для загрузки статистики</p>
-            <button onclick="requestStats()" class="load-btn">Загрузить статистику</button>
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Загрузка статистики...</p>
         </div>
     `;
+    sendToBot({
+        action: 'get_weight_history'
+    });
 }
 
 function requestStats() {
@@ -284,11 +290,14 @@ async function loadProfile() {
     const form = document.getElementById('profile-form');
     if (form) {
         form.innerHTML = `
-            <div class="profile-empty">
-                <p>Нажмите кнопку для загрузки профиля</p>
-                <button onclick="requestProfile()" class="load-btn">Загрузить профиль</button>
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <p>Загрузка профиля...</p>
             </div>
         `;
+        sendToBot({
+            action: 'get_profile'
+        });
     }
 }
 
