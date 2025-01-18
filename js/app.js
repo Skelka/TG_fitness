@@ -13,8 +13,10 @@ mainButton.hide();
 // Загрузка данных профиля
 async function loadProfile() {
     try {
-        // Сначала пробуем загрузить из CloudStorage
+        // Пробуем загрузить данные из CloudStorage
         const storedData = await tg.CloudStorage.getItem('profile');
+        console.log('Данные из CloudStorage:', storedData);
+        
         if (storedData) {
             const profile = JSON.parse(storedData);
             console.log('Загружены данные из CloudStorage:', profile);
@@ -28,35 +30,17 @@ async function loadProfile() {
             document.getElementById('goal').value = profile.goal || 'maintenance';
             
             tg.HapticFeedback.notificationOccurred('success');
-        } else {
-            // Если в CloudStorage нет данных, пробуем загрузить из URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const encodedData = urlParams.get('data');
-            
-            if (encodedData) {
-                const profile = JSON.parse(decodeURIComponent(encodedData));
-                console.log('Загружены данные из URL:', profile);
-                
-                // Заполняем форму и сохраняем в CloudStorage
-                document.getElementById('name').value = profile.name || '';
-                document.getElementById('age').value = profile.age || '';
-                document.getElementById('gender').value = profile.gender || 'male';
-                document.getElementById('height').value = profile.height || '';
-                document.getElementById('weight').value = profile.weight || '';
-                document.getElementById('goal').value = profile.goal || 'maintenance';
-                
-                // Сохраняем в CloudStorage
-                await tg.CloudStorage.setItem('profile', JSON.stringify(profile));
-                console.log('Данные из URL сохранены в CloudStorage');
-                
-                tg.HapticFeedback.notificationOccurred('success');
-            }
         }
         
         // Показываем кнопку после загрузки данных
         mainButton.show();
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
+        tg.showPopup({
+            title: 'Ошибка',
+            message: `Не удалось загрузить данные: ${error.message}`,
+            buttons: [{type: 'ok'}]
+        });
     }
 }
 
