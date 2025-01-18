@@ -16,11 +16,21 @@ function loadSection(sectionName) {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.querySelector(`[onclick="loadSection('${sectionName}')"]`).classList.add('active');
+    
+    // Находим кнопку для активации
+    const activeButton = document.querySelector(`.nav-btn[onclick*="'${sectionName}'"]`);
+    if (activeButton) {
+        activeButton.classList.add('active');
+    }
 
     // Получаем шаблон раздела
     const template = document.getElementById(`${sectionName}-template`);
     const content = document.getElementById('main-content');
+    
+    if (!template || !content) {
+        console.error(`Не найден шаблон или контейнер для раздела ${sectionName}`);
+        return;
+    }
     
     // Клонируем содержимое шаблона
     const clone = template.content.cloneNode(true);
@@ -156,12 +166,33 @@ function loadTips() {
 // Вспомогательная функция для отправки данных боту
 async function sendDataToBot(data) {
     try {
+        if (!tg || typeof tg.sendData !== 'function') {
+            console.error('Telegram WebApp не инициализирован корректно');
+            return false;
+        }
         await tg.sendData(JSON.stringify(data));
         return true;
     } catch (error) {
         console.error('Ошибка при отправке данных:', error);
         return false;
     }
+}
+
+// Вспомогательная функция для обработки сообщений от бота
+function addMessageHandler(callback) {
+    if (!tg || !tg.WebApp || typeof tg.WebApp.onEvent !== 'function') {
+        console.error('Telegram WebApp API не доступен');
+        return;
+    }
+    
+    const messageHandler = (event) => {
+        if (event.type === 'message') {
+            callback(event.data);
+            tg.WebApp.offEvent('message', messageHandler);
+        }
+    };
+    
+    tg.WebApp.onEvent('message', messageHandler);
 }
 
 // Сохранение профиля
@@ -212,6 +243,7 @@ function startNewWorkout() {
     `;
 }
 
+// Загрузка профиля
 async function loadProfile() {
     try {
         const success = await sendDataToBot({
@@ -219,22 +251,17 @@ async function loadProfile() {
         });
         
         if (success) {
-            // Устанавливаем обработчик сообщений только один раз
-            const messageHandler = function(message) {
+            addMessageHandler((message) => {
                 try {
                     const profile = JSON.parse(message.text);
                     Object.keys(profile).forEach(key => {
                         const input = document.getElementById(key);
                         if (input) input.value = profile[key];
                     });
-                    // Удаляем обработчик после успешного получения данных
-                    tg.WebApp.offEvent('message', messageHandler);
                 } catch (e) {
                     console.error('Ошибка при разборе данных профиля:', e);
                 }
-            };
-            
-            tg.WebApp.onEvent('message', messageHandler);
+            });
         }
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
