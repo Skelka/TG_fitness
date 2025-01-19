@@ -1853,63 +1853,119 @@ function startWorkout(workout) {
     let isResting = false;
     let restTimeLeft = 0;
     let restInterval;
+    let currentReps = 0;
+    let timerValue = 0;
+    let isTimerMode = false;
+
+    function updateCounter(value) {
+        currentReps = Math.max(0, value);
+        const counterElement = document.querySelector('.counter-number');
+        if (counterElement) {
+            counterElement.textContent = currentReps;
+            // Вибрация при изменении значения
+            tg.HapticFeedback.impactOccurred('light');
+        }
+    }
+
+    function startTimer(duration) {
+        isTimerMode = true;
+        timerValue = duration;
+        clearInterval(timerInterval);
+        
+        timerInterval = setInterval(() => {
+            timerValue--;
+            const counterElement = document.querySelector('.counter-number');
+            if (counterElement) {
+                counterElement.textContent = formatTime(timerValue);
+            }
+
+            // Вибрация на последних 3 секундах
+            if (timerValue <= 3 && timerValue > 0) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+
+            if (timerValue <= 0) {
+                clearInterval(timerInterval);
+                tg.HapticFeedback.notificationOccurred('success');
+                // Автоматически показываем экран отдыха
+                const completeBtn = document.querySelector('.complete-btn');
+                completeBtn?.click();
+            }
+        }, 1000);
+    }
 
     function renderExercise() {
         const exercise = workout.exercises[currentExerciseIndex];
+        isTimerMode = exercise.reps.toString().includes('сек') || 
+                      exercise.reps.toString().includes('мин');
         
+        // Определяем начальное значение счетчика
+        let initialValue = isTimerMode ? 
+            parseInt(exercise.reps) || 30 : // Для таймера
+            0; // Для повторений
+
         programsList.innerHTML = `
             <div class="workout-session">
                 <div class="workout-header">
                     <button class="back-btn">
-                        <span class="material-symbols-rounded">close</span>
+                        <span class="material-symbols-rounded">arrow_back</span>
                     </button>
-                    <h2>${workout.title}</h2>
+                    <div class="workout-title">
+                        <div>${workout.title}</div>
+                        <div>${exercise.name}</div>
+                    </div>
                     <div class="workout-progress">
                         ${currentExerciseIndex + 1}/${workout.exercises.length}
                     </div>
                 </div>
 
-                <div class="exercise-info">
-                    <h3 class="exercise-name">${exercise.name}</h3>
-                    <div class="exercise-details">
-                        <span>${exercise.sets} × ${exercise.reps}</span>
-                        <span>Отдых ${exercise.rest}с</span>
-                    </div>
+                <div class="exercise-display">
+                    <img class="exercise-background" 
+                         src="${getExerciseAnimation(exercise.name)}" 
+                         alt="${exercise.name}">
                     
-                    <div class="exercise-animation">
-                        <img src="${getExerciseAnimation(exercise.name)}" 
-                             alt="${exercise.name}">
-                    </div>
-                </div>
-
-                <div class="next-exercises">
-                    <div class="next-exercises-title">Следующие упражнения</div>
-                    <div class="next-exercises-list">
-                        ${workout.exercises.slice(currentExerciseIndex + 1, currentExerciseIndex + 4)
-                            .map(nextExercise => `
-                                <div class="next-exercise">
-                                    <img src="${getExerciseAnimation(nextExercise.name)}" 
-                                         alt="${nextExercise.name}">
-                                    <span>${nextExercise.name}</span>
-                                </div>
-                            `).join('')}
+                    <div class="exercise-content">
+                        <h2 class="exercise-name">${exercise.name}</h2>
+                        <div class="exercise-subtitle">Подход ${exercise.currentSet || 1} из ${exercise.sets}</div>
+                        
+                        <div class="exercise-counter">
+                            <div class="counter-number">${initialValue}</div>
+                            <div class="counter-label">${isTimerMode ? 'секунд' : 'повторений'}</div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="exercise-controls">
-                    <button class="prev-btn" ${currentExerciseIndex === 0 ? 'disabled' : ''}>
-                        <span class="material-symbols-rounded">arrow_back</span>
-                        Назад
+                    <button class="control-btn minus-btn" ${isTimerMode ? 'style="display:none"' : ''}>
+                        <span class="material-symbols-rounded">remove</span>
                     </button>
                     <button class="complete-btn">
-                        <span class="material-symbols-rounded">check</span>
-                        Завершить подход
+                        ${isTimerMode ? 'Начать' : 'Готово'}
+                    </button>
+                    <button class="control-btn plus-btn" ${isTimerMode ? 'style="display:none"' : ''}>
+                        <span class="material-symbols-rounded">add</span>
                     </button>
                 </div>
             </div>
         `;
 
         setupExerciseHandlers();
+
+        // Если это упражнение на время, запускаем таймер при нажатии "Начать"
+        if (isTimerMode) {
+            const completeBtn = document.querySelector('.complete-btn');
+            const originalText = completeBtn.textContent;
+            
+            completeBtn.addEventListener('click', function() {
+                if (this.textContent === 'Начать') {
+                    startTimer(initialValue);
+                    this.textContent = 'Пропустить';
+                } else {
+                    clearInterval(timerInterval);
+                    this.textContent = originalText;
+                }
+            });
+        }
     }
 
     function setupExerciseHandlers() {
@@ -1950,6 +2006,18 @@ function startWorkout(workout) {
                 renderExercise();
                 tg.HapticFeedback.impactOccurred('medium');
             }
+        });
+
+        // Добавляем обработчики для кнопок счетчика
+        const minusBtn = programsList.querySelector('.minus-btn');
+        const plusBtn = programsList.querySelector('.plus-btn');
+
+        minusBtn?.addEventListener('click', () => {
+            updateCounter(currentReps - 1);
+        });
+
+        plusBtn?.addEventListener('click', () => {
+            updateCounter(currentReps + 1);
         });
     }
 
