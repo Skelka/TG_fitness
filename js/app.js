@@ -398,11 +398,24 @@ function setupEventListeners() {
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
-    if (!window.Telegram || !window.Telegram.WebApp) {
-        setTimeout(initApp, 100);
+    // Проверяем, что данные загружены
+    if (typeof programData === 'undefined') {
+        console.error('Ошибка: данные программ не загружены');
         return;
     }
-    initApp();
+
+    console.log('Доступные программы:', Object.keys(programData));
+    
+    // Инициализация Telegram WebApp
+    console.log('Платформа:', tg.platform);
+    console.log('Инициализация WebApp:', tg.initData);
+
+    // Устанавливаем обработчики событий
+    setupEventHandlers();
+    setupPopupHandlers();
+    
+    // Отображаем начальный интерфейс
+    showMainScreen();
 });
 
 function initApp() {
@@ -460,332 +473,6 @@ async function startWorkout(workoutId) {
         console.error('Ошибка при запуске тренировки:', error);
         showError(error);
     }
-}
-
-// Данные о программах тренировок
-const programData = {
-    weight_loss: {
-        id: 'weight_loss',
-        title: 'Похудение',
-        description: 'Программа для снижения веса и улучшения метаболизма',
-        duration: '8 недель',
-        difficulty: 'medium',
-        category: 'weight_loss',
-        icon: 'monitor_weight',
-        schedule: '3-4 тренировки в неделю',
-        calories_per_week: '3500-4000 ккал',
-        results: [
-            'Снижение веса 0.5-1 кг в неделю',
-            'Улучшение выносливости',
-            'Ускорение метаболизма'
-        ],
-        workouts: [
-            {
-                day: 1,
-                type: 'cardio',
-                title: 'HIIT кардио',
-                duration: 30,
-                exercises: [/*...*/]
-            },
-            {
-                day: 2,
-                type: 'strength',
-                title: 'Круговая тренировка',
-                duration: 45,
-                exercises: [/*...*/]
-            },
-            {
-                day: 4,
-                type: 'cardio',
-                title: 'Интервальный бег',
-                duration: 40,
-                exercises: [/*...*/]
-            }
-        ]
-    },
-    beginner: {
-        id: 'beginner',
-        title: 'Для начинающих',
-        description: 'Базовая программа для знакомства с фитнесом',
-        duration: '4 недели',
-        difficulty: 'easy',
-        category: 'beginner',
-        icon: 'fitness_center',
-        schedule: '3 тренировки в неделю',
-        calories_per_week: '2000-2500 ккал',
-        results: [
-            'Освоение базовых упражнений',
-            'Развитие силы и выносливости',
-            'Формирование привычки к тренировкам'
-        ],
-        workouts: [
-            {
-                day: 1,
-                type: 'full_body',
-                title: 'Общая тренировка',
-                duration: 40,
-                exercises: [/*...*/]
-            },
-            {
-                day: 3,
-                type: 'cardio',
-                title: 'Кардио + растяжка',
-                duration: 30,
-                exercises: [/*...*/]
-            }
-        ]
-    },
-    muscle_gain: {
-        id: 'muscle_gain',
-        title: 'Набор мышечной массы',
-        description: 'Программа для увеличения мышечной массы и силы',
-        duration: '12 недель',
-        difficulty: 'hard',
-        category: 'muscle_gain',
-        icon: 'exercise',
-        schedule: '4-5 тренировок в неделю',
-        calories_per_week: '4000-4500 ккал',
-        results: [
-            'Увеличение мышечной массы',
-            'Рост силовых показателей',
-            'Улучшение рельефа тела'
-        ],
-        workouts: [
-            {
-                day: 1,
-                type: 'strength',
-                title: 'Грудь + Трицепс',
-                duration: 60,
-                exercises: [/*...*/]
-            },
-            {
-                day: 2,
-                type: 'strength',
-                title: 'Спина + Бицепс',
-                duration: 60,
-                exercises: [/*...*/]
-            }
-        ]
-    },
-    maintenance: {
-        id: 'maintenance',
-        title: 'Поддержание формы',
-        description: 'Программа для поддержания текущей формы и улучшения общего тонуса',
-        duration: '6 недель',
-        difficulty: 'medium',
-        category: 'maintenance',
-        icon: 'sports_gymnastics',
-        schedule: '3 тренировки в неделю',
-        calories_per_week: '2500-3000 ккал',
-        results: [
-            'Поддержание текущего веса',
-            'Улучшение мышечного тонуса',
-            'Повышение выносливости'
-        ],
-        workouts: [
-            {
-                day: 1,
-                type: 'full_body',
-                title: 'Общая тренировка',
-                duration: 45,
-                exercises: [
-                    {
-                        name: 'Приседания с собственным весом',
-                        sets: 3,
-                        reps: '15',
-                        rest: 60
-                    },
-                    {
-                        name: 'Отжимания',
-                        sets: 3,
-                        reps: '12',
-                        rest: 60
-                    },
-                    {
-                        name: 'Планка',
-                        sets: 3,
-                        reps: '45 сек',
-                        rest: 45
-                    },
-                    {
-                        name: 'Выпады',
-                        sets: 3,
-                        reps: '12 на ногу',
-                        rest: 60
-                    },
-                    {
-                        name: 'Берпи',
-                        sets: 3,
-                        reps: '10',
-                        rest: 60
-                    }
-                ]
-            },
-            {
-                day: 3,
-                type: 'cardio',
-                title: 'Кардио + Ядро',
-                duration: 40,
-                exercises: [
-                    {
-                        name: 'Прыжки на скакалке',
-                        sets: 3,
-                        reps: '2 мин',
-                        rest: 60
-                    },
-                    {
-                        name: 'Скручивания',
-                        sets: 3,
-                        reps: '20',
-                        rest: 45
-                    },
-                    {
-                        name: 'Бег на месте с высоким подниманием колен',
-                        sets: 3,
-                        reps: '1 мин',
-                        rest: 60
-                    },
-                    {
-                        name: 'Русские скручивания',
-                        sets: 3,
-                        reps: '15',
-                        rest: 45
-                    }
-                ]
-            },
-            {
-                day: 5,
-                type: 'strength',
-                title: 'Силовая тренировка',
-                duration: 50,
-                exercises: [
-                    {
-                        name: 'Приседания с прыжком',
-                        sets: 4,
-                        reps: '12',
-                        rest: 60
-                    },
-                    {
-                        name: 'Отжимания с широкой постановкой',
-                        sets: 4,
-                        reps: '10',
-                        rest: 60
-                    },
-                    {
-                        name: 'Подъемы корпуса',
-                        sets: 4,
-                        reps: '15',
-                        rest: 45
-                    },
-                    {
-                        name: 'Обратные отжимания от стула',
-                        sets: 4,
-                        reps: '12',
-                        rest: 60
-                    }
-                ]
-            }
-        ]
-    }
-};
-
-// Функция показа деталей тренировки
-function showWorkoutDetails(workoutId) {
-    const workout = workoutData[workoutId];
-    if (!workout) return;
-
-    let detailsHtml = `
-        <div class="workout-details-content">
-            <h3>${workout.title}</h3>
-            <p class="workout-description">${workout.description}</p>
-            
-            <div class="workout-info-grid">
-                <div class="info-item">
-                    <span class="material-symbols-rounded">schedule</span>
-                    <span>${workout.duration} мин</span>
-                </div>
-                <div class="info-item">
-                    <span class="material-symbols-rounded">local_fire_department</span>
-                    <span>${workout.calories} ккал</span>
-                </div>
-                <div class="info-item">
-                    <span class="material-symbols-rounded">fitness_center</span>
-                    <span>${workout.difficulty}</span>
-                </div>
-            </div>`;
-
-    if (workout.exercises) {
-        detailsHtml += `
-            <h4>Упражнения:</h4>
-            <div class="exercises-list">
-                ${workout.exercises.map(ex => `
-                    <div class="exercise-item">
-                        <h5>${ex.name}</h5>
-                        <p>${ex.sets} подхода × ${ex.reps} повторений</p>
-                        <p>Отдых: ${ex.rest} сек</p>
-                    </div>
-                `).join('')}
-            </div>`;
-    }
-
-    if (workout.intervals) {
-        detailsHtml += `
-            <h4>Интервалы:</h4>
-            <div class="intervals-list">
-                ${workout.intervals.map(int => `
-                    <div class="interval-item">
-                        <span>${int.type}</span>
-                        <span>${int.duration} мин - ${int.intensity}</span>
-                    </div>
-                `).join('')}
-            </div>`;
-    }
-
-    detailsHtml += `
-            <div class="workout-tips">
-                <h4>Советы:</h4>
-                <ul>
-                    ${workout.tips.map(tip => `<li>${tip}</li>`).join('')}
-                </ul>
-            </div>
-        </div>
-    `;
-
-    tg.showPopup({
-        title: 'Детали тренировки',
-        message: detailsHtml,
-        buttons: [
-            {type: 'default', text: 'Начать', id: `start_${workoutId}`},
-            {type: 'cancel', text: 'Закрыть'}
-        ]
-    });
-}
-
-// Обновим обработчики событий
-function setupWorkoutHandlers() {
-    document.querySelectorAll('.workout-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            const workoutCard = button.closest('.workout-card');
-            const workoutTitle = workoutCard.querySelector('h3').textContent;
-            const workoutId = getWorkoutIdByTitle(workoutTitle);
-            
-            if (button.classList.contains('info-btn')) {
-                tg.HapticFeedback.impactOccurred('medium');
-                showWorkoutDetails(workoutId);
-            } else if (button.classList.contains('start-btn')) {
-                tg.HapticFeedback.impactOccurred('medium');
-                startWorkout(workoutId);
-            }
-        });
-    });
-}
-
-// Вспомогательная функция для получения ID тренировки по заголовку
-function getWorkoutIdByTitle(title) {
-    return Object.keys(workoutData).find(key => 
-        workoutData[key].title === title
-    );
 }
 
 // Функция показа деталей программы
@@ -1671,20 +1358,6 @@ function renderProfile() {
     // Обновляем календарь
     renderCalendar();
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Инициализация Telegram WebApp
-    console.log('Платформа:', tg.platform);
-    console.log('Инициализация WebApp:', tg.initData);
-    console.log('Доступные методы WebApp:', Object.keys(tg));
-
-    // Устанавливаем обработчики событий
-    setupEventHandlers();
-    setupPopupHandlers();
-    
-    // Отображаем начальный интерфейс
-    showMainScreen();
-});
 
 function setupEventHandlers() {
     // Обработчики для навигации
