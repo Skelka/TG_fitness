@@ -197,16 +197,20 @@
                 </div>
             </div>
             
-            <div class="stat-card">
+            <div class="weight-section">
                 <h3>Вес</h3>
                 <div class="period-selector">
                     <button class="period-btn active" data-period="week">Неделя</button>
                     <button class="period-btn" data-period="month">Месяц</button>
                     <button class="period-btn" data-period="year">Год</button>
                 </div>
-                <div class="chart-container">
-                    <canvas id="weightChart"></canvas>
-                </div>
+                <div class="weight-chart"></div>
+                <form id="weight-form" class="weight-form">
+                    <div class="input-group">
+                        <input type="number" name="weight" step="0.1" placeholder="Введите текущий вес" required>
+                        <button type="submit" class="save-btn">Сохранить</button>
+                    </div>
+                </form>
             </div>
         </div>
 

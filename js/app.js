@@ -416,6 +416,8 @@ function initApp() {
     setupPopupHandlers();
     loadProfile();
     loadActiveProgram();
+    setupWeightForm();
+    updateWeightChart();
 }
 
 // Добавим функцию для запуска тренировки
@@ -1596,4 +1598,118 @@ function setupCalendarNavigation(workouts) {
             document.getElementById('calendar').innerHTML = calendar;
         });
     }
+}
+
+// Функция для сохранения нового значения веса
+async function saveWeight(weight) {
+    try {
+        // Получаем текущую историю веса
+        const weightHistory = await getStorageItem('weightHistory')
+            .then(data => data ? JSON.parse(data) : []);
+
+        // Добавляем новую запись
+        weightHistory.push({
+            date: Date.now(),
+            weight: parseFloat(weight)
+        });
+
+        // Сохраняем обновленную историю
+        await setStorageItem('weightHistory', JSON.stringify(weightHistory));
+
+        // Обновляем график
+        updateWeightChart();
+    } catch (error) {
+        console.error('Ошибка при сохранении веса:', error);
+    }
+}
+
+// Функция для обновления графика веса
+function updateWeightChart() {
+    const chartContainer = document.querySelector('.weight-chart');
+    if (!chartContainer) return;
+
+    getStorageItem('weightHistory')
+        .then(data => {
+            const weightHistory = data ? JSON.parse(data) : [];
+            
+            if (weightHistory.length === 0) {
+                chartContainer.innerHTML = '<div class="empty-chart">Нет данных о весе</div>';
+                return;
+            }
+
+            // Сортируем записи по дате
+            weightHistory.sort((a, b) => a.date - b.date);
+
+            // Форматируем данные для графика
+            const labels = weightHistory.map(record => 
+                new Date(record.date).toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit'
+                })
+            );
+            const weights = weightHistory.map(record => record.weight);
+
+            // Создаем SVG график
+            const width = chartContainer.offsetWidth;
+            const height = 200;
+            const padding = 20;
+            
+            // Находим минимальный и максимальный вес для масштабирования
+            const minWeight = Math.min(...weights) - 0.5;
+            const maxWeight = Math.max(...weights) + 0.5;
+
+            // Создаем функции для масштабирования
+            const xScale = (width - 2 * padding) / (weights.length - 1);
+            const yScale = (height - 2 * padding) / (maxWeight - minWeight);
+
+            // Создаем точки для линии
+            const points = weights.map((weight, index) => {
+                const x = padding + index * xScale;
+                const y = height - padding - (weight - minWeight) * yScale;
+                return `${x},${y}`;
+            }).join(' ');
+
+            // Создаем SVG
+            chartContainer.innerHTML = `
+                <svg width="${width}" height="${height}">
+                    <polyline
+                        points="${points}"
+                        fill="none"
+                        stroke="var(--tg-theme-button-color)"
+                        stroke-width="2"
+                    />
+                    ${weights.map((weight, index) => `
+                        <circle
+                            cx="${padding + index * xScale}"
+                            cy="${height - padding - (weight - minWeight) * yScale}"
+                            r="4"
+                            fill="var(--tg-theme-button-color)"
+                        />
+                        <text
+                            x="${padding + index * xScale}"
+                            y="${height - padding - (weight - minWeight) * yScale - 10}"
+                            text-anchor="middle"
+                            font-size="12"
+                        >${weight}</text>
+                    `).join('')}
+                </svg>
+            `;
+        })
+        .catch(console.error);
+}
+
+// Добавляем обработчик для формы веса
+function setupWeightForm() {
+    const weightForm = document.getElementById('weight-form');
+    if (!weightForm) return;
+
+    weightForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const weightInput = weightForm.querySelector('input[name="weight"]');
+        if (weightInput && weightInput.value) {
+            await saveWeight(weightInput.value);
+            weightInput.value = ''; // Очищаем поле
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+    });
 } 
