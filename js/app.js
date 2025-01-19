@@ -91,8 +91,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         setupProfileHandlers();
 
-        // Рендерим карточки программ асинхронно
-        await renderProgramCards();
+        // Рендерим карточки программ
+        renderProgramCards();
 
     } catch (error) {
         console.error('Ошибка инициализации:', error);
@@ -1678,39 +1678,77 @@ async function initStatisticsPage() {
     }
 }
 
-// Функция для создания карточек программ
-async function renderProgramCards() {
+// Добавим функцию для создания карточек программ
+function renderProgramCards() {
     const programsList = document.querySelector('.programs-list');
     if (!programsList || !window.programData) return;
 
-    // Показываем все программы без фильтрации
+    // Очищаем текущий список
+    programsList.innerHTML = '';
+
+    // Создаем карточки для каждой программы
     Object.values(window.programData).forEach(program => {
         const workoutsCount = program.workouts?.length || 0;
         const schedule = program.schedule || `${workoutsCount} тр/нед`;
+        const difficulty = program.difficulty || program.intensity || 'medium';
 
         const card = document.createElement('div');
         card.className = 'program-card';
+        card.dataset.program = program.id;
+
         card.innerHTML = `
-            <div class="program-icon">
-                <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
-            </div>
-            <div class="program-info">
-                <h3>${program.title}</h3>
-                <div class="program-details">
-                    <span>
-                        <span class="material-symbols-rounded">calendar_month</span>
-                        ${schedule}
-                    </span>
-                    <span>
-                        <span class="material-symbols-rounded">local_fire_department</span>
-                        ${program.calories_per_week || '~300'} ккал
-                    </span>
+            <div class="program-header">
+                <div class="program-icon">
+                    <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
                 </div>
+                <div class="program-info">
+                    <h3>
+                        ${program.title}
+                        <span class="program-duration">${program.duration}</span>
+                    </h3>
+                    <p class="program-description">${program.description}</p>
+                    <div class="program-details">
+                        <span>
+                            <span class="material-symbols-rounded">calendar_month</span>
+                            ${schedule}
+                        </span>
+                        <span>
+                            <span class="material-symbols-rounded">fitness_center</span>
+                            ${getDifficultyText(difficulty)}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="program-progress">
+                <div class="progress-bar">
+                    <div class="progress" style="width: 0%"></div>
+                </div>
+                <span class="progress-text">0/${workoutsCount} тренировок</span>
+            </div>
+            <div class="program-actions">
+                <button class="program-btn info-btn">
+                    <span class="material-symbols-rounded">info</span>
+                    Подробнее
+                </button>
+                <button class="program-btn start-btn">
+                    <span class="material-symbols-rounded">play_arrow</span>
+                    Начать
+                </button>
             </div>
         `;
 
-        card.addEventListener('click', () => {
+        // Добавляем обработчики для кнопок
+        const startBtn = card.querySelector('.start-btn');
+        const infoBtn = card.querySelector('.info-btn');
+
+        startBtn.addEventListener('click', () => {
             showProgramWorkouts(program);
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+
+        infoBtn.addEventListener('click', () => {
+            showProgramDetails(program);
+            tg.HapticFeedback.impactOccurred('medium');
         });
 
         programsList.appendChild(card);
@@ -1792,7 +1830,7 @@ function showProgramWorkouts(program) {
 }
 
 // Функция для начала тренировки
-async function startWorkout(workout) {
+function startWorkout(workout) {
     if (!workout || !workout.exercises || !workout.exercises.length) {
         console.error('Некорректные данные тренировки:', workout);
         return;
@@ -1801,187 +1839,225 @@ async function startWorkout(workout) {
     const container = document.querySelector('.container');
     if (!container) return;
 
-    try {
-        // Адаптируем тренировку под доступное оборудование
-        const adaptedWorkout = await adaptWorkout(workout);
-        
-        let currentExerciseIndex = 0;
-        let isResting = false;
-        let restTimeLeft = 0;
-        let restInterval;
-        let timerInterval;
-        let currentReps = 0;
-        let timerValue = 0;
-        let isTimerMode = false;
+    let currentExerciseIndex = 0;
+    let isResting = false;
+    let restTimeLeft = 0;
+    let restInterval;
+    let timerInterval;
+    let currentReps = 0;
+    let timerValue = 0;
+    let isTimerMode = false;
 
-        // Скрываем нижнюю навигацию
-        document.querySelector('.bottom-nav')?.classList.add('hidden');
+    // Скрываем нижнюю навигацию
+    document.querySelector('.bottom-nav')?.classList.add('hidden');
 
-        function updateCounter(value) {
-            currentReps = Math.max(0, value);
-            const counterElement = document.querySelector('.counter-number');
-            if (counterElement) {
-                counterElement.textContent = currentReps;
-                tg.HapticFeedback.impactOccurred('light');
-            }
+    function updateCounter(value) {
+        currentReps = Math.max(0, value);
+        const counterElement = document.querySelector('.counter-number');
+        if (counterElement) {
+            counterElement.textContent = currentReps;
+            tg.HapticFeedback.impactOccurred('light');
         }
+    }
 
-        function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const remainingSeconds = seconds % 60;
-            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-        }
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
 
-        function startRestTimer(duration) {
-            isResting = true;
-            restTimeLeft = duration;
+    function startRestTimer(duration) {
+        isResting = true;
+        restTimeLeft = duration;
 
-            container.innerHTML = `
-                <div class="workout-session">
-                    <div class="rest-screen">
-                        <div class="rest-icon">
-                            <span class="material-symbols-rounded">timer</span>
-                        </div>
-                        <h3>Отдых</h3>
-                        <div class="rest-timer">${formatTime(restTimeLeft)}</div>
-                        <button class="skip-rest-btn">
-                            <span class="material-symbols-rounded">skip_next</span>
-                            Пропустить
-                        </button>
+        container.innerHTML = `
+            <div class="workout-session">
+                <div class="rest-screen">
+                    <div class="rest-icon">
+                        <span class="material-symbols-rounded">timer</span>
                     </div>
+                    <h3>Отдых</h3>
+                    <div class="rest-timer">${formatTime(restTimeLeft)}</div>
+                    <button class="skip-rest-btn">
+                        <span class="material-symbols-rounded">skip_next</span>
+                        Пропустить
+                    </button>
                 </div>
-            `;
+            </div>
+        `;
 
-            const skipBtn = container.querySelector('.skip-rest-btn');
-            skipBtn?.addEventListener('click', () => {
+        const skipBtn = container.querySelector('.skip-rest-btn');
+        skipBtn?.addEventListener('click', () => {
+            clearInterval(restInterval);
+            goToNextExercise();
+        });
+
+        restInterval = setInterval(() => {
+            restTimeLeft--;
+            const timerElement = container.querySelector('.rest-timer');
+            if (timerElement) {
+                timerElement.textContent = formatTime(restTimeLeft);
+            }
+
+            if (restTimeLeft <= 3 && restTimeLeft > 0) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+
+            if (restTimeLeft <= 0) {
                 clearInterval(restInterval);
                 goToNextExercise();
-            });
-
-            restInterval = setInterval(() => {
-                restTimeLeft--;
-                const timerElement = container.querySelector('.rest-timer');
-                if (timerElement) {
-                    timerElement.textContent = formatTime(restTimeLeft);
-                }
-
-                if (restTimeLeft <= 3 && restTimeLeft > 0) {
-                    tg.HapticFeedback.impactOccurred('medium');
-                }
-
-                if (restTimeLeft <= 0) {
-                    clearInterval(restInterval);
-                    goToNextExercise();
-                }
-            }, 1000);
-        }
-
-        function goToNextExercise() {
-            isResting = false;
-            if (currentExerciseIndex < adaptedWorkout.exercises.length - 1) {
-                currentExerciseIndex++;
-                renderExercise();
-            } else {
-                completeWorkout();
             }
+        }, 1000);
+    }
+
+    function goToNextExercise() {
+        isResting = false;
+        if (currentExerciseIndex < workout.exercises.length - 1) {
+            currentExerciseIndex++;
+            renderExercise();
+        } else {
+            completeWorkout();
         }
+    }
 
-        function renderExercise() {
-            const exercise = adaptedWorkout.exercises[currentExerciseIndex];
-            isTimerMode = exercise.reps.toString().includes('сек') || 
-                         exercise.reps.toString().includes('мин');
-            
-            let initialValue = isTimerMode ? 
-                parseInt(exercise.reps) || 30 : 
-                0;
+    function renderExercise() {
+        const exercise = workout.exercises[currentExerciseIndex];
+        isTimerMode = exercise.reps.toString().includes('сек') || 
+                      exercise.reps.toString().includes('мин');
+        
+        let initialValue = isTimerMode ? 
+            parseInt(exercise.reps) || 30 : 
+            0;
 
-            container.innerHTML = `
-                <div class="workout-session">
-                    <div class="workout-header">
-                        <button class="back-btn">
-                            <span class="material-symbols-rounded">arrow_back</span>
-                        </button>
-                        <div class="workout-title">
-                            <div>${adaptedWorkout.title}</div>
-                            <div>${exercise.name}</div>
-                        </div>
-                        <div class="workout-progress">
-                            ${currentExerciseIndex + 1}/${adaptedWorkout.exercises.length}
-                        </div>
+        container.innerHTML = `
+            <div class="workout-session">
+                <div class="workout-header">
+                    <button class="back-btn">
+                        <span class="material-symbols-rounded">arrow_back</span>
+                    </button>
+                    <div class="workout-title">
+                        <div>${workout.title}</div>
+                        <div>${exercise.name}</div>
                     </div>
-
-                    <div class="exercise-display">
-                        <img class="exercise-background" 
-                             src="${getExerciseAnimation(exercise.name)}" 
-                             alt="${exercise.name}">
-                        
-                        <div class="exercise-content">
-                            <h2 class="exercise-name">${exercise.name}</h2>
-                            <div class="exercise-subtitle">Подход ${exercise.currentSet || 1} из ${exercise.sets}</div>
-                            
-                            <div class="exercise-counter">
-                                <div class="counter-number">${initialValue}</div>
-                                <div class="counter-label">${isTimerMode ? 'секунд' : 'повторений'}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="exercise-controls">
-                        <button class="control-btn minus-btn" ${isTimerMode ? 'style="display:none"' : ''}>
-                            <span class="material-symbols-rounded">remove</span>
-                        </button>
-                        <button class="complete-btn">
-                            ${isTimerMode ? 'Начать' : 'Готово'}
-                        </button>
-                        <button class="control-btn plus-btn" ${isTimerMode ? 'style="display:none"' : ''}>
-                            <span class="material-symbols-rounded">add</span>
-                        </button>
+                    <div class="workout-progress">
+                        ${currentExerciseIndex + 1}/${workout.exercises.length}
                     </div>
                 </div>
-            `;
 
-            setupExerciseHandlers();
+                <div class="exercise-display">
+                    <img class="exercise-background" 
+                         src="${getExerciseAnimation(exercise.name)}" 
+                         alt="${exercise.name}">
+                    
+                    <div class="exercise-content">
+                        <h2 class="exercise-name">${exercise.name}</h2>
+                        <div class="exercise-subtitle">Подход ${exercise.currentSet || 1} из ${exercise.sets}</div>
+                        
+                        <div class="exercise-counter">
+                            <div class="counter-number">${initialValue}</div>
+                            <div class="counter-label">${isTimerMode ? 'секунд' : 'повторений'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="exercise-controls">
+                    <button class="control-btn minus-btn" ${isTimerMode ? 'style="display:none"' : ''}>
+                        <span class="material-symbols-rounded">remove</span>
+                    </button>
+                    <button class="complete-btn">
+                        ${isTimerMode ? 'Начать' : 'Готово'}
+                    </button>
+                    <button class="control-btn plus-btn" ${isTimerMode ? 'style="display:none"' : ''}>
+                        <span class="material-symbols-rounded">add</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        setupExerciseHandlers();
+
+        if (isTimerMode) {
+            const completeBtn = document.querySelector('.complete-btn');
+            completeBtn?.addEventListener('click', function() {
+                if (this.textContent === 'Начать') {
+                    startTimer(initialValue);
+                    this.textContent = 'Пропустить';
+                } else {
+                    clearInterval(timerInterval);
+                    showRestScreen();
+                }
+            });
         }
+    }
 
-        function setupExerciseHandlers() {
-            const backBtn = container.querySelector('.back-btn');
-            const minusBtn = container.querySelector('.minus-btn');
-            const plusBtn = container.querySelector('.plus-btn');
-            const completeBtn = container.querySelector('.complete-btn');
+    function completeWorkout() {
+        // Показываем нижнюю навигацию
+        document.querySelector('.bottom-nav')?.classList.remove('hidden');
 
-            backBtn?.addEventListener('click', () => {
-                if (timerInterval) clearInterval(timerInterval);
-                if (restInterval) clearInterval(restInterval);
-                document.querySelector('.bottom-nav')?.classList.remove('hidden');
-                showProgramWorkouts(adaptedWorkout);
-            });
+        container.innerHTML = `
+            <div class="workout-complete">
+                <div class="complete-icon">
+                    <span class="material-symbols-rounded">celebration</span>
+                </div>
+                <h2>Тренировка завершена!</h2>
+                <div class="workout-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">${workout.exercises.length}</span>
+                        <span class="stat-label">Упражнений</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${workout.duration}</span>
+                        <span class="stat-label">Минут</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${workout.calories}</span>
+                        <span class="stat-label">Ккал</span>
+                    </div>
+                </div>
+                <button class="finish-btn">
+                    <span class="material-symbols-rounded">home</span>
+                    Вернуться к программам
+                </button>
+            </div>
+        `;
 
-            minusBtn?.addEventListener('click', () => {
-                updateCounter(currentReps - 1);
-            });
-
-            plusBtn?.addEventListener('click', () => {
-                updateCounter(currentReps + 1);
-            });
-
-            if (!isTimerMode) {
-                completeBtn?.addEventListener('click', () => {
-                    const exercise = adaptedWorkout.exercises[currentExerciseIndex];
-                    startRestTimer(exercise.rest);
-                });
-            }
-        }
-
-        renderExercise();
-
-    } catch (error) {
-        console.error('Ошибка запуска тренировки:', error);
-        showPopupSafe({
-            title: 'Ошибка',
-            message: 'Не удалось начать тренировку. Попробуйте позже.',
-            buttons: [{type: 'ok'}]
+        const finishBtn = container.querySelector('.finish-btn');
+        finishBtn?.addEventListener('click', () => {
+            renderProgramCards();
+            tg.HapticFeedback.impactOccurred('medium');
         });
     }
+
+    // Добавляем функцию setupExerciseHandlers
+    function setupExerciseHandlers() {
+        const backBtn = container.querySelector('.back-btn');
+        const minusBtn = container.querySelector('.minus-btn');
+        const plusBtn = container.querySelector('.plus-btn');
+        const completeBtn = container.querySelector('.complete-btn');
+
+        backBtn?.addEventListener('click', () => {
+            if (timerInterval) clearInterval(timerInterval);
+            if (restInterval) clearInterval(restInterval);
+            document.querySelector('.bottom-nav')?.classList.remove('hidden');
+            showProgramWorkouts(workout);
+        });
+
+        minusBtn?.addEventListener('click', () => {
+            updateCounter(currentReps - 1);
+        });
+
+        plusBtn?.addEventListener('click', () => {
+            updateCounter(currentReps + 1);
+        });
+
+        if (!isTimerMode) {
+            completeBtn?.addEventListener('click', () => {
+                showRestScreen();
+            });
+        }
+    }
+
+    renderExercise();
 }
 
 // Вспомогательная функция для получения текста сложности
@@ -2057,100 +2133,6 @@ function renderProfilePage() {
             });
         }
     });
-
-    // ... остальной код функции ...
-}
-
-// Функция для получения доступного оборудования пользователя
-async function getUserEquipment() {
-    try {
-        const profileData = await getStorageItem('profile');
-        if (!profileData) return ['none'];
-        
-        const profile = JSON.parse(profileData);
-        return profile.equipment || ['none'];
-    } catch (error) {
-        console.error('Ошибка получения оборудования:', error);
-        return ['none'];
-    }
-}
-
-// Функция для адаптации упражнения под доступное оборудование
-function adaptExercise(exercise, availableEquipment) {
-    // Если у упражнения нет требований к оборудованию, возвращаем как есть
-    if (!exercise.equipment) {
-        return { ...exercise, equipment: ['none'] };
-    }
-
-    // Если упражнение можно выполнить с имеющимся оборудованием
-    if (exercise.equipment.some(eq => availableEquipment.includes(eq))) {
-        return exercise;
-    }
-
-    // Ищем подходящую альтернативу
-    if (exercise.alternatives) {
-        const alternative = exercise.alternatives.find(alt => 
-            alt.equipment.some(eq => availableEquipment.includes(eq))
-        );
-        if (alternative) {
-            return { 
-                ...exercise,
-                name: alternative.name,
-                equipment: alternative.equipment,
-                description: alternative.description || exercise.description,
-                // Сохраняем оригинальные параметры тренировки
-                sets: exercise.sets,
-                reps: exercise.reps,
-                rest: exercise.rest
-            };
-        }
-    }
-
-    // Если альтернатив нет, возвращаем базовую версию без оборудования
-    return {
-        ...exercise,
-        name: exercise.name.replace(/с \w+$/, ''),
-        equipment: ['none'],
-        description: `${exercise.name} (без оборудования)`
-    };
-}
-
-// Функция для адаптации тренировки
-async function adaptWorkout(workout) {
-    const availableEquipment = await getUserEquipment();
-    
-    return {
-        ...workout,
-        exercises: workout.exercises.map(exercise => 
-            adaptExercise(exercise, availableEquipment)
-        )
-    };
-}
-
-function renderProfileSetup() {
-    const container = document.querySelector('.container');
-    if (!container) return;
-
-    container.innerHTML = `
-        <div class="profile-setup">
-            <!-- ... существующие поля профиля ... -->
-            
-            <div class="equipment-section">
-                <h3>Доступное оборудование</h3>
-                <div class="equipment-grid">
-                    ${Object.values(window.EQUIPMENT_TYPES).map(equipment => `
-                        <label class="equipment-item">
-                            <input type="checkbox" name="equipment" value="${equipment.id}">
-                            <div class="equipment-icon">
-                                <span class="material-symbols-rounded">${equipment.icon}</span>
-                            </div>
-                            <span class="equipment-label">${equipment.name}</span>
-                        </label>
-                    `).join('')}
-                </div>
-            </div>
-        </div>
-    `;
 
     // ... остальной код функции ...
 } 
