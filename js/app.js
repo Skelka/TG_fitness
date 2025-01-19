@@ -4,15 +4,25 @@ let tg, mainButton, backButton, currentPeriod, weightChart;
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Проверяем наличие Telegram WebApp
-        if (!window.Telegram?.WebApp) {
-            throw new Error('Telegram WebApp не загружен');
-        }
-
-        // Проверяем наличие данных программ
-        if (!window.programData) {
-            throw new Error('Данные программ не загружены');
-        }
+        // Ждем инициализации Telegram WebApp
+        await new Promise(resolve => {
+            if (window.Telegram?.WebApp) {
+                resolve();
+            } else {
+                const maxAttempts = 10;
+                let attempts = 0;
+                const interval = setInterval(() => {
+                    attempts++;
+                    if (window.Telegram?.WebApp) {
+                        clearInterval(interval);
+                        resolve();
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(interval);
+                        throw new Error('Telegram WebApp не загружен');
+                    }
+                }, 100);
+            }
+        });
 
         // Инициализируем основные переменные
         tg = window.Telegram.WebApp;
@@ -24,6 +34,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         tg.ready();
         tg.expand();
         tg.enableClosingConfirmation();
+
+        // Проверяем наличие данных программ
+        if (!window.programData) {
+            throw new Error('Данные программ не загружены');
+        }
 
         // Настраиваем кнопки
         mainButton.setText('Сохранить профиль');
@@ -66,6 +81,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Функции для работы с CloudStorage
 async function getStorageItem(key) {
     return new Promise((resolve) => {
+        if (!tg?.CloudStorage) {
+            console.warn('CloudStorage не доступен');
+            resolve(null);
+            return;
+        }
         tg.CloudStorage.getItem(key, (error, value) => {
             if (error) {
                 console.error(`Ошибка при получении ${key}:`, error);
@@ -79,6 +99,11 @@ async function getStorageItem(key) {
 
 async function setStorageItem(key, value) {
     return new Promise((resolve, reject) => {
+        if (!tg?.CloudStorage) {
+            console.warn('CloudStorage не доступен');
+            resolve(false);
+            return;
+        }
         tg.CloudStorage.setItem(key, value, (error, success) => {
             if (error || !success) {
                 reject(error || new Error(`Failed to save ${key}`));
@@ -1557,30 +1582,8 @@ async function initStatisticsPage() {
     }
 }
 
-// Ждем загрузки Telegram Web App
-window.addEventListener('load', () => {
-    if (!window.Telegram?.WebApp) {
-        console.error('Telegram WebApp не загружен');
-        return;
-    }
-
-    // Глобальные переменные
-    const tg = window.Telegram.WebApp;
-    const mainButton = tg.MainButton;
-    const backButton = tg.BackButton;
-    let currentPeriod = 'week';
-
-    // Инициализация
-    tg.ready();
-    tg.expand();
-    tg.enableClosingConfirmation();
-
-    // Инициализируем страницу статистики
-    initStatisticsPage();
-});
-
 // Заменим использование placeholder на data URL
-const defaultImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23cccccc"/%3E%3C/svg%3E';
+const defaultImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23cccccc"/%3E%3Ctext x="50" y="50" font-family="Arial" font-size="14" fill="%23ffffff" text-anchor="middle" dy=".3em"%3EНет фото%3C/text%3E%3C/svg%3E';
 
 // Используем его в коде вместо via.placeholder.com
 function updateProfilePhoto(photoUrl) {
