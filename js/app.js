@@ -407,7 +407,7 @@ document.querySelectorAll('.period-btn').forEach(btn => {
             currentPeriod = btn.dataset.period;
             const data = await getWeightData(currentPeriod);
             updateWeightChart(data);
-        } catch (error) {
+    } catch (error) {
             console.error('Ошибка при обновлении графика:', error);
         }
     });
@@ -904,126 +904,649 @@ async function startProgram(programId) {
     }
 }
 
-// Обновляем функцию getStatistics
-async function getStatistics() {
-    try {
-        // Получаем все необходимые данные
-        const [weightHistoryStr, activeProgramStr] = await Promise.all([
-            getStorageItem('weightHistory'),
-            getStorageItem('activeProgram')
-        ]);
-
-        // Парсим данные
-        const weightHistory = weightHistoryStr ? JSON.parse(weightHistoryStr) : [];
-        const activeProgram = activeProgramStr ? JSON.parse(activeProgramStr) : null;
-
-        // Вычисляем статистику
-        const stats = {
-            totalWorkouts: 0,
-            totalMinutes: 0,
-            totalCalories: 0,
-            weightChange: 0,
-            currentStreak: 0,
-            longestStreak: 0
-        };
-
-        // Обрабатываем историю веса
-        if (weightHistory.length > 1) {
-            const sortedWeights = [...weightHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
-            const firstWeight = sortedWeights[0].weight;
-            const lastWeight = sortedWeights[sortedWeights.length - 1].weight;
-            stats.weightChange = +(lastWeight - firstWeight).toFixed(1);
-        }
-
-        // Обрабатываем данные программы
-        if (activeProgram?.completedWorkouts?.length > 0) {
-            stats.totalWorkouts = activeProgram.completedWorkouts.length;
-            
-            // Подсчитываем минуты и калории
-            activeProgram.completedWorkouts.forEach(workout => {
-                stats.totalMinutes += workout.duration || 0;
-                stats.totalCalories += workout.calories || 0;
-            });
-
-            // Вычисляем текущую серию тренировок
-            const today = new Date().setHours(0, 0, 0, 0);
-            let currentStreak = 0;
-            let maxStreak = 0;
-            let lastWorkoutDate = null;
-
-            const sortedWorkouts = [...activeProgram.completedWorkouts]
-                .sort((a, b) => b.completedAt - a.completedAt);
-
-            for (const workout of sortedWorkouts) {
-                const workoutDate = new Date(workout.completedAt).setHours(0, 0, 0, 0);
-                
-                if (!lastWorkoutDate) {
-                    currentStreak = 1;
-                    lastWorkoutDate = workoutDate;
-                } else {
-                    const dayDiff = (lastWorkoutDate - workoutDate) / (1000 * 60 * 60 * 24);
-                    
-                    if (dayDiff === 1) {
-                        currentStreak++;
-                    } else {
-                        maxStreak = Math.max(maxStreak, currentStreak);
-                        currentStreak = 1;
-                    }
-                    lastWorkoutDate = workoutDate;
-                }
-            }
-
-            stats.currentStreak = currentStreak;
-            stats.longestStreak = Math.max(maxStreak, currentStreak);
-        }
-
-        return stats;
-    } catch (error) {
-        console.error('Ошибка при получении статистики:', error);
-        return null;
-    }
-}
-
-// Обновляем функцию updateStatistics
+// Функция обновления статистики
 async function updateStatistics() {
     try {
-        const stats = await getStatistics();
-        if (!stats) return;
+        // Получаем активную программу
+        const programData = await getStorageItem('activeProgram');
+        const program = programData ? JSON.parse(programData) : null;
 
-        // Обновляем элементы статистики
-        const elements = {
-            'total-workouts': stats.totalWorkouts || '0',
-            'total-minutes': stats.totalMinutes || '0',
-            'total-calories': stats.totalCalories || '0',
-            'weight-change': stats.weightChange ? `${stats.weightChange > 0 ? '+' : ''}${stats.weightChange} кг` : '0 кг',
-            'current-streak': `${stats.currentStreak || 0} дн.`,
-            'longest-streak': `${stats.longestStreak || 0} дн.`
+        // Инициализируем статистику нулевыми значениями
+        const stats = {
+            plannedWorkouts: 0,
+            totalCalories: 0,
+            totalMinutes: 0,
+            completionRate: 0
         };
 
-        for (const [id, value] of Object.entries(elements)) {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-            }
+        // Обновляем количество запланированных тренировок
+        if (program && program.plannedWorkouts) {
+            stats.plannedWorkouts = program.plannedWorkouts.length;
         }
 
-        // Обновляем график веса
-        const weightData = await getWeightData(currentPeriod);
-        if (weightData && weightData.length > 0) {
-            updateWeightChart(weightData);
-        } else {
-            // Если данных нет, показываем сообщение
-            const chartContainer = document.getElementById('weight-chart-container');
-            if (chartContainer) {
-                chartContainer.innerHTML = '<div class="no-data-message">Нет данных о весе</div>';
-            }
+        // Обновляем UI
+        const statsContainer = document.getElementById('statistics');
+        if (statsContainer) {
+            statsContainer.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-mini-card">
+                        <div class="stat-icon">
+                            <span class="material-symbols-rounded">calendar_month</span>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value">${stats.plannedWorkouts}</span>
+                            <span class="stat-label">Тренировок в месяце</span>
+                        </div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <div class="stat-icon">
+                            <span class="material-symbols-rounded">local_fire_department</span>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value">${stats.totalCalories}</span>
+                            <span class="stat-label">Ккал сожжено</span>
+                        </div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <div class="stat-icon">
+                            <span class="material-symbols-rounded">timer</span>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value">${formatDuration(stats.totalMinutes)}</span>
+                            <span class="stat-label">Общее время</span>
+                        </div>
+                    </div>
+                    <div class="stat-mini-card">
+                        <div class="stat-icon">
+                            <span class="material-symbols-rounded">trending_up</span>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-value">${stats.completionRate}%</span>
+                            <span class="stat-label">Достижение цели</span>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
     } catch (error) {
         console.error('Ошибка при обновлении статистики:', error);
     }
 }
 
-// Обновляем функцию инициализации страницы статистики
+// Добавляем функцию форматирования времени
+function formatDuration(minutes) {
+    if (minutes < 60) {
+        return `${minutes}м`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}ч ${remainingMinutes}м`;
+}
+
+// Добавим функцию для загрузки активной программы при инициализации
+async function loadActiveProgram() {
+    try {
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+        
+        if (activeProgram) {
+            updateProgramProgress(activeProgram);
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке активной программы:', error);
+    }
+}
+
+// Обновляем функцию initApp
+function initApp() {
+    console.log('Версия WebApp:', tg.version);
+    console.log('Платформа:', tg.platform);
+    console.log('Инициализация WebApp:', tg.initData);
+    console.log('Доступные методы WebApp:', Object.keys(tg));
+
+    setupEventListeners();
+    setupProgramHandlers();
+    setupPopupHandlers();
+    loadProfile();
+    loadActiveProgram();
+}
+
+// Обновляем обработчики событий
+function setupProgramHandlers() {
+    // Обработчики для кнопок в карточках программ
+    document.querySelectorAll('.program-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const programCard = button.closest('.program-card');
+            const programId = programCard.dataset.program;
+            
+            if (button.classList.contains('info-btn')) {
+                tg.HapticFeedback.impactOccurred('medium');
+                showProgramDetails(programId);
+            } else if (button.classList.contains('start-btn')) {
+                tg.HapticFeedback.impactOccurred('medium');
+                startProgram(programId);
+            }
+        });
+    });
+
+    // Добавляем обработчик для всей карточки программы
+    document.querySelectorAll('.program-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.program-btn')) {
+                const programId = card.dataset.program;
+                tg.HapticFeedback.impactOccurred('medium');
+                showProgramDetails(programId);
+            }
+        });
+    });
+}
+
+// Добавим функцию для начала конкретной тренировки
+function startWorkoutSession(programId, workoutDay) {
+    try {
+        console.log('Starting workout session:', programId, workoutDay);
+        const program = programData[programId];
+        if (!program) {
+            throw new Error('Программа не найдена');
+        }
+
+        const workout = program.workouts.find(w => w.day === workoutDay);
+        if (!workout) {
+            throw new Error('Тренировка не найдена');
+        }
+
+        // Переключаемся на вкладку тренировок
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => tab.style.display = 'none');
+        const workoutsTab = document.getElementById('workouts');
+        workoutsTab.style.display = 'block';
+
+        // Показываем интерфейс тренировки
+        workoutsTab.innerHTML = `
+            <div class="workout-session">
+                <h2>${workout.title}</h2>
+                <div class="workout-timer">
+                    <span class="time-remaining">${workout.duration}:00</span>
+                </div>
+                <div class="workout-progress">
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="exercises-list">
+                    ${workout.exercises.map((exercise, index) => `
+                        <div class="exercise-item ${index === 0 ? 'active' : ''}">
+                            <h4>${exercise.name}</h4>
+                            <p>${exercise.sets} подхода × ${exercise.reps}</p>
+                            <p>Отдых: ${exercise.rest} сек</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="workout-controls">
+                    <button class="workout-btn pause-btn">
+                        <span class="material-symbols-rounded">pause</span>
+                        Пауза
+                    </button>
+                    <button class="workout-btn complete-btn">
+                        <span class="material-symbols-rounded">check</span>
+                        Завершить
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Добавляем обработчики для кнопок
+        setupWorkoutControls(workout, programId);
+
+        // Запускаем таймер
+        startWorkoutTimer(workout.duration * 60);
+
+        console.log('Workout session started successfully');
+
+    } catch (error) {
+        console.error('Ошибка при запуске тренировки:', error);
+        showError(error);
+    }
+}
+
+// Функция для управления таймером тренировки
+function startWorkoutTimer(duration) {
+    let timeRemaining = duration;
+    const timerElement = document.querySelector('.time-remaining');
+    const progressBar = document.querySelector('.workout-progress .progress');
+    
+    const timer = setInterval(() => {
+        timeRemaining--;
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        
+        timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        const progress = 100 - (timeRemaining / duration * 100);
+        progressBar.style.width = `${progress}%`;
+        
+        if (timeRemaining <= 0) {
+            clearInterval(timer);
+            completeWorkout();
+        }
+    }, 1000);
+
+    // Сохраняем таймер в глобальной переменной для возможности паузы
+    window.workoutTimer = timer;
+}
+
+// Функция для настройки контролов тренировки
+function setupWorkoutControls(workout, programId) {
+    const pauseBtn = document.querySelector('.pause-btn');
+    const completeBtn = document.querySelector('.complete-btn');
+    
+    pauseBtn.addEventListener('click', () => {
+        if (pauseBtn.classList.contains('paused')) {
+            // Возобновляем тренировку
+            startWorkoutTimer(parseInt(document.querySelector('.time-remaining').textContent));
+            pauseBtn.classList.remove('paused');
+            pauseBtn.innerHTML = '<span class="material-symbols-rounded">pause</span>Пауза';
+        } else {
+            // Ставим на паузу
+            clearInterval(window.workoutTimer);
+            pauseBtn.classList.add('paused');
+            pauseBtn.innerHTML = '<span class="material-symbols-rounded">play_arrow</span>Продолжить';
+        }
+        tg.HapticFeedback.impactOccurred('medium');
+    });
+
+    completeBtn.addEventListener('click', () => {
+        clearInterval(window.workoutTimer);
+        completeWorkout(workout, programId);
+        tg.HapticFeedback.impactOccurred('medium');
+    });
+}
+
+// Функция завершения тренировки
+async function completeWorkout(workout, programId) {
+    try {
+        // Добавим проверку входных параметров
+        if (!workout || !programId) {
+            console.warn('Отсутствуют необходимые параметры:', { workout, programId });
+            return;
+        }
+
+        // Получаем текущий прогресс программы
+        const result = await getStorageItem('activeProgram');
+        let programProgress = result ? JSON.parse(result) : {
+            programId: programId,
+            startDate: Date.now(),
+            completedWorkouts: [],
+            plannedWorkouts: []
+        };
+
+        // Добавляем завершенную тренировку
+        programProgress.completedWorkouts.push({
+            day: workout.day,
+            completedAt: Date.now(),
+            duration: workout.duration,
+            type: workout.type,
+            calories: workout.calories || 0
+        });
+
+        // Сохраняем обновленный прогресс
+        await setStorageItem('activeProgram', JSON.stringify(programProgress));
+
+        // Обновляем статистику
+        await updateStatistics();
+
+        // Показываем сообщение об успехе
+        try {
+            await tg.showPopup({
+                title: 'Тренировка завершена!',
+                message: 'Поздравляем! Вы успешно завершили тренировку.',
+                buttons: [{
+                    type: 'default',
+                    text: 'Продолжить',
+                    id: 'return_to_main'
+                }]
+            });
+        } catch (popupError) {
+            console.warn('Не удалось показать попап:', popupError);
+        }
+
+        // Обновляем UI
+        updateProgramProgress(programProgress);
+
+    } catch (error) {
+        console.error('Ошибка при завершении тренировки:', error);
+    }
+}
+
+// Добавим функцию для обработки изменений в чекбоксах
+function setupCheckboxHandlers() {
+    const form = document.getElementById('profile-form');
+    if (!form) return;
+
+    // Обработчики для радио-кнопок целей
+    const goalInputs = form.querySelectorAll('input[name="goal"]');
+    goalInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            mainButton.show();
+        });
+    });
+
+    // Обработчики для чекбоксов мест тренировок
+    const workoutPlaceInputs = form.querySelectorAll('input[name="workout_place"]');
+    workoutPlaceInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            mainButton.show();
+        });
+    });
+
+    // Обработчики для чекбоксов оборудования
+    const equipmentInputs = form.querySelectorAll('input[name="equipment"]');
+    equipmentInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            mainButton.show();
+        });
+    });
+}
+
+// Функция для отображения календаря
+function renderCalendar() {
+    const calendarContainer = document.getElementById('calendar');
+    if (!calendarContainer) return;
+
+    // Получаем активную программу
+    getStorageItem('activeProgram')
+        .then(data => {
+            const programProgress = data ? JSON.parse(data) : null;
+            if (!programProgress) return;
+
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+
+            // Отрисовываем календарь с тренировками
+            const calendar = generateCalendar(currentYear, currentMonth, programProgress.plannedWorkouts);
+            calendarContainer.innerHTML = calendar;
+
+            // Добавляем обработчики для навигации по календарю
+            setupCalendarNavigation(programProgress.plannedWorkouts);
+        })
+        .catch(console.error);
+}
+
+// Функция генерации календаря с тренировками
+function generateCalendar(year, month, workouts) {
+    const now = new Date();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    
+    const monthNames = [
+        'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+        'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+    ];
+
+    let calendar = `
+        <div class="calendar-header">
+            <button class="calendar-nav-btn prev">←</button>
+            <h2>${monthNames[month]} ${year}</h2>
+            <button class="calendar-nav-btn next">→</button>
+                </div>
+        <div class="calendar-weekdays">
+            <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div>
+            <div>Пт</div><div>Сб</div><div>Вс</div>
+        </div>
+        <div class="calendar-days">
+    `;
+
+    // Добавляем пустые ячейки в начале
+    let firstDayOfWeek = firstDay.getDay() || 7;
+    for (let i = 1; i < firstDayOfWeek; i++) {
+        calendar += '<div class="calendar-day empty"></div>';
+    }
+
+    // Добавляем дни месяца
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+        let classes = ['calendar-day'];
+        if (day === now.getDate() && month === now.getMonth() && year === now.getFullYear()) {
+            classes.push('today');
+        }
+
+        // Проверяем, есть ли тренировка в этот день
+        const workout = workouts?.find(w => {
+            const workoutDate = new Date(w.plannedDate);
+            return workoutDate.getDate() === day && 
+                   workoutDate.getMonth() === month && 
+                   workoutDate.getFullYear() === year;
+        });
+
+        if (workout) {
+            classes.push('has-workout');
+        }
+
+        calendar += `
+            <div class="${classes.join(' ')}" data-date="${day}">
+                ${day}
+                ${workout ? `<div class="workout-indicator"></div>` : ''}
+            </div>
+        `;
+    }
+
+    calendar += '</div>';
+    return calendar;
+}
+
+// Создаем элемент дня
+function createDayElement(day) {
+    const div = document.createElement('div');
+    div.className = 'calendar-day';
+    div.textContent = day;
+    return div;
+}
+
+// Загружаем дни тренировок
+async function loadWorkoutDays() {
+    try {
+        const result = await getStorageItem('activeProgram');
+        if (result) {
+            const program = JSON.parse(result);
+            
+            // Отмечаем выполненные тренировки
+            if (program.completedWorkouts) {
+                program.completedWorkouts.forEach(workout => {
+                    const date = new Date(workout.completedAt);
+                    markWorkoutDay(date, 'completed');
+                });
+            }
+            
+            // Отмечаем запланированные тренировки
+            if (program.workoutDays) {
+                program.workoutDays.forEach(workoutDay => {
+                    const date = new Date(workoutDay.date);
+                    if (date > new Date()) { // Только будущие тренировки
+                        markWorkoutDay(date, 'planned');
+                    }
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке дней тренировок:', error);
+    }
+}
+
+// Отмечаем день тренировки
+function markWorkoutDay(date, type) {
+    const days = document.querySelectorAll('.calendar-day');
+    const dayNumber = date.getDate();
+    
+    days.forEach(day => {
+        if (day.textContent === String(dayNumber)) {
+            // Добавляем иконку штанги
+            if (!day.querySelector('.workout-icon')) {
+                const icon = document.createElement('span');
+                icon.className = 'material-symbols-rounded workout-icon';
+                icon.textContent = 'fitness_center';
+                day.appendChild(icon);
+            }
+            day.classList.add(type);
+        }
+    });
+}
+
+// Обновляем стили для календаря
+const styles = `
+    .calendar-day {
+        position: relative;
+        min-height: 40px;
+    }
+    
+    .workout-icon {
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 14px;
+        color: var(--tg-theme-button-color);
+    }
+    
+    .calendar-day.completed .workout-icon {
+        color: #4CAF50;
+    }
+    
+    .calendar-day.planned .workout-icon {
+        color: var(--tg-theme-button-color);
+    }
+`;
+
+// Добавляем стили
+const styleSheet = document.createElement('style');
+styleSheet.textContent = styles;
+document.head.appendChild(styleSheet);
+
+// Вызываем рендер календаря при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    renderCalendar();
+});
+
+// Функция для добавления тренировки в календарь
+async function addWorkoutToCalendar(workout, date) {
+    try {
+        // Проверяем поддержку календаря
+        if (!tg.platform.toLowerCase().includes('android') && !tg.platform.toLowerCase().includes('ios')) {
+            console.log('Платформа не поддерживает добавление в календарь');
+            return;
+        }
+
+        const calendarEvent = {
+            title: `Тренировка: ${workout.title}`,
+            description: `Длительность: ${workout.duration} мин\nТип: ${workout.type}\n\nУпражнения:\n${
+                workout.exercises.map(ex => `- ${ex.name} (${ex.sets}×${ex.reps})`).join('\n')
+            }`,
+            start_date: Math.floor(date.getTime() / 1000),
+            end_date: Math.floor((date.getTime() + workout.duration * 60000) / 1000)
+        };
+
+        // Используем CloudStorage для сохранения расписания
+        await tg.CloudStorage.setItem(`workout_${workout.day}`, JSON.stringify(calendarEvent));
+        
+        console.log('Тренировка сохранена:', calendarEvent);
+        
+    } catch (error) {
+        console.error('Ошибка при сохранении тренировки:', error);
+        // Не показываем ошибку пользователю, просто логируем
+    }
+}
+
+// Добавляем функцию setupCalendarNavigation
+function setupCalendarNavigation(workouts) {
+    const prevBtn = document.querySelector('.calendar-nav-btn.prev');
+    const nextBtn = document.querySelector('.calendar-nav-btn.next');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            const currentDate = new Date();
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            const calendar = generateCalendar(currentDate.getFullYear(), currentDate.getMonth(), workouts);
+            document.getElementById('calendar').innerHTML = calendar;
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            const currentDate = new Date();
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            const calendar = generateCalendar(currentDate.getFullYear(), currentDate.getMonth(), workouts);
+            document.getElementById('calendar').innerHTML = calendar;
+        });
+    }
+}
+
+// Функция для сохранения нового значения веса
+async function saveWeight(weight) {
+    try {
+        const result = await getStorageItem('weightHistory');
+        const weightHistory = result ? JSON.parse(result) : [];
+        
+        // Добавляем новую запись
+        const newEntry = {
+            date: new Date().toISOString(),
+            weight: parseFloat(weight)
+        };
+
+        // Проверяем, есть ли уже запись за сегодня
+        const today = new Date().setHours(0, 0, 0, 0);
+        const existingTodayIndex = weightHistory.findIndex(
+            entry => new Date(entry.date).setHours(0, 0, 0, 0) === today
+        );
+
+        if (existingTodayIndex !== -1) {
+            // Обновляем существующую запись
+            weightHistory[existingTodayIndex] = newEntry;
+        } else {
+            // Добавляем новую запись
+            weightHistory.push(newEntry);
+        }
+
+        // Сохраняем обновленную историю
+        await setStorageItem('weightHistory', JSON.stringify(weightHistory));
+        
+        // Обновляем график
+        const data = await getWeightData(currentPeriod);
+        updateWeightChart(data);
+    } catch (error) {
+        console.error('Ошибка при сохранении веса:', error);
+    }
+}
+
+// Очистка данных
+async function clearAllData() {
+    try {
+        // Очищаем все данные
+        await setStorageItem('weightHistory', '[]');
+        await setStorageItem('activeProgram', '{}');
+        await setStorageItem('profile', '{}');
+        
+        // Показываем сообщение об успехе
+        tg.showPopup({
+            title: 'Данные очищены',
+            message: 'Все данные успешно удалены',
+            buttons: [{type: 'ok'}]
+        });
+
+        // Перезагружаем страницу
+        setTimeout(() => location.reload(), 1000);
+    } catch (error) {
+        console.error('Ошибка при очистке данных:', error);
+        tg.showPopup({
+            title: 'Ошибка',
+            message: 'Не удалось очистить данные',
+            buttons: [{type: 'ok'}]
+        });
+    }
+}
+
+// Инициализация страницы статистики
 async function initStatisticsPage() {
     try {
         // Проверяем наличие Chart.js
@@ -1034,6 +1557,12 @@ async function initStatisticsPage() {
 
         // Обновляем статистику
         await updateStatistics();
+
+        // Инициализируем график веса
+        const weightData = await getWeightData(currentPeriod);
+        if (weightData && weightData.length > 0) {
+            updateWeightChart(weightData);
+        }
 
         // Добавляем обработчики для кнопок периода
         document.querySelectorAll('.period-btn').forEach(btn => {
