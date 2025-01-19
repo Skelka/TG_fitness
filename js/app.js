@@ -1859,43 +1859,74 @@ async function showPopupSafe(options) {
     });
 }
 
-// Функция для добавления тестовых данных веса
-async function addTestWeightData() {
+// Добавим функцию для работы с фото профиля
+function updateProfilePhoto(photoUrl) {
+    const profilePhoto = document.getElementById('profile-photo');
+    if (profilePhoto) {
+        const defaultImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23cccccc"/%3E%3Ctext x="50" y="50" font-family="Arial" font-size="14" fill="%23ffffff" text-anchor="middle" dy=".3em"%3EНет фото%3C/text%3E%3C/svg%3E';
+        
+        profilePhoto.src = photoUrl || defaultImage;
+        profilePhoto.onerror = () => {
+            profilePhoto.src = defaultImage;
+        };
+    }
+}
+
+// Обновим функцию очистки данных для удаления тестовых значений
+async function clearAllData() {
     try {
-        const result = await getStorageItem('weightHistory');
-        const weightHistory = result ? JSON.parse(result) : [];
+        // Очищаем все данные в CloudStorage и localStorage
+        const keys = ['weightHistory', 'activeProgram', 'profile'];
         
-        // Если данных нет или их меньше 2, добавляем тестовые
-        if (weightHistory.length < 2) {
-            console.log('Добавляем тестовые данные веса');
-            const today = new Date();
-            const newData = [];
-
-            // Добавляем данные за последние 30 дней
-            for (let i = 30; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - i);
-                
-                // Генерируем вес с небольшими колебаниями
-                const baseWeight = 75;
-                const variation = Math.sin(i * 0.2) * 2;
-                const weight = parseFloat((baseWeight + variation).toFixed(1));
-
-                newData.push({
-                    date: date.toISOString(),
-                    weight: weight
-                });
-            }
-
-            // Сохраняем новые данные
-            await setStorageItem('weightHistory', JSON.stringify(newData));
-            console.log('Тестовые данные веса добавлены:', newData);
-            return newData;
+        // Очищаем данные последовательно
+        for (const key of keys) {
+            await setStorageItem(key, '[]');
+            localStorage.removeItem(key);
         }
-        
-        return weightHistory;
+
+        // Показываем сообщение об успехе
+        await showPopupSafe({
+            title: 'Данные очищены',
+            message: 'Все данные успешно удалены',
+            buttons: [{type: 'ok'}]
+        });
+
+        // Перезагружаем страницу
+        location.reload();
     } catch (error) {
-        console.error('Ошибка при добавлении тестовых данных:', error);
-        return [];
+        console.error('Ошибка при очистке данных:', error);
+        showError(error);
+    }
+}
+
+// Добавим функцию инициализации страницы статистики
+async function initStatisticsPage() {
+    try {
+        // Проверяем наличие Chart.js
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js не загружен');
+            return;
+        }
+
+        // Сначала обновляем статистику
+        await updateStatistics();
+
+        // Затем инициализируем график веса
+        const weightData = await getWeightData(currentPeriod);
+        if (weightData && weightData.length > 0) {
+            updateWeightChart(weightData);
+        } else {
+            // Показываем сообщение об отсутствии данных
+            const chartContainer = document.getElementById('weight-chart');
+            if (chartContainer) {
+                chartContainer.innerHTML = '<div class="no-data">Нет данных о весе</div>';
+            }
+        }
+
+        // Добавляем обработчики для кнопок периода
+        setupPeriodButtons();
+
+    } catch (error) {
+        console.error('Ошибка при инициализации страницы статистики:', error);
     }
 } 
