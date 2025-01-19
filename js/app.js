@@ -102,12 +102,14 @@ async function getStorageItem(key) {
             resolve(localStorage.getItem(key));
             return;
         }
-        tg.CloudStorage.getItem(key, (error, value) => {
+        
+        // Используем правильный метод для получения значений
+        tg.CloudStorage.getItems([key], (error, values) => {
             if (error) {
-                console.warn(`Ошибка CloudStorage, используем localStorage для ${key}:`, error);
+                console.warn(`Ошибка CloudStorage для ${key}:`, error);
                 resolve(localStorage.getItem(key));
             } else {
-                resolve(value);
+                resolve(values?.[key] || null);
             }
         });
     });
@@ -121,9 +123,11 @@ async function setStorageItem(key, value) {
             resolve(true);
             return;
         }
-        tg.CloudStorage.setItem(key, value, (error, success) => {
+
+        // Используем правильный метод для сохранения значений
+        tg.CloudStorage.setItems({[key]: value}, (error, success) => {
             if (error || !success) {
-                console.warn(`Ошибка CloudStorage, используем localStorage для ${key}:`, error);
+                console.warn(`Ошибка CloudStorage для ${key}:`, error);
                 localStorage.setItem(key, value);
                 resolve(true);
             } else {
@@ -1725,13 +1729,21 @@ function setupCalendarNavigation(workouts) {
     }
 }
 
-// Функция для сохранения нового значения веса
+// Обновим функцию сохранения веса
 async function saveWeight(weight) {
     try {
+        // Получаем текущую историю весов
         const result = await getStorageItem('weightHistory');
-        const weightHistory = result ? JSON.parse(result) : [];
+        let weightHistory = [];
         
-        // Добавляем новую запись
+        try {
+            weightHistory = result ? JSON.parse(result) : [];
+            if (!Array.isArray(weightHistory)) weightHistory = [];
+        } catch (e) {
+            console.warn('Ошибка парсинга истории весов:', e);
+        }
+
+        // Создаем новую запись
         const newEntry = {
             date: new Date().toISOString(),
             weight: parseFloat(weight)
@@ -1751,34 +1763,59 @@ async function saveWeight(weight) {
             weightHistory.push(newEntry);
         }
 
+        console.log('Сохраняем историю весов:', weightHistory);
+
         // Сохраняем обновленную историю
         await setStorageItem('weightHistory', JSON.stringify(weightHistory));
         
         // Обновляем график
         const data = await getWeightData(currentPeriod);
         updateWeightChart(data);
+
+        // Показываем уведомление об успехе
+        tg.showPopup({
+            title: 'Вес сохранен',
+            message: 'Данные успешно обновлены',
+            buttons: [{type: 'ok'}]
+        });
+
     } catch (error) {
         console.error('Ошибка при сохранении веса:', error);
+        tg.showPopup({
+            title: 'Ошибка',
+            message: 'Не удалось сохранить вес',
+            buttons: [{type: 'ok'}]
+        });
     }
 }
 
-// Очистка данных
+// Обновим функцию очистки данных
 async function clearAllData() {
     try {
-        // Очищаем все данные
-        await setStorageItem('weightHistory', '[]');
-        await setStorageItem('activeProgram', '{}');
-        await setStorageItem('profile', '{}');
+        // Очищаем все данные в CloudStorage
+        const keys = ['weightHistory', 'activeProgram', 'profile'];
+        const emptyValues = {
+            weightHistory: '[]',
+            activeProgram: '{}',
+            profile: '{}'
+        };
+
+        await Promise.all(
+            keys.map(key => setStorageItem(key, emptyValues[key]))
+        );
+        
+        // Очищаем localStorage для надежности
+        keys.forEach(key => localStorage.removeItem(key));
         
         // Показываем сообщение об успехе
-        tg.showPopup({
+        await tg.showPopup({
             title: 'Данные очищены',
             message: 'Все данные успешно удалены',
             buttons: [{type: 'ok'}]
         });
 
         // Перезагружаем страницу
-        setTimeout(() => location.reload(), 1000);
+        location.reload();
     } catch (error) {
         console.error('Ошибка при очистке данных:', error);
         tg.showPopup({
