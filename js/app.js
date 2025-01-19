@@ -1,6 +1,10 @@
 // Глобальные переменные
 let tg, mainButton, backButton, currentPeriod, weightChart;
 
+// Добавим очередь для попапов
+const popupQueue = [];
+let isPopupShowing = false;
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -82,14 +86,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function getStorageItem(key) {
     return new Promise((resolve) => {
         if (!tg?.CloudStorage) {
-            console.warn('CloudStorage не доступен');
-            resolve(null);
+            console.warn('CloudStorage не доступен, используем localStorage');
+            resolve(localStorage.getItem(key));
             return;
         }
         tg.CloudStorage.getItem(key, (error, value) => {
             if (error) {
-                console.error(`Ошибка при получении ${key}:`, error);
-                resolve(null);
+                console.warn(`Ошибка CloudStorage, используем localStorage для ${key}:`, error);
+                resolve(localStorage.getItem(key));
             } else {
                 resolve(value);
             }
@@ -98,15 +102,18 @@ async function getStorageItem(key) {
 }
 
 async function setStorageItem(key, value) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         if (!tg?.CloudStorage) {
-            console.warn('CloudStorage не доступен');
-            resolve(false);
+            console.warn('CloudStorage не доступен, используем localStorage');
+            localStorage.setItem(key, value);
+            resolve(true);
             return;
         }
         tg.CloudStorage.setItem(key, value, (error, success) => {
             if (error || !success) {
-                reject(error || new Error(`Failed to save ${key}`));
+                console.warn(`Ошибка CloudStorage, используем localStorage для ${key}:`, error);
+                localStorage.setItem(key, value);
+                resolve(true);
             } else {
                 resolve(success);
             }
@@ -881,7 +888,7 @@ async function startProgram(programId) {
         renderCalendar();
 
         // Показываем сообщение о начале программы
-        tg.showPopup({
+        await showPopupSafe({
             title: 'Программа начата!',
             message: `Вы начали программу "${program.title}". Первая тренировка запланирована на сегодня.`,
             buttons: [{
@@ -1161,34 +1168,35 @@ function setupWorkoutControls(workout, programId) {
 // Функция завершения тренировки
 async function completeWorkout(workout, programId) {
     try {
-        if (!workout || typeof workout.day === 'undefined') {
-            throw new Error('Некорректные данные тренировки');
+        // Добавим проверку входных параметров
+        if (!workout || !programId) {
+            console.warn('Отсутствуют необходимые параметры:', { workout, programId });
+            return;
         }
 
         // Получаем текущий прогресс программы
         const result = await getStorageItem('activeProgram');
-        let programProgress = result ? JSON.parse(result) : null;
-
-        if (!programProgress) {
-            programProgress = {
-                programId: programId,
-                startDate: Date.now(),
-                completedWorkouts: [],
-                plannedWorkouts: []
-            };
-        }
+        let programProgress = result ? JSON.parse(result) : {
+            programId: programId,
+            startDate: Date.now(),
+            completedWorkouts: [],
+            plannedWorkouts: []
+        };
 
         // Добавляем завершенную тренировку
         programProgress.completedWorkouts.push({
             day: workout.day,
-            completedAt: Date.now()
+            completedAt: Date.now(),
+            duration: workout.duration,
+            type: workout.type,
+            calories: workout.calories || 0
         });
 
         // Сохраняем обновленный прогресс
         await setStorageItem('activeProgram', JSON.stringify(programProgress));
 
         // Обновляем статистику
-        updateStatistics(programProgress);
+        await updateStatistics();
 
         // Показываем сообщение об успехе
         try {
@@ -1202,8 +1210,7 @@ async function completeWorkout(workout, programId) {
                 }]
             });
         } catch (popupError) {
-            // Если попап уже открыт, просто логируем ошибку
-            console.log('Не удалось показать попап:', popupError);
+            console.warn('Не удалось показать попап:', popupError);
         }
 
         // Обновляем UI
@@ -1211,8 +1218,6 @@ async function completeWorkout(workout, programId) {
 
     } catch (error) {
         console.error('Ошибка при завершении тренировки:', error);
-        // Не показываем ошибку пользователю через попап, чтобы избежать конфликтов
-        console.log('Ошибка:', error.message);
     }
 }
 
@@ -1594,4 +1599,31 @@ function updateProfilePhoto(photoUrl) {
             profilePhoto.src = defaultImage;
         };
     }
+}
+
+// Добавим функцию для отображения попапа
+async function showPopupSafe(options) {
+    return new Promise((resolve) => {
+        const showNext = async () => {
+            if (popupQueue.length > 0 && !isPopupShowing) {
+                isPopupShowing = true;
+                const { options, resolver } = popupQueue[0];
+                
+                try {
+                    const result = await tg.showPopup(options);
+                    resolver(result);
+                } catch (error) {
+                    console.warn('Ошибка показа попапа:', error);
+                    resolver(null);
+                } finally {
+                    isPopupShowing = false;
+                    popupQueue.shift();
+                    showNext();
+                }
+            }
+        };
+
+        popupQueue.push({ options, resolver: resolve });
+        showNext();
+    });
 } 
