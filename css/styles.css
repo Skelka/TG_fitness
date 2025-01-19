@@ -1110,9 +1110,12 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .no-data {
     text-align: center;
-    padding: 20px;
+    padding: 40px 20px;
     color: var(--tg-theme-hint-color);
-    font-style: italic;
+    font-size: 16px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 12px;
+    margin: 20px 0;
 }
 
 .weight-section {

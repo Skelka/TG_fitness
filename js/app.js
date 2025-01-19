@@ -347,7 +347,27 @@ async function saveWeight(weight) {
     }
 }
 
-// Получение данных о весе за выбранный период
+// Функция очистки данных веса
+async function clearWeightData() {
+    try {
+        await setStorageItem('weightHistory', '[]');
+        console.log('Данные веса очищены');
+        
+        // Обновляем график
+        const chartContainer = document.getElementById('weight-chart');
+        if (chartContainer) {
+            // Если график существует, уничтожаем его
+            if (weightChart instanceof Chart) {
+                weightChart.destroy();
+            }
+            chartContainer.innerHTML = '<div class="no-data">Нет данных о весе. Добавьте свой первый замер для отображения графика.</div>';
+        }
+    } catch (error) {
+        console.error('Ошибка при очистке данных веса:', error);
+    }
+}
+
+// Обновляем функцию получения данных веса
 async function getWeightData(period = 'week') {
     try {
         const result = await getStorageItem('weightHistory');
@@ -360,9 +380,6 @@ async function getWeightData(period = 'week') {
             console.warn('Ошибка парсинга истории весов:', e);
             return [];
         }
-
-        // Добавим подробное логирование
-        console.log('Исходные данные веса:', JSON.stringify(weightHistory, null, 2));
 
         // Если данных нет, возвращаем пустой массив
         if (weightHistory.length === 0) {
@@ -389,31 +406,26 @@ async function getWeightData(period = 'week') {
 
         startDate.setHours(0, 0, 0, 0);
 
-        // Преобразуем и фильтруем данные
-        const filteredData = weightHistory
+        return weightHistory
             .map(entry => ({
                 date: new Date(entry.date),
                 weight: parseFloat(entry.weight)
             }))
-            .filter(entry => {
-                return entry.date >= startDate && entry.date <= now &&
-                       !isNaN(entry.weight) && entry.weight > 0;
-            })
+            .filter(entry => 
+                entry.date >= startDate && 
+                entry.date <= now &&
+                !isNaN(entry.weight) && 
+                entry.weight > 0
+            )
             .sort((a, b) => a.date - b.date);
 
-        console.log('Период:', period);
-        console.log('Начальная дата:', startDate);
-        console.log('Конечная дата:', now);
-        console.log('Отфильтрованные данные:', JSON.stringify(filteredData, null, 2));
-
-        return filteredData;
     } catch (error) {
         console.error('Ошибка при получении данных веса:', error);
         return [];
     }
 }
 
-// Обновление графика веса
+// Обновляем функцию отображения графика
 function updateWeightChart(data) {
     const ctx = document.getElementById('weight-chart');
     if (!ctx) {
@@ -427,16 +439,9 @@ function updateWeightChart(data) {
     }
 
     if (!data || data.length === 0) {
-        console.warn('Нет данных для отображения графика');
-        ctx.innerHTML = '<div class="no-data">Нет данных о весе</div>';
+        ctx.innerHTML = '<div class="no-data">Нет данных о весе. Добавьте свой первый замер для отображения графика.</div>';
         return;
     }
-
-    // Подробное логирование данных для графика
-    console.log('Подготовка данных для графика:');
-    data.forEach(entry => {
-        console.log(`Дата: ${entry.date.toLocaleDateString()}, Вес: ${entry.weight}`);
-    });
 
     const labels = data.map(entry => 
         entry.date.toLocaleDateString('ru-RU', { 
@@ -449,11 +454,6 @@ function updateWeightChart(data) {
     const minWeight = Math.min(...values);
     const maxWeight = Math.max(...values);
     const padding = Math.max((maxWeight - minWeight) * 0.1, 0.5);
-
-    console.log('Метки графика:', labels);
-    console.log('Значения веса:', values);
-    console.log('Мин. вес:', minWeight);
-    console.log('Макс. вес:', maxWeight);
 
     weightChart = new Chart(ctx, {
         type: 'line',
@@ -534,8 +534,6 @@ function updateWeightChart(data) {
             }
         }
     });
-
-    console.log('График веса обновлен');
 }
 
 // Настройка кнопок периода
@@ -1902,7 +1900,7 @@ async function addTestWeight(weight) {
     }
 }
 
-// Инициализация страницы статистики
+// Обновляем функцию инициализации страницы статистики
 async function initStatisticsPage() {
     try {
         // Проверяем наличие Chart.js
@@ -1911,23 +1909,15 @@ async function initStatisticsPage() {
             return;
         }
 
-        // Добавляем тестовые данные, если нужно
-        await addTestWeightData();
+        // Очищаем тестовые данные при первом запуске
+        await clearWeightData();
 
-        // Сначала обновляем статистику
+        // Обновляем статистику
         await updateStatistics();
 
-        // Затем инициализируем график веса
+        // Инициализируем график веса
         const weightData = await getWeightData(currentPeriod);
-        if (weightData && weightData.length > 0) {
-            updateWeightChart(weightData);
-        } else {
-            // Показываем сообщение об отсутствии данных
-            const chartContainer = document.getElementById('weight-chart');
-            if (chartContainer) {
-                chartContainer.innerHTML = '<div class="no-data">Нет данных о весе</div>';
-            }
-        }
+        updateWeightChart(weightData);
 
         // Добавляем обработчики для кнопок периода
         setupPeriodButtons();
@@ -1976,45 +1966,4 @@ async function showPopupSafe(options) {
         popupQueue.push({ options, resolver: resolve });
         showNext();
     });
-}
-
-// Функция для добавления тестовых данных веса
-async function addTestWeightData() {
-    try {
-        const result = await getStorageItem('weightHistory');
-        const weightHistory = result ? JSON.parse(result) : [];
-        
-        // Если данных нет или их меньше 2, добавляем тестовые
-        if (weightHistory.length < 2) {
-            console.log('Добавляем тестовые данные веса');
-            const today = new Date();
-            const newData = [];
-
-            // Добавляем данные за последние 30 дней
-            for (let i = 30; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - i);
-                
-                // Генерируем вес с небольшими колебаниями
-                const baseWeight = 75;
-                const variation = Math.sin(i * 0.2) * 2;
-                const weight = parseFloat((baseWeight + variation).toFixed(1));
-
-                newData.push({
-                    date: date.toISOString(),
-                    weight: weight
-                });
-            }
-
-            // Сохраняем новые данные
-            await setStorageItem('weightHistory', JSON.stringify(newData));
-            console.log('Тестовые данные веса добавлены:', newData);
-            return newData;
-        }
-        
-        return weightHistory;
-    } catch (error) {
-        console.error('Ошибка при добавлении тестовых данных:', error);
-        return [];
-    }
 } 
