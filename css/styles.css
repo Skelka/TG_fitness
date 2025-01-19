@@ -978,6 +978,12 @@ input[type="number"]::-webkit-inner-spin-button {
     flex-direction: column;
     background: #000;
     color: #fff;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
 }
 
 .workout-header {
@@ -1019,6 +1025,7 @@ input[type="number"]::-webkit-inner-spin-button {
     align-items: center;
     position: relative;
     padding: 20px;
+    padding-bottom: 100px; /* Добавляем отступ снизу для кнопок */
 }
 
 .exercise-background {
@@ -1084,6 +1091,12 @@ input[type="number"]::-webkit-inner-spin-button {
     justify-content: space-between;
     align-items: center;
     gap: 20px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
 }
 
 .control-btn {
@@ -1378,4 +1391,8 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .clear-data-btn {
     color: #ff3b30;
+}
+
+.bottom-nav.hidden {
+    display: none;
 } 
