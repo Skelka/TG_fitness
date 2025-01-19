@@ -428,48 +428,44 @@ async function getWeightData(period = 'week') {
 // Обновляем функцию отображения графика
 function updateWeightChart(data) {
     const ctx = document.getElementById('weight-chart');
-    if (!ctx) {
-        console.error('Элемент графика не найден');
-        return;
-    }
-
-    // Если график уже существует, уничтожаем его
-    if (weightChart instanceof Chart) {
-        weightChart.destroy();
-    }
-
+    if (!ctx) return;
+    
     if (!data || data.length === 0) {
-        ctx.innerHTML = '<div class="no-data">Нет данных о весе. Добавьте свой первый замер для отображения графика.</div>';
+        ctx.innerHTML = '<div class="no-data">Нет данных о весе. Добавьте свой первый замер в профиле.</div>';
         return;
     }
 
-    const labels = data.map(entry => 
-        entry.date.toLocaleDateString('ru-RU', { 
+    const labels = data.map(entry => {
+        const date = new Date(entry.date);
+        return date.toLocaleDateString('ru-RU', { 
             day: 'numeric', 
             month: 'short' 
-        })
-    );
+        });
+    });
 
     const values = data.map(entry => entry.weight);
     const minWeight = Math.min(...values);
     const maxWeight = Math.max(...values);
     const padding = Math.max((maxWeight - minWeight) * 0.1, 0.5);
 
+    // Если график уже существует, уничтожаем его
+    if (weightChart instanceof Chart) {
+        weightChart.destroy();
+    }
+
     weightChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Вес (кг)',
+                label: 'Вес',
                 data: values,
-                borderColor: '#40a7e3',
-                backgroundColor: 'rgba(64, 167, 227, 0.1)',
-                tension: 0.4,
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
                 fill: true,
+                tension: 0.4,
                 pointRadius: 4,
-                pointBackgroundColor: '#40a7e3',
-                pointBorderColor: '#ffffff',
-                pointBorderWidth: 2
+                pointHoverRadius: 6
             }]
         },
         options: {
@@ -480,44 +476,25 @@ function updateWeightChart(data) {
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    titleColor: '#000000',
-                    bodyColor: '#000000',
-                    borderColor: '#40a7e3',
-                    borderWidth: 1,
-                    padding: 10,
-                    displayColors: false,
+                    mode: 'index',
+                    intersect: false,
                     callbacks: {
                         label: function(context) {
-                            return `${context.parsed.y.toFixed(1)} кг`;
+                            return `Вес: ${context.raw} кг`;
                         }
                     }
                 }
             },
             scales: {
                 y: {
-                    beginAtZero: false,
                     min: Math.max(0, minWeight - padding),
                     max: maxWeight + padding,
                     ticks: {
-                        callback: value => `${value.toFixed(1)} кг`,
-                        stepSize: 0.5,
-                        font: {
-                            size: 12
-                        }
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
+                        stepSize: 0.5
                     }
                 },
                 x: {
-                    grid: {
-                        display: false
-                    },
                     ticks: {
-                        font: {
-                            size: 12
-                        },
                         maxRotation: 45,
                         minRotation: 45
                     }
@@ -526,11 +503,6 @@ function updateWeightChart(data) {
             interaction: {
                 intersect: false,
                 mode: 'index'
-            },
-            elements: {
-                line: {
-                    borderWidth: 2
-                }
             }
         }
     });
@@ -823,277 +795,6 @@ function setupWorkoutHandlers() {
             }
         });
     });
-}
-
-// Вспомогательная функция для получения ID тренировки по заголовку
-function getWorkoutIdByTitle(title) {
-    return Object.keys(workoutData).find(key => 
-        workoutData[key].title === title
-    );
-}
-
-// Функция показа деталей программы
-function showProgramDetails(programId) {
-    const program = programData[programId];
-    if (!program) return;
-
-    // Показываем основную информацию в более компактном виде
-    const mainInfo = `
-        <b>${program.title}</b>
-        ${program.description}
-
-        📅 ${program.schedule}
-        🔥 ${program.calories_per_week}
-        💪 Сложность: ${program.difficulty}
-    `;
-
-    // Ограничиваем количество кнопок до 3
-    const buttons = [
-        {
-            id: `start_program_${programId}`,
-            type: 'default',
-            text: 'Начать программу'
-        },
-        {
-            id: `schedule_${programId}`,
-            type: 'default',
-            text: 'Расписание'
-        }
-    ];
-
-    tg.showPopup({
-        title: program.title,
-        message: mainInfo,
-        buttons: buttons
-    });
-}
-
-// Функция показа результатов программы
-function showProgramResults(programId) {
-    const program = programData[programId];
-    if (!program) return;
-
-    const resultsInfo = program.results
-        .map(result => `✅ ${result}`)
-        .join('\n');
-
-    tg.showPopup({
-        title: 'Ожидаемые результаты',
-        message: resultsInfo,
-        buttons: [
-            {type: 'default', text: '⬅️ Назад', id: `back_to_main_${programId}`},
-            {type: 'default', text: 'Расписание ➜', id: `schedule_${programId}`},
-            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`}
-        ]
-    });
-}
-
-// Функция показа расписания программы
-function showProgramSchedule(programId) {
-    const program = programData[programId];
-    if (!program) return;
-
-    const scheduleInfo = program.workouts
-        .map(workout => `День ${workout.day}: ${workout.title}\n${workout.duration} мин • ${workout.type}`)
-        .join('\n\n');
-
-    tg.showPopup({
-        title: 'Расписание тренировок',
-        message: scheduleInfo,
-        buttons: [
-            {type: 'default', text: '⬅️ Назад', id: `back_to_main_${programId}`},
-            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`}
-        ]
-    });
-}
-
-// Обновим обработчик событий попапа
-function setupPopupHandlers() {
-    tg.onEvent('popupClosed', (event) => {
-        console.log('Popup closed with event:', event);
-        if (event && event.button_id) {
-            if (event.button_id.startsWith('start_workout_')) {
-                // Извлекаем programId и workoutDay из button_id
-                const [_, __, programId, workoutDay] = event.button_id.split('_');
-                console.log('Starting workout:', programId, workoutDay);
-                startWorkoutSession(programId, parseInt(workoutDay));
-            } else {
-                const [action, ...params] = event.button_id.split('_');
-                
-                switch(action) {
-                    case 'results':
-                        showProgramResults(params[0]);
-                        break;
-                    case 'schedule':
-                        showProgramSchedule(params[0]);
-                        break;
-                    case 'start':
-                        if (params[0] === 'program') {
-                            startProgram(params[1]);
-                        }
-                        break;
-                    case 'back':
-                        showProgramDetails(params[0]);
-                        break;
-                }
-            }
-        }
-    });
-}
-
-// Функция обновления прогресса программы
-function updateProgramProgress(progress) {
-    const programCard = document.querySelector(`.program-card[data-program="${progress.programId}"]`);
-    if (!programCard) return;
-
-    const progressBar = programCard.querySelector('.progress');
-    const progressText = programCard.querySelector('.progress-text');
-    
-    if (progress.status === 'active') {
-        // Вычисляем прогресс
-        const program = programData[progress.programId];
-        const totalWorkouts = program.workouts.length;
-        const completedWorkouts = progress.completedWorkouts.length;
-        const progressPercent = (completedWorkouts / totalWorkouts) * 100;
-
-        // Обновляем UI
-        if (progressBar) {
-            progressBar.style.width = `${progressPercent}%`;
-        }
-        if (progressText) {
-            progressText.textContent = `Прогресс: ${completedWorkouts}/${totalWorkouts} тренировок`;
-        }
-
-        // Обновляем кнопки
-        const startBtn = programCard.querySelector('.start-btn');
-        if (startBtn) {
-            startBtn.textContent = 'Продолжить';
-        }
-    }
-}
-
-// Обновляем функцию startProgram
-async function startProgram(programId) {
-    const program = programData[programId];
-    if (!program) return;
-
-    try {
-        // Создаем объект прогресса программы
-        const programProgress = {
-            programId: programId,
-            startDate: Date.now(),
-            currentDay: 1,
-            completedWorkouts: [],
-            plannedWorkouts: []
-        };
-
-        // Планируем все тренировки
-        const startDate = new Date();
-        for (const workout of program.workouts) {
-            const workoutDate = new Date(startDate);
-            workoutDate.setDate(workoutDate.getDate() + workout.day - 1);
-            
-            programProgress.plannedWorkouts.push({
-                day: workout.day,
-                plannedDate: workoutDate.getTime(),
-                title: workout.title,
-                duration: workout.duration,
-                type: workout.type
-            });
-        }
-
-        // Сохраняем прогресс
-        await setStorageItem('activeProgram', JSON.stringify(programProgress));
-
-        // Обновляем статистику
-        await updateStatistics(programProgress);
-
-        // Обновляем календарь
-        renderCalendar();
-
-        // Показываем сообщение о начале программы
-        await showPopupSafe({
-            title: 'Программа начата!',
-            message: `Вы начали программу "${program.title}". Первая тренировка запланирована на сегодня.`,
-            buttons: [{
-                type: 'default',
-                text: 'Начать тренировку',
-                id: `start_workout_${programId}_1`
-            }]
-        });
-
-    } catch (error) {
-        console.error('Ошибка при запуске программы:', error);
-        showError(error);
-    }
-}
-
-// Функция обновления статистики
-async function updateStatistics() {
-    try {
-        // Получаем все необходимые данные
-        const [weightHistoryStr, activeProgramStr] = await Promise.all([
-            getStorageItem('weightHistory'),
-            getStorageItem('activeProgram')
-        ]);
-
-        const weightHistory = weightHistoryStr ? JSON.parse(weightHistoryStr) : [];
-        const activeProgram = activeProgramStr ? JSON.parse(activeProgramStr) : null;
-
-        // Статистика тренировок
-        let stats = {
-            totalWorkouts: 0,
-            totalCalories: 0,
-            totalMinutes: 0,
-            completionRate: 0
-        };
-
-        if (activeProgram?.completedWorkouts) {
-            stats.totalWorkouts = activeProgram.completedWorkouts.length;
-            
-            // Подсчитываем калории и время
-            stats.totalCalories = activeProgram.completedWorkouts.reduce((sum, workout) => 
-                sum + (workout.calories || 0), 0);
-            stats.totalMinutes = activeProgram.completedWorkouts.reduce((sum, workout) => 
-                sum + (workout.duration || 0), 0);
-
-            // Вычисляем процент выполнения программы
-            if (activeProgram.plannedWorkouts && activeProgram.plannedWorkouts.length > 0) {
-                stats.completionRate = Math.round(
-                    (stats.totalWorkouts / activeProgram.plannedWorkouts.length) * 100
-                );
-            }
-        }
-
-        // Обновляем UI статистики с проверкой наличия элементов
-        const elements = {
-            'total-workouts': stats.totalWorkouts,
-            'total-calories': stats.totalCalories,
-            'total-time': formatDuration(stats.totalMinutes),
-            'completion-rate': `${stats.completionRate}%`
-        };
-
-        Object.entries(elements).forEach(([id, value]) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-            } else {
-                console.warn(`Элемент с id "${id}" не найден`);
-            }
-        });
-
-    } catch (error) {
-        console.error('Ошибка при обновлении статистики:', error);
-    }
-}
-
-// Функция форматирования времени
-function formatDuration(minutes) {
-    if (!minutes) return '0м';
-    if (minutes < 60) return `${minutes}м`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}ч ${mins}м`;
 }
 
 // Вспомогательная функция для получения ID тренировки по заголовку
@@ -1968,64 +1669,50 @@ async function showPopupSafe(options) {
 // Функция очистки всех данных
 async function clearAllData() {
     try {
-        // Показываем подтверждение
         const result = await showPopupSafe({
             title: 'Подтверждение',
             message: 'Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.',
             buttons: [
-                {
-                    type: 'destructive',
-                    text: 'Очистить',
-                    id: 'confirm_clear'
-                },
-                {
-                    type: 'cancel',
-                    text: 'Отмена'
-                }
+                { id: 'confirm_clear', type: 'destructive', text: 'Очистить' },
+                { id: 'cancel', type: 'cancel', text: 'Отмена' }
             ]
         });
 
         if (result && result.button_id === 'confirm_clear') {
-            // Очищаем все данные в CloudStorage и localStorage
-            const keys = ['weightHistory', 'activeProgram', 'profile'];
-            const emptyValues = {
-                weightHistory: '[]',
-                activeProgram: '{}',
-                profile: '{}'
-            };
+            // Очищаем данные в CloudStorage
+            await Promise.all([
+                setStorageItem('weightHistory', '[]'),
+                setStorageItem('activeProgram', '{}'),
+                setStorageItem('profile', '{}')
+            ]);
 
-            // Очищаем данные последовательно
-            for (const key of keys) {
-                await setStorageItem(key, emptyValues[key]);
-                localStorage.removeItem(key);
-            }
+            // Очищаем localStorage
+            localStorage.clear();
 
             // Очищаем график
+            if (weightChart instanceof Chart) {
+                weightChart.destroy();
+            }
             const chartContainer = document.getElementById('weight-chart');
             if (chartContainer) {
-                if (weightChart instanceof Chart) {
-                    weightChart.destroy();
-                }
-                chartContainer.innerHTML = '<div class="no-data">Нет данных о весе. Добавьте свой первый замер для отображения графика.</div>';
+                chartContainer.innerHTML = '<div class="no-data">Нет данных о весе. Добавьте свой первый замер в профиле.</div>';
             }
 
             // Очищаем форму профиля
             const form = document.getElementById('profile-form');
-            if (form) {
-                form.reset();
-            }
+            if (form) form.reset();
 
             // Обновляем статистику
             await updateStatistics();
 
-            // Показываем уведомление об успехе
+            // Показываем уведомление
             await showPopupSafe({
-                title: 'Данные очищены',
+                title: 'Готово',
                 message: 'Все данные успешно удалены',
-                buttons: [{type: 'ok'}]
+                buttons: [{ type: 'ok' }]
             });
 
-            // Обновляем страницу для применения изменений
+            // Перезагружаем страницу
             location.reload();
         }
     } catch (error) {
@@ -2033,7 +1720,7 @@ async function clearAllData() {
         await showPopupSafe({
             title: 'Ошибка',
             message: 'Не удалось очистить данные',
-            buttons: [{type: 'ok'}]
+            buttons: [{ type: 'ok' }]
         });
     }
 }
