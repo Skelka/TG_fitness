@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             throw new Error('Telegram WebApp не загружен');
         }
 
+        // Проверяем наличие данных программ
+        if (!window.programData) {
+            throw new Error('Данные программ не загружены');
+        }
+
         // Инициализируем основные переменные
         tg = window.Telegram.WebApp;
         mainButton = tg.MainButton;
@@ -93,7 +98,7 @@ async function loadProfile() {
             document.getElementById('profile-name').textContent = user.first_name;
             // Если есть фото профиля
             if (user.photo_url) {
-                document.getElementById('profile-photo').src = user.photo_url;
+                updateProfilePhoto(user.photo_url);
             }
         }
 
@@ -1574,7 +1579,16 @@ window.addEventListener('load', () => {
     initStatisticsPage();
 });
 
-// В местах, где используется placeholder
-const defaultImage = 'https://placehold.co/100';
-// или
-const defaultImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect width="100" height="100" fill="%23cccccc"/%3E%3C/svg%3E'; 
+// Заменим использование placeholder на data URL
+const defaultImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23cccccc"/%3E%3C/svg%3E';
+
+// Используем его в коде вместо via.placeholder.com
+function updateProfilePhoto(photoUrl) {
+    const profilePhoto = document.getElementById('profile-photo');
+    if (profilePhoto) {
+        profilePhoto.src = photoUrl || defaultImage;
+        profilePhoto.onerror = () => {
+            profilePhoto.src = defaultImage;
+        };
+    }
+} 
