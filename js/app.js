@@ -89,6 +89,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('Инициализация WebApp:', tg.initData);
         console.log('Доступные методы WebApp:', Object.keys(tg));
 
+        setupProfileHandlers();
+
     } catch (error) {
         console.error('Ошибка инициализации:', error);
     }
@@ -321,8 +323,6 @@ async function saveWeight(weight) {
         // Сортируем записи по дате
         weightHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-        console.log('Обновленная история весов:', weightHistory);
-
         // Сохраняем обновленную историю
         await setStorageItem('weightHistory', JSON.stringify(weightHistory));
         
@@ -339,11 +339,7 @@ async function saveWeight(weight) {
 
     } catch (error) {
         console.error('Ошибка при сохранении веса:', error);
-        tg.showPopup({
-            title: 'Ошибка',
-            message: 'Не удалось сохранить вес',
-            buttons: [{type: 'ok'}]
-        });
+        showError(error);
     }
 }
 
@@ -360,8 +356,6 @@ async function getWeightData(period = 'week') {
             console.warn('Ошибка парсинга истории весов:', e);
             return [];
         }
-
-        console.log('Полученные данные веса:', weightHistory);
 
         // Если данных нет, возвращаем пустой массив
         if (weightHistory.length === 0) {
@@ -388,6 +382,7 @@ async function getWeightData(period = 'week') {
 
         startDate.setHours(0, 0, 0, 0); // Начало стартового дня
 
+        // Фильтруем и сортируем данные
         const filteredData = weightHistory
             .filter(entry => {
                 const entryDate = new Date(entry.date);
@@ -397,6 +392,7 @@ async function getWeightData(period = 'week') {
 
         console.log('Отфильтрованные данные веса:', filteredData);
         return filteredData;
+
     } catch (error) {
         console.error('Ошибка при получении данных веса:', error);
         return [];
@@ -1823,151 +1819,16 @@ function setupCalendarNavigation(workouts) {
     }
 }
 
-// Обновим функцию сохранения веса
-async function saveWeight(weight) {
-    try {
-        // Получаем текущую историю весов
-        const result = await getStorageItem('weightHistory');
-        let weightHistory = [];
-        
-        try {
-            weightHistory = result ? JSON.parse(result) : [];
-            if (!Array.isArray(weightHistory)) weightHistory = [];
-        } catch (e) {
-            console.warn('Ошибка парсинга истории весов:', e);
-        }
-
-        // Создаем новую запись
-        const newEntry = {
-            date: new Date().toISOString(),
-            weight: parseFloat(weight)
-        };
-
-        console.log('Сохраняем новую запись веса:', newEntry);
-
-        // Проверяем, есть ли уже запись за сегодня
-        const today = new Date().setHours(0, 0, 0, 0);
-        const existingTodayIndex = weightHistory.findIndex(entry => 
-            new Date(entry.date).setHours(0, 0, 0, 0) === today
-        );
-
-        if (existingTodayIndex !== -1) {
-            weightHistory[existingTodayIndex] = newEntry;
-        } else {
-            weightHistory.push(newEntry);
-        }
-
-        // Сортируем записи по дате
-        weightHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        console.log('Обновленная история весов:', weightHistory);
-
-        // Сохраняем обновленную историю
-        await setStorageItem('weightHistory', JSON.stringify(weightHistory));
-        
-        // Обновляем график
-        const data = await getWeightData(currentPeriod);
-        updateWeightChart(data);
-
-        // Показываем уведомление об успехе
-        tg.showPopup({
-            title: 'Вес сохранен',
-            message: 'Данные успешно обновлены',
-            buttons: [{type: 'ok'}]
-        });
-
-    } catch (error) {
-        console.error('Ошибка при сохранении веса:', error);
-        tg.showPopup({
-            title: 'Ошибка',
-            message: 'Не удалось сохранить вес',
-            buttons: [{type: 'ok'}]
-        });
-    }
-}
-
-// Обновим функцию очистки данных
-async function clearAllData() {
-    try {
-        // Очищаем все данные в CloudStorage и localStorage
-        const keys = ['weightHistory', 'activeProgram', 'profile'];
-        const emptyValues = {
-            weightHistory: '[]',
-            activeProgram: '{}',
-            profile: '{}'
-        };
-
-        // Очищаем данные последовательно
-        for (const key of keys) {
-            await setStorageItem(key, emptyValues[key]);
-            localStorage.removeItem(key);
-        }
-
-        // Показываем сообщение об успехе
-        await tg.showPopup({
-            title: 'Данные очищены',
-            message: 'Все данные успешно удалены',
-            buttons: [{type: 'ok'}]
-        });
-
-        // Перезагружаем страницу
-        location.reload();
-    } catch (error) {
-        console.error('Ошибка при очистке данных:', error);
-        tg.showPopup({
-            title: 'Ошибка',
-            message: 'Не удалось очистить данные',
-            buttons: [{type: 'ok'}]
-        });
-    }
-}
-
-// Инициализация страницы статистики
-async function initStatisticsPage() {
-    try {
-        // Проверяем наличие Chart.js
-        if (typeof Chart === 'undefined') {
-            console.error('Chart.js не загружен');
-            return;
-        }
-
-        // Добавляем тестовые данные, если нужно
-        await addTestWeightData();
-
-        // Сначала обновляем статистику
-        await updateStatistics();
-
-        // Затем инициализируем график веса
-        const weightData = await getWeightData(currentPeriod);
-        if (weightData && weightData.length > 0) {
-            updateWeightChart(weightData);
-        } else {
-            // Показываем сообщение об отсутствии данных
-            const chartContainer = document.getElementById('weight-chart');
-            if (chartContainer) {
-                chartContainer.innerHTML = '<div class="no-data">Нет данных о весе</div>';
+// Добавим автоматическое сохранение веса при изменении в профиле
+function setupProfileHandlers() {
+    const weightInput = document.querySelector('input[name="weight"]');
+    if (weightInput) {
+        weightInput.addEventListener('change', async () => {
+            const weight = parseFloat(weightInput.value);
+            if (!isNaN(weight) && weight > 0) {
+                await saveWeight(weight);
             }
-        }
-
-        // Добавляем обработчики для кнопок периода
-        setupPeriodButtons();
-
-    } catch (error) {
-        console.error('Ошибка при инициализации страницы статистики:', error);
-    }
-}
-
-// Заменим использование placeholder на data URL
-const defaultImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23cccccc"/%3E%3Ctext x="50" y="50" font-family="Arial" font-size="14" fill="%23ffffff" text-anchor="middle" dy=".3em"%3EНет фото%3C/text%3E%3C/svg%3E';
-
-// Используем его в коде вместо via.placeholder.com
-function updateProfilePhoto(photoUrl) {
-    const profilePhoto = document.getElementById('profile-photo');
-    if (profilePhoto) {
-        profilePhoto.src = photoUrl || defaultImage;
-        profilePhoto.onerror = () => {
-            profilePhoto.src = defaultImage;
-        };
+        });
     }
 }
 
