@@ -365,8 +365,18 @@ async function getWeightData(period = 'week') {
             return [];
         }
 
+        // Проверяем корректность данных
+        weightHistory = weightHistory.filter(entry => {
+            return entry 
+                && typeof entry.weight === 'number' 
+                && !isNaN(entry.weight) 
+                && entry.weight > 0 
+                && entry.weight < 300 // Максимально допустимый вес
+                && entry.date;
+        });
+
         const now = new Date();
-        now.setHours(23, 59, 59, 999); // Конец текущего дня
+        now.setHours(23, 59, 59, 999);
         let startDate = new Date(now);
 
         switch (period) {
@@ -383,7 +393,7 @@ async function getWeightData(period = 'week') {
                 startDate.setDate(startDate.getDate() - 7);
         }
 
-        startDate.setHours(0, 0, 0, 0); // Начало стартового дня
+        startDate.setHours(0, 0, 0, 0);
 
         // Фильтруем и сортируем данные
         const filteredData = weightHistory
@@ -404,86 +414,80 @@ async function getWeightData(period = 'week') {
 
 // Обновление графика веса
 function updateWeightChart(data) {
-    const ctx = document.getElementById('weight-chart');
-    if (!ctx) {
-        console.error('Элемент графика не найден');
-        return;
-    }
+    try {
+        const ctx = document.getElementById('weight-chart');
+        if (!ctx) return;
 
-    // Если график уже существует, уничтожаем его
-    if (weightChart instanceof Chart) {
-        weightChart.destroy();
-    }
+        // Находим минимальный и максимальный вес
+        const weights = data.map(item => item.weight);
+        const minWeight = Math.min(...weights);
+        const maxWeight = Math.max(...weights);
+        
+        // Добавляем отступ в 5% от диапазона для лучшего отображения
+        const range = maxWeight - minWeight;
+        const padding = range * 0.05;
+        
+        // Если существует старый график, уничтожаем его
+        if (window.weightChart) {
+            window.weightChart.destroy();
+        }
 
-    if (!data || data.length === 0) {
-        console.warn('Нет данных для отображения графика');
-        ctx.innerHTML = '<div class="no-data">Нет данных о весе</div>';
-        return;
-    }
-
-    console.log('Данные для графика:', data);
-
-    const labels = data.map(entry => {
-        const date = new Date(entry.date);
-        return date.toLocaleDateString('ru-RU', { 
-            day: 'numeric', 
-            month: 'short' 
-        });
-    });
-
-    const values = data.map(entry => entry.weight);
-    const minWeight = Math.min(...values);
-    const maxWeight = Math.max(...values);
-    const padding = Math.max((maxWeight - minWeight) * 0.1, 0.5);
-
-    weightChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Вес (кг)',
-                data: values,
-                borderColor: '#40a7e3',
-                backgroundColor: 'rgba(64, 167, 227, 0.1)',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
+        window.weightChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(item => new Date(item.date).toLocaleDateString()),
+                datasets: [{
+                    label: 'Вес',
+                    data: data.map(item => item.weight),
+                    borderColor: '#40a7e3',
+                    backgroundColor: 'rgba(64, 167, 227, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
                 },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.parsed.y.toFixed(1)} кг`;
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: Math.max(0, minWeight - padding), // Не меньше 0
+                        max: maxWeight + padding,
+                        ticks: {
+                            stepSize: 0.5,
+                            callback: function(value) {
+                                return value.toFixed(1) + ' кг';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
                         }
                     }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    min: Math.max(0, minWeight - padding),
-                    max: maxWeight + padding,
-                    ticks: {
-                        callback: value => `${value.toFixed(1)} кг`,
-                        stepSize: 0.5
-                    }
                 },
-                x: {
-                    grid: {
-                        display: false
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                elements: {
+                    point: {
+                        radius: 4,
+                        hoverRadius: 6
                     }
                 }
             }
-        }
-    });
+        });
 
-    console.log('График веса обновлен');
+        console.log('График веса обновлен');
+    } catch (error) {
+        console.error('Ошибка при обновлении графика:', error);
+    }
 }
 
 // Настройка кнопок периода
