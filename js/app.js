@@ -1909,9 +1909,6 @@ async function initStatisticsPage() {
             return;
         }
 
-        // Очищаем тестовые данные при первом запуске
-        await clearWeightData();
-
         // Обновляем статистику
         await updateStatistics();
 
@@ -1966,4 +1963,78 @@ async function showPopupSafe(options) {
         popupQueue.push({ options, resolver: resolve });
         showNext();
     });
+}
+
+// Функция очистки всех данных
+async function clearAllData() {
+    try {
+        // Показываем подтверждение
+        const confirmed = await showPopupSafe({
+            title: 'Подтверждение',
+            message: 'Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.',
+            buttons: [
+                {
+                    type: 'destructive',
+                    text: 'Очистить',
+                    id: 'confirm_clear'
+                },
+                {
+                    type: 'cancel',
+                    text: 'Отмена'
+                }
+            ]
+        });
+
+        if (confirmed && confirmed.button_id === 'confirm_clear') {
+            // Очищаем все данные в CloudStorage и localStorage
+            const keys = ['weightHistory', 'activeProgram', 'profile'];
+            const emptyValues = {
+                weightHistory: '[]',
+                activeProgram: '{}',
+                profile: '{}'
+            };
+
+            // Очищаем данные последовательно
+            for (const key of keys) {
+                await setStorageItem(key, emptyValues[key]);
+                localStorage.removeItem(key);
+            }
+
+            // Очищаем график
+            const chartContainer = document.getElementById('weight-chart');
+            if (chartContainer) {
+                if (weightChart instanceof Chart) {
+                    weightChart.destroy();
+                }
+                chartContainer.innerHTML = '<div class="no-data">Нет данных о весе. Добавьте свой первый замер для отображения графика.</div>';
+            }
+
+            // Очищаем форму профиля
+            const form = document.getElementById('profile-form');
+            if (form) {
+                form.reset();
+            }
+
+            // Показываем уведомление об успехе
+            await showPopupSafe({
+                title: 'Данные очищены',
+                message: 'Все данные успешно удалены',
+                buttons: [{type: 'ok'}]
+            });
+
+            // Обновляем статистику
+            await updateStatistics();
+
+            // Вызываем хаптик
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+    } catch (error) {
+        console.error('Ошибка при очистке данных:', error);
+        showPopupSafe({
+            title: 'Ошибка',
+            message: 'Не удалось очистить данные',
+            buttons: [{type: 'ok'}]
+        });
+        tg.HapticFeedback.notificationOccurred('error');
+    }
 } 

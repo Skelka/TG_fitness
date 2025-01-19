@@ -1156,4 +1156,29 @@ input[type="number"]::-webkit-inner-spin-button {
 .period-btn.active {
     background: var(--tg-theme-button-color);
     color: var(--tg-theme-button-text-color);
+}
+
+.danger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    margin-top: 20px;
+    background: #ff3b30;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.danger-btn:active {
+    opacity: 0.8;
+}
+
+.danger-btn .material-symbols-rounded {
+    font-size: 20px;
 } 
