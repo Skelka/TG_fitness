@@ -328,19 +328,19 @@ input:focus, select:focus {
 }
 
 .period-btn {
-    padding: 8px 16px;
-    border: 1px solid var(--tg-theme-button-color, #40a7e3);
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--tg-theme-button-color);
     background: none;
-    color: var(--tg-theme-button-color, #40a7e3);
+    color: var(--tg-theme-button-color);
     border-radius: 8px;
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.3s;
 }
 
 .period-btn.active {
-    background: var(--tg-theme-button-color, #40a7e3);
-    color: var(--tg-theme-button-text-color, #fff);
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
 }
 
 .chart-container {
@@ -1113,4 +1113,44 @@ input[type="number"]::-webkit-inner-spin-button {
     padding: 20px;
     color: var(--tg-theme-hint-color);
     font-style: italic;
+}
+
+.weight-section {
+    background: var(--tg-theme-bg-color);
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 20px;
+    box-shadow: var(--card-shadow);
+}
+
+.weight-section h3 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+}
+
+#weight-chart {
+    height: 200px !important;
+    width: 100% !important;
+}
+
+.period-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.period-btn {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--tg-theme-button-color);
+    background: none;
+    color: var(--tg-theme-button-color);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.period-btn.active {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
 } 

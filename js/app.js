@@ -359,8 +359,15 @@ function updateWeightChart(data) {
             scales: {
                 y: {
                     beginAtZero: false,
+                    min: Math.min(...values) - 1,
+                    max: Math.max(...values) + 1,
                     ticks: {
                         callback: value => `${value} кг`
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
                     }
                 }
             }
@@ -1777,6 +1784,9 @@ async function initStatisticsPage() {
             return;
         }
 
+        // Добавляем тестовые данные, если нужно
+        await addTestWeightData();
+
         // Сначала обновляем статистику
         await updateStatistics();
 
@@ -1839,4 +1849,35 @@ async function showPopupSafe(options) {
         popupQueue.push({ options, resolver: resolve });
         showNext();
     });
+}
+
+// Функция для добавления тестовых данных веса
+async function addTestWeightData() {
+    try {
+        const result = await getStorageItem('weightHistory');
+        if (result) return; // Если данные уже есть, не добавляем тестовые
+
+        const today = new Date();
+        const weightHistory = [];
+
+        // Добавляем данные за последние 30 дней
+        for (let i = 30; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            
+            // Генерируем вес с небольшими колебаниями
+            const baseWeight = 75;
+            const variation = Math.sin(i * 0.2) * 2;
+            const weight = (baseWeight + variation).toFixed(1);
+
+            weightHistory.push({
+                date: date.toISOString(),
+                weight: parseFloat(weight)
+            });
+        }
+
+        await setStorageItem('weightHistory', JSON.stringify(weightHistory));
+    } catch (error) {
+        console.error('Ошибка при добавлении тестовых данных:', error);
+    }
 } 
