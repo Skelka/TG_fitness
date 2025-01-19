@@ -971,7 +971,7 @@ async function startProgram(programId) {
         await setStorageItem('activeProgram', JSON.stringify(programProgress));
 
         // Обновляем статистику
-        await updateStatistics(programProgress);
+        await updateStatistics();
 
         // Обновляем календарь
         renderCalendar();
@@ -2042,4 +2042,71 @@ function getDifficultyText(difficulty) {
         'high': 'Сложный'
     };
     return difficultyMap[difficulty] || 'Средний';
+}
+
+// Добавляем функцию для проверки возможности добавления на рабочий стол
+async function checkHomeScreenAvailability() {
+    if (tg.platform !== 'android' && tg.platform !== 'ios') {
+        return false;
+    }
+
+    try {
+        const result = await tg.checkHomeScreenStatus();
+        return !result.is_added; // Возвращаем true если приложение ещё не добавлено
+    } catch (error) {
+        console.warn('Ошибка проверки статуса добавления на рабочий стол:', error);
+        return false;
+    }
+}
+
+// Обновляем функцию renderProfilePage
+function renderProfilePage() {
+    const container = document.querySelector('.container');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="profile-page">
+            <!-- ... существующий код ... -->
+            
+            <div class="settings-section">
+                <h3>Настройки</h3>
+                <div class="settings-list">
+                    <button class="settings-btn add-to-home-btn" style="display: none">
+                        <span class="material-symbols-rounded">add_to_home_screen</span>
+                        <span>Добавить на рабочий стол</span>
+                    </button>
+                    <button class="settings-btn clear-data-btn">
+                        <span class="material-symbols-rounded">delete</span>
+                        <span>Очистить все данные</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Проверяем доступность добавления на рабочий стол
+    checkHomeScreenAvailability().then(isAvailable => {
+        const addToHomeBtn = document.querySelector('.add-to-home-btn');
+        if (addToHomeBtn && isAvailable) {
+            addToHomeBtn.style.display = 'flex';
+            addToHomeBtn.addEventListener('click', async () => {
+                try {
+                    await tg.addToHomeScreen();
+                    addToHomeBtn.style.display = 'none';
+                    tg.HapticFeedback.impactOccurred('medium');
+                    
+                    // Показываем сообщение об успехе
+                    showPopupSafe({
+                        title: 'Добавлено',
+                        message: 'Приложение добавлено на рабочий стол',
+                        buttons: [{type: 'ok'}]
+                    });
+                } catch (error) {
+                    console.error('Ошибка добавления на рабочий стол:', error);
+                }
+            });
+        }
+    });
+
+    // ... остальной код функции ...
 } 

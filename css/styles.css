@@ -1272,4 +1272,48 @@ input[type="number"]::-webkit-inner-spin-button {
 #weight-chart {
     height: 180px !important; /* Фиксированная высота графика */
     width: 100% !important;
+}
+
+.settings-section {
+    background: var(--tg-theme-bg-color);
+    padding: 16px;
+    border-radius: 12px;
+    margin: 16px;
+    box-shadow: var(--card-shadow);
+}
+
+.settings-section h3 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+}
+
+.settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.settings-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.settings-btn:active {
+    background-color: var(--tg-theme-bg-color);
+}
+
+.add-to-home-btn {
+    color: var(--tg-theme-button-color);
+}
+
+.clear-data-btn {
+    color: #ff3b30;
 } 
