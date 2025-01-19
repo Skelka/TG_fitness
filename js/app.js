@@ -2,6 +2,7 @@
 const tg = window.Telegram.WebApp;
 const mainButton = tg.MainButton;
 const backButton = tg.BackButton;
+let currentPeriod = 'week'; // Добавляем переменную для текущего периода
 
 // В начале файла добавим проверку
 if (typeof Chart === 'undefined') {
@@ -322,7 +323,8 @@ document.querySelectorAll('.period-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
         try {
             // Убираем активный класс у всех кнопок
-            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.period-btn').forEach(b => 
+                b.classList.remove('active'));
             // Добавляем активный класс нажатой кнопке
             btn.classList.add('active');
             
@@ -332,7 +334,6 @@ document.querySelectorAll('.period-btn').forEach(btn => {
             updateWeightChart(data);
         } catch (error) {
             console.error('Ошибка при обновлении графика:', error);
-            // Не показываем ошибку пользователю через попап
         }
     });
 });
@@ -1055,53 +1056,28 @@ async function startProgram(programId) {
 }
 
 // Функция обновления статистики
-function updateStatistics(programProgress) {
-    // Инициализируем статистику нулевыми значениями
-    const stats = {
-        totalWorkouts: 0,
-        totalMinutes: 0,
-        totalCalories: 0,
-        workoutsByType: {},
-        completionRate: 0
-    };
+async function updateStatistics() {
+    try {
+        // Получаем активную программу
+        const programData = await getStorageItem('activeProgram');
+        const program = programData ? JSON.parse(programData) : null;
 
-    // Обновляем статистику только если есть программа и завершенные тренировки
-    if (programProgress && programProgress.completedWorkouts && programProgress.completedWorkouts.length > 0) {
-        stats.totalWorkouts = programProgress.completedWorkouts.length;
-        
-        // Подсчитываем статистику по завершенным тренировкам
-        programProgress.completedWorkouts.forEach(completed => {
-            if (completed.duration) stats.totalMinutes += completed.duration;
-            if (completed.calories) stats.totalCalories += completed.calories;
-            if (completed.type) {
-                stats.workoutsByType[completed.type] = (stats.workoutsByType[completed.type] || 0) + 1;
-            }
-        });
+        // Инициализируем статистику нулевыми значениями
+        const stats = {
+            plannedWorkouts: 0,
+            totalCalories: 0,
+            totalMinutes: 0,
+            completionRate: 0
+        };
 
-        // Считаем процент выполнения программы
-        if (programProgress.plannedWorkouts && programProgress.plannedWorkouts.length > 0) {
-            stats.completionRate = (stats.totalWorkouts / programProgress.plannedWorkouts.length) * 100;
+        // Обновляем количество запланированных тренировок
+        if (program && program.plannedWorkouts) {
+            stats.plannedWorkouts = program.plannedWorkouts.length;
         }
-    }
 
-    // Сохраняем статистику
-    setStorageItem('workoutStats', JSON.stringify(stats));
-
-    // Обновляем UI статистики
-    updateStatisticsUI(stats);
-}
-
-// Функция обновления UI статистики
-function updateStatisticsUI(stats) {
-    const statsContainer = document.getElementById('statistics');
-    if (!statsContainer) return;
-
-    // Получаем активную программу для подсчета запланированных тренировок
-    getStorageItem('activeProgram')
-        .then(data => {
-            const programProgress = data ? JSON.parse(data) : null;
-            const plannedWorkouts = programProgress ? programProgress.plannedWorkouts.length : 0;
-
+        // Обновляем UI
+        const statsContainer = document.getElementById('statistics');
+        if (statsContainer) {
             statsContainer.innerHTML = `
                 <div class="stats-grid">
                     <div class="stat-mini-card">
@@ -1109,7 +1085,7 @@ function updateStatisticsUI(stats) {
                             <span class="material-symbols-rounded">calendar_month</span>
                         </div>
                         <div class="stat-content">
-                            <span class="stat-value">${plannedWorkouts}</span>
+                            <span class="stat-value">${stats.plannedWorkouts}</span>
                             <span class="stat-label">Тренировок в месяце</span>
                         </div>
                     </div>
@@ -1136,14 +1112,16 @@ function updateStatisticsUI(stats) {
                             <span class="material-symbols-rounded">trending_up</span>
                         </div>
                         <div class="stat-content">
-                            <span class="stat-value">${Math.round(stats.completionRate)}%</span>
+                            <span class="stat-value">${stats.completionRate}%</span>
                             <span class="stat-label">Достижение цели</span>
                         </div>
                     </div>
                 </div>
             `;
-        })
-        .catch(console.error);
+        }
+    } catch (error) {
+        console.error('Ошибка при обновлении статистики:', error);
+    }
 }
 
 // Добавляем функцию форматирования времени
@@ -1696,14 +1674,66 @@ async function saveWeight(weight) {
     }
 }
 
-// Очистка данных (добавьте эту функцию)
+// Очистка данных
 async function clearAllData() {
     try {
+        // Очищаем все данные
         await setStorageItem('weightHistory', '[]');
-        await setStorageItem('workoutStats', '{}');
         await setStorageItem('activeProgram', '{}');
-        location.reload(); // Перезагружаем страницу
+        await setStorageItem('profile', '{}');
+        
+        // Показываем сообщение об успехе
+        tg.showPopup({
+            title: 'Данные очищены',
+            message: 'Все данные успешно удалены',
+            buttons: [{type: 'ok'}]
+        });
+
+        // Перезагружаем страницу
+        setTimeout(() => location.reload(), 1000);
     } catch (error) {
         console.error('Ошибка при очистке данных:', error);
+        tg.showPopup({
+            title: 'Ошибка',
+            message: 'Не удалось очистить данные',
+            buttons: [{type: 'ok'}]
+        });
     }
-} 
+}
+
+// Инициализация страницы статистики
+async function initStatisticsPage() {
+    try {
+        // Обновляем статистику
+        await updateStatistics();
+
+        // Инициализируем график веса
+        const weightData = await getWeightData(currentPeriod);
+        updateWeightChart(weightData);
+
+        // Добавляем обработчики для кнопок периода
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                try {
+                    // Убираем активный класс у всех кнопок
+                    document.querySelectorAll('.period-btn').forEach(b => 
+                        b.classList.remove('active'));
+                    // Добавляем активный класс нажатой кнопке
+                    btn.classList.add('active');
+                    
+                    // Обновляем текущий период и график
+                    currentPeriod = btn.dataset.period;
+                    const data = await getWeightData(currentPeriod);
+                    updateWeightChart(data);
+                } catch (error) {
+                    console.error('Ошибка при обновлении графика:', error);
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Ошибка при инициализации страницы статистики:', error);
+    }
+}
+
+// Вызываем инициализацию при загрузке страницы
+document.addEventListener('DOMContentLoaded', initStatisticsPage); 
