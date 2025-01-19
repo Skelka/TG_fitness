@@ -1029,7 +1029,7 @@ function updateStatistics(programProgress) {
     updateStatisticsUI(stats);
 }
 
-// Функция обновления UI статистики
+// Обновляем функцию updateStatisticsUI
 function updateStatisticsUI(stats) {
     const statsContainer = document.getElementById('statistics');
     if (!statsContainer) return;
@@ -1039,6 +1039,7 @@ function updateStatisticsUI(stats) {
         .then(data => {
             const programProgress = data ? JSON.parse(data) : null;
             const plannedWorkouts = programProgress ? programProgress.plannedWorkouts.length : 0;
+            const completedWorkouts = programProgress ? programProgress.completedWorkouts.length : 0;
 
             statsContainer.innerHTML = `
                 <div class="stats-grid">
@@ -1056,7 +1057,7 @@ function updateStatisticsUI(stats) {
                             <span class="material-symbols-rounded">local_fire_department</span>
                         </div>
                         <div class="stat-content">
-                            <span class="stat-value">${stats.totalCalories || 0}</span>
+                            <span class="stat-value">0</span>
                             <span class="stat-label">Ккал сожжено</span>
                         </div>
                     </div>
@@ -1065,7 +1066,7 @@ function updateStatisticsUI(stats) {
                             <span class="material-symbols-rounded">timer</span>
                         </div>
                         <div class="stat-content">
-                            <span class="stat-value">${formatDuration(stats.totalMinutes || 0)}</span>
+                            <span class="stat-value">0м</span>
                             <span class="stat-label">Общее время</span>
                         </div>
                     </div>
@@ -1074,7 +1075,7 @@ function updateStatisticsUI(stats) {
                             <span class="material-symbols-rounded">trending_up</span>
                         </div>
                         <div class="stat-content">
-                            <span class="stat-value">${Math.round(stats.completionRate || 0)}%</span>
+                            <span class="stat-value">${completedWorkouts > 0 ? Math.round((completedWorkouts / plannedWorkouts) * 100) : 0}%</span>
                             <span class="stat-label">Достижение цели</span>
                         </div>
                     </div>
