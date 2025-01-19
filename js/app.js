@@ -1680,21 +1680,11 @@ async function initStatisticsPage() {
 
 // Функция для создания карточек программ
 async function renderProgramCards() {
-    const availableEquipment = await getUserEquipment();
     const programsList = document.querySelector('.programs-list');
     if (!programsList || !window.programData) return;
 
-    // Фильтруем программы по доступному оборудованию
-    const availablePrograms = Object.values(window.programData).filter(program => {
-        const requiredEquipment = program.requirements?.equipment || ['none'];
-        return requiredEquipment.some(eq => availableEquipment.includes(eq));
-    });
-
-    // Очищаем текущий список
-    programsList.innerHTML = '';
-
-    // Создаем карточки для каждой программы
-    availablePrograms.forEach(program => {
+    // Показываем все программы без фильтрации
+    Object.values(window.programData).forEach(program => {
         const workoutsCount = program.workouts?.length || 0;
         const schedule = program.schedule || `${workoutsCount} тр/нед`;
 
@@ -2087,6 +2077,11 @@ async function getUserEquipment() {
 
 // Функция для адаптации упражнения под доступное оборудование
 function adaptExercise(exercise, availableEquipment) {
+    // Если у упражнения нет требований к оборудованию, возвращаем как есть
+    if (!exercise.equipment) {
+        return { ...exercise, equipment: ['none'] };
+    }
+
     // Если упражнение можно выполнить с имеющимся оборудованием
     if (exercise.equipment.some(eq => availableEquipment.includes(eq))) {
         return exercise;
@@ -2098,15 +2093,25 @@ function adaptExercise(exercise, availableEquipment) {
             alt.equipment.some(eq => availableEquipment.includes(eq))
         );
         if (alternative) {
-            return { ...exercise, ...alternative };
+            return { 
+                ...exercise,
+                name: alternative.name,
+                equipment: alternative.equipment,
+                description: alternative.description || exercise.description,
+                // Сохраняем оригинальные параметры тренировки
+                sets: exercise.sets,
+                reps: exercise.reps,
+                rest: exercise.rest
+            };
         }
     }
 
     // Если альтернатив нет, возвращаем базовую версию без оборудования
     return {
         ...exercise,
-        name: exercise.name.replace(/с \w+$/, ''), // Убираем упоминание оборудования
-        equipment: ['none']
+        name: exercise.name.replace(/с \w+$/, ''),
+        equipment: ['none'],
+        description: `${exercise.name} (без оборудования)`
     };
 }
 
