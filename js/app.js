@@ -216,52 +216,35 @@ async function getWeightData(period) {
                 startDate = new Date(now.getFullYear(), 0, 1);
                 break;
             default:
-                startDate = new Date(0); // Все записи
+                startDate = new Date(0);
         }
 
-        // Фильтруем и сортируем данные
-        return weightHistory
-            .filter(entry => new Date(entry.date) >= startDate)
-            .sort((a, b) => new Date(a.date) - new Date(b.date));
+        // Создаем массив всех дат в выбранном периоде
+        const dates = [];
+        const currentDate = new Date(startDate);
+        
+        while (currentDate <= now) {
+            dates.push(new Date(currentDate));
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        // Сопоставляем данные с датами
+        return dates.map(date => {
+            const entry = weightHistory.find(entry => {
+                const entryDate = new Date(entry.date);
+                return entryDate.getDate() === date.getDate() &&
+                       entryDate.getMonth() === date.getMonth() &&
+                       entryDate.getFullYear() === date.getFullYear();
+            });
+            
+            return {
+                date: date.toISOString(),
+                weight: entry ? entry.weight : null
+            };
+        });
     } catch (error) {
         console.error('Ошибка при получении данных веса:', error);
         return [];
-    }
-}
-
-// Функция для сохранения нового значения веса
-async function saveWeight(weight) {
-    try {
-        const result = await getStorageItem('weightHistory');
-        const weightHistory = result ? JSON.parse(result) : [];
-        
-        // Добавляем новую запись
-        const newEntry = {
-            date: new Date().toISOString(),
-            weight: parseFloat(weight)
-        };
-
-        // Проверяем, есть ли уже запись за сегодня
-        const today = new Date().setHours(0, 0, 0, 0);
-        const existingTodayIndex = weightHistory.findIndex(
-            entry => new Date(entry.date).setHours(0, 0, 0, 0) === today
-        );
-
-        if (existingTodayIndex !== -1) {
-            // Обновляем существующую запись
-            weightHistory[existingTodayIndex] = newEntry;
-        } else {
-            // Добавляем новую запись
-            weightHistory.push(newEntry);
-        }
-
-        // Сохраняем обновленную историю
-        await setStorageItem('weightHistory', JSON.stringify(weightHistory));
-        
-        // Обновляем график
-        updateWeightChart(await getWeightData(currentPeriod));
-    } catch (error) {
-        console.error('Ошибка при сохранении веса:', error);
     }
 }
 
@@ -280,10 +263,16 @@ function updateWeightChart(data) {
         const chartData = {
             labels: data.map(entry => {
                 const date = new Date(entry.date);
-                return date.toLocaleDateString('ru-RU', { 
-                    day: '2-digit',
-                    month: '2-digit'
-                });
+                switch(currentPeriod) {
+                    case 'week':
+                        return date.toLocaleDateString('ru-RU', { weekday: 'short' });
+                    case 'month':
+                        return date.getDate();
+                    case 'year':
+                        return date.toLocaleDateString('ru-RU', { month: 'short' });
+                    default:
+                        return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+                }
             }),
             datasets: [{
                 label: 'Вес (кг)',
@@ -291,7 +280,8 @@ function updateWeightChart(data) {
                 borderColor: '#40a7e3',
                 backgroundColor: 'rgba(64, 167, 227, 0.1)',
                 fill: true,
-                tension: 0.4
+                tension: 0.4,
+                spanGaps: true // Соединяет точки с пропущенными значениями
             }]
         };
 
@@ -313,13 +303,17 @@ function updateWeightChart(data) {
                         ticks: {
                             callback: value => `${value} кг`
                         }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
                     }
                 }
             }
         });
     } catch (error) {
         console.error('Ошибка при обновлении графика:', error);
-        // Не показываем ошибку пользователю через попап
     }
 }
 
