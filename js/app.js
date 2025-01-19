@@ -1381,4 +1381,159 @@ function setupEventHandlers() {
             }
         });
     });
+}
+
+// Функция для отображения главного экрана
+function showMainScreen() {
+    // Показываем вкладку с программами по умолчанию
+    switchTab('programs');
+    
+    // Отображаем доступные программы
+    const programsContainer = document.getElementById('programs');
+    if (!programsContainer) return;
+
+    programsContainer.innerHTML = Object.values(programData)
+        .map(program => `
+            <div class="program-card" data-program="${program.id}">
+                <div class="program-header">
+                    <h3>${program.title}</h3>
+                    <span class="program-duration">${program.duration}</span>
+                </div>
+                <p class="program-description">${program.description}</p>
+                <div class="program-info">
+                    <span class="program-intensity">
+                        <span class="material-symbols-rounded">fitness_center</span>
+                        ${program.intensity}
+                    </span>
+                    <span class="program-calories">
+                        <span class="material-symbols-rounded">local_fire_department</span>
+                        ${program.calories} ккал
+                    </span>
+                </div>
+                <div class="program-buttons">
+                    <button class="program-btn info-btn">
+                        <span class="material-symbols-rounded">info</span>
+                        Подробнее
+                    </button>
+                    <button class="program-btn start-btn">
+                        <span class="material-symbols-rounded">play_arrow</span>
+                        Начать
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+    // Устанавливаем обработчики для программ
+    setupProgramHandlers();
+}
+
+// Функция переключения вкладок
+function switchTab(tabId) {
+    // Скрываем все вкладки
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.style.display = 'none';
+    });
+
+    // Убираем активный класс у всех кнопок навигации
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Показываем выбранную вкладку
+    const selectedTab = document.getElementById(tabId);
+    if (selectedTab) {
+        selectedTab.style.display = 'block';
+    }
+
+    // Добавляем активный класс выбранной кнопке
+    const activeBtn = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+
+    // Дополнительная логика для разных вкладок
+    switch(tabId) {
+        case 'profile':
+            renderProfile();
+            break;
+        case 'programs':
+            // Уже отрендерено в showMainScreen
+            break;
+        case 'workouts':
+            renderWorkouts();
+            break;
+    }
+}
+
+// Функция для отображения тренировок
+function renderWorkouts() {
+    const workoutsTab = document.getElementById('workouts');
+    if (!workoutsTab) return;
+
+    // Получаем активную программу
+    getStorageItem('activeProgram')
+        .then(data => {
+            const programProgress = data ? JSON.parse(data) : null;
+            if (!programProgress) {
+                workoutsTab.innerHTML = `
+                    <div class="empty-state">
+                        <span class="material-symbols-rounded">fitness_center</span>
+                        <h3>Нет активных тренировок</h3>
+                        <p>Выберите программу тренировок, чтобы начать</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const program = programData[programProgress.programId];
+            if (!program) return;
+
+            // Отображаем запланированные тренировки
+            workoutsTab.innerHTML = `
+                <h2>Тренировки программы "${program.title}"</h2>
+                <div class="workouts-list">
+                    ${program.workouts.map(workout => `
+                        <div class="workout-card ${isWorkoutCompleted(workout.day, programProgress) ? 'completed' : ''}">
+                            <div class="workout-header">
+                                <h3>${workout.title}</h3>
+                                <span class="workout-duration">${workout.duration} мин</span>
+                            </div>
+                            <div class="workout-info">
+                                <span class="workout-type">${workout.type}</span>
+                                <span class="workout-calories">${workout.calories} ккал</span>
+                            </div>
+                            ${isWorkoutCompleted(workout.day, programProgress) ? `
+                                <div class="workout-completed">
+                                    <span class="material-symbols-rounded">check_circle</span>
+                                    Выполнено
+                                </div>
+                            ` : `
+                                <button class="start-workout-btn" data-workout="${workout.day}">
+                                    Начать тренировку
+                                </button>
+                            `}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            // Добавляем обработчики для кнопок начала тренировки
+            setupWorkoutButtons(programProgress.programId);
+        })
+        .catch(console.error);
+}
+
+// Вспомогательная функция для проверки выполнения тренировки
+function isWorkoutCompleted(day, progress) {
+    return progress.completedWorkouts.some(w => w.day === day);
+}
+
+// Функция настройки кнопок тренировок
+function setupWorkoutButtons(programId) {
+    document.querySelectorAll('.start-workout-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const workoutDay = parseInt(btn.dataset.workout);
+            startWorkoutSession(programId, workoutDay);
+        });
+    });
 } 
