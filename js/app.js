@@ -3,6 +3,11 @@ const tg = window.Telegram.WebApp;
 const mainButton = tg.MainButton;
 const backButton = tg.BackButton;
 
+// В начале файла добавим проверку
+if (typeof Chart === 'undefined') {
+    console.error('Chart.js не загружен. Графики будут недоступны.');
+}
+
 // Инициализация
 tg.expand();
 tg.enableClosingConfirmation();
@@ -262,67 +267,79 @@ async function saveWeight(weight) {
 
 // Функция обновления графика
 function updateWeightChart(data) {
-    const ctx = document.getElementById('weightChart').getContext('2d');
-    
-    // Если график уже существует, уничтожаем его
-    if (window.weightChart) {
-        window.weightChart.destroy();
-    }
+    const ctx = document.getElementById('weightChart');
+    if (!ctx) return;
 
-    // Форматируем данные для графика
-    const chartData = {
-        labels: data.map(entry => {
-            const date = new Date(entry.date);
-            return date.toLocaleDateString('ru-RU', { 
-                day: '2-digit',
-                month: '2-digit'
-            });
-        }),
-        datasets: [{
-            label: 'Вес (кг)',
-            data: data.map(entry => entry.weight),
-            borderColor: '#40a7e3',
-            backgroundColor: 'rgba(64, 167, 227, 0.1)',
-            fill: true,
-            tension: 0.4
-        }]
-    };
+    try {
+        // Если график уже существует, уничтожаем его
+        if (window.weightChart instanceof Chart) {
+            window.weightChart.destroy();
+        }
 
-    // Создаем новый график
-    window.weightChart = new Chart(ctx, {
-        type: 'line',
-        data: chartData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    ticks: {
-                        callback: value => `${value} кг`
+        // Форматируем данные для графика
+        const chartData = {
+            labels: data.map(entry => {
+                const date = new Date(entry.date);
+                return date.toLocaleDateString('ru-RU', { 
+                    day: '2-digit',
+                    month: '2-digit'
+                });
+            }),
+            datasets: [{
+                label: 'Вес (кг)',
+                data: data.map(entry => entry.weight),
+                borderColor: '#40a7e3',
+                backgroundColor: 'rgba(64, 167, 227, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        };
+
+        // Создаем новый график
+        window.weightChart = new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: value => `${value} кг`
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+    } catch (error) {
+        console.error('Ошибка при обновлении графика:', error);
+        // Не показываем ошибку пользователю через попап
+    }
 }
 
 // Обработчики переключения периода
 document.querySelectorAll('.period-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
-        // Убираем активный класс у всех кнопок
-        document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-        // Добавляем активный класс нажатой кнопке
-        btn.classList.add('active');
-        
-        // Обновляем текущий период и график
-        currentPeriod = btn.dataset.period;
-        updateWeightChart(await getWeightData(currentPeriod));
+        try {
+            // Убираем активный класс у всех кнопок
+            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            // Добавляем активный класс нажатой кнопке
+            btn.classList.add('active');
+            
+            // Обновляем текущий период и график
+            currentPeriod = btn.dataset.period;
+            const data = await getWeightData(currentPeriod);
+            updateWeightChart(data);
+        } catch (error) {
+            console.error('Ошибка при обновлении графика:', error);
+            // Не показываем ошибку пользователю через попап
+        }
     });
 });
 
