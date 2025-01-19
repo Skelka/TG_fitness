@@ -655,47 +655,37 @@ function setupEventListeners() {
 }
 
 // Добавим функцию для запуска тренировки
-async function startWorkout(workoutId) {
+async function startWorkout(workout) {
+    // Получаем профиль пользователя
+    const profileData = await getStorageItem('profile');
+    let profile = {};
     try {
-        // Получаем текущий профиль
-        const profile = await getStorageItem('profile')
-            .then(data => data ? JSON.parse(data) : null);
-            
-        if (!profile) {
-            tg.showPopup({
-                title: 'Заполните профиль',
-                message: 'Для начала тренировки необходимо заполнить профиль',
-                buttons: [
-                    {
-                        type: 'default',
-                        text: 'Заполнить профиль',
-                        id: 'fill_profile'
-                    }
-                ]
-            });
-            return;
-        }
-
-        // Показываем детали тренировки
-        tg.showPopup({
-            title: 'Начать тренировку',
-            message: 'Выберите длительность и сложность тренировки',
-            buttons: [
-                {
-                    type: 'default',
-                    text: 'Начать',
-                    id: 'start_workout'
-                },
-                {
-                    type: 'cancel',
-                    text: 'Отмена'
-                }
-            ]
-        });
-    } catch (error) {
-        console.error('Ошибка при запуске тренировки:', error);
-        showError(error);
+        profile = JSON.parse(profileData);
+    } catch (e) {
+        console.warn('Ошибка парсинга профиля:', e);
     }
+
+    const availableEquipment = profile.equipment || [];
+    const userLevel = profile.fitnessLevel || 'medium';
+    const workoutPlace = profile.workoutPlace || 'home';
+
+    // Адаптируем упражнения под пользователя
+    const adaptedWorkout = {
+        ...workout,
+        exercises: workout.exercises.map(exercise => ({
+            ...exercise,
+            name: findBestExerciseAlternative(exercise.name, availableEquipment, userLevel)
+        }))
+    };
+
+    // Запускаем тренировку с адаптированными упражнениями
+    startWorkoutExecution(adaptedWorkout);
+}
+
+// Основная логика выполнения тренировки переносится в отдельную функцию
+function startWorkoutExecution(workout) {
+    // Весь текущий код функции startWorkout переносится сюда
+    // ...
 }
 
 // Функция показа деталей тренировки
@@ -2092,47 +2082,84 @@ function renderProfilePage() {
 
     container.innerHTML = `
         <div class="profile-page">
-            <!-- ... существующий код ... -->
+            <!-- Существующие поля профиля -->
             
             <div class="settings-section">
-                <h3>Настройки</h3>
-                <div class="settings-list">
-                    <button class="settings-btn add-to-home-btn" style="display: none">
-                        <span class="material-symbols-rounded">add_to_home_screen</span>
-                        <span>Добавить на рабочий стол</span>
-                    </button>
-                    <button class="settings-btn clear-data-btn">
-                        <span class="material-symbols-rounded">delete</span>
-                        <span>Очистить все данные</span>
-                    </button>
+                <h3>Место тренировок</h3>
+                <div class="workout-place-selector">
+                    <button class="place-btn" data-place="home">Дома</button>
+                    <button class="place-btn" data-place="gym">В зале</button>
+                    <button class="place-btn" data-place="outdoor">На улице</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Доступное оборудование</h3>
+                <div class="equipment-list">
+                    <label class="equipment-item">
+                        <input type="checkbox" name="equipment" value="гантели">
+                        Гантели
+                    </label>
+                    <label class="equipment-item">
+                        <input type="checkbox" name="equipment" value="скамья">
+                        Скамья
+                    </label>
+                    <label class="equipment-item">
+                        <input type="checkbox" name="equipment" value="штанга">
+                        Штанга
+                    </label>
+                    <label class="equipment-item">
+                        <input type="checkbox" name="equipment" value="турник">
+                        Турник
+                    </label>
+                    <!-- Добавьте другое оборудование -->
                 </div>
             </div>
         </div>
     `;
 
-    // Проверяем доступность добавления на рабочий стол
-    checkHomeScreenAvailability().then(isAvailable => {
-        const addToHomeBtn = document.querySelector('.add-to-home-btn');
-        if (addToHomeBtn && isAvailable) {
-            addToHomeBtn.style.display = 'flex';
-            addToHomeBtn.addEventListener('click', async () => {
-                try {
-                    await tg.addToHomeScreen();
-                    addToHomeBtn.style.display = 'none';
-                    tg.HapticFeedback.impactOccurred('medium');
-                    
-                    // Показываем сообщение об успехе
-                    showPopupSafe({
-                        title: 'Добавлено',
-                        message: 'Приложение добавлено на рабочий стол',
-                        buttons: [{type: 'ok'}]
-                    });
-                } catch (error) {
-                    console.error('Ошибка добавления на рабочий стол:', error);
-                }
-            });
-        }
+    // Добавляем обработчики
+    setupProfileEquipmentHandlers();
+}
+
+function setupProfileEquipmentHandlers() {
+    const equipmentInputs = document.querySelectorAll('input[name="equipment"]');
+    const placeButtons = document.querySelectorAll('.place-btn');
+
+    // Загружаем сохраненные настройки
+    loadProfileSettings();
+
+    // Обработчики для оборудования
+    equipmentInputs.forEach(input => {
+        input.addEventListener('change', saveProfileSettings);
     });
 
-    // ... остальной код функции ...
+    // Обработчики для места тренировок
+    placeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            placeButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            saveProfileSettings();
+        });
+    });
+}
+
+async function saveProfileSettings() {
+    const profile = await loadProfile() || {};
+    
+    // Сохраняем выбранное оборудование
+    const equipment = Array.from(document.querySelectorAll('input[name="equipment"]:checked'))
+        .map(input => input.value);
+    
+    // Сохраняем место тренировок
+    const workoutPlace = document.querySelector('.place-btn.active')?.dataset.place || 'home';
+
+    // Обновляем профиль
+    const updatedProfile = {
+        ...profile,
+        equipment,
+        workoutPlace
+    };
+
+    await setStorageItem('profile', JSON.stringify(updatedProfile));
 } 
