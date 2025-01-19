@@ -1596,4 +1596,136 @@ function setupCalendarNavigation(workouts) {
             document.getElementById('calendar').innerHTML = calendar;
         });
     }
-} 
+}
+
+// Функция сохранения веса
+async function saveWeight(weight) {
+    try {
+        // Получаем текущую историю весов
+        const weightHistory = await getStorageItem('weightHistory')
+            .then(data => data ? JSON.parse(data) : []);
+
+        // Добавляем новую запись
+        const newEntry = {
+            date: Date.now(),
+            weight: parseFloat(weight)
+        };
+
+        // Добавляем новую запись в историю
+        weightHistory.push(newEntry);
+
+        // Сохраняем обновленную историю
+        await setStorageItem('weightHistory', JSON.stringify(weightHistory));
+
+        // Обновляем график
+        updateWeightChart();
+
+    } catch (error) {
+        console.error('Ошибка при сохранении веса:', error);
+    }
+}
+
+// Функция обновления графика веса
+async function updateWeightChart() {
+    const weightContainer = document.getElementById('weight-chart');
+    if (!weightContainer) return;
+
+    try {
+        // Получаем историю весов
+        const weightHistory = await getStorageItem('weightHistory')
+            .then(data => data ? JSON.parse(data) : []);
+
+        if (weightHistory.length === 0) {
+            weightContainer.innerHTML = '<p class="no-data">Нет данных о весе</p>';
+            return;
+        }
+
+        // Сортируем записи по дате
+        weightHistory.sort((a, b) => a.date - b.date);
+
+        // Форматируем данные для графика
+        const dates = weightHistory.map(entry => {
+            const date = new Date(entry.date);
+            return `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+        });
+        const weights = weightHistory.map(entry => entry.weight);
+
+        // Находим минимальный и максимальный вес для масштабирования
+        const minWeight = Math.min(...weights) - 0.5;
+        const maxWeight = Math.max(...weights) + 0.5;
+
+        // Создаем SVG для графика
+        const width = weightContainer.offsetWidth;
+        const height = 200;
+        const padding = 40;
+
+        // Создаем точки для графика
+        const points = weightHistory.map((entry, index) => {
+            const x = padding + (index * (width - 2 * padding) / (weightHistory.length - 1));
+            const y = padding + ((maxWeight - entry.weight) * (height - 2 * padding) / (maxWeight - minWeight));
+            return `${x},${y}`;
+        }).join(' ');
+
+        // Формируем HTML графика
+        weightContainer.innerHTML = `
+            <svg width="${width}" height="${height}">
+                <!-- Ось Y -->
+                <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" 
+                      stroke="var(--tg-theme-hint-color)" stroke-width="1"/>
+                
+                <!-- Ось X -->
+                <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" 
+                      stroke="var(--tg-theme-hint-color)" stroke-width="1"/>
+                
+                <!-- Линия графика -->
+                <polyline points="${points}" 
+                          fill="none" 
+                          stroke="var(--tg-theme-button-color)" 
+                          stroke-width="2"/>
+                
+                <!-- Точки -->
+                ${weightHistory.map((entry, index) => {
+                    const x = padding + (index * (width - 2 * padding) / (weightHistory.length - 1));
+                    const y = padding + ((maxWeight - entry.weight) * (height - 2 * padding) / (maxWeight - minWeight));
+                    return `
+                        <circle cx="${x}" cy="${y}" r="4" 
+                                fill="var(--tg-theme-button-color)"/>
+                        <text x="${x}" y="${y - 10}" 
+                              text-anchor="middle" 
+                              fill="var(--tg-theme-text-color)" 
+                              font-size="12">
+                            ${entry.weight}
+                        </text>
+                        <text x="${x}" y="${height - padding + 20}" 
+                              text-anchor="middle" 
+                              fill="var(--tg-theme-hint-color)" 
+                              font-size="10">
+                            ${dates[index]}
+                        </text>
+                    `;
+                }).join('')}
+            </svg>
+        `;
+
+    } catch (error) {
+        console.error('Ошибка при обновлении графика:', error);
+        weightContainer.innerHTML = '<p class="error">Ошибка при загрузке графика</p>';
+    }
+}
+
+// Обновляем обработчик формы профиля
+function handleProfileSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const weight = form.querySelector('input[name="weight"]').value;
+    
+    // Сохраняем вес и обновляем график
+    saveWeight(weight);
+    
+    // Остальной код обработки формы...
+}
+
+// Добавляем вызов обновления графика при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    updateWeightChart();
+}); 
