@@ -1345,4 +1345,108 @@ input[type="number"]::-webkit-inner-spin-button {
 .prev-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* Стили для экрана отдыха */
+.rest-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+}
+
+.rest-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 40px;
+    background: var(--tg-theme-secondary-bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rest-icon .material-symbols-rounded {
+    font-size: 40px;
+    color: var(--tg-theme-button-color);
+}
+
+.rest-timer {
+    font-size: 48px;
+    font-weight: bold;
+    color: var(--tg-theme-button-color);
+}
+
+.skip-rest-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+/* Стили для экрана завершения тренировки */
+.workout-complete {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    text-align: center;
+    padding: 24px;
+}
+
+.complete-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+    background: var(--tg-theme-button-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.complete-icon .material-symbols-rounded {
+    font-size: 48px;
+    color: var(--tg-theme-button-text-color);
+}
+
+.workout-stats {
+    display: flex;
+    gap: 24px;
+    margin: 24px 0;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--tg-theme-button-color);
+}
+
+.stat-label {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+}
+
+.finish-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
 } 

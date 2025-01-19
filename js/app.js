@@ -2078,6 +2078,39 @@ function showProgramWorkouts(program) {
 function startWorkout(workout) {
     const programsList = document.querySelector('.programs-list');
     let currentExerciseIndex = 0;
+    let isResting = false;
+    let restTimeLeft = 0;
+    let restInterval;
+
+    function startRestTimer(duration) {
+        isResting = true;
+        restTimeLeft = duration;
+        
+        const timerElement = document.querySelector('.rest-timer');
+        if (!timerElement) return;
+
+        restInterval = setInterval(() => {
+            restTimeLeft--;
+            timerElement.textContent = formatTime(restTimeLeft);
+            
+            // Вибрация каждые 30 секунд и последние 5 секунд
+            if (restTimeLeft <= 5 || restTimeLeft % 30 === 0) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+
+            if (restTimeLeft <= 0) {
+                clearInterval(restInterval);
+                isResting = false;
+                renderExercise();
+            }
+        }, 1000);
+    }
+
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
 
     function renderExercise() {
         const exercise = workout.exercises[currentExerciseIndex];
@@ -2092,41 +2125,131 @@ function startWorkout(workout) {
                         <span>${currentExerciseIndex + 1}/${workout.exercises.length}</span>
                     </div>
                 </div>
-                <div class="exercise-display">
-                    <div class="exercise-gif">
-                        <img src="${getExerciseAnimation(exercise.name)}" 
-                             alt="${exercise.name}">
+                ${isResting ? `
+                    <div class="rest-screen">
+                        <div class="rest-icon">
+                            <span class="material-symbols-rounded">timer</span>
+                        </div>
+                        <h3>Отдых</h3>
+                        <div class="rest-timer">${formatTime(restTimeLeft)}</div>
+                        <button class="skip-rest-btn">
+                            <span class="material-symbols-rounded">skip_next</span>
+                            Пропустить
+                        </button>
                     </div>
-                    <h3>${exercise.name}</h3>
-                    <div class="exercise-details">
-                        <span>${exercise.sets} подхода × ${exercise.reps}</span>
-                        <span>Отдых: ${exercise.rest}с</span>
+                ` : `
+                    <div class="exercise-display">
+                        <div class="exercise-gif">
+                            <img src="${getExerciseAnimation(exercise.name)}" 
+                                 alt="${exercise.name}">
+                        </div>
+                        <h3>${exercise.name}</h3>
+                        <div class="exercise-details">
+                            <span>${exercise.sets} подхода × ${exercise.reps}</span>
+                            <span>Отдых: ${exercise.rest}с</span>
+                        </div>
                     </div>
-                </div>
-                <div class="next-exercises">
-                    ${workout.exercises.slice(currentExerciseIndex + 1, currentExerciseIndex + 4)
-                        .map(nextExercise => `
-                            <div class="next-exercise">
-                                <img src="${getExerciseAnimation(nextExercise.name)}" 
-                                     alt="${nextExercise.name}">
-                                <span>${nextExercise.name}</span>
-                            </div>
-                        `).join('')}
-                </div>
-                <div class="exercise-controls">
-                    <button class="prev-btn" ${currentExerciseIndex === 0 ? 'disabled' : ''}>
-                        <span class="material-symbols-rounded">arrow_back</span>
-                        Назад
-                    </button>
-                    <button class="next-btn">
-                        ${currentExerciseIndex === workout.exercises.length - 1 ? 'Завершить' : 'Далее'}
-                        <span class="material-symbols-rounded">arrow_forward</span>
-                    </button>
-                </div>
+                    <div class="next-exercises">
+                        ${workout.exercises.slice(currentExerciseIndex + 1, currentExerciseIndex + 4)
+                            .map(nextExercise => `
+                                <div class="next-exercise">
+                                    <img src="${getExerciseAnimation(nextExercise.name)}" 
+                                         alt="${nextExercise.name}">
+                                    <span>${nextExercise.name}</span>
+                                </div>
+                            `).join('')}
+                    </div>
+                    <div class="exercise-controls">
+                        <button class="prev-btn" ${currentExerciseIndex === 0 ? 'disabled' : ''}>
+                            <span class="material-symbols-rounded">arrow_back</span>
+                            Назад
+                        </button>
+                        <button class="complete-btn">
+                            <span class="material-symbols-rounded">check</span>
+                            Завершить подход
+                        </button>
+                    </div>
+                `}
             </div>
         `;
 
         setupExerciseHandlers();
+    }
+
+    function setupExerciseHandlers() {
+        const backBtn = programsList.querySelector('.back-btn');
+        const prevBtn = programsList.querySelector('.prev-btn');
+        const completeBtn = programsList.querySelector('.complete-btn');
+        const skipRestBtn = programsList.querySelector('.skip-rest-btn');
+
+        backBtn?.addEventListener('click', () => {
+            if (restInterval) clearInterval(restInterval);
+            showProgramWorkouts(workout);
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+
+        prevBtn?.addEventListener('click', () => {
+            if (currentExerciseIndex > 0) {
+                currentExerciseIndex--;
+                renderExercise();
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        });
+
+        completeBtn?.addEventListener('click', () => {
+            const exercise = workout.exercises[currentExerciseIndex];
+            if (currentExerciseIndex < workout.exercises.length - 1) {
+                startRestTimer(exercise.rest);
+                currentExerciseIndex++;
+            } else {
+                completeWorkout();
+            }
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+
+        skipRestBtn?.addEventListener('click', () => {
+            if (restInterval) {
+                clearInterval(restInterval);
+                isResting = false;
+                renderExercise();
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        });
+    }
+
+    function completeWorkout() {
+        programsList.innerHTML = `
+            <div class="workout-complete">
+                <div class="complete-icon">
+                    <span class="material-symbols-rounded">celebration</span>
+                </div>
+                <h2>Тренировка завершена!</h2>
+                <div class="workout-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">${workout.exercises.length}</span>
+                        <span class="stat-label">Упражнений</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${workout.duration}</span>
+                        <span class="stat-label">Минут</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${workout.calories}</span>
+                        <span class="stat-label">Ккал</span>
+                    </div>
+                </div>
+                <button class="finish-btn">
+                    <span class="material-symbols-rounded">home</span>
+                    Вернуться к программам
+                </button>
+            </div>
+        `;
+
+        const finishBtn = programsList.querySelector('.finish-btn');
+        finishBtn?.addEventListener('click', () => {
+            renderProgramCards();
+            tg.HapticFeedback.impactOccurred('medium');
+        });
     }
 
     renderExercise();
