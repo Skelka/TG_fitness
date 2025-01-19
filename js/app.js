@@ -2094,9 +2094,8 @@ function startWorkout(workout) {
                 </div>
                 <div class="exercise-display">
                     <div class="exercise-gif">
-                        <img src="gifs/${exercise.name.toLowerCase().replace(/\s+/g, '_')}.gif" 
-                             alt="${exercise.name}"
-                             onerror="this.src='images/exercise_placeholder.jpg'">
+                        <img src="${getExerciseAnimation(exercise.name)}" 
+                             alt="${exercise.name}">
                     </div>
                     <h3>${exercise.name}</h3>
                     <div class="exercise-details">
@@ -2108,9 +2107,8 @@ function startWorkout(workout) {
                     ${workout.exercises.slice(currentExerciseIndex + 1, currentExerciseIndex + 4)
                         .map(nextExercise => `
                             <div class="next-exercise">
-                                <img src="gifs/${nextExercise.name.toLowerCase().replace(/\s+/g, '_')}_mini.gif" 
-                                     alt="${nextExercise.name}"
-                                     onerror="this.src='images/exercise_placeholder_mini.jpg'">
+                                <img src="${getExerciseAnimation(nextExercise.name)}" 
+                                     alt="${nextExercise.name}">
                                 <span>${nextExercise.name}</span>
                             </div>
                         `).join('')}
@@ -2128,7 +2126,6 @@ function startWorkout(workout) {
             </div>
         `;
 
-        // Добавляем обработчики
         setupExerciseHandlers();
     }
 

@@ -1153,4 +1153,196 @@ input[type="number"]::-webkit-inner-spin-button {
 .period-btn.active {
     background: var(--tg-theme-button-color);
     color: var(--tg-theme-button-text-color);
+}
+
+/* Стили для страницы программы */
+.program-workouts {
+    padding: 16px;
+}
+
+.program-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--tg-theme-text-color);
+}
+
+.program-days {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.workout-day {
+    background: var(--tg-theme-bg-color);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: var(--card-shadow);
+}
+
+.workout-day.locked {
+    opacity: 0.7;
+}
+
+.day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.day-number {
+    font-weight: 500;
+    color: var(--tg-theme-hint-color);
+}
+
+.day-status .material-symbols-rounded {
+    font-size: 20px;
+    color: var(--tg-theme-hint-color);
+}
+
+.day-info h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+}
+
+.workout-meta {
+    display: flex;
+    gap: 16px;
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+}
+
+.workout-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.start-workout-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+/* Стили для страницы упражнения */
+.workout-session {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+}
+
+.workout-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.exercise-display {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.exercise-gif {
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--tg-theme-secondary-bg-color);
+}
+
+.exercise-gif img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.exercise-details {
+    display: flex;
+    gap: 16px;
+    color: var(--tg-theme-hint-color);
+}
+
+.next-exercises {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 16px 0;
+    margin: 16px -16px;
+    padding: 16px;
+}
+
+.next-exercise {
+    flex: 0 0 80px;
+    text-align: center;
+}
+
+.next-exercise img {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    object-fit: cover;
+}
+
+.next-exercise span {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color);
+}
+
+.exercise-controls {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.exercise-controls button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.prev-btn {
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+}
+
+.next-btn {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.prev-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 } 
