@@ -365,18 +365,8 @@ async function getWeightData(period = 'week') {
             return [];
         }
 
-        // Проверяем корректность данных
-        weightHistory = weightHistory.filter(entry => {
-            return entry 
-                && typeof entry.weight === 'number' 
-                && !isNaN(entry.weight) 
-                && entry.weight > 0 
-                && entry.weight < 300 // Максимально допустимый вес
-                && entry.date;
-        });
-
         const now = new Date();
-        now.setHours(23, 59, 59, 999);
+        now.setHours(23, 59, 59, 999); // Конец текущего дня
         let startDate = new Date(now);
 
         switch (period) {
@@ -393,7 +383,7 @@ async function getWeightData(period = 'week') {
                 startDate.setDate(startDate.getDate() - 7);
         }
 
-        startDate.setHours(0, 0, 0, 0);
+        startDate.setHours(0, 0, 0, 0); // Начало стартового дня
 
         // Фильтруем и сортируем данные
         const filteredData = weightHistory
@@ -414,80 +404,101 @@ async function getWeightData(period = 'week') {
 
 // Обновление графика веса
 function updateWeightChart(data) {
-    try {
-        const ctx = document.getElementById('weight-chart');
-        if (!ctx) return;
+    const ctx = document.getElementById('weight-chart');
+    if (!ctx) return;
 
-        // Находим минимальный и максимальный вес
-        const weights = data.map(item => item.weight);
-        const minWeight = Math.min(...weights);
-        const maxWeight = Math.max(...weights);
-        
-        // Добавляем отступ в 5% от диапазона для лучшего отображения
-        const range = maxWeight - minWeight;
-        const padding = range * 0.05;
-        
-        // Если существует старый график, уничтожаем его
-        if (window.weightChart) {
-            window.weightChart.destroy();
-        }
+    // Находим минимальный и максимальный вес
+    const weights = data.map(item => item.weight);
+    const minWeight = Math.min(...weights);
+    const maxWeight = Math.max(...weights);
+    
+    // Устанавливаем диапазон с отступом в 2 кг
+    const yMin = Math.floor(minWeight) - 1;
+    const yMax = Math.ceil(maxWeight) + 1;
 
-        window.weightChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: data.map(item => new Date(item.date).toLocaleDateString()),
-                datasets: [{
-                    label: 'Вес',
-                    data: data.map(item => item.weight),
-                    borderColor: '#40a7e3',
-                    backgroundColor: 'rgba(64, 167, 227, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+    if (window.weightChart) {
+        window.weightChart.destroy();
+    }
+
+    window.weightChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map(item => {
+                const date = new Date(item.date);
+                return date.toLocaleDateString('ru-RU', { 
+                    day: '2-digit',
+                    month: '2-digit'
+                });
+            }),
+            datasets: [{
+                label: 'Вес',
+                data: data.map(item => item.weight),
+                borderColor: '#40a7e3',
+                backgroundColor: 'rgba(64, 167, 227, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#40a7e3'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
                 },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        min: Math.max(0, minWeight - padding), // Не меньше 0
-                        max: maxWeight + padding,
-                        ticks: {
-                            stepSize: 0.5,
-                            callback: function(value) {
-                                return value.toFixed(1) + ' кг';
-                            }
-                        }
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    titleFont: {
+                        size: 14
                     },
-                    x: {
-                        grid: {
-                            display: false
+                    bodyFont: {
+                        size: 14
+                    },
+                    padding: 10,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.parsed.y} кг`;
                         }
                     }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 12
+                        },
+                        color: '#999'
+                    }
                 },
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                },
-                elements: {
-                    point: {
-                        radius: 4,
-                        hoverRadius: 6
+                y: {
+                    min: yMin,
+                    max: yMax,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    },
+                    ticks: {
+                        font: {
+                            size: 12
+                        },
+                        color: '#999',
+                        callback: function(value) {
+                            return value + ' кг';
+                        }
                     }
                 }
             }
-        });
-
-        console.log('График веса обновлен');
-    } catch (error) {
-        console.error('Ошибка при обновлении графика:', error);
-    }
+        }
+    });
 }
 
 // Настройка кнопок периода
@@ -1613,7 +1624,7 @@ async function clearAllData() {
     try {
         // Очищаем все данные в CloudStorage и localStorage
         const keys = ['weightHistory', 'activeProgram', 'profile'];
-        
+
         // Очищаем данные последовательно
         for (const key of keys) {
             await setStorageItem(key, '[]');

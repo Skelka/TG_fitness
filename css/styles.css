@@ -324,7 +324,7 @@ input:focus, select:focus {
 .period-selector {
     display: flex;
     gap: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .period-btn {
@@ -1253,4 +1253,23 @@ input[type="number"]::-webkit-inner-spin-button {
     justify-content: center;
     gap: 8px;
     cursor: pointer;
+}
+
+.weight-section {
+    background: var(--tg-theme-bg-color);
+    padding: 16px;
+    border-radius: 12px;
+    margin: 16px;
+    box-shadow: var(--card-shadow);
+    height: 280px; /* Фиксированная высота */
+}
+
+.weight-section h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+}
+
+#weight-chart {
+    height: 180px !important; /* Фиксированная высота графика */
+    width: 100% !important;
 } 
