@@ -1,28 +1,67 @@
 // Глобальные переменные
-const tg = window.Telegram.WebApp;
-const mainButton = tg.MainButton;
-const backButton = tg.BackButton;
-let currentPeriod = 'week'; // Добавляем переменную для текущего периода
+let tg, mainButton, backButton, currentPeriod, weightChart;
 
 // В начале файла добавим проверку
 if (typeof Chart === 'undefined') {
     console.error('Chart.js не загружен. Графики будут недоступны.');
 }
 
-// Инициализация
-tg.expand();
-tg.enableClosingConfirmation();
-mainButton.setText('Сохранить профиль');
-mainButton.hide();
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Проверяем наличие Telegram WebApp
+        if (!window.Telegram?.WebApp) {
+            throw new Error('Telegram WebApp не загружен');
+        }
 
-// Добавим глобальную переменную для хранения графика
-let weightChart = null;
+        // Инициализируем основные переменные
+        tg = window.Telegram.WebApp;
+        mainButton = tg.MainButton;
+        backButton = tg.BackButton;
+        currentPeriod = 'week';
 
-// Инициализация
-tg.expand();
-tg.enableClosingConfirmation();
-mainButton.setText('Сохранить профиль');
-mainButton.hide();
+        // Базовая настройка WebApp
+        tg.ready();
+        tg.expand();
+        tg.enableClosingConfirmation();
+
+        // Настраиваем кнопки
+        mainButton.setText('Сохранить профиль');
+        mainButton.hide();
+
+        // Проверяем наличие Chart.js
+        if (typeof Chart === 'undefined') {
+            throw new Error('Chart.js не загружен');
+        }
+
+        // Инициализируем все компоненты
+        setupEventListeners();
+        setupProgramHandlers();
+        setupPopupHandlers();
+        loadProfile();
+        loadActiveProgram();
+
+        // Инициализируем страницу статистики
+        await updateStatistics();
+        
+        // Загружаем и отображаем данные веса
+        const weightData = await getWeightData('week');
+        if (weightData && weightData.length > 0) {
+            updateWeightChart(weightData);
+        }
+
+        // Добавляем обработчики для кнопок периода
+        setupPeriodButtons();
+
+        console.log('Версия WebApp:', tg.version);
+        console.log('Платформа:', tg.platform);
+        console.log('Инициализация WebApp:', tg.initData);
+        console.log('Доступные методы WebApp:', Object.keys(tg));
+
+    } catch (error) {
+        console.error('Ошибка инициализации:', error);
+    }
+});
 
 // Функции для работы с CloudStorage
 async function getStorageItem(key) {
@@ -470,47 +509,6 @@ function setupEventListeners() {
     // Добавляем обработчики для чекбоксов
     setupCheckboxHandlers();
 }
-
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        // Проверяем наличие Telegram WebApp
-        if (!window.Telegram?.WebApp) {
-            throw new Error('Telegram WebApp не загружен');
-        }
-
-        // Инициализируем основные переменные
-        window.tg = window.Telegram.WebApp;
-        window.mainButton = tg.MainButton;
-        window.backButton = tg.BackButton;
-        window.currentPeriod = 'week';
-
-        // Базовая настройка WebApp
-        tg.ready();
-        tg.expand();
-        tg.enableClosingConfirmation();
-
-        // Проверяем наличие Chart.js
-        if (typeof Chart === 'undefined') {
-            throw new Error('Chart.js не загружен');
-        }
-
-        // Инициализируем страницу статистики
-        await updateStatistics();
-        
-        // Загружаем и отображаем данные веса
-        const weightData = await getWeightData('week');
-        if (weightData && weightData.length > 0) {
-            updateWeightChart(weightData);
-        }
-
-        // Добавляем обработчики для кнопок периода
-        setupPeriodButtons();
-
-    } catch (error) {
-        console.error('Ошибка инициализации:', error);
-    }
-});
 
 // Настройка кнопок периода
 function setupPeriodButtons() {
@@ -1219,8 +1217,6 @@ function setupProgramHandlers() {
             const programCard = button.closest('.program-card');
             const programId = programCard.dataset.program;
             
-            console.log('Нажата кнопка:', button.className, 'для программы:', programId);
-            
             if (button.classList.contains('info-btn')) {
                 tg.HapticFeedback.impactOccurred('medium');
                 showProgramDetails(programId);
@@ -1240,7 +1236,7 @@ function setupProgramHandlers() {
                 showProgramDetails(programId);
             }
         });
-    }
+    });
 }
 
 // Добавим функцию для начала конкретной тренировки
