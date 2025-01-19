@@ -330,69 +330,79 @@ function setupTabHandlers() {
 }
 
 // Настройка обработчиков событий
-function setupEventHandlers() {
-    console.log('Setting up event handlers...');
-    
-    // Обработчики для навигации
-    const navButtons = document.querySelectorAll('.nav-btn');
-    console.log('Found nav buttons:', navButtons.length);
-    
-    navButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const tabId = btn.getAttribute('data-tab');
-            console.log('Nav button clicked:', tabId);
-            switchTab(tabId);
-        });
-    });
-
-    // Обработчики для программ
-    const programButtons = document.querySelectorAll('.program-btn');
-    console.log('Found program buttons:', programButtons.length);
-    
-    programButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const programId = btn.closest('.program-card').dataset.program;
-            console.log('Program button clicked:', btn.className, 'for program:', programId);
-            
-            if (btn.classList.contains('start-btn')) {
-                startProgram(programId);
-            } else if (btn.classList.contains('info-btn')) {
-                showProgramDetails(programId);
+function setupEventListeners() {
+    // Обработчик изменения полей формы
+    const form = document.getElementById('profile-form');
+    const formInputs = form.querySelectorAll('input, select');
+    formInputs.forEach(input => {
+        input.addEventListener('input', () => {
+            const hasData = Array.from(formInputs).some(input => input.value);
+            if (hasData) {
+                mainButton.show();
+                backButton.hide();
+            } else {
+                mainButton.hide();
             }
         });
     });
+
+    // Скрытие клавиатуры
+    document.addEventListener('click', function(e) {
+        if (!e.target.matches('input') && !e.target.matches('select')) {
+            if (document.activeElement instanceof HTMLInputElement || 
+                document.activeElement instanceof HTMLSelectElement) {
+                document.activeElement.blur();
+            }
+        }
+    });
+
+    // Выделение текста в числовых полях
+    document.addEventListener('focus', function(e) {
+        if (e.target.type === 'number') {
+            e.target.select();
+            tg.HapticFeedback.selectionChanged();
+        }
+    }, true);
+
+    // Обработчик нажатия на MainButton
+    mainButton.onClick(saveProfile);
+
+    // Обработчик нажатия на BackButton
+    backButton.onClick(() => {
+        tg.close();
+    });
+
+    // Добавляем новые обработчики
+    setupTabHandlers();
+
+    // Обработка событий попапа
+    tg.onEvent('popupClosed', (button_id) => {
+        if (button_id && button_id.startsWith('start_workout_')) {
+            const [_, programId, day] = button_id.split('_').slice(2);
+            startWorkout(programId, parseInt(day));
+        }
+    });
+
+    // Обработка кнопок в интерфейсе тренировки
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('complete-btn')) {
+            completeWorkout();
+        } else if (e.target.classList.contains('pause-btn')) {
+            toggleWorkoutPause();
+        }
+    });
+
+    // Добавляем обработчики для чекбоксов
+    setupCheckboxHandlers();
 }
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded');
-    
-    // Проверяем, что данные загружены
-    if (typeof programData === 'undefined') {
-        console.error('Ошибка: данные программ не загружены');
+    if (!window.Telegram || !window.Telegram.WebApp) {
+        setTimeout(initApp, 100);
         return;
     }
-
-    console.log('Доступные программы:', Object.keys(programData));
-    
-    // Инициализация Telegram WebApp
-    console.log('Платформа:', tg.platform);
-    console.log('Инициализация WebApp:', tg.initData);
-
-    // Отображаем начальный интерфейс
-    showMainScreen();
-    
-    // Устанавливаем обработчики событий после отображения интерфейса
-    setupEventHandlers();
-    setupPopupHandlers();
-    
-    // Проверяем наличие элементов навигации
-    const tabs = document.querySelectorAll('.tab');
-    const navBtns = document.querySelectorAll('.nav-btn');
-    console.log('Found tabs:', tabs.length);
-    console.log('Found nav buttons:', navBtns.length);
+    initApp();
 });
 
 function initApp() {
@@ -401,7 +411,7 @@ function initApp() {
     console.log('Инициализация WebApp:', tg.initData);
     console.log('Доступные методы WebApp:', Object.keys(tg));
 
-    setupEventHandlers();
+    setupEventListeners();
     setupProgramHandlers();
     setupPopupHandlers();
     loadProfile();
@@ -450,6 +460,332 @@ async function startWorkout(workoutId) {
         console.error('Ошибка при запуске тренировки:', error);
         showError(error);
     }
+}
+
+// Данные о программах тренировок
+const programData = {
+    weight_loss: {
+        id: 'weight_loss',
+        title: 'Похудение',
+        description: 'Программа для снижения веса и улучшения метаболизма',
+        duration: '8 недель',
+        difficulty: 'medium',
+        category: 'weight_loss',
+        icon: 'monitor_weight',
+        schedule: '3-4 тренировки в неделю',
+        calories_per_week: '3500-4000 ккал',
+        results: [
+            'Снижение веса 0.5-1 кг в неделю',
+            'Улучшение выносливости',
+            'Ускорение метаболизма'
+        ],
+        workouts: [
+            {
+                day: 1,
+                type: 'cardio',
+                title: 'HIIT кардио',
+                duration: 30,
+                exercises: [/*...*/]
+            },
+            {
+                day: 2,
+                type: 'strength',
+                title: 'Круговая тренировка',
+                duration: 45,
+                exercises: [/*...*/]
+            },
+            {
+                day: 4,
+                type: 'cardio',
+                title: 'Интервальный бег',
+                duration: 40,
+                exercises: [/*...*/]
+            }
+        ]
+    },
+    beginner: {
+        id: 'beginner',
+        title: 'Для начинающих',
+        description: 'Базовая программа для знакомства с фитнесом',
+        duration: '4 недели',
+        difficulty: 'easy',
+        category: 'beginner',
+        icon: 'fitness_center',
+        schedule: '3 тренировки в неделю',
+        calories_per_week: '2000-2500 ккал',
+        results: [
+            'Освоение базовых упражнений',
+            'Развитие силы и выносливости',
+            'Формирование привычки к тренировкам'
+        ],
+        workouts: [
+            {
+                day: 1,
+                type: 'full_body',
+                title: 'Общая тренировка',
+                duration: 40,
+                exercises: [/*...*/]
+            },
+            {
+                day: 3,
+                type: 'cardio',
+                title: 'Кардио + растяжка',
+                duration: 30,
+                exercises: [/*...*/]
+            }
+        ]
+    },
+    muscle_gain: {
+        id: 'muscle_gain',
+        title: 'Набор мышечной массы',
+        description: 'Программа для увеличения мышечной массы и силы',
+        duration: '12 недель',
+        difficulty: 'hard',
+        category: 'muscle_gain',
+        icon: 'exercise',
+        schedule: '4-5 тренировок в неделю',
+        calories_per_week: '4000-4500 ккал',
+        results: [
+            'Увеличение мышечной массы',
+            'Рост силовых показателей',
+            'Улучшение рельефа тела'
+        ],
+        workouts: [
+            {
+                day: 1,
+                type: 'strength',
+                title: 'Грудь + Трицепс',
+                duration: 60,
+                exercises: [/*...*/]
+            },
+            {
+                day: 2,
+                type: 'strength',
+                title: 'Спина + Бицепс',
+                duration: 60,
+                exercises: [/*...*/]
+            }
+        ]
+    },
+    maintenance: {
+        id: 'maintenance',
+        title: 'Поддержание формы',
+        description: 'Программа для поддержания текущей формы и улучшения общего тонуса',
+        duration: '6 недель',
+        difficulty: 'medium',
+        category: 'maintenance',
+        icon: 'sports_gymnastics',
+        schedule: '3 тренировки в неделю',
+        calories_per_week: '2500-3000 ккал',
+        results: [
+            'Поддержание текущего веса',
+            'Улучшение мышечного тонуса',
+            'Повышение выносливости'
+        ],
+        workouts: [
+            {
+                day: 1,
+                type: 'full_body',
+                title: 'Общая тренировка',
+                duration: 45,
+                exercises: [
+                    {
+                        name: 'Приседания с собственным весом',
+                        sets: 3,
+                        reps: '15',
+                        rest: 60
+                    },
+                    {
+                        name: 'Отжимания',
+                        sets: 3,
+                        reps: '12',
+                        rest: 60
+                    },
+                    {
+                        name: 'Планка',
+                        sets: 3,
+                        reps: '45 сек',
+                        rest: 45
+                    },
+                    {
+                        name: 'Выпады',
+                        sets: 3,
+                        reps: '12 на ногу',
+                        rest: 60
+                    },
+                    {
+                        name: 'Берпи',
+                        sets: 3,
+                        reps: '10',
+                        rest: 60
+                    }
+                ]
+            },
+            {
+                day: 3,
+                type: 'cardio',
+                title: 'Кардио + Ядро',
+                duration: 40,
+                exercises: [
+                    {
+                        name: 'Прыжки на скакалке',
+                        sets: 3,
+                        reps: '2 мин',
+                        rest: 60
+                    },
+                    {
+                        name: 'Скручивания',
+                        sets: 3,
+                        reps: '20',
+                        rest: 45
+                    },
+                    {
+                        name: 'Бег на месте с высоким подниманием колен',
+                        sets: 3,
+                        reps: '1 мин',
+                        rest: 60
+                    },
+                    {
+                        name: 'Русские скручивания',
+                        sets: 3,
+                        reps: '15',
+                        rest: 45
+                    }
+                ]
+            },
+            {
+                day: 5,
+                type: 'strength',
+                title: 'Силовая тренировка',
+                duration: 50,
+                exercises: [
+                    {
+                        name: 'Приседания с прыжком',
+                        sets: 4,
+                        reps: '12',
+                        rest: 60
+                    },
+                    {
+                        name: 'Отжимания с широкой постановкой',
+                        sets: 4,
+                        reps: '10',
+                        rest: 60
+                    },
+                    {
+                        name: 'Подъемы корпуса',
+                        sets: 4,
+                        reps: '15',
+                        rest: 45
+                    },
+                    {
+                        name: 'Обратные отжимания от стула',
+                        sets: 4,
+                        reps: '12',
+                        rest: 60
+                    }
+                ]
+            }
+        ]
+    }
+};
+
+// Функция показа деталей тренировки
+function showWorkoutDetails(workoutId) {
+    const workout = workoutData[workoutId];
+    if (!workout) return;
+
+    let detailsHtml = `
+        <div class="workout-details-content">
+            <h3>${workout.title}</h3>
+            <p class="workout-description">${workout.description}</p>
+            
+            <div class="workout-info-grid">
+                <div class="info-item">
+                    <span class="material-symbols-rounded">schedule</span>
+                    <span>${workout.duration} мин</span>
+                </div>
+                <div class="info-item">
+                    <span class="material-symbols-rounded">local_fire_department</span>
+                    <span>${workout.calories} ккал</span>
+                </div>
+                <div class="info-item">
+                    <span class="material-symbols-rounded">fitness_center</span>
+                    <span>${workout.difficulty}</span>
+                </div>
+            </div>`;
+
+    if (workout.exercises) {
+        detailsHtml += `
+            <h4>Упражнения:</h4>
+            <div class="exercises-list">
+                ${workout.exercises.map(ex => `
+                    <div class="exercise-item">
+                        <h5>${ex.name}</h5>
+                        <p>${ex.sets} подхода × ${ex.reps} повторений</p>
+                        <p>Отдых: ${ex.rest} сек</p>
+                    </div>
+                `).join('')}
+            </div>`;
+    }
+
+    if (workout.intervals) {
+        detailsHtml += `
+            <h4>Интервалы:</h4>
+            <div class="intervals-list">
+                ${workout.intervals.map(int => `
+                    <div class="interval-item">
+                        <span>${int.type}</span>
+                        <span>${int.duration} мин - ${int.intensity}</span>
+                    </div>
+                `).join('')}
+            </div>`;
+    }
+
+    detailsHtml += `
+            <div class="workout-tips">
+                <h4>Советы:</h4>
+                <ul>
+                    ${workout.tips.map(tip => `<li>${tip}</li>`).join('')}
+                </ul>
+            </div>
+        </div>
+    `;
+
+    tg.showPopup({
+        title: 'Детали тренировки',
+        message: detailsHtml,
+        buttons: [
+            {type: 'default', text: 'Начать', id: `start_${workoutId}`},
+            {type: 'cancel', text: 'Закрыть'}
+        ]
+    });
+}
+
+// Обновим обработчики событий
+function setupWorkoutHandlers() {
+    document.querySelectorAll('.workout-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const workoutCard = button.closest('.workout-card');
+            const workoutTitle = workoutCard.querySelector('h3').textContent;
+            const workoutId = getWorkoutIdByTitle(workoutTitle);
+            
+            if (button.classList.contains('info-btn')) {
+                tg.HapticFeedback.impactOccurred('medium');
+                showWorkoutDetails(workoutId);
+            } else if (button.classList.contains('start-btn')) {
+                tg.HapticFeedback.impactOccurred('medium');
+                startWorkout(workoutId);
+            }
+        });
+    });
+}
+
+// Вспомогательная функция для получения ID тренировки по заголовку
+function getWorkoutIdByTitle(title) {
+    return Object.keys(workoutData).find(key => 
+        workoutData[key].title === title
+    );
 }
 
 // Функция показа деталей программы
@@ -598,15 +934,6 @@ async function startProgram(programId) {
     if (!program) return;
 
     try {
-        // Очищаем предыдущую статистику
-        await setStorageItem('workoutStats', JSON.stringify({
-            totalWorkouts: 0,
-            totalMinutes: 0,
-            totalCalories: 0,
-            workoutsByType: {},
-            completionRate: 0
-        }));
-
         // Создаем объект прогресса программы
         const programProgress = {
             programId: programId,
@@ -627,8 +954,7 @@ async function startProgram(programId) {
                 plannedDate: workoutDate.getTime(),
                 title: workout.title,
                 duration: workout.duration,
-                type: workout.type,
-                calories: workout.calories
+                type: workout.type
             });
         }
 
@@ -789,7 +1115,7 @@ function initApp() {
     console.log('Инициализация WebApp:', tg.initData);
     console.log('Доступные методы WebApp:', Object.keys(tg));
 
-    setupEventHandlers();
+    setupEventListeners();
     setupProgramHandlers();
     setupPopupHandlers();
     loadProfile();
@@ -1269,192 +1595,4 @@ function setupCalendarNavigation(workouts) {
             document.getElementById('calendar').innerHTML = calendar;
         });
     }
-}
-
-// Добавим функцию для очистки данных
-async function resetUserData() {
-    try {
-        await setStorageItem('activeProgram', null);
-        await setStorageItem('workoutStats', null);
-        location.reload(); // Перезагружаем страницу
-    } catch (error) {
-        console.error('Ошибка при сбросе данных:', error);
-    }
-}
-
-// В функцию renderProfile добавим кнопку сброса
-function renderProfile() {
-    const profileTab = document.getElementById('profile');
-    if (!profileTab) return;
-
-    // Получаем данные пользователя из Telegram WebApp
-    const user = tg.initDataUnsafe?.user || {};
-    
-    profileTab.innerHTML = `
-        <div class="profile-header">
-            <div class="profile-avatar">
-                <img src="${user.photo_url || 'https://via.placeholder.com/100'}" alt="Profile">
-            </div>
-            <div class="profile-info">
-                <h2>${user.first_name || 'Пользователь'}</h2>
-                <p>@${user.username || 'username'}</p>
-            </div>
-        </div>
-        
-        <div class="stats-section">
-            <h3>Статистика</h3>
-            <div id="statistics" class="stats-grid">
-                <!-- Статистика будет добавлена динамически -->
-            </div>
-        </div>
-
-        <div class="calendar-section">
-            <h3>Календарь тренировок</h3>
-            <div id="calendar">
-                <!-- Календарь будет добавлен динамически -->
-            </div>
-        </div>
-
-        <div class="settings-section">
-            <button class="danger-btn" onclick="resetUserData()">
-                Сбросить все данные
-            </button>
-        </div>
-    `;
-
-    // Обновляем статистику
-    getStorageItem('workoutStats')
-        .then(data => {
-            const stats = data ? JSON.parse(data) : null;
-            if (stats) {
-                updateStatisticsUI(stats);
-            }
-        })
-        .catch(console.error);
-
-    // Обновляем календарь
-    renderCalendar();
-}
-
-// Функция переключения вкладок
-function switchTab(tabId) {
-    console.log('Switching to tab:', tabId);
-    
-    // Скрываем все вкладки
-    const tabs = document.querySelectorAll('.tab');
-    console.log('Found tabs to hide:', tabs.length);
-    tabs.forEach(tab => {
-        tab.style.display = 'none';
-    });
-
-    // Убираем активный класс у всех кнопок навигации
-    const navBtns = document.querySelectorAll('.nav-btn');
-    console.log('Found nav buttons to update:', navBtns.length);
-    navBtns.forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    // Показываем выбранную вкладку
-    const selectedTab = document.getElementById(tabId);
-    if (selectedTab) {
-        console.log('Showing selected tab:', tabId);
-        selectedTab.style.display = 'block';
-    } else {
-        console.error('Tab not found:', tabId);
-    }
-
-    // Добавляем активный класс выбранной кнопке
-    const activeBtn = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
-    if (activeBtn) {
-        console.log('Setting active button for:', tabId);
-        activeBtn.classList.add('active');
-    } else {
-        console.error('Nav button not found for:', tabId);
-    }
-
-    // Дополнительная логика для разных вкладок
-    switch(tabId) {
-        case 'profile':
-            renderProfile();
-            break;
-        case 'programs':
-            // Уже отрендерено в showMainScreen
-            break;
-        case 'workouts':
-            renderWorkouts();
-            break;
-    }
-}
-
-// Функция для отображения тренировок
-function renderWorkouts() {
-    const workoutsTab = document.getElementById('workouts');
-    if (!workoutsTab) return;
-
-    // Получаем активную программу
-    getStorageItem('activeProgram')
-        .then(data => {
-            const programProgress = data ? JSON.parse(data) : null;
-            if (!programProgress) {
-                workoutsTab.innerHTML = `
-                    <div class="empty-state">
-                        <span class="material-symbols-rounded">fitness_center</span>
-                        <h3>Нет активных тренировок</h3>
-                        <p>Выберите программу тренировок, чтобы начать</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const program = programData[programProgress.programId];
-            if (!program) return;
-
-            // Отображаем запланированные тренировки
-            workoutsTab.innerHTML = `
-                <h2>Тренировки программы "${program.title}"</h2>
-                <div class="workouts-list">
-                    ${program.workouts.map(workout => `
-                        <div class="workout-card ${isWorkoutCompleted(workout.day, programProgress) ? 'completed' : ''}">
-                            <div class="workout-header">
-                                <h3>${workout.title}</h3>
-                                <span class="workout-duration">${workout.duration} мин</span>
-                            </div>
-                            <div class="workout-info">
-                                <span class="workout-type">${workout.type}</span>
-                                <span class="workout-calories">${workout.calories} ккал</span>
-                            </div>
-                            ${isWorkoutCompleted(workout.day, programProgress) ? `
-                                <div class="workout-completed">
-                                    <span class="material-symbols-rounded">check_circle</span>
-                                    Выполнено
-                                </div>
-                            ` : `
-                                <button class="start-workout-btn" data-workout="${workout.day}">
-                                    Начать тренировку
-                                </button>
-                            `}
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-
-            // Добавляем обработчики для кнопок начала тренировки
-            setupWorkoutButtons(programProgress.programId);
-        })
-        .catch(console.error);
-}
-
-// Вспомогательная функция для проверки выполнения тренировки
-function isWorkoutCompleted(day, progress) {
-    return progress.completedWorkouts.some(w => w.day === day);
-}
-
-// Функция настройки кнопок тренировок
-function setupWorkoutButtons(programId) {
-    document.querySelectorAll('.start-workout-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const workoutDay = parseInt(btn.dataset.workout);
-            startWorkoutSession(programId, workoutDay);
-        });
-    });
 } 
