@@ -1818,8 +1818,18 @@ function showProgramWorkouts(program) {
 function startWorkout(workout) {
     console.log('Начинаем тренировку:', workout); // Отладочный вывод
     
-    if (!workout || !workout.exercises || !workout.exercises.length) {
-        console.error('Некорректные данные тренировки:', workout);
+    if (!workout) {
+        console.error('Тренировка не определена');
+        return;
+    }
+
+    if (!workout.exercises) {
+        console.error('Упражнения не определены в тренировке:', workout);
+        return;
+    }
+
+    if (!Array.isArray(workout.exercises) || workout.exercises.length === 0) {
+        console.error('Массив упражнений пуст или не является массивом:', workout.exercises);
         return;
     }
 
