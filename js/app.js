@@ -284,6 +284,69 @@ function fillProfileForm(profile) {
     }
 }
 
+// Функция сохранения веса
+async function saveWeight(weight) {
+    try {
+        // Получаем текущую историю весов
+        const result = await getStorageItem('weightHistory');
+        let weightHistory = [];
+        
+        try {
+            weightHistory = result ? JSON.parse(result) : [];
+            if (!Array.isArray(weightHistory)) weightHistory = [];
+        } catch (e) {
+            console.warn('Ошибка парсинга истории весов:', e);
+        }
+
+        // Создаем новую запись
+        const newEntry = {
+            date: new Date().toISOString(),
+            weight: parseFloat(weight)
+        };
+
+        console.log('Сохраняем новую запись веса:', newEntry);
+
+        // Проверяем, есть ли уже запись за сегодня
+        const today = new Date().setHours(0, 0, 0, 0);
+        const existingTodayIndex = weightHistory.findIndex(entry => 
+            new Date(entry.date).setHours(0, 0, 0, 0) === today
+        );
+
+        if (existingTodayIndex !== -1) {
+            weightHistory[existingTodayIndex] = newEntry;
+        } else {
+            weightHistory.push(newEntry);
+        }
+
+        // Сортируем записи по дате
+        weightHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        console.log('Обновленная история весов:', weightHistory);
+
+        // Сохраняем обновленную историю
+        await setStorageItem('weightHistory', JSON.stringify(weightHistory));
+        
+        // Обновляем график
+        const data = await getWeightData(currentPeriod);
+        updateWeightChart(data);
+
+        // Показываем уведомление об успехе
+        tg.showPopup({
+            title: 'Вес сохранен',
+            message: 'Данные успешно обновлены',
+            buttons: [{type: 'ok'}]
+        });
+
+    } catch (error) {
+        console.error('Ошибка при сохранении веса:', error);
+        tg.showPopup({
+            title: 'Ошибка',
+            message: 'Не удалось сохранить вес',
+            buttons: [{type: 'ok'}]
+        });
+    }
+}
+
 // Получение данных о весе за выбранный период
 async function getWeightData(period = 'week') {
     try {
@@ -295,9 +358,10 @@ async function getWeightData(period = 'week') {
             if (!Array.isArray(weightHistory)) weightHistory = [];
         } catch (e) {
             console.warn('Ошибка парсинга истории весов:', e);
+            return [];
         }
 
-        console.log('Исходные данные веса:', weightHistory);
+        console.log('Полученные данные веса:', weightHistory);
 
         // Если данных нет, возвращаем пустой массив
         if (weightHistory.length === 0) {
@@ -305,30 +369,30 @@ async function getWeightData(period = 'week') {
         }
 
         const now = new Date();
-        let startDate;
+        now.setHours(23, 59, 59, 999); // Конец текущего дня
+        let startDate = new Date(now);
 
         switch (period) {
             case 'week':
-                startDate = new Date(now);
                 startDate.setDate(startDate.getDate() - 7);
                 break;
             case 'month':
-                startDate = new Date(now);
                 startDate.setMonth(startDate.getMonth() - 1);
                 break;
             case 'year':
-                startDate = new Date(now);
                 startDate.setFullYear(startDate.getFullYear() - 1);
                 break;
             default:
-                startDate = new Date(now);
                 startDate.setDate(startDate.getDate() - 7);
         }
 
-        startDate.setHours(0, 0, 0, 0);
+        startDate.setHours(0, 0, 0, 0); // Начало стартового дня
 
         const filteredData = weightHistory
-            .filter(entry => new Date(entry.date) >= startDate)
+            .filter(entry => {
+                const entryDate = new Date(entry.date);
+                return entryDate >= startDate && entryDate <= now;
+            })
             .sort((a, b) => new Date(a.date) - new Date(b.date));
 
         console.log('Отфильтрованные данные веса:', filteredData);
@@ -371,7 +435,7 @@ function updateWeightChart(data) {
     const values = data.map(entry => entry.weight);
     const minWeight = Math.min(...values);
     const maxWeight = Math.max(...values);
-    const padding = (maxWeight - minWeight) * 0.1;
+    const padding = Math.max((maxWeight - minWeight) * 0.1, 0.5);
 
     weightChart = new Chart(ctx, {
         type: 'line',
@@ -392,6 +456,13 @@ function updateWeightChart(data) {
             plugins: {
                 legend: {
                     display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.parsed.y.toFixed(1)} кг`;
+                        }
+                    }
                 }
             },
             scales: {
@@ -400,7 +471,8 @@ function updateWeightChart(data) {
                     min: Math.max(0, minWeight - padding),
                     max: maxWeight + padding,
                     ticks: {
-                        callback: value => `${value.toFixed(1)} кг`
+                        callback: value => `${value.toFixed(1)} кг`,
+                        stepSize: 0.5
                     }
                 },
                 x: {
@@ -1771,6 +1843,8 @@ async function saveWeight(weight) {
             weight: parseFloat(weight)
         };
 
+        console.log('Сохраняем новую запись веса:', newEntry);
+
         // Проверяем, есть ли уже запись за сегодня
         const today = new Date().setHours(0, 0, 0, 0);
         const existingTodayIndex = weightHistory.findIndex(entry => 
@@ -1783,7 +1857,10 @@ async function saveWeight(weight) {
             weightHistory.push(newEntry);
         }
 
-        console.log('Сохраняем историю весов:', weightHistory);
+        // Сортируем записи по дате
+        weightHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        console.log('Обновленная история весов:', weightHistory);
 
         // Сохраняем обновленную историю
         await setStorageItem('weightHistory', JSON.stringify(weightHistory));
