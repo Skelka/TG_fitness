@@ -977,6 +977,7 @@ input[type="number"]::-webkit-inner-spin-button {
     flex-direction: column;
     position: relative;
     overflow: hidden;
+    background: var(--tg-theme-bg-color);
 }
 
 .exercise-background {
@@ -984,15 +985,15 @@ input[type="number"]::-webkit-inner-spin-button {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 40vh; /* Уменьшаем высоту фона */
     z-index: 1;
+    background: var(--tg-theme-secondary-bg-color);
 }
 
 .exercise-background img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    filter: brightness(0.7); /* Затемняем фон для лучшей читаемости */
+    object-fit: contain; /* Меняем на contain для лучшего отображения SVG */
 }
 
 .workout-content {
@@ -1001,87 +1002,61 @@ input[type="number"]::-webkit-inner-spin-button {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 16px;
-    background: linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0.7) 0%,
-        rgba(0, 0, 0, 0.3) 30%,
-        rgba(0, 0, 0, 0.3) 70%,
-        rgba(0, 0, 0, 0.7) 100%
-    );
-    color: white;
+    padding: 12px;
 }
 
 .workout-header {
-    margin-bottom: 24px;
-}
-
-.workout-header h2,
-.exercise-display h3 {
-    color: white;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
 }
 
 .exercise-display {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 16px;
-    padding: 16px;
+    text-align: center;
+    margin-bottom: 12px;
 }
 
 .exercise-details {
-    background: rgba(0, 0, 0, 0.5);
-    padding: 12px 20px;
-    border-radius: 12px;
-    color: white;
-}
-
-.next-exercises {
-    background: rgba(0, 0, 0, 0.5);
-    margin: 0 -16px;
-    padding: 16px;
-}
-
-.next-exercise {
-    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 12px;
     padding: 8px;
+    background: var(--tg-theme-secondary-bg-color);
     border-radius: 8px;
 }
 
-.next-exercise span {
-    color: white;
+.next-exercises {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 8px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 8px;
+}
+
+.next-exercise {
+    text-align: center;
+    padding: 4px;
+}
+
+.next-exercise img {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 4px;
 }
 
 .exercise-controls {
-    margin-top: auto;
     display: flex;
-    gap: 16px;
+    gap: 8px;
+    padding: 8px;
 }
 
 .exercise-controls button {
     flex: 1;
-    padding: 16px;
-    border: none;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.prev-btn {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-}
-
-.complete-btn {
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
+    padding: 12px;
 }
 
 /* Стили для экрана отдыха */
