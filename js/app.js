@@ -1838,14 +1838,9 @@ function startWorkout(workout) {
 
         programsList.innerHTML = `
             <div class="workout-session">
-                <div class="workout-header">
-                    <button class="back-btn">
-                        <span class="material-symbols-rounded">close</span>
-                    </button>
-                    <h2>${workout.title}</h2>
-                    <div class="workout-progress">
-                        <span>${currentExerciseIndex + 1}/${workout.exercises.length}</span>
-                    </div>
+                <div class="exercise-background">
+                    <img src="${getExerciseAnimation(exercise.name)}" 
+                         alt="${exercise.name}">
                 </div>
                 ${isResting ? `
                     <div class="rest-screen">
@@ -1860,36 +1855,43 @@ function startWorkout(workout) {
                         </button>
                     </div>
                 ` : `
-                    <div class="exercise-display">
-                        <div class="exercise-gif">
-                            <img src="${getExerciseAnimation(exercise.name)}" 
-                                 alt="${exercise.name}">
+                    <div class="workout-content">
+                        <div class="workout-header">
+                            <button class="back-btn">
+                                <span class="material-symbols-rounded">close</span>
+                            </button>
+                            <h2>${workout.title}</h2>
+                            <div class="workout-progress">
+                                <span>${currentExerciseIndex + 1}/${workout.exercises.length}</span>
+                            </div>
                         </div>
-                        <h3>${exercise.name}</h3>
-                        <div class="exercise-details">
-                            <span>${exercise.sets} подхода × ${exercise.reps}</span>
-                            <span>Отдых: ${exercise.rest}с</span>
+                        <div class="exercise-display">
+                            <h3>${exercise.name}</h3>
+                            <div class="exercise-details">
+                                <span>${exercise.sets} подхода × ${exercise.reps}</span>
+                                <span>Отдых: ${exercise.rest}с</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="next-exercises">
-                        ${workout.exercises.slice(currentExerciseIndex + 1, currentExerciseIndex + 4)
-                            .map(nextExercise => `
-                                <div class="next-exercise">
-                                    <img src="${getExerciseAnimation(nextExercise.name)}" 
-                                         alt="${nextExercise.name}">
-                                    <span>${nextExercise.name}</span>
-                                </div>
-                            `).join('')}
-                    </div>
-                    <div class="exercise-controls">
-                        <button class="prev-btn" ${currentExerciseIndex === 0 ? 'disabled' : ''}>
-                            <span class="material-symbols-rounded">arrow_back</span>
-                            Назад
-                        </button>
-                        <button class="complete-btn">
-                            <span class="material-symbols-rounded">check</span>
-                            Завершить подход
-                        </button>
+                        <div class="next-exercises">
+                            ${workout.exercises.slice(currentExerciseIndex + 1, currentExerciseIndex + 4)
+                                .map(nextExercise => `
+                                    <div class="next-exercise">
+                                        <img src="${getExerciseAnimation(nextExercise.name)}" 
+                                             alt="${nextExercise.name}">
+                                        <span>${nextExercise.name}</span>
+                                    </div>
+                                `).join('')}
+                        </div>
+                        <div class="exercise-controls">
+                            <button class="prev-btn" ${currentExerciseIndex === 0 ? 'disabled' : ''}>
+                                <span class="material-symbols-rounded">arrow_back</span>
+                                Назад
+                            </button>
+                            <button class="complete-btn">
+                                <span class="material-symbols-rounded">check</span>
+                                Завершить подход
+                            </button>
+                        </div>
                     </div>
                 `}
             </div>

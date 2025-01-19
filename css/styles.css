@@ -972,290 +972,54 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .workout-session {
-    padding: 20px;
-}
-
-.workout-timer {
-    font-size: 48px;
-    text-align: center;
-    margin: 24px 0;
-}
-
-.workout-progress {
-    margin: 24px 0;
-}
-
-.workout-progress .progress-bar {
-    height: 4px;
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: 2px;
-    overflow: hidden;
-}
-
-.workout-progress .progress {
-    height: 100%;
-    background: var(--tg-theme-button-color);
-    transition: width 0.3s ease;
-}
-
-.exercises-list {
-    margin: 24px 0;
-}
-
-.exercise-item {
-    background: var(--tg-theme-secondary-bg-color);
-    padding: 16px;
-    border-radius: 12px;
-    margin: 8px 0;
-}
-
-.exercise-item.active {
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-}
-
-.workout-controls {
-    display: flex;
-    gap: 12px;
-    margin-top: 24px;
-}
-
-.workout-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.pause-btn {
-    background: var(--tg-theme-secondary-bg-color);
-    color: var(--tg-theme-text-color);
-}
-
-.complete-btn {
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-}
-
-.workout-btn:active {
-    opacity: 0.8;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    margin: 20px 0;
-}
-
-.stat-item {
-    background: var(--tg-theme-secondary-bg-color);
-    padding: 16px;
-    border-radius: 12px;
-    text-align: center;
-}
-
-.stat-value {
-    font-size: 24px;
-    font-weight: bold;
-    display: block;
-    margin-bottom: 4px;
-}
-
-.stat-label {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color);
-}
-
-.workout-types {
-    margin-top: 20px;
-}
-
-.workout-type {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px;
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: 8px;
-    margin-bottom: 8px;
-}
-
-.type-label {
-    color: var(--tg-theme-text-color);
-}
-
-.type-count {
-    font-weight: bold;
-}
-
-.weight-chart-container {
-    height: 150px;
-    margin: 10px 0;
-}
-
-#weightChart {
-    height: 150px !important;
-}
-
-.period-buttons {
-    margin-bottom: 10px;
-}
-
-.no-data {
-    text-align: center;
-    padding: 20px;
-    color: var(--tg-theme-hint-color);
-    font-style: italic;
-}
-
-.weight-section {
-    background: var(--tg-theme-bg-color);
-    padding: 20px;
-    border-radius: 12px;
-    margin-top: 20px;
-    box-shadow: var(--card-shadow);
-}
-
-.weight-section h3 {
-    margin: 0 0 16px 0;
-    font-size: 18px;
-}
-
-#weight-chart {
-    height: 200px !important;
-    width: 100% !important;
-}
-
-.period-selector {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-}
-
-.period-btn {
-    flex: 1;
-    padding: 8px;
-    border: 1px solid var(--tg-theme-button-color);
-    background: none;
-    color: var(--tg-theme-button-color);
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.period-btn.active {
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-}
-
-/* Стили для страницы программы */
-.program-workouts {
-    padding: 16px;
-}
-
-.program-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.back-btn {
-    background: none;
-    border: none;
-    padding: 8px;
-    cursor: pointer;
-    color: var(--tg-theme-text-color);
-}
-
-.program-days {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.workout-day {
-    background: var(--tg-theme-bg-color);
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: var(--card-shadow);
-}
-
-.workout-day.locked {
-    opacity: 0.7;
-}
-
-.day-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.day-number {
-    font-weight: 500;
-    color: var(--tg-theme-hint-color);
-}
-
-.day-status .material-symbols-rounded {
-    font-size: 20px;
-    color: var(--tg-theme-hint-color);
-}
-
-.day-info h3 {
-    margin: 0 0 8px 0;
-    font-size: 18px;
-}
-
-.workout-meta {
-    display: flex;
-    gap: 16px;
-    color: var(--tg-theme-hint-color);
-    font-size: 14px;
-}
-
-.workout-meta span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.start-workout-btn {
-    width: 100%;
-    margin-top: 16px;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-}
-
-/* Стили для страницы упражнения */
-.workout-session {
     height: 100vh;
     display: flex;
     flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.exercise-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.exercise-background img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.7); /* Затемняем фон для лучшей читаемости */
+}
+
+.workout-content {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     padding: 16px;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.7) 0%,
+        rgba(0, 0, 0, 0.3) 30%,
+        rgba(0, 0, 0, 0.3) 70%,
+        rgba(0, 0, 0, 0.7) 100%
+    );
+    color: white;
 }
 
 .workout-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     margin-bottom: 24px;
+}
+
+.workout-header h2,
+.exercise-display h3 {
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .exercise-display {
@@ -1263,98 +1027,75 @@ input[type="number"]::-webkit-inner-spin-button {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-end;
     gap: 16px;
-}
-
-.exercise-gif {
-    width: 100%;
-    max-width: 400px;
-    aspect-ratio: 1;
-    border-radius: 12px;
-    overflow: hidden;
-    background: var(--tg-theme-secondary-bg-color);
-}
-
-.exercise-gif img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    padding: 16px;
 }
 
 .exercise-details {
-    display: flex;
-    gap: 16px;
-    color: var(--tg-theme-hint-color);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 12px 20px;
+    border-radius: 12px;
+    color: white;
 }
 
 .next-exercises {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    padding: 16px 0;
-    margin: 16px -16px;
+    background: rgba(0, 0, 0, 0.5);
+    margin: 0 -16px;
     padding: 16px;
 }
 
 .next-exercise {
-    flex: 0 0 80px;
-    text-align: center;
-}
-
-.next-exercise img {
-    width: 80px;
-    height: 80px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px;
     border-radius: 8px;
-    margin-bottom: 8px;
-    object-fit: cover;
 }
 
 .next-exercise span {
-    font-size: 12px;
-    color: var(--tg-theme-hint-color);
+    color: white;
 }
 
 .exercise-controls {
+    margin-top: auto;
     display: flex;
     gap: 16px;
-    margin-top: 24px;
 }
 
 .exercise-controls button {
     flex: 1;
-    padding: 12px;
+    padding: 16px;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    font-size: 16px;
     cursor: pointer;
 }
 
 .prev-btn {
-    background: var(--tg-theme-secondary-bg-color);
-    color: var(--tg-theme-text-color);
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
 }
 
-.next-btn {
+.complete-btn {
     background: var(--tg-theme-button-color);
     color: var(--tg-theme-button-text-color);
 }
 
-.prev-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
 /* Стили для экрана отдыха */
 .rest-screen {
+    position: relative;
+    z-index: 2;
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 24px;
+    color: white;
+    background: rgba(0, 0, 0, 0.7);
 }
 
 .rest-icon {
@@ -1447,6 +1188,94 @@ input[type="number"]::-webkit-inner-spin-button {
     color: var(--tg-theme-button-text-color);
     display: flex;
     align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+/* Стили для страницы программы */
+.program-workouts {
+    padding: 16px;
+}
+
+.program-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--tg-theme-text-color);
+}
+
+.program-days {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.workout-day {
+    background: var(--tg-theme-bg-color);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: var(--card-shadow);
+}
+
+.workout-day.locked {
+    opacity: 0.7;
+}
+
+.day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.day-number {
+    font-weight: 500;
+    color: var(--tg-theme-hint-color);
+}
+
+.day-status .material-symbols-rounded {
+    font-size: 20px;
+    color: var(--tg-theme-hint-color);
+}
+
+.day-info h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+}
+
+.workout-meta {
+    display: flex;
+    gap: 16px;
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+}
+
+.workout-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.start-workout-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 8px;
     cursor: pointer;
 } 
