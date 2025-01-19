@@ -1802,7 +1802,7 @@ function showProgramWorkouts(program) {
 }
 
 // Функция для начала тренировки
-function startWorkout(workout) {
+async function startWorkout(workout) {
     if (!workout || !workout.exercises || !workout.exercises.length) {
         console.error('Некорректные данные тренировки:', workout);
         return;
@@ -1888,7 +1888,7 @@ function startWorkout(workout) {
 
         function goToNextExercise() {
             isResting = false;
-            if (currentExerciseIndex < workout.exercises.length - 1) {
+            if (currentExerciseIndex < adaptedWorkout.exercises.length - 1) {
                 currentExerciseIndex++;
                 renderExercise();
             } else {
@@ -1897,9 +1897,9 @@ function startWorkout(workout) {
         }
 
         function renderExercise() {
-            const exercise = workout.exercises[currentExerciseIndex];
+            const exercise = adaptedWorkout.exercises[currentExerciseIndex];
             isTimerMode = exercise.reps.toString().includes('сек') || 
-                          exercise.reps.toString().includes('мин');
+                         exercise.reps.toString().includes('мин');
             
             let initialValue = isTimerMode ? 
                 parseInt(exercise.reps) || 30 : 
@@ -1912,11 +1912,11 @@ function startWorkout(workout) {
                             <span class="material-symbols-rounded">arrow_back</span>
                         </button>
                         <div class="workout-title">
-                            <div>${workout.title}</div>
+                            <div>${adaptedWorkout.title}</div>
                             <div>${exercise.name}</div>
                         </div>
                         <div class="workout-progress">
-                            ${currentExerciseIndex + 1}/${workout.exercises.length}
+                            ${currentExerciseIndex + 1}/${adaptedWorkout.exercises.length}
                         </div>
                     </div>
 
@@ -1951,60 +1951,8 @@ function startWorkout(workout) {
             `;
 
             setupExerciseHandlers();
-
-            if (isTimerMode) {
-                const completeBtn = document.querySelector('.complete-btn');
-                completeBtn?.addEventListener('click', function() {
-                    if (this.textContent === 'Начать') {
-                        startTimer(initialValue);
-                        this.textContent = 'Пропустить';
-                    } else {
-                        clearInterval(timerInterval);
-                        showRestScreen();
-                    }
-                });
-            }
         }
 
-        function completeWorkout() {
-            // Показываем нижнюю навигацию
-            document.querySelector('.bottom-nav')?.classList.remove('hidden');
-
-            container.innerHTML = `
-                <div class="workout-complete">
-                    <div class="complete-icon">
-                        <span class="material-symbols-rounded">celebration</span>
-                    </div>
-                    <h2>Тренировка завершена!</h2>
-                    <div class="workout-stats">
-                        <div class="stat-item">
-                            <span class="stat-value">${workout.exercises.length}</span>
-                            <span class="stat-label">Упражнений</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value">${workout.duration}</span>
-                            <span class="stat-label">Минут</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value">${workout.calories}</span>
-                            <span class="stat-label">Ккал</span>
-                        </div>
-                    </div>
-                    <button class="finish-btn">
-                        <span class="material-symbols-rounded">home</span>
-                        Вернуться к программам
-                    </button>
-                </div>
-            `;
-
-            const finishBtn = container.querySelector('.finish-btn');
-            finishBtn?.addEventListener('click', () => {
-                renderProgramCards();
-                tg.HapticFeedback.impactOccurred('medium');
-            });
-        }
-
-        // Добавляем функцию setupExerciseHandlers
         function setupExerciseHandlers() {
             const backBtn = container.querySelector('.back-btn');
             const minusBtn = container.querySelector('.minus-btn');
@@ -2015,7 +1963,7 @@ function startWorkout(workout) {
                 if (timerInterval) clearInterval(timerInterval);
                 if (restInterval) clearInterval(restInterval);
                 document.querySelector('.bottom-nav')?.classList.remove('hidden');
-                showProgramWorkouts(workout);
+                showProgramWorkouts(adaptedWorkout);
             });
 
             minusBtn?.addEventListener('click', () => {
@@ -2028,12 +1976,14 @@ function startWorkout(workout) {
 
             if (!isTimerMode) {
                 completeBtn?.addEventListener('click', () => {
-                    showRestScreen();
+                    const exercise = adaptedWorkout.exercises[currentExerciseIndex];
+                    startRestTimer(exercise.rest);
                 });
             }
         }
 
         renderExercise();
+
     } catch (error) {
         console.error('Ошибка запуска тренировки:', error);
         showPopupSafe({
