@@ -186,36 +186,112 @@ function fillProfileForm(profile) {
     }
 }
 
-// Функция обновления графика веса
-function updateWeightChart(weightHistory, period = 'week') {
-    const canvas = document.getElementById('weightChart');
-    if (!canvas) return;
+// Функция для получения данных веса за период
+async function getWeightData(period) {
+    try {
+        const result = await getStorageItem('weightHistory');
+        const weightHistory = result ? JSON.parse(result) : [];
+        
+        const now = new Date();
+        let startDate;
+        
+        switch(period) {
+            case 'week':
+                // Получаем начало текущей недели (понедельник)
+                startDate = new Date(now);
+                startDate.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case 'month':
+                // Получаем первый день текущего месяца
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                break;
+            case 'year':
+                // Получаем первый день текущего года
+                startDate = new Date(now.getFullYear(), 0, 1);
+                break;
+            default:
+                startDate = new Date(0); // Все записи
+        }
 
-    // Подготавливаем данные в зависимости от периода
-    const now = new Date();
-    const filteredData = filterDataByPeriod(weightHistory, period);
-    const { labels, values } = prepareChartData(filteredData, period);
+        // Фильтруем и сортируем данные
+        return weightHistory
+            .filter(entry => new Date(entry.date) >= startDate)
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+    } catch (error) {
+        console.error('Ошибка при получении данных веса:', error);
+        return [];
+    }
+}
 
+// Функция для сохранения нового значения веса
+async function saveWeight(weight) {
+    try {
+        const result = await getStorageItem('weightHistory');
+        const weightHistory = result ? JSON.parse(result) : [];
+        
+        // Добавляем новую запись
+        const newEntry = {
+            date: new Date().toISOString(),
+            weight: parseFloat(weight)
+        };
+
+        // Проверяем, есть ли уже запись за сегодня
+        const today = new Date().setHours(0, 0, 0, 0);
+        const existingTodayIndex = weightHistory.findIndex(
+            entry => new Date(entry.date).setHours(0, 0, 0, 0) === today
+        );
+
+        if (existingTodayIndex !== -1) {
+            // Обновляем существующую запись
+            weightHistory[existingTodayIndex] = newEntry;
+        } else {
+            // Добавляем новую запись
+            weightHistory.push(newEntry);
+        }
+
+        // Сохраняем обновленную историю
+        await setStorageItem('weightHistory', JSON.stringify(weightHistory));
+        
+        // Обновляем график
+        updateWeightChart(await getWeightData(currentPeriod));
+    } catch (error) {
+        console.error('Ошибка при сохранении веса:', error);
+    }
+}
+
+// Функция обновления графика
+function updateWeightChart(data) {
+    const ctx = document.getElementById('weightChart').getContext('2d');
+    
     // Если график уже существует, уничтожаем его
-    if (weightChart) {
-        weightChart.destroy();
+    if (window.weightChart) {
+        window.weightChart.destroy();
     }
 
+    // Форматируем данные для графика
+    const chartData = {
+        labels: data.map(entry => {
+            const date = new Date(entry.date);
+            return date.toLocaleDateString('ru-RU', { 
+                day: '2-digit',
+                month: '2-digit'
+            });
+        }),
+        datasets: [{
+            label: 'Вес (кг)',
+            data: data.map(entry => entry.weight),
+            borderColor: '#40a7e3',
+            backgroundColor: 'rgba(64, 167, 227, 0.1)',
+            fill: true,
+            tension: 0.4
+        }]
+    };
+
     // Создаем новый график
-    weightChart = new Chart(canvas, {
+    window.weightChart = new Chart(ctx, {
         type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Вес (кг)',
-                data: values,
-                borderColor: getComputedStyle(document.documentElement)
-                    .getPropertyValue('--tg-theme-button-color').trim() || '#40a7e3',
-                backgroundColor: 'rgba(64, 167, 227, 0.1)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
+        data: chartData,
         options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -236,36 +312,19 @@ function updateWeightChart(weightHistory, period = 'week') {
     });
 }
 
-// Функция фильтрации данных по периоду
-function filterDataByPeriod(data, period) {
-    const now = new Date();
-    const periods = {
-        week: now.getTime() - 7 * 24 * 60 * 60 * 1000,
-        month: now.getTime() - 30 * 24 * 60 * 60 * 1000,
-        year: now.getTime() - 365 * 24 * 60 * 60 * 1000
-    };
-
-    return data.filter(record => record.date >= periods[period]);
-}
-
-// Функция подготовки данных для графика
-function prepareChartData(data, period) {
-    const labels = [];
-    const values = [];
-    const formats = {
-        week: { day: '2-digit', month: '2-digit' },
-        month: { day: '2-digit', month: '2-digit' },
-        year: { month: 'short' }
-    };
-
-    data.forEach(record => {
-        const date = new Date(record.date);
-        labels.push(date.toLocaleDateString('ru-RU', formats[period]));
-        values.push(record.weight);
+// Обработчики переключения периода
+document.querySelectorAll('.period-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        // Убираем активный класс у всех кнопок
+        document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+        // Добавляем активный класс нажатой кнопке
+        btn.classList.add('active');
+        
+        // Обновляем текущий период и график
+        currentPeriod = btn.dataset.period;
+        updateWeightChart(await getWeightData(currentPeriod));
     });
-
-    return { labels, values };
-}
+});
 
 // Обновляем обработчик переключения вкладок
 function setupTabHandlers() {
