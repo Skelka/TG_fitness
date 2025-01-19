@@ -1093,30 +1093,4 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .type-count {
     font-weight: bold;
-}
-
-.weight-section {
-    padding: 16px;
-    background: var(--tg-theme-bg-color);
-    border-radius: 12px;
-    margin-top: 16px;
-}
-
-.weight-chart {
-    width: 100%;
-    height: 200px;
-    margin: 16px 0;
-    position: relative;
-}
-
-.empty-chart {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: var(--tg-theme-hint-color);
-}
-
-.weight-form {
-    margin-top: 16px;
 } 
