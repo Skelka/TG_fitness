@@ -361,7 +361,8 @@ async function getWeightData(period = 'week') {
             return [];
         }
 
-        console.log('Полученные данные веса:', weightHistory);
+        // Добавим подробное логирование
+        console.log('Исходные данные веса:', JSON.stringify(weightHistory, null, 2));
 
         // Если данных нет, возвращаем пустой массив
         if (weightHistory.length === 0) {
@@ -369,10 +370,9 @@ async function getWeightData(period = 'week') {
         }
 
         const now = new Date();
-        now.setHours(23, 59, 59, 999); // Конец текущего дня
+        now.setHours(23, 59, 59, 999);
         let startDate = new Date(now);
 
-        // Определяем период
         switch (period) {
             case 'week':
                 startDate.setDate(startDate.getDate() - 7);
@@ -387,17 +387,25 @@ async function getWeightData(period = 'week') {
                 startDate.setDate(startDate.getDate() - 7);
         }
 
-        startDate.setHours(0, 0, 0, 0); // Начало стартового дня
+        startDate.setHours(0, 0, 0, 0);
 
-        // Фильтруем и сортируем данные
+        // Преобразуем и фильтруем данные
         const filteredData = weightHistory
+            .map(entry => ({
+                date: new Date(entry.date),
+                weight: parseFloat(entry.weight)
+            }))
             .filter(entry => {
-                const entryDate = new Date(entry.date);
-                return entryDate >= startDate && entryDate <= now;
+                return entry.date >= startDate && entry.date <= now &&
+                       !isNaN(entry.weight) && entry.weight > 0;
             })
-            .sort((a, b) => new Date(a.date) - new Date(b.date));
+            .sort((a, b) => a.date - b.date);
 
-        console.log('Отфильтрованные данные веса:', filteredData);
+        console.log('Период:', period);
+        console.log('Начальная дата:', startDate);
+        console.log('Конечная дата:', now);
+        console.log('Отфильтрованные данные:', JSON.stringify(filteredData, null, 2));
+
         return filteredData;
     } catch (error) {
         console.error('Ошибка при получении данных веса:', error);
@@ -424,21 +432,28 @@ function updateWeightChart(data) {
         return;
     }
 
-    console.log('Данные для графика:', data);
+    // Подробное логирование данных для графика
+    console.log('Подготовка данных для графика:');
+    data.forEach(entry => {
+        console.log(`Дата: ${entry.date.toLocaleDateString()}, Вес: ${entry.weight}`);
+    });
 
-    // Форматируем данные для графика
-    const labels = data.map(entry => {
-        const date = new Date(entry.date);
-        return date.toLocaleDateString('ru-RU', { 
+    const labels = data.map(entry => 
+        entry.date.toLocaleDateString('ru-RU', { 
             day: 'numeric', 
             month: 'short' 
-        });
-    });
+        })
+    );
 
     const values = data.map(entry => entry.weight);
     const minWeight = Math.min(...values);
     const maxWeight = Math.max(...values);
     const padding = Math.max((maxWeight - minWeight) * 0.1, 0.5);
+
+    console.log('Метки графика:', labels);
+    console.log('Значения веса:', values);
+    console.log('Мин. вес:', minWeight);
+    console.log('Макс. вес:', maxWeight);
 
     weightChart = new Chart(ctx, {
         type: 'line',
@@ -451,7 +466,7 @@ function updateWeightChart(data) {
                 backgroundColor: 'rgba(64, 167, 227, 0.1)',
                 tension: 0.4,
                 fill: true,
-                pointRadius: 4, // Добавляем точки
+                pointRadius: 4,
                 pointBackgroundColor: '#40a7e3',
                 pointBorderColor: '#ffffff',
                 pointBorderWidth: 2
@@ -1859,102 +1874,31 @@ function setupCalendarNavigation(workouts) {
     }
 }
 
-// Обновим функцию сохранения веса
-async function saveWeight(weight) {
+// Добавим функцию для тестового сохранения веса
+async function addTestWeight(weight) {
     try {
-        // Получаем текущую историю весов
-        const result = await getStorageItem('weightHistory');
-        let weightHistory = [];
-        
-        try {
-            weightHistory = result ? JSON.parse(result) : [];
-            if (!Array.isArray(weightHistory)) weightHistory = [];
-        } catch (e) {
-            console.warn('Ошибка парсинга истории весов:', e);
-        }
-
-        // Создаем новую запись
-        const newEntry = {
+        const entry = {
             date: new Date().toISOString(),
             weight: parseFloat(weight)
         };
 
-        console.log('Сохраняем новую запись веса:', newEntry);
-
-        // Проверяем, есть ли уже запись за сегодня
-        const today = new Date().setHours(0, 0, 0, 0);
-        const existingTodayIndex = weightHistory.findIndex(entry => 
-            new Date(entry.date).setHours(0, 0, 0, 0) === today
-        );
-
-        if (existingTodayIndex !== -1) {
-            weightHistory[existingTodayIndex] = newEntry;
-        } else {
-            weightHistory.push(newEntry);
+        const result = await getStorageItem('weightHistory');
+        let weightHistory = result ? JSON.parse(result) : [];
+        
+        if (!Array.isArray(weightHistory)) {
+            weightHistory = [];
         }
 
-        // Сортируем записи по дате
-        weightHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        console.log('Обновленная история весов:', weightHistory);
-
-        // Сохраняем обновленную историю
+        weightHistory.push(entry);
         await setStorageItem('weightHistory', JSON.stringify(weightHistory));
+        
+        console.log('Тестовый вес добавлен:', entry);
         
         // Обновляем график
         const data = await getWeightData(currentPeriod);
         updateWeightChart(data);
-
-        // Показываем уведомление об успехе
-        tg.showPopup({
-            title: 'Вес сохранен',
-            message: 'Данные успешно обновлены',
-            buttons: [{type: 'ok'}]
-        });
-
     } catch (error) {
-        console.error('Ошибка при сохранении веса:', error);
-        tg.showPopup({
-            title: 'Ошибка',
-            message: 'Не удалось сохранить вес',
-            buttons: [{type: 'ok'}]
-        });
-    }
-}
-
-// Обновим функцию очистки данных
-async function clearAllData() {
-    try {
-        // Очищаем все данные в CloudStorage и localStorage
-        const keys = ['weightHistory', 'activeProgram', 'profile'];
-        const emptyValues = {
-            weightHistory: '[]',
-            activeProgram: '{}',
-            profile: '{}'
-        };
-
-        // Очищаем данные последовательно
-        for (const key of keys) {
-            await setStorageItem(key, emptyValues[key]);
-            localStorage.removeItem(key);
-        }
-
-        // Показываем сообщение об успехе
-        await tg.showPopup({
-            title: 'Данные очищены',
-            message: 'Все данные успешно удалены',
-            buttons: [{type: 'ok'}]
-        });
-
-        // Перезагружаем страницу
-        location.reload();
-    } catch (error) {
-        console.error('Ошибка при очистке данных:', error);
-        tg.showPopup({
-            title: 'Ошибка',
-            message: 'Не удалось очистить данные',
-            buttons: [{type: 'ok'}]
-        });
+        console.error('Ошибка при добавлении тестового веса:', error);
     }
 }
 
