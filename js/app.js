@@ -287,31 +287,45 @@ function fillProfileForm(profile) {
 // Получение данных о весе за выбранный период
 async function getWeightData(period = 'week') {
     try {
-        let weightHistory = await addTestWeightData(); // Получаем данные, включая тестовые если нужно
+        const result = await getStorageItem('weightHistory');
+        let weightHistory = [];
         
-        if (!Array.isArray(weightHistory)) {
-            console.warn('Некорректные данные веса:', weightHistory);
-            return [];
+        try {
+            weightHistory = result ? JSON.parse(result) : [];
+            if (!Array.isArray(weightHistory)) weightHistory = [];
+        } catch (e) {
+            console.warn('Ошибка парсинга истории весов:', e);
         }
 
-        console.log('Полученные данные веса:', weightHistory);
+        console.log('Исходные данные веса:', weightHistory);
+
+        // Если данных нет, возвращаем пустой массив
+        if (weightHistory.length === 0) {
+            return [];
+        }
 
         const now = new Date();
         let startDate;
 
         switch (period) {
             case 'week':
-                startDate = new Date(now.setDate(now.getDate() - 7));
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - 7);
                 break;
             case 'month':
-                startDate = new Date(now.setMonth(now.getMonth() - 1));
+                startDate = new Date(now);
+                startDate.setMonth(startDate.getMonth() - 1);
                 break;
             case 'year':
-                startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+                startDate = new Date(now);
+                startDate.setFullYear(startDate.getFullYear() - 1);
                 break;
             default:
-                startDate = new Date(now.setDate(now.getDate() - 7));
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - 7);
         }
+
+        startDate.setHours(0, 0, 0, 0);
 
         const filteredData = weightHistory
             .filter(entry => new Date(entry.date) >= startDate)
@@ -355,6 +369,9 @@ function updateWeightChart(data) {
     });
 
     const values = data.map(entry => entry.weight);
+    const minWeight = Math.min(...values);
+    const maxWeight = Math.max(...values);
+    const padding = (maxWeight - minWeight) * 0.1;
 
     weightChart = new Chart(ctx, {
         type: 'line',
@@ -380,10 +397,10 @@ function updateWeightChart(data) {
             scales: {
                 y: {
                     beginAtZero: false,
-                    min: Math.min(...values) - 1,
-                    max: Math.max(...values) + 1,
+                    min: Math.max(0, minWeight - padding),
+                    max: maxWeight + padding,
                     ticks: {
-                        callback: value => `${value} кг`
+                        callback: value => `${value.toFixed(1)} кг`
                     }
                 },
                 x: {
@@ -1756,8 +1773,8 @@ async function saveWeight(weight) {
 
         // Проверяем, есть ли уже запись за сегодня
         const today = new Date().setHours(0, 0, 0, 0);
-        const existingTodayIndex = weightHistory.findIndex(
-            entry => new Date(entry.date).setHours(0, 0, 0, 0) === today
+        const existingTodayIndex = weightHistory.findIndex(entry => 
+            new Date(entry.date).setHours(0, 0, 0, 0) === today
         );
 
         if (existingTodayIndex !== -1) {
