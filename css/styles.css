@@ -363,94 +363,46 @@ input:focus, select:focus {
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 16px;
     margin: 20px 0;
 }
 
 .stat-mini-card {
     background: var(--tg-theme-bg-color);
-    padding: 16px;
+    padding: 12px;
     border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    border: var(--card-border);
     display: flex;
     align-items: center;
     gap: 12px;
-    box-shadow: var(--card-shadow);
-    border: var(--card-border);
 }
 
-.stat-icon {
+.stat-mini-card .stat-icon {
     width: 40px;
     height: 40px;
+    border-radius: 12px;
+    background: var(--tg-theme-button-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--tg-theme-button-color);
-    border-radius: 12px;
-    color: var(--tg-theme-button-text-color);
+    flex-shrink: 0;
 }
 
-.stat-icon .material-symbols-rounded {
-    font-size: 24px;
+.stat-mini-card .stat-content {
+    flex: 1;
 }
 
-.stat-content {
-    flex-grow: 1;
-}
-
-.stat-value {
+.stat-mini-card .stat-value {
     font-size: 20px;
-    font-weight: bold;
-    display: block;
+    font-weight: 600;
     margin-bottom: 2px;
-    color: var(--tg-theme-text-color);
 }
 
-.stat-label {
+.stat-mini-card .stat-label {
     font-size: 12px;
     color: var(--tg-theme-hint-color);
     line-height: 1.2;
-}
-
-/* График статистики */
-.stats-chart {
-    background: var(--tg-theme-bg-color);
-    padding: 20px;
-    border-radius: 16px;
-    margin: 20px 0;
-    box-shadow: var(--card-shadow);
-    border: var(--card-border);
-}
-
-.chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-.chart-title {
-    font-size: 16px;
-    font-weight: 500;
-}
-
-.chart-period {
-    display: flex;
-    gap: 8px;
-}
-
-.period-btn {
-    padding: 4px 12px;
-    border-radius: 12px;
-    border: none;
-    background: var(--tg-theme-secondary-bg-color);
-    color: var(--tg-theme-hint-color);
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.period-btn.active {
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
 }
 
 /* Стили для календаря */
