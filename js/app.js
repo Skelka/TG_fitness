@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadActiveProgram();
 
         // Инициализируем страницу статистики
-        await updateStatistics();
+        await initStatisticsPage();
         
         // Загружаем и отображаем данные веса
         const weightData = await getWeightData('week');
@@ -547,14 +547,12 @@ function setupPeriodButtons() {
     document.querySelectorAll('.period-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
             try {
-                // Обновляем активную кнопку
                 document.querySelectorAll('.period-btn').forEach(b => 
                     b.classList.remove('active'));
                 btn.classList.add('active');
                 
-                // Обновляем график
-                window.currentPeriod = btn.dataset.period;
-                const data = await getWeightData(window.currentPeriod);
+                currentPeriod = btn.dataset.period;
+                const data = await getWeightData(currentPeriod);
                 if (data && data.length > 0) {
                     updateWeightChart(data);
                 }
@@ -882,7 +880,7 @@ async function startProgram(programId) {
         await setStorageItem('activeProgram', JSON.stringify(programProgress));
 
         // Обновляем статистику
-        updateStatistics(programProgress);
+        await updateStatistics(programProgress);
 
         // Обновляем календарь
         renderCalendar();
@@ -907,80 +905,118 @@ async function startProgram(programId) {
 // Функция обновления статистики
 async function updateStatistics() {
     try {
-        // Получаем активную программу
-        const programData = await getStorageItem('activeProgram');
-        const program = programData ? JSON.parse(programData) : null;
+        // Получаем все необходимые данные
+        const [weightHistoryStr, activeProgramStr] = await Promise.all([
+            getStorageItem('weightHistory'),
+            getStorageItem('activeProgram')
+        ]);
 
-        // Инициализируем статистику нулевыми значениями
-        const stats = {
-            plannedWorkouts: 0,
-            totalCalories: 0,
-            totalMinutes: 0,
-            completionRate: 0
+        const weightHistory = weightHistoryStr ? JSON.parse(weightHistoryStr) : [];
+        const activeProgram = activeProgramStr ? JSON.parse(activeProgramStr) : null;
+
+        // Статистика веса
+        let weightStats = {
+            current: 0,
+            start: 0,
+            change: 0
         };
 
-        // Обновляем количество запланированных тренировок
-        if (program && program.plannedWorkouts) {
-            stats.plannedWorkouts = program.plannedWorkouts.length;
+        if (weightHistory.length > 0) {
+            weightStats.current = weightHistory[weightHistory.length - 1].weight;
+            weightStats.start = weightHistory[0].weight;
+            weightStats.change = weightStats.current - weightStats.start;
+        }
+
+        // Статистика тренировок
+        let workoutStats = {
+            total: 0,
+            thisWeek: 0,
+            streak: 0,
+            lastWorkout: null
+        };
+
+        if (activeProgram?.completedWorkouts) {
+            const now = new Date();
+            const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
+            weekStart.setHours(0, 0, 0, 0);
+
+            workoutStats.total = activeProgram.completedWorkouts.length;
+            workoutStats.thisWeek = activeProgram.completedWorkouts.filter(w => 
+                new Date(w.completedAt) >= weekStart
+            ).length;
+
+            // Вычисляем серию тренировок
+            if (workoutStats.total > 0) {
+                const sortedWorkouts = [...activeProgram.completedWorkouts]
+                    .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+                
+                workoutStats.lastWorkout = new Date(sortedWorkouts[0].completedAt);
+                
+                let streak = 0;
+                let currentDate = new Date();
+                currentDate.setHours(0, 0, 0, 0);
+
+                for (let i = 0; i < sortedWorkouts.length; i++) {
+                    const workoutDate = new Date(sortedWorkouts[i].completedAt);
+                    workoutDate.setHours(0, 0, 0, 0);
+
+                    if (i === 0 || 
+                        (currentDate.getTime() - workoutDate.getTime()) <= 86400000) {
+                        streak++;
+                        currentDate = workoutDate;
+                    } else {
+                        break;
+                    }
+                }
+                workoutStats.streak = streak;
+            }
         }
 
         // Обновляем UI
-        const statsContainer = document.getElementById('statistics');
-        if (statsContainer) {
-            statsContainer.innerHTML = `
-                <div class="stats-grid">
-                    <div class="stat-mini-card">
-                        <div class="stat-icon">
-                            <span class="material-symbols-rounded">calendar_month</span>
-                        </div>
-                        <div class="stat-content">
-                            <span class="stat-value">${stats.plannedWorkouts}</span>
-                            <span class="stat-label">Тренировок в месяце</span>
-                        </div>
-                    </div>
-                    <div class="stat-mini-card">
-                        <div class="stat-icon">
-                            <span class="material-symbols-rounded">local_fire_department</span>
-                        </div>
-                        <div class="stat-content">
-                            <span class="stat-value">${stats.totalCalories}</span>
-                            <span class="stat-label">Ккал сожжено</span>
-                        </div>
-                    </div>
-                    <div class="stat-mini-card">
-                        <div class="stat-icon">
-                            <span class="material-symbols-rounded">timer</span>
-                        </div>
-                        <div class="stat-content">
-                            <span class="stat-value">${formatDuration(stats.totalMinutes)}</span>
-                            <span class="stat-label">Общее время</span>
-                        </div>
-                    </div>
-                    <div class="stat-mini-card">
-                        <div class="stat-icon">
-                            <span class="material-symbols-rounded">trending_up</span>
-                        </div>
-                        <div class="stat-content">
-                            <span class="stat-value">${stats.completionRate}%</span>
-                            <span class="stat-label">Достижение цели</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+        updateStatisticsUI(weightStats, workoutStats);
+
     } catch (error) {
         console.error('Ошибка при обновлении статистики:', error);
     }
 }
 
-// Добавляем функцию форматирования времени
-function formatDuration(minutes) {
-    if (minutes < 60) {
-        return `${minutes}м`;
+// Функция обновления UI статистики
+function updateStatisticsUI(weightStats, workoutStats) {
+    // Обновляем статистику веса
+    const weightChangeEl = document.getElementById('weight-change');
+    if (weightChangeEl) {
+        const changeText = weightStats.change > 0 
+            ? `+${weightStats.change.toFixed(1)}` 
+            : weightStats.change.toFixed(1);
+        weightChangeEl.textContent = weightStats.current ? `${changeText} кг` : 'Нет данных';
+        weightChangeEl.className = weightStats.change > 0 ? 'increase' : 'decrease';
     }
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return `${hours}ч ${remainingMinutes}м`;
+
+    // Обновляем статистику тренировок
+    const workoutElements = {
+        'total-workouts': workoutStats.total || 0,
+        'week-workouts': workoutStats.thisWeek || 0,
+        'workout-streak': workoutStats.streak || 0
+    };
+
+    Object.entries(workoutElements).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    });
+
+    // Обновляем дату последней тренировки
+    const lastWorkoutEl = document.getElementById('last-workout');
+    if (lastWorkoutEl) {
+        lastWorkoutEl.textContent = workoutStats.lastWorkout 
+            ? formatDate(workoutStats.lastWorkout)
+            : 'Нет данных';
+    }
+}
+
+// Вспомогательная функция форматирования даты
+function formatDate(date) {
+    const options = { day: 'numeric', month: 'long' };
+    return new Date(date).toLocaleDateString('ru-RU', options);
 }
 
 // Добавим функцию для загрузки активной программы при инициализации
@@ -1555,33 +1591,24 @@ async function initStatisticsPage() {
             return;
         }
 
-        // Обновляем статистику
+        // Сначала обновляем статистику
         await updateStatistics();
 
-        // Инициализируем график веса
+        // Затем инициализируем график веса
         const weightData = await getWeightData(currentPeriod);
         if (weightData && weightData.length > 0) {
             updateWeightChart(weightData);
+        } else {
+            // Показываем сообщение об отсутствии данных
+            const chartContainer = document.getElementById('weight-chart');
+            if (chartContainer) {
+                chartContainer.innerHTML = '<div class="no-data">Нет данных о весе</div>';
+            }
         }
 
         // Добавляем обработчики для кнопок периода
-        document.querySelectorAll('.period-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                try {
-                    document.querySelectorAll('.period-btn').forEach(b => 
-                        b.classList.remove('active'));
-                    btn.classList.add('active');
-                    
-                    currentPeriod = btn.dataset.period;
-                    const data = await getWeightData(currentPeriod);
-                    if (data && data.length > 0) {
-                        updateWeightChart(data);
-                    }
-                } catch (error) {
-                    console.error('Ошибка при обновлении графика:', error);
-                }
-            });
-        });
+        setupPeriodButtons();
+
     } catch (error) {
         console.error('Ошибка при инициализации страницы статистики:', error);
     }
