@@ -152,15 +152,15 @@
             </div>
         </div>
 
-        <div class="tab-content" id="stats">
+        <div id="stats" class="tab-content">
             <div class="stats-grid">
                 <div class="stat-mini-card">
                     <div class="stat-icon">
-                        <span class="material-symbols-rounded">calendar_month</span>
+                        <span class="material-symbols-rounded">fitness_center</span>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-value">12</div>
-                        <div class="stat-label">Тренировок в месяце</div>
+                        <span class="stat-value" id="total-workouts">0</span>
+                        <span class="stat-label">Тренировок</span>
                     </div>
                 </div>
                 <div class="stat-mini-card">
@@ -168,8 +168,8 @@
                         <span class="material-symbols-rounded">local_fire_department</span>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-value">4,800</div>
-                        <div class="stat-label">Ккал сожжено</div>
+                        <span class="stat-value" id="total-calories">0</span>
+                        <span class="stat-label">Ккал сожжено</span>
                     </div>
                 </div>
                 <div class="stat-mini-card">
@@ -177,8 +177,8 @@
                         <span class="material-symbols-rounded">timer</span>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-value">8ч 30м</div>
-                        <div class="stat-label">Общее время</div>
+                        <span class="stat-value" id="total-time">0м</span>
+                        <span class="stat-label">Общее время</span>
                     </div>
                 </div>
                 <div class="stat-mini-card">
@@ -186,22 +186,20 @@
                         <span class="material-symbols-rounded">trending_up</span>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-value">85%</div>
-                        <div class="stat-label">Достижение цели</div>
+                        <span class="stat-value" id="completion-rate">0%</span>
+                        <span class="stat-label">Достижение цели</span>
                     </div>
                 </div>
             </div>
-            
-            <div class="stat-card">
-                <h3>Вес</h3>
+
+            <div class="weight-section">
+                <h3>Динамика веса</h3>
                 <div class="period-selector">
                     <button class="period-btn active" data-period="week">Неделя</button>
                     <button class="period-btn" data-period="month">Месяц</button>
                     <button class="period-btn" data-period="year">Год</button>
                 </div>
-                <div class="chart-container">
-                    <canvas id="weightChart"></canvas>
-                </div>
+                <canvas id="weight-chart"></canvas>
             </div>
         </div>
 
