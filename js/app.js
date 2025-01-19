@@ -1944,6 +1944,10 @@ function renderProgramCards() {
 
     // Создаем карточки для каждой программы
     Object.values(window.programData).forEach(program => {
+        const workoutsCount = program.workouts?.length || 0;
+        const schedule = program.schedule || `${workoutsCount} тр/нед`;
+        const difficulty = program.difficulty || program.intensity || 'medium';
+
         const card = document.createElement('div');
         card.className = 'program-card';
         card.dataset.program = program.id;
@@ -1962,11 +1966,11 @@ function renderProgramCards() {
                     <div class="program-details">
                         <span>
                             <span class="material-symbols-rounded">calendar_month</span>
-                            ${program.schedule}
+                            ${schedule}
                         </span>
                         <span>
                             <span class="material-symbols-rounded">fitness_center</span>
-                            ${getDifficultyText(program.difficulty)}
+                            ${getDifficultyText(difficulty)}
                         </span>
                     </div>
                 </div>
@@ -1975,7 +1979,7 @@ function renderProgramCards() {
                 <div class="progress-bar">
                     <div class="progress" style="width: 0%"></div>
                 </div>
-                <span class="progress-text">0/${program.workouts?.length || 0} тренировок</span>
+                <span class="progress-text">0/${workoutsCount} тренировок</span>
             </div>
             <div class="program-actions">
                 <button class="program-btn info-btn">
@@ -1989,12 +1993,146 @@ function renderProgramCards() {
             </div>
         `;
 
-        // Добавляем карточку в список
+        // Добавляем обработчики для кнопок
+        const startBtn = card.querySelector('.start-btn');
+        const infoBtn = card.querySelector('.info-btn');
+
+        startBtn.addEventListener('click', () => {
+            showProgramWorkouts(program);
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+
+        infoBtn.addEventListener('click', () => {
+            showProgramDetails(program);
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+
         programsList.appendChild(card);
     });
+}
 
-    // Обновляем обработчики событий
-    setupProgramHandlers();
+// Функция для отображения тренировок программы
+function showProgramWorkouts(program) {
+    const programsList = document.querySelector('.programs-list');
+    programsList.innerHTML = `
+        <div class="program-workouts">
+            <div class="program-header">
+                <button class="back-btn">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                <h2>${program.title}</h2>
+            </div>
+            <div class="program-days">
+                ${program.workouts.map((workout, index) => `
+                    <div class="workout-day ${index === 0 ? 'active' : 'locked'}">
+                        <div class="day-header">
+                            <span class="day-number">День ${workout.day}</span>
+                            <span class="day-status">
+                                ${index === 0 ? 
+                                    '<span class="material-symbols-rounded">lock_open</span>' : 
+                                    '<span class="material-symbols-rounded">lock</span>'}
+                            </span>
+                        </div>
+                        <div class="day-info">
+                            <h3>${workout.title}</h3>
+                            <div class="workout-meta">
+                                <span>
+                                    <span class="material-symbols-rounded">timer</span>
+                                    ${workout.duration} мин
+                                </span>
+                                <span>
+                                    <span class="material-symbols-rounded">local_fire_department</span>
+                                    ${workout.calories} ккал
+                                </span>
+                            </div>
+                        </div>
+                        ${index === 0 ? `
+                            <button class="start-workout-btn">
+                                <span class="material-symbols-rounded">play_arrow</span>
+                                Начать тренировку
+                            </button>
+                        ` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+
+    // Добавляем обработчики
+    const backBtn = programsList.querySelector('.back-btn');
+    backBtn.addEventListener('click', () => {
+        renderProgramCards();
+        tg.HapticFeedback.impactOccurred('medium');
+    });
+
+    const startWorkoutBtn = programsList.querySelector('.start-workout-btn');
+    if (startWorkoutBtn) {
+        startWorkoutBtn.addEventListener('click', () => {
+            startWorkout(program.workouts[0]);
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+    }
+}
+
+// Функция для начала тренировки
+function startWorkout(workout) {
+    const programsList = document.querySelector('.programs-list');
+    let currentExerciseIndex = 0;
+
+    function renderExercise() {
+        const exercise = workout.exercises[currentExerciseIndex];
+        programsList.innerHTML = `
+            <div class="workout-session">
+                <div class="workout-header">
+                    <button class="back-btn">
+                        <span class="material-symbols-rounded">close</span>
+                    </button>
+                    <h2>${workout.title}</h2>
+                    <div class="workout-progress">
+                        <span>${currentExerciseIndex + 1}/${workout.exercises.length}</span>
+                    </div>
+                </div>
+                <div class="exercise-display">
+                    <div class="exercise-gif">
+                        <img src="gifs/${exercise.name.toLowerCase().replace(/\s+/g, '_')}.gif" 
+                             alt="${exercise.name}"
+                             onerror="this.src='images/exercise_placeholder.jpg'">
+                    </div>
+                    <h3>${exercise.name}</h3>
+                    <div class="exercise-details">
+                        <span>${exercise.sets} подхода × ${exercise.reps}</span>
+                        <span>Отдых: ${exercise.rest}с</span>
+                    </div>
+                </div>
+                <div class="next-exercises">
+                    ${workout.exercises.slice(currentExerciseIndex + 1, currentExerciseIndex + 4)
+                        .map(nextExercise => `
+                            <div class="next-exercise">
+                                <img src="gifs/${nextExercise.name.toLowerCase().replace(/\s+/g, '_')}_mini.gif" 
+                                     alt="${nextExercise.name}"
+                                     onerror="this.src='images/exercise_placeholder_mini.jpg'">
+                                <span>${nextExercise.name}</span>
+                            </div>
+                        `).join('')}
+                </div>
+                <div class="exercise-controls">
+                    <button class="prev-btn" ${currentExerciseIndex === 0 ? 'disabled' : ''}>
+                        <span class="material-symbols-rounded">arrow_back</span>
+                        Назад
+                    </button>
+                    <button class="next-btn">
+                        ${currentExerciseIndex === workout.exercises.length - 1 ? 'Завершить' : 'Далее'}
+                        <span class="material-symbols-rounded">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Добавляем обработчики
+        setupExerciseHandlers();
+    }
+
+    renderExercise();
 }
 
 // Вспомогательная функция для получения текста сложности
