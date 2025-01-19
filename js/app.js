@@ -347,27 +347,7 @@ async function saveWeight(weight) {
     }
 }
 
-// Функция очистки данных веса
-async function clearWeightData() {
-    try {
-        await setStorageItem('weightHistory', '[]');
-        console.log('Данные веса очищены');
-        
-        // Обновляем график
-        const chartContainer = document.getElementById('weight-chart');
-        if (chartContainer) {
-            // Если график существует, уничтожаем его
-            if (weightChart instanceof Chart) {
-                weightChart.destroy();
-            }
-            chartContainer.innerHTML = '<div class="no-data">Нет данных о весе. Добавьте свой первый замер для отображения графика.</div>';
-        }
-    } catch (error) {
-        console.error('Ошибка при очистке данных веса:', error);
-    }
-}
-
-// Обновляем функцию получения данных веса
+// Получение данных о весе за выбранный период
 async function getWeightData(period = 'week') {
     try {
         const result = await getStorageItem('weightHistory');
@@ -381,13 +361,15 @@ async function getWeightData(period = 'week') {
             return [];
         }
 
+        console.log('Полученные данные веса:', weightHistory);
+
         // Если данных нет, возвращаем пустой массив
         if (weightHistory.length === 0) {
             return [];
         }
 
         const now = new Date();
-        now.setHours(23, 59, 59, 999);
+        now.setHours(23, 59, 59, 999); // Конец текущего дня
         let startDate = new Date(now);
 
         switch (period) {
@@ -404,36 +386,43 @@ async function getWeightData(period = 'week') {
                 startDate.setDate(startDate.getDate() - 7);
         }
 
-        startDate.setHours(0, 0, 0, 0);
+        startDate.setHours(0, 0, 0, 0); // Начало стартового дня
 
-        return weightHistory
-            .map(entry => ({
-                date: new Date(entry.date),
-                weight: parseFloat(entry.weight)
-            }))
-            .filter(entry => 
-                entry.date >= startDate && 
-                entry.date <= now &&
-                !isNaN(entry.weight) && 
-                entry.weight > 0
-            )
-            .sort((a, b) => a.date - b.date);
+        const filteredData = weightHistory
+            .filter(entry => {
+                const entryDate = new Date(entry.date);
+                return entryDate >= startDate && entryDate <= now;
+            })
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
 
+        console.log('Отфильтрованные данные веса:', filteredData);
+        return filteredData;
     } catch (error) {
         console.error('Ошибка при получении данных веса:', error);
         return [];
     }
 }
 
-// Обновляем функцию отображения графика
+// Обновление графика веса
 function updateWeightChart(data) {
     const ctx = document.getElementById('weight-chart');
-    if (!ctx) return;
-    
-    if (!data || data.length === 0) {
-        ctx.innerHTML = '<div class="no-data">Нет данных о весе. Добавьте свой первый замер в профиле.</div>';
+    if (!ctx) {
+        console.error('Элемент графика не найден');
         return;
     }
+
+    // Если график уже существует, уничтожаем его
+    if (weightChart instanceof Chart) {
+        weightChart.destroy();
+    }
+
+    if (!data || data.length === 0) {
+        console.warn('Нет данных для отображения графика');
+        ctx.innerHTML = '<div class="no-data">Нет данных о весе</div>';
+        return;
+    }
+
+    console.log('Данные для графика:', data);
 
     const labels = data.map(entry => {
         const date = new Date(entry.date);
@@ -448,24 +437,17 @@ function updateWeightChart(data) {
     const maxWeight = Math.max(...values);
     const padding = Math.max((maxWeight - minWeight) * 0.1, 0.5);
 
-    // Если график уже существует, уничтожаем его
-    if (weightChart instanceof Chart) {
-        weightChart.destroy();
-    }
-
     weightChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Вес',
+                label: 'Вес (кг)',
                 data: values,
-                borderColor: '#3498db',
-                backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                fill: true,
+                borderColor: '#40a7e3',
+                backgroundColor: 'rgba(64, 167, 227, 0.1)',
                 tension: 0.4,
-                pointRadius: 4,
-                pointHoverRadius: 6
+                fill: true
             }]
         },
         options: {
@@ -476,36 +458,33 @@ function updateWeightChart(data) {
                     display: false
                 },
                 tooltip: {
-                    mode: 'index',
-                    intersect: false,
                     callbacks: {
                         label: function(context) {
-                            return `Вес: ${context.raw} кг`;
+                            return `${context.parsed.y.toFixed(1)} кг`;
                         }
                     }
                 }
             },
             scales: {
                 y: {
+                    beginAtZero: false,
                     min: Math.max(0, minWeight - padding),
                     max: maxWeight + padding,
                     ticks: {
+                        callback: value => `${value.toFixed(1)} кг`,
                         stepSize: 0.5
                     }
                 },
                 x: {
-                    ticks: {
-                        maxRotation: 45,
-                        minRotation: 45
+                    grid: {
+                        display: false
                     }
                 }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index'
             }
         }
     });
+
+    console.log('График веса обновлен');
 }
 
 // Настройка кнопок периода
@@ -795,6 +774,277 @@ function setupWorkoutHandlers() {
             }
         });
     });
+}
+
+// Вспомогательная функция для получения ID тренировки по заголовку
+function getWorkoutIdByTitle(title) {
+    return Object.keys(workoutData).find(key => 
+        workoutData[key].title === title
+    );
+}
+
+// Функция показа деталей программы
+function showProgramDetails(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    // Показываем основную информацию в более компактном виде
+    const mainInfo = `
+        <b>${program.title}</b>
+        ${program.description}
+
+        📅 ${program.schedule}
+        🔥 ${program.calories_per_week}
+        💪 Сложность: ${program.difficulty}
+    `;
+
+    // Ограничиваем количество кнопок до 3
+    const buttons = [
+        {
+            id: `start_program_${programId}`,
+            type: 'default',
+            text: 'Начать программу'
+        },
+        {
+            id: `schedule_${programId}`,
+            type: 'default',
+            text: 'Расписание'
+        }
+    ];
+
+    tg.showPopup({
+        title: program.title,
+        message: mainInfo,
+        buttons: buttons
+    });
+}
+
+// Функция показа результатов программы
+function showProgramResults(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    const resultsInfo = program.results
+        .map(result => `✅ ${result}`)
+        .join('\n');
+
+    tg.showPopup({
+        title: 'Ожидаемые результаты',
+        message: resultsInfo,
+        buttons: [
+            {type: 'default', text: '⬅️ Назад', id: `back_to_main_${programId}`},
+            {type: 'default', text: 'Расписание ➜', id: `schedule_${programId}`},
+            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`}
+        ]
+    });
+}
+
+// Функция показа расписания программы
+function showProgramSchedule(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    const scheduleInfo = program.workouts
+        .map(workout => `День ${workout.day}: ${workout.title}\n${workout.duration} мин • ${workout.type}`)
+        .join('\n\n');
+
+    tg.showPopup({
+        title: 'Расписание тренировок',
+        message: scheduleInfo,
+        buttons: [
+            {type: 'default', text: '⬅️ Назад', id: `back_to_main_${programId}`},
+            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`}
+        ]
+    });
+}
+
+// Обновим обработчик событий попапа
+function setupPopupHandlers() {
+    tg.onEvent('popupClosed', (event) => {
+        console.log('Popup closed with event:', event);
+        if (event && event.button_id) {
+            if (event.button_id.startsWith('start_workout_')) {
+                // Извлекаем programId и workoutDay из button_id
+                const [_, __, programId, workoutDay] = event.button_id.split('_');
+                console.log('Starting workout:', programId, workoutDay);
+                startWorkoutSession(programId, parseInt(workoutDay));
+            } else {
+                const [action, ...params] = event.button_id.split('_');
+                
+                switch(action) {
+                    case 'results':
+                        showProgramResults(params[0]);
+                        break;
+                    case 'schedule':
+                        showProgramSchedule(params[0]);
+                        break;
+                    case 'start':
+                        if (params[0] === 'program') {
+                            startProgram(params[1]);
+                        }
+                        break;
+                    case 'back':
+                        showProgramDetails(params[0]);
+                        break;
+                }
+            }
+        }
+    });
+}
+
+// Функция обновления прогресса программы
+function updateProgramProgress(progress) {
+    const programCard = document.querySelector(`.program-card[data-program="${progress.programId}"]`);
+    if (!programCard) return;
+
+    const progressBar = programCard.querySelector('.progress');
+    const progressText = programCard.querySelector('.progress-text');
+    
+    if (progress.status === 'active') {
+        // Вычисляем прогресс
+        const program = programData[progress.programId];
+        const totalWorkouts = program.workouts.length;
+        const completedWorkouts = progress.completedWorkouts.length;
+        const progressPercent = (completedWorkouts / totalWorkouts) * 100;
+
+        // Обновляем UI
+        if (progressBar) {
+            progressBar.style.width = `${progressPercent}%`;
+        }
+        if (progressText) {
+            progressText.textContent = `Прогресс: ${completedWorkouts}/${totalWorkouts} тренировок`;
+        }
+
+        // Обновляем кнопки
+        const startBtn = programCard.querySelector('.start-btn');
+        if (startBtn) {
+            startBtn.textContent = 'Продолжить';
+        }
+    }
+}
+
+// Обновляем функцию startProgram
+async function startProgram(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    try {
+        // Создаем объект прогресса программы
+        const programProgress = {
+            programId: programId,
+            startDate: Date.now(),
+            currentDay: 1,
+            completedWorkouts: [],
+            plannedWorkouts: []
+        };
+
+        // Планируем все тренировки
+        const startDate = new Date();
+        for (const workout of program.workouts) {
+            const workoutDate = new Date(startDate);
+            workoutDate.setDate(workoutDate.getDate() + workout.day - 1);
+            
+            programProgress.plannedWorkouts.push({
+                day: workout.day,
+                plannedDate: workoutDate.getTime(),
+                title: workout.title,
+                duration: workout.duration,
+                type: workout.type
+            });
+        }
+
+        // Сохраняем прогресс
+        await setStorageItem('activeProgram', JSON.stringify(programProgress));
+
+        // Обновляем статистику
+        await updateStatistics(programProgress);
+
+        // Обновляем календарь
+        renderCalendar();
+
+        // Показываем сообщение о начале программы
+        await showPopupSafe({
+            title: 'Программа начата!',
+            message: `Вы начали программу "${program.title}". Первая тренировка запланирована на сегодня.`,
+            buttons: [{
+                type: 'default',
+                text: 'Начать тренировку',
+                id: `start_workout_${programId}_1`
+            }]
+        });
+
+    } catch (error) {
+        console.error('Ошибка при запуске программы:', error);
+        showError(error);
+    }
+}
+
+// Функция обновления статистики
+async function updateStatistics() {
+    try {
+        // Получаем все необходимые данные
+        const [weightHistoryStr, activeProgramStr] = await Promise.all([
+            getStorageItem('weightHistory'),
+            getStorageItem('activeProgram')
+        ]);
+
+        const weightHistory = weightHistoryStr ? JSON.parse(weightHistoryStr) : [];
+        const activeProgram = activeProgramStr ? JSON.parse(activeProgramStr) : null;
+
+        // Статистика тренировок
+        let stats = {
+            totalWorkouts: 0,
+            totalCalories: 0,
+            totalMinutes: 0,
+            completionRate: 0
+        };
+
+        if (activeProgram?.completedWorkouts) {
+            stats.totalWorkouts = activeProgram.completedWorkouts.length;
+            
+            // Подсчитываем калории и время
+            stats.totalCalories = activeProgram.completedWorkouts.reduce((sum, workout) => 
+                sum + (workout.calories || 0), 0);
+            stats.totalMinutes = activeProgram.completedWorkouts.reduce((sum, workout) => 
+                sum + (workout.duration || 0), 0);
+
+            // Вычисляем процент выполнения программы
+            if (activeProgram.plannedWorkouts && activeProgram.plannedWorkouts.length > 0) {
+                stats.completionRate = Math.round(
+                    (stats.totalWorkouts / activeProgram.plannedWorkouts.length) * 100
+                );
+            }
+        }
+
+        // Обновляем UI статистики с проверкой наличия элементов
+        const elements = {
+            'total-workouts': stats.totalWorkouts,
+            'total-calories': stats.totalCalories,
+            'total-time': formatDuration(stats.totalMinutes),
+            'completion-rate': `${stats.completionRate}%`
+        };
+
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            } else {
+                console.warn(`Элемент с id "${id}" не найден`);
+            }
+        });
+
+    } catch (error) {
+        console.error('Ошибка при обновлении статистики:', error);
+    }
+}
+
+// Функция форматирования времени
+function formatDuration(minutes) {
+    if (!minutes) return '0м';
+    if (minutes < 60) return `${minutes}м`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}ч ${mins}м`;
 }
 
 // Вспомогательная функция для получения ID тренировки по заголовку
@@ -1573,35 +1823,106 @@ function setupCalendarNavigation(workouts) {
     }
 }
 
-// Добавим функцию для тестового сохранения веса
-async function addTestWeight(weight) {
+// Обновим функцию сохранения веса
+async function saveWeight(weight) {
     try {
-        const entry = {
+        // Получаем текущую историю весов
+        const result = await getStorageItem('weightHistory');
+        let weightHistory = [];
+        
+        try {
+            weightHistory = result ? JSON.parse(result) : [];
+            if (!Array.isArray(weightHistory)) weightHistory = [];
+        } catch (e) {
+            console.warn('Ошибка парсинга истории весов:', e);
+        }
+
+        // Создаем новую запись
+        const newEntry = {
             date: new Date().toISOString(),
             weight: parseFloat(weight)
         };
 
-        const result = await getStorageItem('weightHistory');
-        let weightHistory = result ? JSON.parse(result) : [];
-        
-        if (!Array.isArray(weightHistory)) {
-            weightHistory = [];
+        console.log('Сохраняем новую запись веса:', newEntry);
+
+        // Проверяем, есть ли уже запись за сегодня
+        const today = new Date().setHours(0, 0, 0, 0);
+        const existingTodayIndex = weightHistory.findIndex(entry => 
+            new Date(entry.date).setHours(0, 0, 0, 0) === today
+        );
+
+        if (existingTodayIndex !== -1) {
+            weightHistory[existingTodayIndex] = newEntry;
+        } else {
+            weightHistory.push(newEntry);
         }
 
-        weightHistory.push(entry);
+        // Сортируем записи по дате
+        weightHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        console.log('Обновленная история весов:', weightHistory);
+
+        // Сохраняем обновленную историю
         await setStorageItem('weightHistory', JSON.stringify(weightHistory));
-        
-        console.log('Тестовый вес добавлен:', entry);
         
         // Обновляем график
         const data = await getWeightData(currentPeriod);
         updateWeightChart(data);
+
+        // Показываем уведомление об успехе
+        tg.showPopup({
+            title: 'Вес сохранен',
+            message: 'Данные успешно обновлены',
+            buttons: [{type: 'ok'}]
+        });
+
     } catch (error) {
-        console.error('Ошибка при добавлении тестового веса:', error);
+        console.error('Ошибка при сохранении веса:', error);
+        tg.showPopup({
+            title: 'Ошибка',
+            message: 'Не удалось сохранить вес',
+            buttons: [{type: 'ok'}]
+        });
     }
 }
 
-// Обновляем функцию инициализации страницы статистики
+// Обновим функцию очистки данных
+async function clearAllData() {
+    try {
+        // Очищаем все данные в CloudStorage и localStorage
+        const keys = ['weightHistory', 'activeProgram', 'profile'];
+        const emptyValues = {
+            weightHistory: '[]',
+            activeProgram: '{}',
+            profile: '{}'
+        };
+
+        // Очищаем данные последовательно
+        for (const key of keys) {
+            await setStorageItem(key, emptyValues[key]);
+            localStorage.removeItem(key);
+        }
+
+        // Показываем сообщение об успехе
+        await tg.showPopup({
+            title: 'Данные очищены',
+            message: 'Все данные успешно удалены',
+            buttons: [{type: 'ok'}]
+        });
+
+        // Перезагружаем страницу
+        location.reload();
+    } catch (error) {
+        console.error('Ошибка при очистке данных:', error);
+        tg.showPopup({
+            title: 'Ошибка',
+            message: 'Не удалось очистить данные',
+            buttons: [{type: 'ok'}]
+        });
+    }
+}
+
+// Инициализация страницы статистики
 async function initStatisticsPage() {
     try {
         // Проверяем наличие Chart.js
@@ -1610,12 +1931,23 @@ async function initStatisticsPage() {
             return;
         }
 
-        // Обновляем статистику
+        // Добавляем тестовые данные, если нужно
+        await addTestWeightData();
+
+        // Сначала обновляем статистику
         await updateStatistics();
 
-        // Инициализируем график веса
+        // Затем инициализируем график веса
         const weightData = await getWeightData(currentPeriod);
-        updateWeightChart(weightData);
+        if (weightData && weightData.length > 0) {
+            updateWeightChart(weightData);
+        } else {
+            // Показываем сообщение об отсутствии данных
+            const chartContainer = document.getElementById('weight-chart');
+            if (chartContainer) {
+                chartContainer.innerHTML = '<div class="no-data">Нет данных о весе</div>';
+            }
+        }
 
         // Добавляем обработчики для кнопок периода
         setupPeriodButtons();
@@ -1666,121 +1998,43 @@ async function showPopupSafe(options) {
     });
 }
 
-// Функция очистки всех данных
-async function clearAllData() {
+// Функция для добавления тестовых данных веса
+async function addTestWeightData() {
     try {
-        const result = await showPopupSafe({
-            title: 'Подтверждение',
-            message: 'Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.',
-            buttons: [
-                { id: 'confirm_clear', type: 'destructive', text: 'Очистить' },
-                { id: 'cancel', type: 'cancel', text: 'Отмена' }
-            ]
-        });
-
-        if (result && result.button_id === 'confirm_clear') {
-            // Очищаем данные в CloudStorage
-            await Promise.all([
-                setStorageItem('weightHistory', '[]'),
-                setStorageItem('activeProgram', '{}'),
-                setStorageItem('profile', '{}')
-            ]);
-
-            // Очищаем localStorage
-            localStorage.clear();
-
-            // Очищаем график
-            if (weightChart instanceof Chart) {
-                weightChart.destroy();
-            }
-            const chartContainer = document.getElementById('weight-chart');
-            if (chartContainer) {
-                chartContainer.innerHTML = '<div class="no-data">Нет данных о весе. Добавьте свой первый замер в профиле.</div>';
-            }
-
-            // Очищаем форму профиля
-            const form = document.getElementById('profile-form');
-            if (form) form.reset();
-
-            // Обновляем статистику
-            await updateStatistics();
-
-            // Показываем уведомление
-            await showPopupSafe({
-                title: 'Готово',
-                message: 'Все данные успешно удалены',
-                buttons: [{ type: 'ok' }]
-            });
-
-            // Перезагружаем страницу
-            location.reload();
-        }
-    } catch (error) {
-        console.error('Ошибка при очистке данных:', error);
-        await showPopupSafe({
-            title: 'Ошибка',
-            message: 'Не удалось очистить данные',
-            buttons: [{ type: 'ok' }]
-        });
-    }
-}
-
-// Функция для добавления веса
-async function addWeight(weight) {
-    try {
-        if (!weight || isNaN(weight) || weight <= 0) {
-            throw new Error('Некорректное значение веса');
-        }
-
-        const entry = {
-            date: new Date().toISOString(),
-            weight: parseFloat(weight)
-        };
-
-        // Получаем текущую историю весов
         const result = await getStorageItem('weightHistory');
-        let weightHistory = [];
-        try {
-            weightHistory = result ? JSON.parse(result) : [];
-            if (!Array.isArray(weightHistory)) weightHistory = [];
-        } catch (e) {
-            console.warn('Ошибка парсинга истории весов:', e);
+        const weightHistory = result ? JSON.parse(result) : [];
+        
+        // Если данных нет или их меньше 2, добавляем тестовые
+        if (weightHistory.length < 2) {
+            console.log('Добавляем тестовые данные веса');
+            const today = new Date();
+            const newData = [];
+
+            // Добавляем данные за последние 30 дней
+            for (let i = 30; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                
+                // Генерируем вес с небольшими колебаниями
+                const baseWeight = 75;
+                const variation = Math.sin(i * 0.2) * 2;
+                const weight = parseFloat((baseWeight + variation).toFixed(1));
+
+                newData.push({
+                    date: date.toISOString(),
+                    weight: weight
+                });
+            }
+
+            // Сохраняем новые данные
+            await setStorageItem('weightHistory', JSON.stringify(newData));
+            console.log('Тестовые данные веса добавлены:', newData);
+            return newData;
         }
-
-        // Добавляем новую запись
-        weightHistory.push(entry);
-
-        // Сохраняем обновленную историю
-        await setStorageItem('weightHistory', JSON.stringify(weightHistory));
-
-        // Обновляем график
-        const data = await getWeightData(currentPeriod);
-        updateWeightChart(data);
-
-        // Обновляем статистику
-        await updateStatistics();
-
-        // Показываем уведомление об успехе
-        await showPopupSafe({
-            title: 'Успешно',
-            message: 'Вес успешно добавлен',
-            buttons: [{type: 'ok'}]
-        });
-
+        
+        return weightHistory;
     } catch (error) {
-        console.error('Ошибка при добавлении веса:', error);
-        await showPopupSafe({
-            title: 'Ошибка',
-            message: error.message || 'Не удалось добавить вес',
-            buttons: [{type: 'ok'}]
-        });
-    }
-}
-
-// Добавим функцию для тестового добавления веса
-async function addTestData() {
-    const weights = [75.5, 75.2, 74.8, 74.5, 74.2, 74.0, 73.8];
-    for (const weight of weights) {
-        await addWeight(weight);
+        console.error('Ошибка при добавлении тестовых данных:', error);
+        return [];
     }
 } 
