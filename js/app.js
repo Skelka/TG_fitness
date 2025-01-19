@@ -1108,7 +1108,21 @@ function updateStatisticsUI(stats) {
     getStorageItem('activeProgram')
         .then(data => {
             const programProgress = data ? JSON.parse(data) : null;
-            const plannedWorkouts = programProgress ? programProgress.plannedWorkouts.length : 0;
+            
+            // Инициализируем статистику с нулевыми значениями
+            const defaultStats = {
+                plannedWorkouts: programProgress ? programProgress.plannedWorkouts.length : 0,
+                totalCalories: 0,
+                totalMinutes: 0,
+                completionRate: 0
+            };
+
+            // Обновляем значения только если есть завершенные тренировки
+            if (programProgress && programProgress.completedWorkouts && programProgress.completedWorkouts.length > 0) {
+                defaultStats.totalCalories = stats.totalCalories || 0;
+                defaultStats.totalMinutes = stats.totalMinutes || 0;
+                defaultStats.completionRate = stats.completionRate || 0;
+            }
 
             statsContainer.innerHTML = `
                 <div class="stats-grid">
@@ -1117,7 +1131,7 @@ function updateStatisticsUI(stats) {
                             <span class="material-symbols-rounded">calendar_month</span>
                         </div>
                         <div class="stat-content">
-                            <span class="stat-value">${plannedWorkouts}</span>
+                            <span class="stat-value">${defaultStats.plannedWorkouts}</span>
                             <span class="stat-label">Тренировок в месяце</span>
                         </div>
                     </div>
@@ -1126,7 +1140,7 @@ function updateStatisticsUI(stats) {
                             <span class="material-symbols-rounded">local_fire_department</span>
                         </div>
                         <div class="stat-content">
-                            <span class="stat-value">${stats.totalCalories || 0}</span>
+                            <span class="stat-value">${defaultStats.totalCalories}</span>
                             <span class="stat-label">Ккал сожжено</span>
                         </div>
                     </div>
@@ -1135,7 +1149,7 @@ function updateStatisticsUI(stats) {
                             <span class="material-symbols-rounded">timer</span>
                         </div>
                         <div class="stat-content">
-                            <span class="stat-value">${formatDuration(stats.totalMinutes || 0)}</span>
+                            <span class="stat-value">${formatDuration(defaultStats.totalMinutes)}</span>
                             <span class="stat-label">Общее время</span>
                         </div>
                     </div>
@@ -1144,7 +1158,7 @@ function updateStatisticsUI(stats) {
                             <span class="material-symbols-rounded">trending_up</span>
                         </div>
                         <div class="stat-content">
-                            <span class="stat-value">${Math.round(stats.completionRate || 0)}%</span>
+                            <span class="stat-value">${Math.round(defaultStats.completionRate)}%</span>
                             <span class="stat-label">Достижение цели</span>
                         </div>
                     </div>
