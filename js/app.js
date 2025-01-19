@@ -372,6 +372,7 @@ async function getWeightData(period = 'week') {
         now.setHours(23, 59, 59, 999); // Конец текущего дня
         let startDate = new Date(now);
 
+        // Определяем период
         switch (period) {
             case 'week':
                 startDate.setDate(startDate.getDate() - 7);
@@ -388,6 +389,7 @@ async function getWeightData(period = 'week') {
 
         startDate.setHours(0, 0, 0, 0); // Начало стартового дня
 
+        // Фильтруем и сортируем данные
         const filteredData = weightHistory
             .filter(entry => {
                 const entryDate = new Date(entry.date);
@@ -424,6 +426,7 @@ function updateWeightChart(data) {
 
     console.log('Данные для графика:', data);
 
+    // Форматируем данные для графика
     const labels = data.map(entry => {
         const date = new Date(entry.date);
         return date.toLocaleDateString('ru-RU', { 
@@ -447,7 +450,11 @@ function updateWeightChart(data) {
                 borderColor: '#40a7e3',
                 backgroundColor: 'rgba(64, 167, 227, 0.1)',
                 tension: 0.4,
-                fill: true
+                fill: true,
+                pointRadius: 4, // Добавляем точки
+                pointBackgroundColor: '#40a7e3',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2
             }]
         },
         options: {
@@ -458,6 +465,13 @@ function updateWeightChart(data) {
                     display: false
                 },
                 tooltip: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    titleColor: '#000000',
+                    bodyColor: '#000000',
+                    borderColor: '#40a7e3',
+                    borderWidth: 1,
+                    padding: 10,
+                    displayColors: false,
                     callbacks: {
                         label: function(context) {
                             return `${context.parsed.y.toFixed(1)} кг`;
@@ -472,13 +486,35 @@ function updateWeightChart(data) {
                     max: maxWeight + padding,
                     ticks: {
                         callback: value => `${value.toFixed(1)} кг`,
-                        stepSize: 0.5
+                        stepSize: 0.5,
+                        font: {
+                            size: 12
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
                     }
                 },
                 x: {
                     grid: {
                         display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 12
+                        },
+                        maxRotation: 45,
+                        minRotation: 45
                     }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            elements: {
+                line: {
+                    borderWidth: 2
                 }
             }
         }
