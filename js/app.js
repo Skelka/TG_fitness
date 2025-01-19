@@ -1836,11 +1836,14 @@ function startWorkout(workout) {
         return;
     }
 
+    const container = document.querySelector('.container');
+    if (!container) return;
+
     let currentExerciseIndex = 0;
     let isResting = false;
     let restTimeLeft = 0;
     let restInterval;
-    let timerInterval; // Добавляем переменную для таймера
+    let timerInterval;
     let currentReps = 0;
     let timerValue = 0;
     let isTimerMode = false;
@@ -1896,7 +1899,7 @@ function startWorkout(workout) {
             parseInt(exercise.reps) || 30 : 
             0;
 
-        programsList.innerHTML = `
+        container.innerHTML = `
             <div class="workout-session">
                 <div class="workout-header">
                     <button class="back-btn">
@@ -1961,6 +1964,35 @@ function startWorkout(workout) {
         // Показываем нижнюю навигацию при завершении
         document.querySelector('.bottom-nav')?.classList.remove('hidden');
         // ... остальной код завершения тренировки
+    }
+
+    // Добавляем функцию setupExerciseHandlers
+    function setupExerciseHandlers() {
+        const backBtn = container.querySelector('.back-btn');
+        const minusBtn = container.querySelector('.minus-btn');
+        const plusBtn = container.querySelector('.plus-btn');
+        const completeBtn = container.querySelector('.complete-btn');
+
+        backBtn?.addEventListener('click', () => {
+            if (timerInterval) clearInterval(timerInterval);
+            if (restInterval) clearInterval(restInterval);
+            document.querySelector('.bottom-nav')?.classList.remove('hidden');
+            showProgramWorkouts(workout);
+        });
+
+        minusBtn?.addEventListener('click', () => {
+            updateCounter(currentReps - 1);
+        });
+
+        plusBtn?.addEventListener('click', () => {
+            updateCounter(currentReps + 1);
+        });
+
+        if (!isTimerMode) {
+            completeBtn?.addEventListener('click', () => {
+                showRestScreen();
+            });
+        }
     }
 
     renderExercise();
