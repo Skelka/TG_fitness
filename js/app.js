@@ -1680,14 +1680,21 @@ async function initStatisticsPage() {
 
 // Добавим функцию для создания карточек программ
 function renderProgramCards() {
+    const availableEquipment = await getUserEquipment();
     const programsList = document.querySelector('.programs-list');
     if (!programsList || !window.programData) return;
+
+    // Фильтруем программы по доступному оборудованию
+    const availablePrograms = Object.values(window.programData).filter(program => {
+        const requiredEquipment = program.requirements.equipment;
+        return requiredEquipment.some(eq => availableEquipment.includes(eq));
+    });
 
     // Очищаем текущий список
     programsList.innerHTML = '';
 
     // Создаем карточки для каждой программы
-    Object.values(window.programData).forEach(program => {
+    availablePrograms.forEach(program => {
         const workoutsCount = program.workouts?.length || 0;
         const schedule = program.schedule || `${workoutsCount} тр/нед`;
         const difficulty = program.difficulty || program.intensity || 'medium';
@@ -2133,6 +2140,98 @@ function renderProfilePage() {
             });
         }
     });
+
+    // ... остальной код функции ...
+}
+
+// Функция для получения доступного оборудования пользователя
+async function getUserEquipment() {
+    const profileData = await getStorageItem('profile');
+    if (!profileData) return ['none'];
+    
+    try {
+        const profile = JSON.parse(profileData);
+        return profile.equipment || ['none'];
+    } catch (error) {
+        console.error('Ошибка получения оборудования:', error);
+        return ['none'];
+    }
+}
+
+// Функция для адаптации упражнения под доступное оборудование
+function adaptExercise(exercise, availableEquipment) {
+    // Если упражнение можно выполнить с имеющимся оборудованием
+    if (exercise.equipment.some(eq => availableEquipment.includes(eq))) {
+        return exercise;
+    }
+
+    // Ищем подходящую альтернативу
+    if (exercise.alternatives) {
+        const alternative = exercise.alternatives.find(alt => 
+            alt.equipment.some(eq => availableEquipment.includes(eq))
+        );
+        if (alternative) {
+            return { ...exercise, ...alternative };
+        }
+    }
+
+    // Если альтернатив нет, возвращаем базовую версию без оборудования
+    return {
+        ...exercise,
+        name: exercise.name.replace(/с \w+$/, ''), // Убираем упоминание оборудования
+        equipment: ['none']
+    };
+}
+
+// Функция для адаптации тренировки
+async function adaptWorkout(workout) {
+    const availableEquipment = await getUserEquipment();
+    
+    return {
+        ...workout,
+        exercises: workout.exercises.map(exercise => 
+            adaptExercise(exercise, availableEquipment)
+        )
+    };
+}
+
+// Обновляем функцию startWorkout
+async function startWorkout(workout) {
+    if (!workout || !workout.exercises || !workout.exercises.length) {
+        console.error('Некорректные данные тренировки:', workout);
+        return;
+    }
+
+    // Адаптируем тренировку под доступное оборудование
+    const adaptedWorkout = await adaptWorkout(workout);
+    
+    // ... остальной код функции startWorkout ...
+}
+
+function renderProfileSetup() {
+    const container = document.querySelector('.container');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="profile-setup">
+            <!-- ... существующие поля профиля ... -->
+            
+            <div class="equipment-section">
+                <h3>Доступное оборудование</h3>
+                <div class="equipment-grid">
+                    ${Object.values(window.EQUIPMENT_TYPES).map(equipment => `
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="${equipment.id}">
+                            <div class="equipment-icon">
+                                <span class="material-symbols-rounded">${equipment.icon}</span>
+                            </div>
+                            <span class="equipment-label">${equipment.name}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
 
     // ... остальной код функции ...
 } 
