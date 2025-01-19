@@ -1093,4 +1093,17 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .type-count {
     font-weight: bold;
+}
+
+.weight-chart-container {
+    height: 150px;
+    margin: 10px 0;
+}
+
+#weightChart {
+    height: 150px !important;
+}
+
+.period-buttons {
+    margin-bottom: 10px;
 } 

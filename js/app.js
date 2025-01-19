@@ -282,11 +282,11 @@ function updateWeightChart(data) {
                 backgroundColor: 'rgba(64, 167, 227, 0.1)',
                 fill: true,
                 tension: 0.4,
-                spanGaps: true // Соединяет точки с пропущенными значениями
+                spanGaps: true
             }]
         };
 
-        // Создаем новый график
+        // Создаем новый график с уменьшенной высотой
         window.weightChart = new Chart(ctx, {
             type: 'line',
             data: chartData,
@@ -302,17 +302,38 @@ function updateWeightChart(data) {
                     y: {
                         beginAtZero: false,
                         ticks: {
-                            callback: value => `${value} кг`
+                            callback: value => `${value} кг`,
+                            font: {
+                                size: 10 // Уменьшаем размер шрифта
+                            }
                         }
                     },
                     x: {
                         grid: {
                             display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 10 // Уменьшаем размер шрифта
+                            }
                         }
+                    }
+                },
+                layout: {
+                    padding: {
+                        left: 5,
+                        right: 5,
+                        top: 5,
+                        bottom: 5
                     }
                 }
             }
         });
+
+        // Устанавливаем высоту canvas
+        ctx.style.height = '150px'; // Уменьшаем высоту графика
+        ctx.parentElement.style.height = '150px'; // Уменьшаем высоту контейнера
+
     } catch (error) {
         console.error('Ошибка при обновлении графика:', error);
     }
@@ -1194,7 +1215,7 @@ function setupProgramHandlers() {
                 showProgramDetails(programId);
             }
         });
-    });
+    }
 }
 
 // Добавим функцию для начала конкретной тренировки
@@ -1704,27 +1725,34 @@ async function clearAllData() {
 // Инициализация страницы статистики
 async function initStatisticsPage() {
     try {
+        // Проверяем наличие Chart.js
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js не загружен');
+            return;
+        }
+
         // Обновляем статистику
         await updateStatistics();
 
         // Инициализируем график веса
         const weightData = await getWeightData(currentPeriod);
-        updateWeightChart(weightData);
+        if (weightData && weightData.length > 0) {
+            updateWeightChart(weightData);
+        }
 
         // Добавляем обработчики для кнопок периода
         document.querySelectorAll('.period-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
                 try {
-                    // Убираем активный класс у всех кнопок
                     document.querySelectorAll('.period-btn').forEach(b => 
                         b.classList.remove('active'));
-                    // Добавляем активный класс нажатой кнопке
                     btn.classList.add('active');
                     
-                    // Обновляем текущий период и график
                     currentPeriod = btn.dataset.period;
                     const data = await getWeightData(currentPeriod);
-                    updateWeightChart(data);
+                    if (data && data.length > 0) {
+                        updateWeightChart(data);
+                    }
                 } catch (error) {
                     console.error('Ошибка при обновлении графика:', error);
                 }
@@ -1735,5 +1763,24 @@ async function initStatisticsPage() {
     }
 }
 
-// Вызываем инициализацию при загрузке страницы
-document.addEventListener('DOMContentLoaded', initStatisticsPage); 
+// Ждем загрузки Telegram Web App
+window.addEventListener('load', () => {
+    if (!window.Telegram?.WebApp) {
+        console.error('Telegram WebApp не загружен');
+        return;
+    }
+
+    // Глобальные переменные
+    const tg = window.Telegram.WebApp;
+    const mainButton = tg.MainButton;
+    const backButton = tg.BackButton;
+    let currentPeriod = 'week';
+
+    // Инициализация
+    tg.ready();
+    tg.expand();
+    tg.enableClosingConfirmation();
+
+    // Инициализируем страницу статистики
+    initStatisticsPage();
+}); 
