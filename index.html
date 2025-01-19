@@ -194,6 +194,13 @@
 
             <div class="weight-section">
                 <h3>Динамика веса</h3>
+                <div class="weight-input">
+                    <input type="number" id="weight-input" placeholder="Введите вес" step="0.1" min="30" max="200">
+                    <button onclick="addWeight(document.getElementById('weight-input').value)" class="add-weight-btn">
+                        <span class="material-symbols-rounded">add</span>
+                        Добавить
+                    </button>
+                </div>
                 <div class="period-selector">
                     <button class="period-btn active" data-period="week">Неделя</button>
                     <button class="period-btn" data-period="month">Месяц</button>

@@ -1969,7 +1969,7 @@ async function showPopupSafe(options) {
 async function clearAllData() {
     try {
         // Показываем подтверждение
-        const confirmed = await showPopupSafe({
+        const result = await showPopupSafe({
             title: 'Подтверждение',
             message: 'Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.',
             buttons: [
@@ -1985,7 +1985,7 @@ async function clearAllData() {
             ]
         });
 
-        if (confirmed && confirmed.button_id === 'confirm_clear') {
+        if (result && result.button_id === 'confirm_clear') {
             // Очищаем все данные в CloudStorage и localStorage
             const keys = ['weightHistory', 'activeProgram', 'profile'];
             const emptyValues = {
@@ -2015,6 +2015,9 @@ async function clearAllData() {
                 form.reset();
             }
 
+            // Обновляем статистику
+            await updateStatistics();
+
             // Показываем уведомление об успехе
             await showPopupSafe({
                 title: 'Данные очищены',
@@ -2022,19 +2025,75 @@ async function clearAllData() {
                 buttons: [{type: 'ok'}]
             });
 
-            // Обновляем статистику
-            await updateStatistics();
-
-            // Вызываем хаптик
-            tg.HapticFeedback.notificationOccurred('success');
+            // Обновляем страницу для применения изменений
+            location.reload();
         }
     } catch (error) {
         console.error('Ошибка при очистке данных:', error);
-        showPopupSafe({
+        await showPopupSafe({
             title: 'Ошибка',
             message: 'Не удалось очистить данные',
             buttons: [{type: 'ok'}]
         });
-        tg.HapticFeedback.notificationOccurred('error');
+    }
+}
+
+// Функция для добавления веса
+async function addWeight(weight) {
+    try {
+        if (!weight || isNaN(weight) || weight <= 0) {
+            throw new Error('Некорректное значение веса');
+        }
+
+        const entry = {
+            date: new Date().toISOString(),
+            weight: parseFloat(weight)
+        };
+
+        // Получаем текущую историю весов
+        const result = await getStorageItem('weightHistory');
+        let weightHistory = [];
+        try {
+            weightHistory = result ? JSON.parse(result) : [];
+            if (!Array.isArray(weightHistory)) weightHistory = [];
+        } catch (e) {
+            console.warn('Ошибка парсинга истории весов:', e);
+        }
+
+        // Добавляем новую запись
+        weightHistory.push(entry);
+
+        // Сохраняем обновленную историю
+        await setStorageItem('weightHistory', JSON.stringify(weightHistory));
+
+        // Обновляем график
+        const data = await getWeightData(currentPeriod);
+        updateWeightChart(data);
+
+        // Обновляем статистику
+        await updateStatistics();
+
+        // Показываем уведомление об успехе
+        await showPopupSafe({
+            title: 'Успешно',
+            message: 'Вес успешно добавлен',
+            buttons: [{type: 'ok'}]
+        });
+
+    } catch (error) {
+        console.error('Ошибка при добавлении веса:', error);
+        await showPopupSafe({
+            title: 'Ошибка',
+            message: error.message || 'Не удалось добавить вес',
+            buttons: [{type: 'ok'}]
+        });
+    }
+}
+
+// Добавим функцию для тестового добавления веса
+async function addTestData() {
+    const weights = [75.5, 75.2, 74.8, 74.5, 74.2, 74.0, 73.8];
+    for (const weight of weights) {
+        await addWeight(weight);
     }
 } 
