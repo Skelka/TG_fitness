@@ -1,60 +1,18 @@
 // Глобальные переменные
-let tg;
-let mainButton;
-let backButton;
+const tg = window.Telegram.WebApp;
+const mainButton = tg.MainButton;
+const backButton = tg.BackButton;
 
 // В начале файла добавим проверку
 if (typeof Chart === 'undefined') {
     console.error('Chart.js не загружен. Графики будут недоступны.');
 }
 
-// Функция инициализации
-function initTelegramWebApp() {
-    try {
-        if (window.Telegram && window.Telegram.WebApp) {
-            tg = window.Telegram.WebApp;
-            mainButton = tg.MainButton;
-            backButton = tg.BackButton;
-            
-            // Инициализация приложения
-            tg.expand();
-            tg.enableClosingConfirmation();
-            
-            if (mainButton) {
-                mainButton.setText('Сохранить профиль');
-                mainButton.hide();
-            }
-            
-            console.log('Telegram WebApp успешно инициализирован');
-        } else {
-            console.error('Telegram WebApp не найден');
-        }
-    } catch (error) {
-        console.error('Ошибка при инициализации Telegram WebApp:', error);
-    }
-}
-
-// Функция для проверки соединения
-async function checkConnection() {
-    try {
-        const response = await fetch('https://web.telegram.org/js/telegram-web-app.js');
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return true;
-    } catch (error) {
-        console.error('Ошибка соединения:', error);
-        showError('Проблема с подключением к серверу. Пожалуйста, проверьте интернет-соединение.');
-        return false;
-    }
-}
-
-// Добавляем проверку соединения при загрузке
-window.addEventListener('load', async () => {
-    if (await checkConnection()) {
-        initTelegramWebApp();
-    }
-});
+// Инициализация
+tg.expand();
+tg.enableClosingConfirmation();
+mainButton.setText('Сохранить профиль');
+mainButton.hide();
 
 // Добавим глобальную переменную для хранения графика
 let weightChart = null;
@@ -1533,7 +1491,7 @@ function generateCalendar(year, month, workouts) {
             <button class="calendar-nav-btn prev">←</button>
             <h2>${monthNames[month]} ${year}</h2>
             <button class="calendar-nav-btn next">→</button>
-        </div>
+                </div>
         <div class="calendar-weekdays">
             <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div>
             <div>Пт</div><div>Сб</div><div>Вс</div>
