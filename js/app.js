@@ -934,6 +934,15 @@ async function startProgram(programId) {
     if (!program) return;
 
     try {
+        // Очищаем предыдущую статистику
+        await setStorageItem('workoutStats', JSON.stringify({
+            totalWorkouts: 0,
+            totalMinutes: 0,
+            totalCalories: 0,
+            workoutsByType: {},
+            completionRate: 0
+        }));
+
         // Создаем объект прогресса программы
         const programProgress = {
             programId: programId,
@@ -954,7 +963,8 @@ async function startProgram(programId) {
                 plannedDate: workoutDate.getTime(),
                 title: workout.title,
                 duration: workout.duration,
-                type: workout.type
+                type: workout.type,
+                calories: workout.calories
             });
         }
 
@@ -1595,4 +1605,32 @@ function setupCalendarNavigation(workouts) {
             document.getElementById('calendar').innerHTML = calendar;
         });
     }
+}
+
+// Добавим функцию для очистки данных
+async function resetUserData() {
+    try {
+        await setStorageItem('activeProgram', null);
+        await setStorageItem('workoutStats', null);
+        location.reload(); // Перезагружаем страницу
+    } catch (error) {
+        console.error('Ошибка при сбросе данных:', error);
+    }
+}
+
+// В функцию renderProfile добавим кнопку сброса
+function renderProfile() {
+    const profileTab = document.getElementById('profile');
+    if (!profileTab) return;
+
+    // ... существующий код ...
+
+    // Добавляем кнопку сброса
+    profileTab.innerHTML += `
+        <div class="settings-section">
+            <button class="danger-btn" onclick="resetUserData()">
+                Сбросить все данные
+            </button>
+        </div>
+    `;
 } 

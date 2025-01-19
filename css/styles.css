@@ -1093,4 +1093,22 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .type-count {
     font-weight: bold;
+}
+
+.danger-btn {
+    background: var(--tg-theme-destructive-text-color, #ff3b30);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    width: 100%;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+.settings-section {
+    margin-top: 20px;
+    padding: 16px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 12px;
 } 
