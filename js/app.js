@@ -1056,6 +1056,7 @@ async function startProgram(programId) {
 
 // Функция обновления статистики
 function updateStatistics(programProgress) {
+    // Инициализируем статистику нулевыми значениями
     const stats = {
         totalWorkouts: 0,
         totalMinutes: 0,
@@ -1064,31 +1065,22 @@ function updateStatistics(programProgress) {
         completionRate: 0
     };
 
-    if (programProgress && programProgress.completedWorkouts) {
+    // Обновляем статистику только если есть программа и завершенные тренировки
+    if (programProgress && programProgress.completedWorkouts && programProgress.completedWorkouts.length > 0) {
         stats.totalWorkouts = programProgress.completedWorkouts.length;
+        
+        // Подсчитываем статистику по завершенным тренировкам
+        programProgress.completedWorkouts.forEach(completed => {
+            if (completed.duration) stats.totalMinutes += completed.duration;
+            if (completed.calories) stats.totalCalories += completed.calories;
+            if (completed.type) {
+                stats.workoutsByType[completed.type] = (stats.workoutsByType[completed.type] || 0) + 1;
+            }
+        });
 
-        const program = programData[programProgress.programId];
-        if (program) {
-            // Подсчитываем статистику по завершенным тренировкам
-            programProgress.completedWorkouts.forEach(completed => {
-                const workout = program.workouts.find(w => w.day === completed.day);
-                if (workout) {
-                    stats.totalMinutes += workout.duration || 0;
-                    stats.totalCalories += workout.calories || 0;
-                    if (workout.type) {
-                        stats.workoutsByType[workout.type] = (stats.workoutsByType[workout.type] || 0) + 1;
-                    }
-                }
-            });
-
-            // Вычисляем процент выполнения
-            const plannedWorkouts = programProgress.plannedWorkouts.filter(
-                w => w.plannedDate <= Date.now()
-            ).length;
-            
-            stats.completionRate = plannedWorkouts > 0 
-                ? (stats.totalWorkouts / plannedWorkouts) * 100 
-                : 0;
+        // Считаем процент выполнения программы
+        if (programProgress.plannedWorkouts && programProgress.plannedWorkouts.length > 0) {
+            stats.completionRate = (stats.totalWorkouts / programProgress.plannedWorkouts.length) * 100;
         }
     }
 
@@ -1108,21 +1100,7 @@ function updateStatisticsUI(stats) {
     getStorageItem('activeProgram')
         .then(data => {
             const programProgress = data ? JSON.parse(data) : null;
-            
-            // Инициализируем статистику с нулевыми значениями
-            const defaultStats = {
-                plannedWorkouts: programProgress ? programProgress.plannedWorkouts.length : 0,
-                totalCalories: 0,
-                totalMinutes: 0,
-                completionRate: 0
-            };
-
-            // Обновляем значения только если есть завершенные тренировки
-            if (programProgress && programProgress.completedWorkouts && programProgress.completedWorkouts.length > 0) {
-                defaultStats.totalCalories = stats.totalCalories || 0;
-                defaultStats.totalMinutes = stats.totalMinutes || 0;
-                defaultStats.completionRate = stats.completionRate || 0;
-            }
+            const plannedWorkouts = programProgress ? programProgress.plannedWorkouts.length : 0;
 
             statsContainer.innerHTML = `
                 <div class="stats-grid">
@@ -1131,7 +1109,7 @@ function updateStatisticsUI(stats) {
                             <span class="material-symbols-rounded">calendar_month</span>
                         </div>
                         <div class="stat-content">
-                            <span class="stat-value">${defaultStats.plannedWorkouts}</span>
+                            <span class="stat-value">${plannedWorkouts}</span>
                             <span class="stat-label">Тренировок в месяце</span>
                         </div>
                     </div>
@@ -1140,7 +1118,7 @@ function updateStatisticsUI(stats) {
                             <span class="material-symbols-rounded">local_fire_department</span>
                         </div>
                         <div class="stat-content">
-                            <span class="stat-value">${defaultStats.totalCalories}</span>
+                            <span class="stat-value">${stats.totalCalories}</span>
                             <span class="stat-label">Ккал сожжено</span>
                         </div>
                     </div>
@@ -1149,7 +1127,7 @@ function updateStatisticsUI(stats) {
                             <span class="material-symbols-rounded">timer</span>
                         </div>
                         <div class="stat-content">
-                            <span class="stat-value">${formatDuration(defaultStats.totalMinutes)}</span>
+                            <span class="stat-value">${formatDuration(stats.totalMinutes)}</span>
                             <span class="stat-label">Общее время</span>
                         </div>
                     </div>
@@ -1158,7 +1136,7 @@ function updateStatisticsUI(stats) {
                             <span class="material-symbols-rounded">trending_up</span>
                         </div>
                         <div class="stat-content">
-                            <span class="stat-value">${Math.round(defaultStats.completionRate)}%</span>
+                            <span class="stat-value">${Math.round(stats.completionRate)}%</span>
                             <span class="stat-label">Достижение цели</span>
                         </div>
                     </div>
@@ -1678,5 +1656,54 @@ function setupCalendarNavigation(workouts) {
             const calendar = generateCalendar(currentDate.getFullYear(), currentDate.getMonth(), workouts);
             document.getElementById('calendar').innerHTML = calendar;
         });
+    }
+}
+
+// Функция для сохранения нового значения веса
+async function saveWeight(weight) {
+    try {
+        const result = await getStorageItem('weightHistory');
+        const weightHistory = result ? JSON.parse(result) : [];
+        
+        // Добавляем новую запись
+        const newEntry = {
+            date: new Date().toISOString(),
+            weight: parseFloat(weight)
+        };
+
+        // Проверяем, есть ли уже запись за сегодня
+        const today = new Date().setHours(0, 0, 0, 0);
+        const existingTodayIndex = weightHistory.findIndex(
+            entry => new Date(entry.date).setHours(0, 0, 0, 0) === today
+        );
+
+        if (existingTodayIndex !== -1) {
+            // Обновляем существующую запись
+            weightHistory[existingTodayIndex] = newEntry;
+        } else {
+            // Добавляем новую запись
+            weightHistory.push(newEntry);
+        }
+
+        // Сохраняем обновленную историю
+        await setStorageItem('weightHistory', JSON.stringify(weightHistory));
+        
+        // Обновляем график
+        const data = await getWeightData(currentPeriod);
+        updateWeightChart(data);
+    } catch (error) {
+        console.error('Ошибка при сохранении веса:', error);
+    }
+}
+
+// Очистка данных (добавьте эту функцию)
+async function clearAllData() {
+    try {
+        await setStorageItem('weightHistory', '[]');
+        await setStorageItem('workoutStats', '{}');
+        await setStorageItem('activeProgram', '{}');
+        location.reload(); // Перезагружаем страницу
+    } catch (error) {
+        console.error('Ошибка при очистке данных:', error);
     }
 } 
