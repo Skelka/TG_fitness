@@ -1860,34 +1860,64 @@ function startWorkout(workout) {
         }
     }
 
-    function startTimer(duration) {
-        isTimerMode = true;
-        timerValue = duration;
-        clearInterval(timerInterval);
-        
-        timerInterval = setInterval(() => {
-            timerValue--;
-            const counterElement = document.querySelector('.counter-number');
-            if (counterElement) {
-                counterElement.textContent = timerValue;
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    function startRestTimer(duration) {
+        isResting = true;
+        restTimeLeft = duration;
+
+        container.innerHTML = `
+            <div class="workout-session">
+                <div class="rest-screen">
+                    <div class="rest-icon">
+                        <span class="material-symbols-rounded">timer</span>
+                    </div>
+                    <h3>Отдых</h3>
+                    <div class="rest-timer">${formatTime(restTimeLeft)}</div>
+                    <button class="skip-rest-btn">
+                        <span class="material-symbols-rounded">skip_next</span>
+                        Пропустить
+                    </button>
+                </div>
+            </div>
+        `;
+
+        const skipBtn = container.querySelector('.skip-rest-btn');
+        skipBtn?.addEventListener('click', () => {
+            clearInterval(restInterval);
+            goToNextExercise();
+        });
+
+        restInterval = setInterval(() => {
+            restTimeLeft--;
+            const timerElement = container.querySelector('.rest-timer');
+            if (timerElement) {
+                timerElement.textContent = formatTime(restTimeLeft);
             }
 
-            if (timerValue <= 3 && timerValue > 0) {
+            if (restTimeLeft <= 3 && restTimeLeft > 0) {
                 tg.HapticFeedback.impactOccurred('medium');
             }
 
-            if (timerValue <= 0) {
-                clearInterval(timerInterval);
-                tg.HapticFeedback.notificationOccurred('success');
-                showRestScreen();
+            if (restTimeLeft <= 0) {
+                clearInterval(restInterval);
+                goToNextExercise();
             }
         }, 1000);
     }
 
-    function showRestScreen() {
-        isResting = true;
-        const exercise = workout.exercises[currentExerciseIndex];
-        startRestTimer(exercise.rest);
+    function goToNextExercise() {
+        isResting = false;
+        if (currentExerciseIndex < workout.exercises.length - 1) {
+            currentExerciseIndex++;
+            renderExercise();
+        } else {
+            completeWorkout();
+        }
     }
 
     function renderExercise() {
@@ -1961,9 +1991,41 @@ function startWorkout(workout) {
     }
 
     function completeWorkout() {
-        // Показываем нижнюю навигацию при завершении
+        // Показываем нижнюю навигацию
         document.querySelector('.bottom-nav')?.classList.remove('hidden');
-        // ... остальной код завершения тренировки
+
+        container.innerHTML = `
+            <div class="workout-complete">
+                <div class="complete-icon">
+                    <span class="material-symbols-rounded">celebration</span>
+                </div>
+                <h2>Тренировка завершена!</h2>
+                <div class="workout-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">${workout.exercises.length}</span>
+                        <span class="stat-label">Упражнений</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${workout.duration}</span>
+                        <span class="stat-label">Минут</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${workout.calories}</span>
+                        <span class="stat-label">Ккал</span>
+                    </div>
+                </div>
+                <button class="finish-btn">
+                    <span class="material-symbols-rounded">home</span>
+                    Вернуться к программам
+                </button>
+            </div>
+        `;
+
+        const finishBtn = container.querySelector('.finish-btn');
+        finishBtn?.addEventListener('click', () => {
+            renderProgramCards();
+            tg.HapticFeedback.impactOccurred('medium');
+        });
     }
 
     // Добавляем функцию setupExerciseHandlers
