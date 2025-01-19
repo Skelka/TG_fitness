@@ -91,6 +91,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         setupProfileHandlers();
 
+        // Рендерим карточки программ
+        renderProgramCards();
+
     } catch (error) {
         console.error('Ошибка инициализации:', error);
     }
@@ -1929,4 +1932,77 @@ async function initStatisticsPage() {
     } catch (error) {
         console.error('Ошибка при инициализации страницы статистики:', error);
     }
+}
+
+// Добавим функцию для создания карточек программ
+function renderProgramCards() {
+    const programsList = document.querySelector('.programs-list');
+    if (!programsList || !window.programData) return;
+
+    // Очищаем текущий список
+    programsList.innerHTML = '';
+
+    // Создаем карточки для каждой программы
+    Object.values(window.programData).forEach(program => {
+        const card = document.createElement('div');
+        card.className = 'program-card';
+        card.dataset.program = program.id;
+
+        card.innerHTML = `
+            <div class="program-header">
+                <div class="program-icon">
+                    <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
+                </div>
+                <div class="program-info">
+                    <h3>
+                        ${program.title}
+                        <span class="program-duration">${program.duration}</span>
+                    </h3>
+                    <p class="program-description">${program.description}</p>
+                    <div class="program-details">
+                        <span>
+                            <span class="material-symbols-rounded">calendar_month</span>
+                            ${program.schedule}
+                        </span>
+                        <span>
+                            <span class="material-symbols-rounded">fitness_center</span>
+                            ${getDifficultyText(program.difficulty)}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="program-progress">
+                <div class="progress-bar">
+                    <div class="progress" style="width: 0%"></div>
+                </div>
+                <span class="progress-text">0/${program.workouts?.length || 0} тренировок</span>
+            </div>
+            <div class="program-actions">
+                <button class="program-btn info-btn">
+                    <span class="material-symbols-rounded">info</span>
+                    Подробнее
+                </button>
+                <button class="program-btn start-btn">
+                    <span class="material-symbols-rounded">play_arrow</span>
+                    Начать
+                </button>
+            </div>
+        `;
+
+        // Добавляем карточку в список
+        programsList.appendChild(card);
+    });
+
+    // Обновляем обработчики событий
+    setupProgramHandlers();
+}
+
+// Вспомогательная функция для получения текста сложности
+function getDifficultyText(difficulty) {
+    const difficultyMap = {
+        'low': 'Легкий',
+        'medium': 'Средний',
+        'high': 'Сложный'
+    };
+    return difficultyMap[difficulty] || 'Средний';
 } 
