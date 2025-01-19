@@ -102,14 +102,17 @@ async function getStorageItem(key) {
             resolve(localStorage.getItem(key));
             return;
         }
-        
-        // Используем правильный метод для получения значений
-        tg.CloudStorage.getItems([key], (error, values) => {
+
+        tg.CloudStorage.getItem(key, (error, value) => {
             if (error) {
                 console.warn(`Ошибка CloudStorage для ${key}:`, error);
-                resolve(localStorage.getItem(key));
+                // Пробуем получить из localStorage как запасной вариант
+                const localValue = localStorage.getItem(key);
+                resolve(localValue);
             } else {
-                resolve(values?.[key] || null);
+                // Сохраняем в localStorage для синхронизации
+                if (value) localStorage.setItem(key, value);
+                resolve(value);
             }
         });
     });
@@ -124,13 +127,15 @@ async function setStorageItem(key, value) {
             return;
         }
 
-        // Используем правильный метод для сохранения значений
-        tg.CloudStorage.setItems({[key]: value}, (error, success) => {
+        tg.CloudStorage.setItem(key, value, (error, success) => {
             if (error || !success) {
                 console.warn(`Ошибка CloudStorage для ${key}:`, error);
+                // Сохраняем в localStorage как запасной вариант
                 localStorage.setItem(key, value);
                 resolve(true);
             } else {
+                // Синхронизируем с localStorage
+                localStorage.setItem(key, value);
                 resolve(success);
             }
         });
@@ -1756,10 +1761,8 @@ async function saveWeight(weight) {
         );
 
         if (existingTodayIndex !== -1) {
-            // Обновляем существующую запись
             weightHistory[existingTodayIndex] = newEntry;
         } else {
-            // Добавляем новую запись
             weightHistory.push(newEntry);
         }
 
@@ -1792,7 +1795,7 @@ async function saveWeight(weight) {
 // Обновим функцию очистки данных
 async function clearAllData() {
     try {
-        // Очищаем все данные в CloudStorage
+        // Очищаем все данные в CloudStorage и localStorage
         const keys = ['weightHistory', 'activeProgram', 'profile'];
         const emptyValues = {
             weightHistory: '[]',
@@ -1800,13 +1803,12 @@ async function clearAllData() {
             profile: '{}'
         };
 
-        await Promise.all(
-            keys.map(key => setStorageItem(key, emptyValues[key]))
-        );
-        
-        // Очищаем localStorage для надежности
-        keys.forEach(key => localStorage.removeItem(key));
-        
+        // Очищаем данные последовательно
+        for (const key of keys) {
+            await setStorageItem(key, emptyValues[key]);
+            localStorage.removeItem(key);
+        }
+
         // Показываем сообщение об успехе
         await tg.showPopup({
             title: 'Данные очищены',
