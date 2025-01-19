@@ -263,155 +263,122 @@ function fillProfileForm(profile) {
     }
 }
 
-// Функция для получения данных веса за период
-async function getWeightData(period) {
+// Получение данных о весе за выбранный период
+async function getWeightData(period = 'week') {
     try {
         const result = await getStorageItem('weightHistory');
-        const weightHistory = result ? JSON.parse(result) : [];
-        
+        if (!result) return [];
+
+        const weightHistory = JSON.parse(result);
+        if (!weightHistory || !Array.isArray(weightHistory)) return [];
+
         const now = new Date();
         let startDate;
-        
-        switch(period) {
+
+        switch (period) {
             case 'week':
-                // Получаем начало текущей недели (понедельник)
-                startDate = new Date(now);
-                startDate.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1));
-                startDate.setHours(0, 0, 0, 0);
+                startDate = new Date(now.setDate(now.getDate() - 7));
                 break;
             case 'month':
-                // Получаем первый день текущего месяца
-                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                startDate = new Date(now.setMonth(now.getMonth() - 1));
                 break;
             case 'year':
-                // Получаем первый день текущего года
-                startDate = new Date(now.getFullYear(), 0, 1);
+                startDate = new Date(now.setFullYear(now.getFullYear() - 1));
                 break;
             default:
-                startDate = new Date(0);
+                startDate = new Date(now.setDate(now.getDate() - 7));
         }
 
-        // Создаем массив всех дат в выбранном периоде
-        const dates = [];
-        const currentDate = new Date(startDate);
-        
-        while (currentDate <= now) {
-            dates.push(new Date(currentDate));
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-
-        // Сопоставляем данные с датами
-        return dates.map(date => {
-            const entry = weightHistory.find(entry => {
-                const entryDate = new Date(entry.date);
-                return entryDate.getDate() === date.getDate() &&
-                       entryDate.getMonth() === date.getMonth() &&
-                       entryDate.getFullYear() === date.getFullYear();
-            });
-            
-            return {
-                date: date.toISOString(),
-                weight: entry ? entry.weight : null
-            };
-        });
+        return weightHistory
+            .filter(entry => new Date(entry.date) >= startDate)
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
     } catch (error) {
         console.error('Ошибка при получении данных веса:', error);
         return [];
     }
 }
 
-// Функция обновления графика
+// Обновление графика веса
 function updateWeightChart(data) {
-    const ctx = document.getElementById('weightChart');
+    const ctx = document.getElementById('weight-chart');
     if (!ctx) return;
 
-    try {
-        // Уничтожаем существующий график
-        if (window.weightChart instanceof Chart) {
-            window.weightChart.destroy();
-        }
+    // Если график уже существует, уничтожаем его
+    if (weightChart instanceof Chart) {
+        weightChart.destroy();
+    }
 
-        // Создаем новый график
-        window.weightChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: data.map(entry => {
-                    const date = new Date(entry.date);
-                    switch(window.currentPeriod) {
-                        case 'week':
-                            return date.toLocaleDateString('ru-RU', { weekday: 'short' });
-                        case 'month':
-                            return date.getDate();
-                        case 'year':
-                            return date.toLocaleDateString('ru-RU', { month: 'short' });
-                        default:
-                            return date.toLocaleDateString('ru-RU', { 
-                                day: '2-digit', 
-                                month: '2-digit' 
-                            });
-                    }
-                }),
-                datasets: [{
-                    label: 'Вес (кг)',
-                    data: data.map(entry => entry.weight),
-                    borderColor: '#40a7e3',
-                    backgroundColor: 'rgba(64, 167, 227, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    spanGaps: true
-                }]
+    if (!data || data.length === 0) {
+        ctx.innerHTML = '<div class="no-data">Нет данных о весе</div>';
+        return;
+    }
+
+    const labels = data.map(entry => {
+        const date = new Date(entry.date);
+        return date.toLocaleDateString('ru-RU', { 
+            day: 'numeric', 
+            month: 'short' 
+        });
+    });
+
+    const values = data.map(entry => entry.weight);
+
+    weightChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Вес (кг)',
+                data: values,
+                borderColor: '#40a7e3',
+                backgroundColor: 'rgba(64, 167, 227, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        ticks: {
-                            callback: value => `${value} кг`,
-                            font: { size: 10 }
-                        }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { font: { size: 10 } }
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        callback: value => `${value} кг`
                     }
-                },
-                layout: {
-                    padding: { left: 5, right: 5, top: 5, bottom: 5 }
                 }
             }
-        });
-
-        // Устанавливаем размеры
-        ctx.style.height = '150px';
-        ctx.parentElement.style.height = '150px';
-
-    } catch (error) {
-        console.error('Ошибка при обновлении графика:', error);
-    }
-}
-
-// Обработчики переключения периода
-document.querySelectorAll('.period-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-        try {
-            // Убираем активный класс у всех кнопок
-            document.querySelectorAll('.period-btn').forEach(b => 
-                b.classList.remove('active'));
-            // Добавляем активный класс нажатой кнопке
-            btn.classList.add('active');
-            
-            // Обновляем текущий период и график
-            currentPeriod = btn.dataset.period;
-            const data = await getWeightData(currentPeriod);
-            updateWeightChart(data);
-    } catch (error) {
-            console.error('Ошибка при обновлении графика:', error);
         }
     });
-});
+}
+
+// Настройка кнопок периода
+function setupPeriodButtons() {
+    document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            try {
+                // Обновляем активную кнопку
+                document.querySelectorAll('.period-btn').forEach(b => 
+                    b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Обновляем период и перестраиваем график
+                currentPeriod = btn.dataset.period;
+                const data = await getWeightData(currentPeriod);
+                
+                // Обновляем график
+                updateWeightChart(data);
+                
+            } catch (error) {
+                console.error('Ошибка при обновлении графика:', error);
+            }
+        });
+    });
+}
 
 // Обновляем обработчик переключения вкладок
 function setupTabHandlers() {
@@ -540,27 +507,6 @@ function setupEventListeners() {
 
     // Добавляем обработчики для чекбоксов
     setupCheckboxHandlers();
-}
-
-// Настройка кнопок периода
-function setupPeriodButtons() {
-    document.querySelectorAll('.period-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            try {
-                document.querySelectorAll('.period-btn').forEach(b => 
-                    b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                currentPeriod = btn.dataset.period;
-                const data = await getWeightData(currentPeriod);
-                if (data && data.length > 0) {
-                    updateWeightChart(data);
-                }
-            } catch (error) {
-                console.error('Ошибка при обновлении периода:', error);
-            }
-        });
-    });
 }
 
 // Добавим функцию для запуска тренировки
@@ -914,103 +860,569 @@ async function updateStatistics() {
         const weightHistory = weightHistoryStr ? JSON.parse(weightHistoryStr) : [];
         const activeProgram = activeProgramStr ? JSON.parse(activeProgramStr) : null;
 
-        // Статистика веса
-        let weightStats = {
-            current: 0,
-            start: 0,
-            change: 0
-        };
-
-        if (weightHistory.length > 0) {
-            weightStats.current = weightHistory[weightHistory.length - 1].weight;
-            weightStats.start = weightHistory[0].weight;
-            weightStats.change = weightStats.current - weightStats.start;
-        }
-
         // Статистика тренировок
-        let workoutStats = {
-            total: 0,
-            thisWeek: 0,
-            streak: 0,
-            lastWorkout: null
+        let stats = {
+            totalWorkouts: 0,
+            totalCalories: 0,
+            totalMinutes: 0,
+            completionRate: 0
         };
 
         if (activeProgram?.completedWorkouts) {
-            const now = new Date();
-            const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
-            weekStart.setHours(0, 0, 0, 0);
+            stats.totalWorkouts = activeProgram.completedWorkouts.length;
+            
+            // Подсчитываем калории и время
+            stats.totalCalories = activeProgram.completedWorkouts.reduce((sum, workout) => 
+                sum + (workout.calories || 0), 0);
+            stats.totalMinutes = activeProgram.completedWorkouts.reduce((sum, workout) => 
+                sum + (workout.duration || 0), 0);
 
-            workoutStats.total = activeProgram.completedWorkouts.length;
-            workoutStats.thisWeek = activeProgram.completedWorkouts.filter(w => 
-                new Date(w.completedAt) >= weekStart
-            ).length;
-
-            // Вычисляем серию тренировок
-            if (workoutStats.total > 0) {
-                const sortedWorkouts = [...activeProgram.completedWorkouts]
-                    .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
-                
-                workoutStats.lastWorkout = new Date(sortedWorkouts[0].completedAt);
-                
-                let streak = 0;
-                let currentDate = new Date();
-                currentDate.setHours(0, 0, 0, 0);
-
-                for (let i = 0; i < sortedWorkouts.length; i++) {
-                    const workoutDate = new Date(sortedWorkouts[i].completedAt);
-                    workoutDate.setHours(0, 0, 0, 0);
-
-                    if (i === 0 || 
-                        (currentDate.getTime() - workoutDate.getTime()) <= 86400000) {
-                        streak++;
-                        currentDate = workoutDate;
-                    } else {
-                        break;
-                    }
-                }
-                workoutStats.streak = streak;
+            // Вычисляем процент выполнения программы
+            if (activeProgram.plannedWorkouts && activeProgram.plannedWorkouts.length > 0) {
+                stats.completionRate = Math.round(
+                    (stats.totalWorkouts / activeProgram.plannedWorkouts.length) * 100
+                );
             }
         }
 
-        // Обновляем UI
-        updateStatisticsUI(weightStats, workoutStats);
+        // Обновляем UI статистики
+        document.getElementById('total-workouts').textContent = stats.totalWorkouts;
+        document.getElementById('total-calories').textContent = stats.totalCalories;
+        document.getElementById('total-time').textContent = formatDuration(stats.totalMinutes);
+        document.getElementById('completion-rate').textContent = `${stats.completionRate}%`;
 
     } catch (error) {
         console.error('Ошибка при обновлении статистики:', error);
     }
 }
 
-// Функция обновления UI статистики
-function updateStatisticsUI(weightStats, workoutStats) {
-    // Обновляем статистику веса
-    const weightChangeEl = document.getElementById('weight-change');
-    if (weightChangeEl) {
-        const changeText = weightStats.change > 0 
-            ? `+${weightStats.change.toFixed(1)}` 
-            : weightStats.change.toFixed(1);
-        weightChangeEl.textContent = weightStats.current ? `${changeText} кг` : 'Нет данных';
-        weightChangeEl.className = weightStats.change > 0 ? 'increase' : 'decrease';
-    }
+// Функция форматирования времени
+function formatDuration(minutes) {
+    if (!minutes) return '0м';
+    if (minutes < 60) return `${minutes}м`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}ч ${mins}м`;
+}
 
-    // Обновляем статистику тренировок
-    const workoutElements = {
-        'total-workouts': workoutStats.total || 0,
-        'week-workouts': workoutStats.thisWeek || 0,
-        'workout-streak': workoutStats.streak || 0
-    };
+// Вспомогательная функция для получения ID тренировки по заголовку
+function getWorkoutIdByTitle(title) {
+    return Object.keys(workoutData).find(key => 
+        workoutData[key].title === title
+    );
+}
 
-    Object.entries(workoutElements).forEach(([id, value]) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = value;
+// Функция показа деталей программы
+function showProgramDetails(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    // Показываем основную информацию в более компактном виде
+    const mainInfo = `
+        <b>${program.title}</b>
+        ${program.description}
+
+        📅 ${program.schedule}
+        🔥 ${program.calories_per_week}
+        💪 Сложность: ${program.difficulty}
+    `;
+
+    // Ограничиваем количество кнопок до 3
+    const buttons = [
+        {
+            id: `start_program_${programId}`,
+            type: 'default',
+            text: 'Начать программу'
+        },
+        {
+            id: `schedule_${programId}`,
+            type: 'default',
+            text: 'Расписание'
+        }
+    ];
+
+    tg.showPopup({
+        title: program.title,
+        message: mainInfo,
+        buttons: buttons
     });
+}
 
-    // Обновляем дату последней тренировки
-    const lastWorkoutEl = document.getElementById('last-workout');
-    if (lastWorkoutEl) {
-        lastWorkoutEl.textContent = workoutStats.lastWorkout 
-            ? formatDate(workoutStats.lastWorkout)
-            : 'Нет данных';
+// Функция показа результатов программы
+function showProgramResults(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    const resultsInfo = program.results
+        .map(result => `✅ ${result}`)
+        .join('\n');
+
+    tg.showPopup({
+        title: 'Ожидаемые результаты',
+        message: resultsInfo,
+        buttons: [
+            {type: 'default', text: '⬅️ Назад', id: `back_to_main_${programId}`},
+            {type: 'default', text: 'Расписание ➜', id: `schedule_${programId}`},
+            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`}
+        ]
+    });
+}
+
+// Функция показа расписания программы
+function showProgramSchedule(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    const scheduleInfo = program.workouts
+        .map(workout => `День ${workout.day}: ${workout.title}\n${workout.duration} мин • ${workout.type}`)
+        .join('\n\n');
+
+    tg.showPopup({
+        title: 'Расписание тренировок',
+        message: scheduleInfo,
+        buttons: [
+            {type: 'default', text: '⬅️ Назад', id: `back_to_main_${programId}`},
+            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`}
+        ]
+    });
+}
+
+// Обновим обработчик событий попапа
+function setupPopupHandlers() {
+    tg.onEvent('popupClosed', (event) => {
+        console.log('Popup closed with event:', event);
+        if (event && event.button_id) {
+            if (event.button_id.startsWith('start_workout_')) {
+                // Извлекаем programId и workoutDay из button_id
+                const [_, __, programId, workoutDay] = event.button_id.split('_');
+                console.log('Starting workout:', programId, workoutDay);
+                startWorkoutSession(programId, parseInt(workoutDay));
+            } else {
+                const [action, ...params] = event.button_id.split('_');
+                
+                switch(action) {
+                    case 'results':
+                        showProgramResults(params[0]);
+                        break;
+                    case 'schedule':
+                        showProgramSchedule(params[0]);
+                        break;
+                    case 'start':
+                        if (params[0] === 'program') {
+                            startProgram(params[1]);
+                        }
+                        break;
+                    case 'back':
+                        showProgramDetails(params[0]);
+                        break;
+                }
+            }
+        }
+    });
+}
+
+// Функция обновления прогресса программы
+function updateProgramProgress(progress) {
+    const programCard = document.querySelector(`.program-card[data-program="${progress.programId}"]`);
+    if (!programCard) return;
+
+    const progressBar = programCard.querySelector('.progress');
+    const progressText = programCard.querySelector('.progress-text');
+    
+    if (progress.status === 'active') {
+        // Вычисляем прогресс
+        const program = programData[progress.programId];
+        const totalWorkouts = program.workouts.length;
+        const completedWorkouts = progress.completedWorkouts.length;
+        const progressPercent = (completedWorkouts / totalWorkouts) * 100;
+
+        // Обновляем UI
+        if (progressBar) {
+            progressBar.style.width = `${progressPercent}%`;
+        }
+        if (progressText) {
+            progressText.textContent = `Прогресс: ${completedWorkouts}/${totalWorkouts} тренировок`;
+        }
+
+        // Обновляем кнопки
+        const startBtn = programCard.querySelector('.start-btn');
+        if (startBtn) {
+            startBtn.textContent = 'Продолжить';
+        }
     }
+}
+
+// Обновляем функцию startProgram
+async function startProgram(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    try {
+        // Создаем объект прогресса программы
+        const programProgress = {
+            programId: programId,
+            startDate: Date.now(),
+            currentDay: 1,
+            completedWorkouts: [],
+            plannedWorkouts: []
+        };
+
+        // Планируем все тренировки
+        const startDate = new Date();
+        for (const workout of program.workouts) {
+            const workoutDate = new Date(startDate);
+            workoutDate.setDate(workoutDate.getDate() + workout.day - 1);
+            
+            programProgress.plannedWorkouts.push({
+                day: workout.day,
+                plannedDate: workoutDate.getTime(),
+                title: workout.title,
+                duration: workout.duration,
+                type: workout.type
+            });
+        }
+
+        // Сохраняем прогресс
+        await setStorageItem('activeProgram', JSON.stringify(programProgress));
+
+        // Обновляем статистику
+        await updateStatistics(programProgress);
+
+        // Обновляем календарь
+        renderCalendar();
+
+        // Показываем сообщение о начале программы
+        await showPopupSafe({
+            title: 'Программа начата!',
+            message: `Вы начали программу "${program.title}". Первая тренировка запланирована на сегодня.`,
+            buttons: [{
+                type: 'default',
+                text: 'Начать тренировку',
+                id: `start_workout_${programId}_1`
+            }]
+        });
+
+    } catch (error) {
+        console.error('Ошибка при запуске программы:', error);
+        showError(error);
+    }
+}
+
+// Функция обновления статистики
+async function updateStatistics() {
+    try {
+        // Получаем все необходимые данные
+        const [weightHistoryStr, activeProgramStr] = await Promise.all([
+            getStorageItem('weightHistory'),
+            getStorageItem('activeProgram')
+        ]);
+
+        const weightHistory = weightHistoryStr ? JSON.parse(weightHistoryStr) : [];
+        const activeProgram = activeProgramStr ? JSON.parse(activeProgramStr) : null;
+
+        // Статистика тренировок
+        let stats = {
+            totalWorkouts: 0,
+            totalCalories: 0,
+            totalMinutes: 0,
+            completionRate: 0
+        };
+
+        if (activeProgram?.completedWorkouts) {
+            stats.totalWorkouts = activeProgram.completedWorkouts.length;
+            
+            // Подсчитываем калории и время
+            stats.totalCalories = activeProgram.completedWorkouts.reduce((sum, workout) => 
+                sum + (workout.calories || 0), 0);
+            stats.totalMinutes = activeProgram.completedWorkouts.reduce((sum, workout) => 
+                sum + (workout.duration || 0), 0);
+
+            // Вычисляем процент выполнения программы
+            if (activeProgram.plannedWorkouts && activeProgram.plannedWorkouts.length > 0) {
+                stats.completionRate = Math.round(
+                    (stats.totalWorkouts / activeProgram.plannedWorkouts.length) * 100
+                );
+            }
+        }
+
+        // Обновляем UI статистики
+        document.getElementById('total-workouts').textContent = stats.totalWorkouts;
+        document.getElementById('total-calories').textContent = stats.totalCalories;
+        document.getElementById('total-time').textContent = formatDuration(stats.totalMinutes);
+        document.getElementById('completion-rate').textContent = `${stats.completionRate}%`;
+
+    } catch (error) {
+        console.error('Ошибка при обновлении статистики:', error);
+    }
+}
+
+// Функция форматирования времени
+function formatDuration(minutes) {
+    if (!minutes) return '0м';
+    if (minutes < 60) return `${minutes}м`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}ч ${mins}м`;
+}
+
+// Вспомогательная функция для получения ID тренировки по заголовку
+function getWorkoutIdByTitle(title) {
+    return Object.keys(workoutData).find(key => 
+        workoutData[key].title === title
+    );
+}
+
+// Функция показа деталей программы
+function showProgramDetails(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    // Показываем основную информацию в более компактном виде
+    const mainInfo = `
+        <b>${program.title}</b>
+        ${program.description}
+
+        📅 ${program.schedule}
+        🔥 ${program.calories_per_week}
+        💪 Сложность: ${program.difficulty}
+    `;
+
+    // Ограничиваем количество кнопок до 3
+    const buttons = [
+        {
+            id: `start_program_${programId}`,
+            type: 'default',
+            text: 'Начать программу'
+        },
+        {
+            id: `schedule_${programId}`,
+            type: 'default',
+            text: 'Расписание'
+        }
+    ];
+
+    tg.showPopup({
+        title: program.title,
+        message: mainInfo,
+        buttons: buttons
+    });
+}
+
+// Функция показа результатов программы
+function showProgramResults(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    const resultsInfo = program.results
+        .map(result => `✅ ${result}`)
+        .join('\n');
+
+    tg.showPopup({
+        title: 'Ожидаемые результаты',
+        message: resultsInfo,
+        buttons: [
+            {type: 'default', text: '⬅️ Назад', id: `back_to_main_${programId}`},
+            {type: 'default', text: 'Расписание ➜', id: `schedule_${programId}`},
+            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`}
+        ]
+    });
+}
+
+// Функция показа расписания программы
+function showProgramSchedule(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    const scheduleInfo = program.workouts
+        .map(workout => `День ${workout.day}: ${workout.title}\n${workout.duration} мин • ${workout.type}`)
+        .join('\n\n');
+
+    tg.showPopup({
+        title: 'Расписание тренировок',
+        message: scheduleInfo,
+        buttons: [
+            {type: 'default', text: '⬅️ Назад', id: `back_to_main_${programId}`},
+            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`}
+        ]
+    });
+}
+
+// Обновим обработчик событий попапа
+function setupPopupHandlers() {
+    tg.onEvent('popupClosed', (event) => {
+        console.log('Popup closed with event:', event);
+        if (event && event.button_id) {
+            if (event.button_id.startsWith('start_workout_')) {
+                // Извлекаем programId и workoutDay из button_id
+                const [_, __, programId, workoutDay] = event.button_id.split('_');
+                console.log('Starting workout:', programId, workoutDay);
+                startWorkoutSession(programId, parseInt(workoutDay));
+            } else {
+                const [action, ...params] = event.button_id.split('_');
+                
+                switch(action) {
+                    case 'results':
+                        showProgramResults(params[0]);
+                        break;
+                    case 'schedule':
+                        showProgramSchedule(params[0]);
+                        break;
+                    case 'start':
+                        if (params[0] === 'program') {
+                            startProgram(params[1]);
+                        }
+                        break;
+                    case 'back':
+                        showProgramDetails(params[0]);
+                        break;
+                }
+            }
+        }
+    });
+}
+
+// Функция обновления прогресса программы
+function updateProgramProgress(progress) {
+    const programCard = document.querySelector(`.program-card[data-program="${progress.programId}"]`);
+    if (!programCard) return;
+
+    const progressBar = programCard.querySelector('.progress');
+    const progressText = programCard.querySelector('.progress-text');
+    
+    if (progress.status === 'active') {
+        // Вычисляем прогресс
+        const program = programData[progress.programId];
+        const totalWorkouts = program.workouts.length;
+        const completedWorkouts = progress.completedWorkouts.length;
+        const progressPercent = (completedWorkouts / totalWorkouts) * 100;
+
+        // Обновляем UI
+        if (progressBar) {
+            progressBar.style.width = `${progressPercent}%`;
+        }
+        if (progressText) {
+            progressText.textContent = `Прогресс: ${completedWorkouts}/${totalWorkouts} тренировок`;
+        }
+
+        // Обновляем кнопки
+        const startBtn = programCard.querySelector('.start-btn');
+        if (startBtn) {
+            startBtn.textContent = 'Продолжить';
+        }
+    }
+}
+
+// Обновляем функцию startProgram
+async function startProgram(programId) {
+    const program = programData[programId];
+    if (!program) return;
+
+    try {
+        // Создаем объект прогресса программы
+        const programProgress = {
+            programId: programId,
+            startDate: Date.now(),
+            currentDay: 1,
+            completedWorkouts: [],
+            plannedWorkouts: []
+        };
+
+        // Планируем все тренировки
+        const startDate = new Date();
+        for (const workout of program.workouts) {
+            const workoutDate = new Date(startDate);
+            workoutDate.setDate(workoutDate.getDate() + workout.day - 1);
+            
+            programProgress.plannedWorkouts.push({
+                day: workout.day,
+                plannedDate: workoutDate.getTime(),
+                title: workout.title,
+                duration: workout.duration,
+                type: workout.type
+            });
+        }
+
+        // Сохраняем прогресс
+        await setStorageItem('activeProgram', JSON.stringify(programProgress));
+
+        // Обновляем статистику
+        await updateStatistics(programProgress);
+
+        // Обновляем календарь
+        renderCalendar();
+
+        // Показываем сообщение о начале программы
+        await showPopupSafe({
+            title: 'Программа начата!',
+            message: `Вы начали программу "${program.title}". Первая тренировка запланирована на сегодня.`,
+            buttons: [{
+                type: 'default',
+                text: 'Начать тренировку',
+                id: `start_workout_${programId}_1`
+            }]
+        });
+
+    } catch (error) {
+        console.error('Ошибка при запуске программы:', error);
+        showError(error);
+    }
+}
+
+// Функция обновления статистики
+async function updateStatistics() {
+    try {
+        // Получаем все необходимые данные
+        const [weightHistoryStr, activeProgramStr] = await Promise.all([
+            getStorageItem('weightHistory'),
+            getStorageItem('activeProgram')
+        ]);
+
+        const weightHistory = weightHistoryStr ? JSON.parse(weightHistoryStr) : [];
+        const activeProgram = activeProgramStr ? JSON.parse(activeProgramStr) : null;
+
+        // Статистика тренировок
+        let stats = {
+            totalWorkouts: 0,
+            totalCalories: 0,
+            totalMinutes: 0,
+            completionRate: 0
+        };
+
+        if (activeProgram?.completedWorkouts) {
+            stats.totalWorkouts = activeProgram.completedWorkouts.length;
+            
+            // Подсчитываем калории и время
+            stats.totalCalories = activeProgram.completedWorkouts.reduce((sum, workout) => 
+                sum + (workout.calories || 0), 0);
+            stats.totalMinutes = activeProgram.completedWorkouts.reduce((sum, workout) => 
+                sum + (workout.duration || 0), 0);
+
+            // Вычисляем процент выполнения программы
+            if (activeProgram.plannedWorkouts && activeProgram.plannedWorkouts.length > 0) {
+                stats.completionRate = Math.round(
+                    (stats.totalWorkouts / activeProgram.plannedWorkouts.length) * 100
+                );
+            }
+        }
+
+        // Обновляем UI статистики
+        document.getElementById('total-workouts').textContent = stats.totalWorkouts;
+        document.getElementById('total-calories').textContent = stats.totalCalories;
+        document.getElementById('total-time').textContent = formatDuration(stats.totalMinutes);
+        document.getElementById('completion-rate').textContent = `${stats.completionRate}%`;
+
+    } catch (error) {
+        console.error('Ошибка при обновлении статистики:', error);
+    }
+}
+
+// Функция форматирования времени
+function formatDuration(minutes) {
+    if (!minutes) return '0м';
+    if (minutes < 60) return `${minutes}м`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}ч ${mins}м`;
 }
 
 // Вспомогательная функция форматирования даты
