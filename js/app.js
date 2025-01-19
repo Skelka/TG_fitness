@@ -1623,14 +1623,89 @@ function renderProfile() {
     const profileTab = document.getElementById('profile');
     if (!profileTab) return;
 
-    // ... существующий код ...
+    // Получаем данные пользователя из Telegram WebApp
+    const user = tg.initDataUnsafe?.user || {};
+    
+    profileTab.innerHTML = `
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <img src="${user.photo_url || 'https://via.placeholder.com/100'}" alt="Profile">
+            </div>
+            <div class="profile-info">
+                <h2>${user.first_name || 'Пользователь'}</h2>
+                <p>@${user.username || 'username'}</p>
+            </div>
+        </div>
+        
+        <div class="stats-section">
+            <h3>Статистика</h3>
+            <div id="statistics" class="stats-grid">
+                <!-- Статистика будет добавлена динамически -->
+            </div>
+        </div>
 
-    // Добавляем кнопку сброса
-    profileTab.innerHTML += `
+        <div class="calendar-section">
+            <h3>Календарь тренировок</h3>
+            <div id="calendar">
+                <!-- Календарь будет добавлен динамически -->
+            </div>
+        </div>
+
         <div class="settings-section">
             <button class="danger-btn" onclick="resetUserData()">
                 Сбросить все данные
             </button>
         </div>
     `;
+
+    // Обновляем статистику
+    getStorageItem('workoutStats')
+        .then(data => {
+            const stats = data ? JSON.parse(data) : null;
+            if (stats) {
+                updateStatisticsUI(stats);
+            }
+        })
+        .catch(console.error);
+
+    // Обновляем календарь
+    renderCalendar();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Инициализация Telegram WebApp
+    console.log('Платформа:', tg.platform);
+    console.log('Инициализация WebApp:', tg.initData);
+    console.log('Доступные методы WebApp:', Object.keys(tg));
+
+    // Устанавливаем обработчики событий
+    setupEventHandlers();
+    setupPopupHandlers();
+    
+    // Отображаем начальный интерфейс
+    showMainScreen();
+});
+
+function setupEventHandlers() {
+    // Обработчики для навигации
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.getAttribute('data-tab');
+            switchTab(tabId);
+        });
+    });
+
+    // Обработчики для программ
+    document.querySelectorAll('.program-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const programId = btn.closest('.program-card').dataset.program;
+            console.log('Нажата кнопка:', btn.className, 'для программы:', programId);
+            
+            if (btn.classList.contains('start-btn')) {
+                startProgram(programId);
+            } else if (btn.classList.contains('info-btn')) {
+                showProgramDetails(programId);
+            }
+        });
+    });
 } 
