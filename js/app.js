@@ -330,74 +330,45 @@ function setupTabHandlers() {
 }
 
 // Настройка обработчиков событий
-function setupEventListeners() {
-    // Обработчик изменения полей формы
-    const form = document.getElementById('profile-form');
-    const formInputs = form.querySelectorAll('input, select');
-    formInputs.forEach(input => {
-        input.addEventListener('input', () => {
-            const hasData = Array.from(formInputs).some(input => input.value);
-            if (hasData) {
-                mainButton.show();
-                backButton.hide();
-            } else {
-                mainButton.hide();
-            }
+function setupEventHandlers() {
+    console.log('Setting up event handlers...');
+    
+    // Обработчики для навигации
+    const navButtons = document.querySelectorAll('.nav-btn');
+    console.log('Found nav buttons:', navButtons.length);
+    
+    navButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const tabId = btn.getAttribute('data-tab');
+            console.log('Nav button clicked:', tabId);
+            switchTab(tabId);
         });
     });
 
-    // Скрытие клавиатуры
-    document.addEventListener('click', function(e) {
-        if (!e.target.matches('input') && !e.target.matches('select')) {
-            if (document.activeElement instanceof HTMLInputElement || 
-                document.activeElement instanceof HTMLSelectElement) {
-                document.activeElement.blur();
+    // Обработчики для программ
+    const programButtons = document.querySelectorAll('.program-btn');
+    console.log('Found program buttons:', programButtons.length);
+    
+    programButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const programId = btn.closest('.program-card').dataset.program;
+            console.log('Program button clicked:', btn.className, 'for program:', programId);
+            
+            if (btn.classList.contains('start-btn')) {
+                startProgram(programId);
+            } else if (btn.classList.contains('info-btn')) {
+                showProgramDetails(programId);
             }
-        }
+        });
     });
-
-    // Выделение текста в числовых полях
-    document.addEventListener('focus', function(e) {
-        if (e.target.type === 'number') {
-            e.target.select();
-            tg.HapticFeedback.selectionChanged();
-        }
-    }, true);
-
-    // Обработчик нажатия на MainButton
-    mainButton.onClick(saveProfile);
-
-    // Обработчик нажатия на BackButton
-    backButton.onClick(() => {
-        tg.close();
-    });
-
-    // Добавляем новые обработчики
-    setupTabHandlers();
-
-    // Обработка событий попапа
-    tg.onEvent('popupClosed', (button_id) => {
-        if (button_id && button_id.startsWith('start_workout_')) {
-            const [_, programId, day] = button_id.split('_').slice(2);
-            startWorkout(programId, parseInt(day));
-        }
-    });
-
-    // Обработка кнопок в интерфейсе тренировки
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('complete-btn')) {
-            completeWorkout();
-        } else if (e.target.classList.contains('pause-btn')) {
-            toggleWorkoutPause();
-        }
-    });
-
-    // Добавляем обработчики для чекбоксов
-    setupCheckboxHandlers();
 }
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded');
+    
     // Проверяем, что данные загружены
     if (typeof programData === 'undefined') {
         console.error('Ошибка: данные программ не загружены');
@@ -410,12 +381,18 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Платформа:', tg.platform);
     console.log('Инициализация WebApp:', tg.initData);
 
-    // Устанавливаем обработчики событий
+    // Отображаем начальный интерфейс
+    showMainScreen();
+    
+    // Устанавливаем обработчики событий после отображения интерфейса
     setupEventHandlers();
     setupPopupHandlers();
     
-    // Отображаем начальный интерфейс
-    showMainScreen();
+    // Проверяем наличие элементов навигации
+    const tabs = document.querySelectorAll('.tab');
+    const navBtns = document.querySelectorAll('.nav-btn');
+    console.log('Found tabs:', tabs.length);
+    console.log('Found nav buttons:', navBtns.length);
 });
 
 function initApp() {
@@ -424,7 +401,7 @@ function initApp() {
     console.log('Инициализация WebApp:', tg.initData);
     console.log('Доступные методы WebApp:', Object.keys(tg));
 
-    setupEventListeners();
+    setupEventHandlers();
     setupProgramHandlers();
     setupPopupHandlers();
     loadProfile();
@@ -812,7 +789,7 @@ function initApp() {
     console.log('Инициализация WebApp:', tg.initData);
     console.log('Доступные методы WebApp:', Object.keys(tg));
 
-    setupEventListeners();
+    setupEventHandlers();
     setupProgramHandlers();
     setupPopupHandlers();
     loadProfile();
@@ -1359,96 +1336,40 @@ function renderProfile() {
     renderCalendar();
 }
 
-function setupEventHandlers() {
-    // Обработчики для навигации
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const tabId = btn.getAttribute('data-tab');
-            switchTab(tabId);
-        });
-    });
-
-    // Обработчики для программ
-    document.querySelectorAll('.program-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const programId = btn.closest('.program-card').dataset.program;
-            console.log('Нажата кнопка:', btn.className, 'для программы:', programId);
-            
-            if (btn.classList.contains('start-btn')) {
-                startProgram(programId);
-            } else if (btn.classList.contains('info-btn')) {
-                showProgramDetails(programId);
-            }
-        });
-    });
-}
-
-// Функция для отображения главного экрана
-function showMainScreen() {
-    // Показываем вкладку с программами по умолчанию
-    switchTab('programs');
-    
-    // Отображаем доступные программы
-    const programsContainer = document.getElementById('programs');
-    if (!programsContainer) return;
-
-    programsContainer.innerHTML = Object.values(programData)
-        .map(program => `
-            <div class="program-card" data-program="${program.id}">
-                <div class="program-header">
-                    <h3>${program.title}</h3>
-                    <span class="program-duration">${program.duration}</span>
-                </div>
-                <p class="program-description">${program.description}</p>
-                <div class="program-info">
-                    <span class="program-intensity">
-                        <span class="material-symbols-rounded">fitness_center</span>
-                        ${program.intensity}
-                    </span>
-                    <span class="program-calories">
-                        <span class="material-symbols-rounded">local_fire_department</span>
-                        ${program.calories} ккал
-                    </span>
-                </div>
-                <div class="program-buttons">
-                    <button class="program-btn info-btn">
-                        <span class="material-symbols-rounded">info</span>
-                        Подробнее
-                    </button>
-                    <button class="program-btn start-btn">
-                        <span class="material-symbols-rounded">play_arrow</span>
-                        Начать
-                    </button>
-                </div>
-            </div>
-        `).join('');
-
-    // Устанавливаем обработчики для программ
-    setupProgramHandlers();
-}
-
 // Функция переключения вкладок
 function switchTab(tabId) {
+    console.log('Switching to tab:', tabId);
+    
     // Скрываем все вкладки
-    document.querySelectorAll('.tab').forEach(tab => {
+    const tabs = document.querySelectorAll('.tab');
+    console.log('Found tabs to hide:', tabs.length);
+    tabs.forEach(tab => {
         tab.style.display = 'none';
     });
 
     // Убираем активный класс у всех кнопок навигации
-    document.querySelectorAll('.nav-btn').forEach(btn => {
+    const navBtns = document.querySelectorAll('.nav-btn');
+    console.log('Found nav buttons to update:', navBtns.length);
+    navBtns.forEach(btn => {
         btn.classList.remove('active');
     });
 
     // Показываем выбранную вкладку
     const selectedTab = document.getElementById(tabId);
     if (selectedTab) {
+        console.log('Showing selected tab:', tabId);
         selectedTab.style.display = 'block';
+    } else {
+        console.error('Tab not found:', tabId);
     }
 
     // Добавляем активный класс выбранной кнопке
     const activeBtn = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
     if (activeBtn) {
+        console.log('Setting active button for:', tabId);
         activeBtn.classList.add('active');
+    } else {
+        console.error('Nav button not found for:', tabId);
     }
 
     // Дополнительная логика для разных вкладок

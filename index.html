@@ -16,24 +16,15 @@
 </head>
 <body>
     <div class="container">
-        <nav class="tabs">
-            <button class="tab-btn active" data-tab="workouts">
-                <span class="material-symbols-rounded">exercise</span>
-                <span>Тренировки</span>
-            </button>
-            <button class="tab-btn" data-tab="calendar">
-                <span class="material-symbols-rounded">calendar_month</span>
-                <span>Календарь</span>
-            </button>
-            <button class="tab-btn" data-tab="stats">
-                <span class="material-symbols-rounded">monitoring</span>
-                <span>Статистика</span>
-            </button>
-            <button class="tab-btn" data-tab="profile">
-                <span class="material-symbols-rounded">person</span>
-                <span>Профиль</span>
-            </button>
-        </nav>
+        <div class="navigation">
+            <button class="nav-btn" data-tab="programs">Программы</button>
+            <button class="nav-btn" data-tab="workouts">Тренировки</button>
+            <button class="nav-btn" data-tab="profile">Профиль</button>
+        </div>
+
+        <div id="programs" class="tab"></div>
+        <div id="workouts" class="tab"></div>
+        <div id="profile" class="tab"></div>
 
         <div class="tab-content active" id="workouts">
             <div class="programs-list">
