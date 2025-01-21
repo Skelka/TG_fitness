@@ -275,48 +275,32 @@ function showError(error) {
 
 // Функция для заполнения формы профиля
 function fillProfileForm(profile) {
+    if (!profile) return;
+
+    // Заполняем поля формы
     const form = document.getElementById('profile-form');
     if (!form) return;
 
-    // Заполняем основные поля
-    const fields = ['age', 'gender', 'height', 'weight'];
-    fields.forEach(field => {
-        const input = form.querySelector(`[name="${field}"]`);
-        if (input) {
-            input.value = profile[field] || '';
+    // Заполняем базовые поля
+    Object.entries(profile).forEach(([key, value]) => {
+        const input = form.querySelector(`[name="${key}"]`);
+        if (!input) return;
+
+        if (input.type === 'checkbox') {
+            input.checked = value;
+        } else if (input.type === 'radio') {
+            form.querySelector(`[name="${key}"][value="${value}"]`)?.checked = true;
+        } else {
+            input.value = value;
         }
     });
 
-    // Заполняем цель (радио-кнопки)
-    if (profile.goal) {
-        const goalInput = form.querySelector(`input[name="goal"][value="${profile.goal}"]`);
-        if (goalInput) {
-            goalInput.checked = true;
-        }
-    }
-
-    // Заполняем места для тренировок
-    if (profile.workoutPlaces) {
-        const workoutPlaceInputs = form.querySelectorAll('input[name="workout_place"]');
-        workoutPlaceInputs.forEach(input => {
-            input.checked = profile.workoutPlaces.includes(input.value);
-        });
-    }
-
-    // Заполняем доступное оборудование
+    // Обновляем отображение оборудования
     if (profile.equipment) {
-        const equipmentInputs = form.querySelectorAll('input[name="equipment"]');
-        equipmentInputs.forEach(input => {
-            input.checked = profile.equipment.includes(input.value);
+        profile.equipment.forEach(item => {
+            const checkbox = form.querySelector(`[name="equipment"][value="${item}"]`);
+            if (checkbox) checkbox.checked = true;
         });
-    }
-
-    // Заполняем уровень подготовки
-    if (profile.level) {
-        const levelInput = form.querySelector(`input[name="level"][value="${profile.level}"]`);
-        if (levelInput) {
-            levelInput.checked = true;
-        }
     }
 }
 
@@ -1697,4 +1681,82 @@ function renderProgramCards() {
 
     container.innerHTML = html;
     setupProgramHandlers(); // Устанавливаем обработчики после рендеринга
+}
+
+// Функция обновления фото профиля
+function updateProfilePhoto(photoUrl) {
+    const photoElement = document.querySelector('.profile-photo');
+    if (!photoElement) return;
+
+    if (photoUrl) {
+        photoElement.style.backgroundImage = `url(${photoUrl})`;
+        photoElement.classList.add('has-photo');
+    } else {
+        photoElement.style.backgroundImage = '';
+        photoElement.classList.remove('has-photo');
+    }
+}
+
+// Функция загрузки активной программы
+async function loadActiveProgram() {
+    try {
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+
+        if (activeProgram) {
+            // Обновляем UI для активной программы
+            const programCard = document.querySelector(`[data-program="${activeProgram.id}"]`);
+            if (programCard) {
+                programCard.classList.add('active');
+                const startBtn = programCard.querySelector('.start-btn');
+                if (startBtn) {
+                    startBtn.textContent = 'Продолжить';
+                    startBtn.classList.add('continue');
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке активной программы:', error);
+        showError('Не удалось загрузить активную программу');
+    }
+}
+
+// Функция для обработки профиля
+function setupProfileHandlers() {
+    const form = document.getElementById('profile-form');
+    if (!form) return;
+
+    // Обработчик изменения полей формы
+    const formInputs = form.querySelectorAll('input, select');
+    formInputs.forEach(input => {
+        input.addEventListener('input', () => {
+            const hasData = Array.from(formInputs).some(input => input.value);
+            if (hasData) {
+                mainButton.show();
+                backButton.hide();
+            } else {
+                mainButton.hide();
+            }
+        });
+    });
+
+    // Обработчик сохранения профиля
+    mainButton.onClick(async () => {
+        try {
+            const formData = new FormData(form);
+            const profile = Object.fromEntries(formData);
+            
+            // Сохраняем данные
+            await setStorageItem('profile', JSON.stringify(profile));
+            
+            tg.HapticFeedback.impactOccurred('medium');
+            showSuccess('Профиль сохранен');
+            
+            // Обновляем статус
+            updateProfileStatus(profile);
+        } catch (error) {
+            console.error('Ошибка при сохранении профиля:', error);
+            showError('Не удалось сохранить профиль');
+        }
+    });
 } 
