@@ -218,6 +218,7 @@ input:focus, select:focus {
 .workout-actions {
     display: flex;
     gap: 8px;
+    margin-top: 12px;
 }
 
 .workout-btn {
@@ -675,18 +676,20 @@ input:focus, select:focus {
 
 .program-btn {
     flex: 1;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    height: 36px;
-    padding: 0 16px;
+    height: 32px;
+    padding: 0 12px;
     border-radius: 8px;
     border: none;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 400;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: opacity 0.15s ease;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
 .info-btn {
@@ -700,18 +703,17 @@ input:focus, select:focus {
 }
 
 .program-btn:active {
-    transform: scale(0.98);
-    opacity: 0.9;
+    opacity: 0.7;
 }
 
 .program-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    background: var(--tg-theme-hint-color);
 }
 
 .program-btn .material-symbols-rounded {
-    font-size: 18px;
+    font-size: 16px;
+    font-variation-settings: 'FILL' 0, 'wght' 400;
 }
 
 .program-schedule {

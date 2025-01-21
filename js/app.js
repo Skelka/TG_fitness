@@ -1061,73 +1061,23 @@ function startWorkoutExecution(workout) {
 }
 
 // Функция показа деталей тренировки
-function showWorkoutDetails(workoutId) {
-    const workout = workoutData[workoutId];
-    if (!workout) return;
-
-    let detailsHtml = `
-        <div class="workout-details-content">
-            <h3>${workout.title}</h3>
-            <p class="workout-description">${workout.description}</p>
-            
-            <div class="workout-info-grid">
-                <div class="info-item">
-                    <span class="material-symbols-rounded">schedule</span>
-                    <span>${workout.duration} мин</span>
-                </div>
-                <div class="info-item">
-                    <span class="material-symbols-rounded">local_fire_department</span>
-                    <span>${workout.calories} ккал</span>
-                </div>
-                <div class="info-item">
-                    <span class="material-symbols-rounded">fitness_center</span>
-                    <span>${workout.difficulty}</span>
-                </div>
-            </div>`;
-
-    if (workout.exercises) {
-        detailsHtml += `
-            <h4>Упражнения:</h4>
-            <div class="exercises-list">
-                ${workout.exercises.map(ex => `
-                    <div class="exercise-item">
-                        <h5>${ex.name}</h5>
-                        <p>${ex.sets} подхода × ${ex.reps} повторений</p>
-                        <p>Отдых: ${ex.rest} сек</p>
-                    </div>
-                `).join('')}
-            </div>`;
-    }
-
-    if (workout.intervals) {
-        detailsHtml += `
-            <h4>Интервалы:</h4>
-            <div class="intervals-list">
-                ${workout.intervals.map(int => `
-                    <div class="interval-item">
-                        <span>${int.type}</span>
-                        <span>${int.duration} мин - ${int.intensity}</span>
-                    </div>
-                `).join('')}
-            </div>`;
-    }
-
-    detailsHtml += `
-            <div class="workout-tips">
-                <h4>Советы:</h4>
-                <ul>
-                    ${workout.tips.map(tip => `<li>${tip}</li>`).join('')}
-                </ul>
-            </div>
-        </div>
-    `;
-
+function showWorkoutDetails(workout) {
     tg.showPopup({
-        title: 'Детали тренировки',
-        message: detailsHtml,
+        title: workout.title,
+        message: `
+${workout.description}
+
+🕒 Длительность: ${workout.duration} мин
+🔥 Калории: ${workout.calories} ккал
+
+Упражнения:
+${workout.exercises.map(ex => `• ${ex.name} - ${ex.sets}×${ex.reps} (отдых ${ex.rest} сек)`).join('\n')}
+        `,
         buttons: [
-            {type: 'default', text: 'Начать', id: `start_${workoutId}`},
-            {type: 'cancel', text: 'Закрыть'}
+            {
+                type: 'default',
+                text: 'Закрыть'
+            }
         ]
     });
 }
@@ -2374,12 +2324,12 @@ function renderWorkouts(program) {
                             </span>
                         </div>
                         <div class="workout-actions">
-                            <button class="program-btn info-btn" onclick="showWorkoutDetails(${index})">
+                            <button class="program-btn info-btn" onclick="showWorkoutDetails(${JSON.stringify(workout).replace(/"/g, '&quot;')})">
                                 <span class="material-symbols-rounded">info</span>
                                 Подробнее
                             </button>
                             <button class="program-btn start-btn" 
-                                    onclick="startWorkout(${index})"
+                                    onclick="startWorkout(${JSON.stringify(workout).replace(/"/g, '&quot;')})"
                                     ${isLocked ? 'disabled' : ''}>
                                 <span class="material-symbols-rounded">play_arrow</span>
                                 Начать
