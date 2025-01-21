@@ -1451,7 +1451,16 @@ function showProgramsList() {
 
     // Возвращаем исходный HTML
     container.innerHTML = `
-        <div class="programs-list"></div>
+        <div class="tab-content active" id="workouts">
+            <div class="programs-list"></div>
+        </div>
+        <div class="tab-content" id="calendar"></div>
+        <div class="tab-content" id="stats">
+            <div class="statistics-container"></div>
+        </div>
+        <div class="tab-content" id="profile">
+            <div class="profile-container"></div>
+        </div>
     `;
 
     // Отображаем список программ
@@ -1461,6 +1470,7 @@ function showProgramsList() {
     const bottomNav = document.querySelector('.bottom-nav');
     if (bottomNav) {
         bottomNav.classList.remove('hidden');
+        
         // Активируем вкладку "Тренировки"
         const tabs = bottomNav.querySelectorAll('.tab-btn');
         tabs.forEach(tab => {
@@ -1470,13 +1480,20 @@ function showProgramsList() {
                 tab.classList.remove('active');
             }
         });
+
+        // Показываем соответствующий контент
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabContents.forEach(content => {
+            if (content.id === 'workouts') {
+                content.classList.add('active');
+            } else {
+                content.classList.remove('active');
+            }
+        });
     }
 
-    // Обновляем заголовок страницы
-    const pageTitle = document.querySelector('.page-title');
-    if (pageTitle) {
-        pageTitle.textContent = 'Программы тренировок';
-    }
+    // Восстанавливаем обработчики вкладок
+    setupTabHandlers();
 }
 
 // Функция для отображения тренировок программы
