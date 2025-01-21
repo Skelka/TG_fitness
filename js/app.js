@@ -727,10 +727,14 @@ function setupEventListeners() {
     setupTabHandlers();
 
     // Обработка событий попапа
-    tg.onEvent('popupClosed', (button_id) => {
-        if (button_id && button_id.startsWith('start_workout_')) {
-            const [_, programId, day] = button_id.split('_').slice(2);
-            startWorkout(programId, parseInt(day));
+    tg.onEvent('popupClosed', async (event) => {
+        console.log('Popup closed with event:', event);
+
+        if (event.button_id) {
+            if (event.button_id.startsWith('start_program_')) {
+                const programId = event.button_id.replace('start_program_', '');
+                await startProgram(programId);
+            }
         }
     });
 
@@ -1157,38 +1161,64 @@ function getWorkoutIdByTitle(title) {
 }
 
 // Функция показа деталей программы
-function showProgramDetails(programId) {
-    const program = programData[programId];
+async function showProgramDetails(programId) {
+    const program = window.programData[programId];
     if (!program) return;
 
-    // Показываем основную информацию в более компактном виде
-    const mainInfo = `
-        <b>${program.title}</b>
-        ${program.description}
-
-        📅 ${program.schedule}
-        🔥 ${program.calories_per_week}
-        💪 Сложность: ${program.difficulty}
+    const scheduleHtml = `
+        <div class="program-schedule">
+            <h4>Расписание тренировок:</h4>
+            <div class="schedule-list">
+                ${program.workouts.map((workout, index) => `
+                    <div class="schedule-item">
+                        <span>День ${index + 1}</span>
+                        <span>${workout.title}</span>
+                        <span>${workout.duration} мин</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
     `;
 
-    // Ограничиваем количество кнопок до 3
-    const buttons = [
-        {
-            id: `start_program_${programId}`,
-            type: 'default',
-            text: 'Начать программу'
-        },
-        {
-            id: `schedule_${programId}`,
-            type: 'default',
-            text: 'Расписание'
-        }
-    ];
+    const resultsHtml = `
+        <div class="program-results">
+            <h4>Ожидаемые результаты:</h4>
+            <ul>
+                ${program.results.map(result => `<li>${result}</li>`).join('')}
+            </ul>
+        </div>
+    `;
 
-    tg.showPopup({
+    await showPopupSafe({
         title: program.title,
-        message: mainInfo,
-        buttons: buttons
+        message: `
+            <div class="program-details">
+                <p>${program.description}</p>
+                <div class="program-info">
+                    <div class="info-item">
+                        <span class="material-symbols-rounded">calendar_month</span>
+                        <span>${program.duration}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="material-symbols-rounded">schedule</span>
+                        <span>${program.schedule}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="material-symbols-rounded">local_fire_department</span>
+                        <span>${program.calories_per_week}</span>
+                    </div>
+                </div>
+                ${scheduleHtml}
+                ${resultsHtml}
+            </div>
+        `,
+        buttons: [
+            {
+                type: 'default',
+                text: 'Начать программу',
+                id: `start_program_${programId}`
+            }
+        ]
     });
 }
 
@@ -1319,7 +1349,7 @@ async function startProgram(programId) {
         // Создаем контейнер для списка тренировок
         container.innerHTML = `
             <div class="program-header">
-                <button class="back-btn" onclick="renderProgramCards()">
+                <button class="back-btn" onclick="showProgramsList()">
                     <span class="material-symbols-rounded">arrow_back</span>
                 </button>
                 <h2>${program.title}</h2>
@@ -1340,6 +1370,20 @@ async function startProgram(programId) {
         console.error('Ошибка при запуске программы:', error);
         showError(error.message);
     }
+}
+
+// Функция для возврата к списку программ
+function showProgramsList() {
+    const container = document.querySelector('.container');
+    if (!container) return;
+
+    // Возвращаем исходный HTML
+    container.innerHTML = `
+        <div class="programs-list"></div>
+    `;
+
+    // Отображаем список программ
+    renderProgramCards();
 }
 
 // Функция для отображения тренировок программы
