@@ -210,12 +210,24 @@ function updateProfileStatus(profile) {
     const statusElement = document.querySelector('.profile-status');
     if (!statusElement) return;
 
-    // Определяем статус на основе заполненности профиля и активности
+    if (!profile || Object.keys(profile).length === 0) {
+        statusElement.textContent = 'Новичок';
+        return;
+    }
+
     let status = 'Новичок';
-    if (profile.completedWorkouts > 20) {
+    if (profile.level) {
+        switch(profile.level) {
+            case 'beginner':
+                status = 'Новичок';
+                break;
+            case 'intermediate':
+                status = 'Продолжающий';
+                break;
+            case 'advanced':
         status = 'Продвинутый';
-    } else if (profile.completedWorkouts > 5) {
-        status = 'Опытный';
+                break;
+        }
     }
     statusElement.textContent = status;
 }
@@ -266,11 +278,15 @@ async function saveProfile() {
 
 // Вспомогательные функции
 function showError(error) {
+    const message = error instanceof Error ? error.message : error;
     tg.HapticFeedback.notificationOccurred('error');
     tg.showPopup({
         title: 'Ошибка',
-        message: error.message,
-        buttons: [{type: 'ok'}]
+        message: message,
+        buttons: [{
+            type: 'ok',
+            text: 'OK'
+        }]
     });
 }
 
@@ -278,7 +294,6 @@ function showError(error) {
 function fillProfileForm(profile) {
     if (!profile) return;
 
-    // Заполняем поля формы
     const form = document.getElementById('profile-form');
     if (!form) return;
 
@@ -1145,34 +1160,34 @@ function showProgramSchedule(programId) {
 
 // Обновим обработчик событий попапа
 function setupPopupHandlers() {
-    tg.onEvent('popupClosed', (event) => {
+    tg.onEvent('popupClosed', async (event) => {
         console.log('Popup closed with event:', event);
-        if (event && event.button_id) {
-            if (event.button_id.startsWith('start_workout_')) {
-                // Извлекаем programId и workoutDay из button_id
-                const [_, __, programId, workoutDay] = event.button_id.split('_').slice(2);
-                console.log('Starting workout:', programId, workoutDay);
-                startWorkoutSession(programId, parseInt(workoutDay));
-            } else {
-                const [action, ...params] = event.button_id.split('_');
-                
-                switch(action) {
-                    case 'results':
-                        showProgramResults(params[0]);
-                        break;
-                    case 'schedule':
-                        showProgramSchedule(params[0]);
-                        break;
-                    case 'start':
-                        if (params[0] === 'program') {
-                            startProgram(params[1]);
-                        }
-                        break;
-                    case 'back':
-                        showProgramDetails(params[0]);
-                        break;
+        
+        // Обрабатываем разные типы попапов
+        switch(event.button_id) {
+            case 'clear_confirm':
+                try {
+                    // Очищаем все данные
+                    await Promise.all([
+                        setStorageItem('profile', ''),
+                        setStorageItem('activeProgram', ''),
+                        setStorageItem('weightHistory', ''),
+                        setStorageItem('completedWorkouts', '')
+                    ]);
+
+                    // Обновляем UI
+                    fillProfileForm({});
+                    updateProfileStatus({});
+                    renderProgramCards();
+                    
+                    tg.HapticFeedback.notificationOccurred('success');
+                    showSuccess('Все данные очищены');
+                } catch (error) {
+                    console.error('Ошибка при очистке данных:', error);
+                    showError('Не удалось очистить данные');
                 }
-            }
+                break;
+            // Можно добавить другие case для других попапов
         }
     });
 }
@@ -1772,29 +1787,20 @@ async function clearAllData() {
                 }
             ]
         });
-
-        // Добавляем обработчик для подтверждения
-        tg.onEvent('popupClosed', async (event) => {
-            if (event.button_id === 'clear_confirm') {
-                // Очищаем все данные
-                await Promise.all([
-                    setStorageItem('profile', ''),
-                    setStorageItem('activeProgram', ''),
-                    setStorageItem('weightHistory', ''),
-                    setStorageItem('completedWorkouts', '')
-                ]);
-
-                // Обновляем UI
-                fillProfileForm({});
-                updateProfileStatus({});
-                renderProgramCards();
-                
-                tg.HapticFeedback.notificationOccurred('success');
-                showSuccess('Все данные очищены');
-            }
-        });
     } catch (error) {
-        console.error('Ошибка при очистке данных:', error);
-        showError('Не удалось очистить данные');
+        console.error('Ошибка при показе попапа:', error);
+        showError('Не удалось показать окно подтверждения');
     }
+} 
+
+// Функции для показа уведомлений
+function showSuccess(message) {
+    tg.showPopup({
+        title: 'Успешно',
+        message: message,
+        buttons: [{
+            type: 'ok',
+            text: 'OK'
+        }]
+    });
 } 
