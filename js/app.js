@@ -12,15 +12,24 @@ async function showPopupSafe(options) {
     return new Promise((resolve) => {
         try {
             // Закрываем текущий попап, если он открыт
-            tg.closePopup();
+            try {
+                tg.closePopup();
+            } catch (e) {
+                console.log('Нет открытого попапа для закрытия');
+            }
             
             // Небольшая задержка перед открытием нового попапа
             setTimeout(() => {
-                tg.showPopup(options);
-                resolve();
-            }, 50);
+                try {
+                    tg.showPopup(options);
+                    resolve();
+                } catch (error) {
+                    console.error('Ошибка при показе попапа:', error);
+                    resolve(error);
+                }
+            }, 100);
         } catch (error) {
-            console.error('Ошибка показа попапа:', error);
+            console.error('Общая ошибка показа попапа:', error);
             resolve(error);
         }
     });
@@ -1447,6 +1456,27 @@ function showProgramsList() {
 
     // Отображаем список программ
     renderProgramCards();
+
+    // Восстанавливаем нижнюю навигацию
+    const bottomNav = document.querySelector('.bottom-nav');
+    if (bottomNav) {
+        bottomNav.classList.remove('hidden');
+        // Активируем вкладку "Тренировки"
+        const tabs = bottomNav.querySelectorAll('.tab-btn');
+        tabs.forEach(tab => {
+            if (tab.dataset.tab === 'workouts') {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
+    }
+
+    // Обновляем заголовок страницы
+    const pageTitle = document.querySelector('.page-title');
+    if (pageTitle) {
+        pageTitle.textContent = 'Программы тренировок';
+    }
 }
 
 // Функция для отображения тренировок программы
