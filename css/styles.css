@@ -1,7 +1,99 @@
-/* Удаляем старые стили */
-.workout-btn,
-.action-btn {
-    display: none;
+:root {
+    --tg-theme-bg-color: #ffffff;
+    --tg-theme-text-color: #000000;
+    --tg-theme-button-color: #40a7e3;
+    --tg-theme-button-text-color: #ffffff;
+    --tg-theme-hint-color: #999999;
+    --primary-color: #40a7e3;
+    --secondary-color: #f5f5f5;
+    --transition-speed: 0.3s;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --card-border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--tg-theme-bg-color);
+    color: var(--tg-theme-text-color);
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding-bottom: 70px;
+}
+
+/* Стили для карточек программ */
+.program-card {
+    background: var(--tg-theme-bg-color);
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    border: var(--card-border);
+}
+
+.program-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.program-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--tg-theme-button-color);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.program-icon .material-symbols-rounded {
+    font-size: 24px;
+    color: var(--tg-theme-button-text-color);
+}
+
+.program-info {
+    flex: 1;
+}
+
+.program-info h3 {
+    font-size: 18px;
+    margin: 0;
+}
+
+.program-description {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+    margin: 4px 0;
+}
+
+.program-meta {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--tg-theme-hint-color);
+}
+
+.meta-item .material-symbols-rounded {
+    font-size: 16px;
 }
 
 /* Стили для кнопок в карточках программ */
@@ -53,6 +145,36 @@
     font-size: 16px;
     font-variation-settings: 'FILL' 0, 'wght' 400;
 }
+
+/* Нижняя навигация */
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--tg-theme-bg-color);
+    padding: 8px 0;
+    border-top: 1px solid var(--tg-theme-hint-color);
+}
+
+.nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    color: var(--tg-theme-hint-color);
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.nav-btn.active {
+    color: var(--tg-theme-button-color);
+}
+
+/* Остальные стили остаются без изменений */
+/* ... */
 
 /* Стили для заблокированных карточек */
 .workout-card.locked {
