@@ -932,358 +932,167 @@ input:focus, select:focus {
     background: var(--tg-theme-button-color);
 }
 
-/* Убираем ненужные стили */
-.equipment-grid {
-    display: none;
+/* Удаляем все старые стили для кнопок */
+.workout-btn,
+.action-btn {
+    display: none !important; /* Добавляем !important для перезаписи */
 }
 
-input[type="number"] {
-    appearance: textfield;
-    -moz-appearance: textfield;
-    -webkit-appearance: textfield;
+/* Стили для контейнера кнопок */
+.workout-actions {
+    display: flex !important;
+    gap: 8px !important;
+    margin-top: 12px !important;
 }
 
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    appearance: none;
-    margin: 0;
+/* Базовые стили для всех кнопок программы */
+.program-btn {
+    flex: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    height: 32px !important;
+    padding: 0 12px !important;
+    border-radius: 8px !important;
+    border: none !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    cursor: pointer !important;
+    transition: opacity 0.15s ease !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    white-space: nowrap !important;
 }
 
-.input-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 14px;
-    color: var(--tg-theme-hint-color);
-    text-align: center;
+/* Стиль для кнопки "Подробнее" */
+.program-btn.info-btn {
+    background: var(--tg-theme-secondary-bg-color) !important;
+    color: var(--tg-theme-text-color) !important;
 }
 
-/* Стили для сетки целей */
-.goals-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 16px;
+/* Стиль для кнопки "Начать" */
+.program-btn.start-btn {
+    background: var(--tg-theme-button-color) !important;
+    color: var(--tg-theme-button-text-color) !important;
 }
 
-.goal-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 12px;
+/* Эффект при нажатии */
+.program-btn:active {
+    opacity: 0.7 !important;
+}
+
+/* Стиль для иконок в кнопках */
+.program-btn .material-symbols-rounded {
+    font-size: 16px !important;
+    font-variation-settings: 'FILL' 0, 'wght' 400 !important;
+}
+
+/* Стили для карточек программы */
+.workout-card {
     background: var(--tg-theme-bg-color);
-    border-radius: 12px;
-    cursor: pointer;
-    text-align: center;
-}
-
-.goal-item input {
-    display: none;
-}
-
-.goal-icon {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: 12px;
-    transition: all 0.3s;
-}
-
-.goal-item input:checked + .goal-icon {
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-}
-
-.goal-label {
-    font-size: 14px;
-    text-align: center;
-    line-height: 1.2;
-}
-
-/* Обновляем размеры иконок оборудования */
-.equipment-icon .material-symbols-rounded {
-    font-size: 24px;
-}
-
-/* Добавляем анимацию при выборе */
-.goal-item input:checked + .goal-icon,
-.equipment-item input:checked + .equipment-icon {
-    transform: scale(1.05);
-}
-
-/* Обновляем стили для страницы тренировки */
-.workout-session {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: #000;
-    color: #fff;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1000;
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    border: var(--card-border);
 }
 
 .workout-header {
-    padding: 16px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: transparent;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 10;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
-.workout-header .back-btn {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.workout-title {
-    text-align: center;
-    font-size: 16px;
-    font-weight: normal;
-    opacity: 0.8;
-}
-
-.exercise-display {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    padding: 20px;
-    padding-bottom: 100px; /* Добавляем отступ снизу для кнопок */
-}
-
-.exercise-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.5;
-    filter: blur(1px);
-}
-
-.exercise-content {
-    position: relative;
-    z-index: 2;
-    text-align: center;
-    width: 100%;
-}
-
-.exercise-name {
-    font-size: 32px;
-    margin-bottom: 8px;
-    color: #fff;
-}
-
-.exercise-subtitle {
-    font-size: 18px;
-    color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 40px;
-}
-
-.exercise-counter {
-    width: 240px;
-    height: 240px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-}
-
-.counter-number {
-    font-size: 72px;
-    font-weight: bold;
-    margin-bottom: 8px;
-    font-variant-numeric: tabular-nums;
-}
-
-.counter-label {
-    font-size: 18px;
-    opacity: 0.8;
-    text-transform: lowercase;
-}
-
-.exercise-controls {
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
-}
-
-.control-btn {
+.workout-icon {
     width: 48px;
     height: 48px;
-    border: none;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    backdrop-filter: blur(5px);
-}
-
-.control-btn:active {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.complete-btn {
-    flex: 1;
-    height: 48px;
-    border: none;
-    background: #fff;
-    color: #000;
-    border-radius: 24px;
-    font-size: 18px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.complete-btn:active {
-    background: rgba(255, 255, 255, 0.9);
-}
-
-/* Стили для экрана отдыха */
-.rest-screen {
-    position: relative;
-    z-index: 2;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 24px;
-    color: white;
-    background: rgba(0, 0, 0, 0.7);
-}
-
-.rest-icon {
-    width: 80px;
-    height: 80px;
-    border-radius: 40px;
-    background: var(--tg-theme-secondary-bg-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.rest-icon .material-symbols-rounded {
-    font-size: 40px;
-    color: var(--tg-theme-button-color);
-}
-
-.rest-timer {
-    font-size: 48px;
-    font-weight: bold;
-    color: var(--tg-theme-button-color);
-}
-
-.skip-rest-btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    background: var(--tg-theme-secondary-bg-color);
-    color: var(--tg-theme-text-color);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-}
-
-/* Стили для экрана завершения тренировки */
-.workout-complete {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 24px;
-    text-align: center;
-    padding: 24px;
-}
-
-.complete-icon {
-    width: 100px;
-    height: 100px;
-    border-radius: 50px;
     background: var(--tg-theme-button-color);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
-.complete-icon .material-symbols-rounded {
-    font-size: 48px;
+.workout-icon .material-symbols-rounded {
+    font-size: 24px;
     color: var(--tg-theme-button-text-color);
 }
 
-.workout-stats {
+.workout-info {
+    flex: 1;
+}
+
+.workout-info h3 {
+    font-size: 18px;
+    margin: 0;
     display: flex;
-    gap: 24px;
-    margin: 24px 0;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.stat-item {
-    text-align: center;
-}
-
-.stat-value {
-    display: block;
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--tg-theme-button-color);
-}
-
-.stat-label {
+.workout-description {
     font-size: 14px;
+    color: var(--tg-theme-hint-color);
+    margin: 4px 0 12px;
+}
+
+.workout-details {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.workout-details span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
     color: var(--tg-theme-hint-color);
 }
 
-.finish-btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
+.workout-details .material-symbols-rounded {
+    font-size: 16px;
+}
+
+.workout-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Стили для кнопок действий */
+.action-btn {
+    flex: 1;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
     cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.action-btn:active {
+    opacity: 0.8;
+}
+
+.action-btn .material-symbols-rounded {
+    font-size: 18px;
+}
+
+/* Стили для заблокированных карточек */
+.workout-card.locked {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.workout-card.locked .start-btn {
+    background: var(--tg-theme-hint-color);
 }
 
 /* Стили для страницы программы */
