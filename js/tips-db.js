@@ -179,7 +179,7 @@ function getRandomTip(category) {
 }
 
 // Функция для получения персонализированных советов
-async function getTips() {
+window.getTips = async function() {
     try {
         // Получаем данные профиля и прогресса
         const [profileData, programData] = await Promise.all([
@@ -228,6 +228,4 @@ async function getTips() {
         console.error('Ошибка при получении советов:', error);
         return [];
     }
-}
-
-export { getTips }; 
+}; 

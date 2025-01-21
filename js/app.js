@@ -1,6 +1,3 @@
-// В начале файла добавляем все необходимые импорты
-import { getTips } from './tips-db.js';
-
 // Глобальные переменные
 if (!window.Telegram?.WebApp) {
     console.error('Telegram WebApp не инициализирован');
