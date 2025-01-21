@@ -2095,7 +2095,10 @@ async function showProgramWorkouts(program) {
 
     // Определяем последний доступный день
     const completedWorkouts = progress.completedWorkouts || [];
-    const lastCompletedDay = Math.max(...completedWorkouts.map(w => w.day) || [0]);
+    // Исправляем логику определения следующего доступного дня
+    const lastCompletedDay = completedWorkouts.length > 0 
+        ? Math.max(...completedWorkouts.map(w => w.day))
+        : 0;
     const nextAvailableDay = lastCompletedDay + 1;
 
     console.log('Последний завершенный день:', lastCompletedDay);
@@ -2111,7 +2114,8 @@ async function showProgramWorkouts(program) {
             </div>
             <div class="program-days">
                 ${program.workouts.map((workout, index) => {
-                    const isAvailable = workout.day <= nextAvailableDay;
+                    // Первый день всегда доступен
+                    const isAvailable = index === 0 || workout.day <= nextAvailableDay;
                     const isCompleted = completedWorkouts.some(w => w.day === workout.day);
                     return `
                         <div class="workout-day ${isCompleted ? 'completed' : ''} ${isAvailable ? 'available' : 'locked'}">
