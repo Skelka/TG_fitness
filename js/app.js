@@ -128,38 +128,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Экспортируем функции, которые нужны другим модулям
-export { getStorageItem, setStorageItem };
-
-// Функции для работы с CloudStorage
-async function getStorageItem(key) {
+// Делаем функции глобальными
+window.getStorageItem = async function(key) {
     try {
-    return new Promise((resolve) => {
-        if (!tg?.CloudStorage) {
+        return new Promise((resolve) => {
+            if (!tg?.CloudStorage) {
                 const value = localStorage.getItem(key);
                 console.warn(`CloudStorage недоступен, используем localStorage для ${key}:`, value);
                 resolve(value);
-            return;
-        }
-
-        tg.CloudStorage.getItem(key, (error, value) => {
-            if (error) {
-                console.warn(`Ошибка CloudStorage для ${key}:`, error);
-                const localValue = localStorage.getItem(key);
-                resolve(localValue);
-            } else {
-                if (value) localStorage.setItem(key, value);
-                resolve(value);
+                return;
             }
+
+            tg.CloudStorage.getItem(key, (error, value) => {
+                if (error) {
+                    console.warn(`Ошибка CloudStorage для ${key}:`, error);
+                    const localValue = localStorage.getItem(key);
+                    resolve(localValue);
+                } else {
+                    if (value) localStorage.setItem(key, value);
+                    resolve(value);
+                }
+            });
         });
-    });
     } catch (error) {
         console.error(`Ошибка при получении ${key}:`, error);
         return null;
     }
-}
+};
 
-async function setStorageItem(key, value) {
+window.setStorageItem = async function(key, value) {
     return new Promise((resolve) => {
         if (!tg?.CloudStorage) {
             console.warn('CloudStorage не доступен, используем localStorage');
@@ -171,17 +168,15 @@ async function setStorageItem(key, value) {
         tg.CloudStorage.setItem(key, value, (error, success) => {
             if (error || !success) {
                 console.warn(`Ошибка CloudStorage для ${key}:`, error);
-                // Сохраняем в localStorage как запасной вариант
                 localStorage.setItem(key, value);
                 resolve(true);
             } else {
-                // Синхронизируем с localStorage
                 localStorage.setItem(key, value);
                 resolve(success);
             }
         });
     });
-}
+};
 
 // Загрузка данных профиля
 async function loadProfile() {
@@ -1569,14 +1564,6 @@ async function renderTips() {
         `;
     }
 }
-
-// Добавляем вызов renderTips при загрузке статистики
-async function renderStatistics() {
-    // ... существующий код ...
-
-    // Добавляем отрисовку советов
-    await renderTips();
-} 
 
 // Обновляем функцию getExerciseAnimation
 function getExerciseAnimation(exerciseName) {

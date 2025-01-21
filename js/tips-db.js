@@ -1,4 +1,5 @@
-import { getStorageItem } from './app.js';
+// Удаляем импорт
+// import { getStorageItem } from './app.js';
 
 // База советов по категориям
 const tipsDatabase = {
@@ -178,13 +179,13 @@ function getRandomTip(category) {
     return tips[Math.floor(Math.random() * tips.length)];
 }
 
-// Функция для получения персонализированных советов
+// Делаем getTips глобальной функцией
 window.getTips = async function() {
     try {
         // Получаем данные профиля и прогресса
         const [profileData, programData] = await Promise.all([
-            getStorageItem('profile').then(data => data ? JSON.parse(data) : null),
-            getStorageItem('activeProgram').then(data => data ? JSON.parse(data) : null)
+            window.getStorageItem('profile').then(data => data ? JSON.parse(data) : null),
+            window.getStorageItem('activeProgram').then(data => data ? JSON.parse(data) : null)
         ]);
 
         const tips = [];
