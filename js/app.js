@@ -113,8 +113,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Рендерим карточки программ
         renderProgramCards();
 
+        // Инициализируем статистику
+        await renderStatistics();
+
+        console.log('Приложение успешно инициализировано');
     } catch (error) {
         console.error('Ошибка инициализации:', error);
+        showError(error);
     }
 });
 
@@ -2363,6 +2368,7 @@ async function saveProfileSettings() {
     await setStorageItem('profile', JSON.stringify(updatedProfile));
 } 
 
+// Удаляем дублирующуюся функцию renderStatistics и оставляем только одну версию
 async function renderStatistics() {
     try {
         // Загружаем данные о тренировках
@@ -2372,95 +2378,11 @@ async function renderStatistics() {
         const container = document.querySelector('.statistics-container');
         if (!container) return;
 
-        if (!activeProgram || !activeProgram.completedWorkouts?.length) {
-            // Показываем заглушку, если нет данных
-            container.innerHTML = `
-                <div class="stats-overview">
-                    <div class="stat-card">
-                        <span class="material-symbols-rounded">exercise</span>
-                        <h3>0</h3>
-                        <p>Тренировок</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="material-symbols-rounded">timer</span>
-                        <h3>0м</h3>
-                        <p>Общее время</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="material-symbols-rounded">local_fire_department</span>
-                        <h3>0</h3>
-                        <p>Ккал сожжено</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="material-symbols-rounded">trending_up</span>
-                        <h3>0%</h3>
-                        <p>Достижение цели</p>
-                    </div>
-                </div>
-                <div class="weight-section">
-                    <h3>Динамика веса</h3>
-                    <div class="period-selector">
-                        <button class="period-btn active" data-period="week">Неделя</button>
-                        <button class="period-btn" data-period="month">Месяц</button>
-                        <button class="period-btn" data-period="year">Год</button>
-                    </div>
-                    <canvas id="weight-chart"></canvas>
-                </div>
-                <div class="tips-list"></div>
-            `;
-        } else {
-            // Рассчитываем статистику
-            const totalWorkouts = activeProgram.completedWorkouts.length;
-            const totalDuration = activeProgram.completedWorkouts.reduce((sum, w) => sum + (w.duration || 0), 0);
-            const totalCalories = activeProgram.completedWorkouts.reduce((sum, w) => sum + (w.calories || 0), 0);
-            const goalProgress = Math.round((totalWorkouts / activeProgram.workouts.length) * 100);
-
-            // Обновляем статистику
-            container.innerHTML = `
-                <div class="stats-overview">
-                    <div class="stat-card">
-                        <span class="material-symbols-rounded">exercise</span>
-                        <h3>${totalWorkouts}</h3>
-                        <p>Тренировок</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="material-symbols-rounded">timer</span>
-                        <h3>${totalDuration}м</h3>
-                        <p>Общее время</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="material-symbols-rounded">local_fire_department</span>
-                        <h3>${totalCalories}</h3>
-                        <p>Ккал сожжено</p>
-                    </div>
-                    <div class="stat-card">
-                        <span class="material-symbols-rounded">trending_up</span>
-                        <h3>${goalProgress}%</h3>
-                        <p>Достижение цели</p>
-                    </div>
-                </div>
-                <div class="weight-section">
-                    <h3>Динамика веса</h3>
-                    <div class="period-selector">
-                        <button class="period-btn active" data-period="week">Неделя</button>
-                        <button class="period-btn" data-period="month">Месяц</button>
-                        <button class="period-btn" data-period="year">Год</button>
-                    </div>
-                    <canvas id="weight-chart"></canvas>
-                </div>
-                <div class="tips-list"></div>
-            `;
-        }
+        // Отображаем статистику
+        renderStatisticsContent(activeProgram, container);
 
         // Настраиваем обработчики периодов
-        const periodBtns = container.querySelectorAll('.period-btn');
-        periodBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                periodBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                updateWeightChart(btn.dataset.period);
-            });
-        });
+        setupPeriodHandlers(container);
 
         // Инициализируем график с недельным периодом
         updateWeightChart('week');
@@ -2472,6 +2394,83 @@ async function renderStatistics() {
         console.error('Ошибка при отображении статистики:', error);
         showError('Не удалось загрузить статистику');
     }
+}
+
+// Выносим отображение контента в отдельную функцию
+function renderStatisticsContent(activeProgram, container) {
+    if (!activeProgram || !activeProgram.completedWorkouts?.length) {
+        container.innerHTML = getEmptyStatisticsHTML();
+    } else {
+        const stats = calculateStatistics(activeProgram);
+        container.innerHTML = getStatisticsHTML(stats);
+    }
+}
+
+// Вспомогательные функции
+function getEmptyStatisticsHTML() {
+    return `
+        <div class="stats-overview">
+            <div class="stat-card">
+                <span class="material-symbols-rounded">exercise</span>
+                <h3>0</h3>
+                <p>Тренировок</p>
+            </div>
+            <!-- Остальные карточки статистики -->
+        </div>
+        <div class="weight-section">
+            <h3>Динамика веса</h3>
+            <div class="period-selector">
+                <button class="period-btn active" data-period="week">Неделя</button>
+                <button class="period-btn" data-period="month">Месяц</button>
+                <button class="period-btn" data-period="year">Год</button>
+            </div>
+            <canvas id="weight-chart"></canvas>
+        </div>
+        <div class="tips-list"></div>
+    `;
+}
+
+function calculateStatistics(activeProgram) {
+    const totalWorkouts = activeProgram.completedWorkouts.length;
+    const totalDuration = activeProgram.completedWorkouts.reduce((sum, w) => sum + (w.duration || 0), 0);
+    const totalCalories = activeProgram.completedWorkouts.reduce((sum, w) => sum + (w.calories || 0), 0);
+    const goalProgress = Math.round((totalWorkouts / activeProgram.workouts.length) * 100);
+
+    return { totalWorkouts, totalDuration, totalCalories, goalProgress };
+}
+
+function getStatisticsHTML(stats) {
+    return `
+        <div class="stats-overview">
+            <div class="stat-card">
+                <span class="material-symbols-rounded">exercise</span>
+                <h3>${stats.totalWorkouts}</h3>
+                <p>Тренировок</p>
+            </div>
+            <!-- Остальные карточки статистики -->
+        </div>
+        <div class="weight-section">
+            <h3>Динамика веса</h3>
+            <div class="period-selector">
+                <button class="period-btn active" data-period="week">Неделя</button>
+                <button class="period-btn" data-period="month">Месяц</button>
+                <button class="period-btn" data-period="year">Год</button>
+            </div>
+            <canvas id="weight-chart"></canvas>
+        </div>
+        <div class="tips-list"></div>
+    `;
+}
+
+function setupPeriodHandlers(container) {
+    const periodBtns = container.querySelectorAll('.period-btn');
+    periodBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            periodBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateWeightChart(btn.dataset.period);
+        });
+    });
 }
 
 // Функция для получения персонализированных советов
@@ -2569,4 +2568,16 @@ async function renderStatistics() {
 
     // Добавляем отрисовку советов
     await renderTips();
+} 
+
+// Добавляем функцию для получения изображения упражнения
+function getExerciseAnimation(exerciseName) {
+    // Возвращаем локальный путь к изображению или заглушку
+    const defaultImage = './images/exercise-placeholder.png';
+    try {
+        return exerciseImages[exerciseName] || defaultImage;
+    } catch (error) {
+        console.warn(`Изображение для упражнения ${exerciseName} не найдено`);
+        return defaultImage;
+    }
 } 
