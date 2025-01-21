@@ -815,7 +815,15 @@ function startWorkoutExecution(workout) {
         // Проверяем, нужно ли переходить к следующему упражнению
         if (currentSet >= exercise.sets) {
             currentSet = 1; // Сбрасываем счетчик подходов
-            startRestTimer(exercise.rest, true); // Передаем флаг окончания упражнения
+            
+            // Проверяем, есть ли следующее упражнение
+            if (currentExerciseIndex < workout.exercises.length - 1) {
+                startRestTimer(exercise.rest, true); // Отдых перед следующим упражнением
+            } else {
+                // Если это было последнее упражнение, завершаем тренировку
+                completeWorkout(workout);
+                return;
+            }
         } else {
             currentSet++; // Увеличиваем счетчик подходов
             startRestTimer(exercise.rest, false); // Обычный отдых между подходами
@@ -1590,56 +1598,62 @@ function setupWorkoutControls(workout, programId) {
 // Функция завершения тренировки
 async function completeWorkout(workout, programId) {
     try {
-        // Добавим проверку входных параметров
-        if (!workout || !programId) {
-            console.warn('Отсутствуют необходимые параметры:', { workout, programId });
-            return;
+        clearInterval(timerInterval);
+        clearInterval(restInterval);
+
+        // Показываем экран завершения
+        container.innerHTML = `
+            <div class="workout-session">
+                <div class="workout-complete">
+                    <div class="complete-icon">
+                        <span class="material-symbols-rounded">check_circle</span>
+                    </div>
+                    <h2>Тренировка завершена!</h2>
+                    <div class="workout-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">${workout.duration}</span>
+                            <span class="stat-label">минут</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">${workout.calories}</span>
+                            <span class="stat-label">ккал</span>
+                        </div>
+                    </div>
+                    <button class="finish-btn" onclick="renderProgramCards()">
+                        <span class="material-symbols-rounded">home</span>
+                        Вернуться
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Возвращаем нижнюю навигацию
+        document.querySelector('.bottom-nav')?.classList.remove('hidden');
+
+        // Сохраняем прогресс
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+
+        if (activeProgram) {
+            activeProgram.completedWorkouts.push({
+                date: Date.now(),
+                workout: workout.title,
+                duration: workout.duration,
+                calories: workout.calories
+            });
+
+            await setStorageItem('activeProgram', JSON.stringify(activeProgram));
         }
-
-        // Получаем текущий прогресс программы
-        const result = await getStorageItem('activeProgram');
-        let programProgress = result ? JSON.parse(result) : {
-            programId: programId,
-            startDate: Date.now(),
-            completedWorkouts: [],
-            plannedWorkouts: []
-        };
-
-        // Добавляем завершенную тренировку
-        programProgress.completedWorkouts.push({
-            day: workout.day,
-            completedAt: Date.now(),
-            duration: workout.duration,
-            type: workout.type,
-            calories: workout.calories || 0
-        });
-
-        // Сохраняем обновленный прогресс
-        await setStorageItem('activeProgram', JSON.stringify(programProgress));
 
         // Обновляем статистику
         await updateStatistics();
 
-        // Показываем сообщение об успехе
-        try {
-            await tg.showPopup({
-                title: 'Тренировка завершена!',
-                message: 'Поздравляем! Вы успешно завершили тренировку.',
-                buttons: [{
-                    type: 'default',
-                    text: 'Продолжить',
-                    id: 'return_to_main'
-                }]
-            });
-        } catch (popupError) {
-            console.warn('Не удалось показать попап:', popupError);
-        }
-
-        // Обновляем UI
-        updateProgramProgress(programProgress);
+        // Вибрация успеха
+        tg.HapticFeedback.notificationOccurred('success');
 
     } catch (error) {
         console.error('Ошибка при завершении тренировки:', error);
+        showError(error);
     }
 }
 
