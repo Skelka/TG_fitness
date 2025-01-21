@@ -753,6 +753,8 @@ async function startWorkout(workout) {
 
 // Основная логика выполнения тренировки переносится в отдельную функцию
 function startWorkoutExecution(workout) {
+    currentWorkout = workout;
+    
     if (!workout || !workout.exercises || !workout.exercises.length) {
         console.error('Некорректные данные тренировки:', workout);
         return;
@@ -762,14 +764,15 @@ function startWorkoutExecution(workout) {
     if (!container) return;
 
     let currentExerciseIndex = 0;
-    let currentSet = 1; // Добавляем счетчик подходов
+    let currentSet = 1;
     let isResting = false;
     let restTimeLeft = 0;
-    let restInterval;
-    let timerInterval;
     let currentReps = 0;
     let timerValue = 0;
     let isTimerMode = false;
+
+    // Очищаем предыдущие таймеры при старте новой тренировки
+    clearTimers();
 
     // Скрываем нижнюю навигацию
     document.querySelector('.bottom-nav')?.classList.add('hidden');
@@ -1612,17 +1615,17 @@ function setupWorkoutControls(workout, programId) {
 async function completeWorkout(workout, programId) {
     try {
         // Очищаем таймеры
-        if (timerInterval) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-        }
-        if (restInterval) {
-            clearInterval(restInterval);
-            restInterval = null;
-        }
+        clearTimers();
 
         const container = document.querySelector('.container');
         if (!container) return;
+
+        // Используем сохраненный workout, если не передан явно
+        const workoutToComplete = workout || currentWorkout;
+        if (!workoutToComplete) {
+            console.error('Нет данных о тренировке для завершения');
+            return;
+        }
 
         // Показываем экран завершения
         container.innerHTML = `
@@ -1634,11 +1637,11 @@ async function completeWorkout(workout, programId) {
                     <h2>Тренировка завершена!</h2>
                     <div class="workout-stats">
                         <div class="stat-item">
-                            <span class="stat-value">${workout.duration}</span>
+                            <span class="stat-value">${workoutToComplete.duration}</span>
                             <span class="stat-label">минут</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-value">${workout.calories}</span>
+                            <span class="stat-value">${workoutToComplete.calories}</span>
                             <span class="stat-label">ккал</span>
                         </div>
                     </div>
@@ -1660,9 +1663,9 @@ async function completeWorkout(workout, programId) {
         if (activeProgram) {
             activeProgram.completedWorkouts.push({
                 date: Date.now(),
-                workout: workout.title,
-                duration: workout.duration,
-                calories: workout.calories
+                workout: workoutToComplete.title,
+                duration: workoutToComplete.duration,
+                calories: workoutToComplete.calories
             });
 
             await setStorageItem('activeProgram', JSON.stringify(activeProgram));
@@ -1670,6 +1673,9 @@ async function completeWorkout(workout, programId) {
 
         // Обновляем статистику
         await updateStatistics();
+
+        // Очищаем текущую тренировку
+        currentWorkout = null;
 
         // Вибрация успеха
         tg.HapticFeedback.notificationOccurred('success');
@@ -2210,6 +2216,18 @@ function getDifficultyText(difficulty) {
         'high': 'Сложный'
     };
     return difficultyMap[difficulty] || 'Средний';
+}
+
+// Добавляем вспомогательную функцию для очистки таймеров
+function clearTimers() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    if (restInterval) {
+        clearInterval(restInterval);
+        restInterval = null;
+    }
 }
 
 // Добавляем функцию для проверки возможности добавления на рабочий стол
