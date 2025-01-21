@@ -2001,57 +2001,52 @@ function renderProgramCards() {
     const programsList = document.querySelector('.programs-list');
     if (!programsList) return;
 
+    console.log('Начало рендеринга программ');
     programsList.innerHTML = '';
 
     Object.values(window.programData).forEach(program => {
-        console.log('Рендерим программу:', program.title);
+        console.log('Рендеринг программы:', program.title);
+        console.log('Количество тренировок:', program.workouts.length);
+        console.log('Тренировки:', program.workouts);
         
         const card = document.createElement('div');
         card.className = 'program-card';
-        card.dataset.program = program.id;
-
         card.innerHTML = `
-            <div class="program-header">
-                <div class="program-icon">
-                    <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
+            <div class="program-icon">
+                <span class="material-symbols-rounded">${program.icon}</span>
+            </div>
+            <div class="program-content">
+                <h3>${program.title}</h3>
+                <p class="program-description">${program.description}</p>
+                <div class="program-details">
+                    <span>
+                        <span class="material-symbols-rounded">calendar_month</span>
+                        ${program.schedule}
+                    </span>
+                    <span>
+                        <span class="material-symbols-rounded">fitness_center</span>
+                        ${getDifficultyText(program.difficulty || program.intensity || 'medium')}
+                    </span>
                 </div>
-                <div class="program-info">
-                    <h3>
-                        ${program.title}
-                        <span class="program-duration">${program.duration}</span>
-                    </h3>
-                    <p class="program-description">${program.description}</p>
-                    <div class="program-details">
-                        <span>
-                            <span class="material-symbols-rounded">calendar_month</span>
-                            ${program.schedule || `${program.workouts?.length || 0} тр/нед`}
-                        </span>
-                        <span>
-                            <span class="material-symbols-rounded">fitness_center</span>
-                            ${getDifficultyText(program.difficulty || program.intensity || 'medium')}
-                        </span>
+                <div class="program-progress">
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 0%"></div>
                     </div>
+                    <span class="progress-text">0/${program.workouts.length} тренировок</span>
                 </div>
-            </div>
-            <div class="program-progress">
-                <div class="progress-bar">
-                    <div class="progress" style="width: 0%"></div>
+                <div class="program-actions">
+                    <button class="info-btn">
+                        <span class="material-symbols-rounded">info</span>
+                        Подробнее
+                    </button>
+                    <button class="start-btn">
+                        <span class="material-symbols-rounded">play_arrow</span>
+                        Начать
+                    </button>
                 </div>
-                <span class="progress-text">0/${program.workouts?.length || 0} тренировок</span>
-            </div>
-            <div class="program-actions">
-                <button class="program-btn info-btn">
-                    <span class="material-symbols-rounded">info</span>
-                    Подробнее
-                </button>
-                <button class="program-btn start-btn">
-                    <span class="material-symbols-rounded">play_arrow</span>
-                    Начать
-                </button>
             </div>
         `;
 
-        // Добавляем обработчики для кнопок
         const startBtn = card.querySelector('.start-btn');
         const infoBtn = card.querySelector('.info-btn');
 
@@ -2076,35 +2071,12 @@ async function showProgramWorkouts(program) {
     console.log('Показываем программу:', program);
     console.log('Тренировки в программе:', program.workouts);
     console.log('Количество тренировок:', program.workouts?.length);
-    console.log('Содержимое data.js:', window.programData);
 
     const programsList = document.querySelector('.programs-list');
     if (!program || !program.workouts) {
         console.error('Программа или тренировки не определены:', program);
         return;
     }
-
-    // Получаем прогресс пользователя
-    const progressData = await getStorageItem('activeProgram');
-    let progress = {};
-    try {
-        progress = progressData ? JSON.parse(progressData) : {};
-    } catch (e) {
-        console.warn('Ошибка парсинга прогресса:', e);
-    }
-
-    console.log('Прогресс пользователя:', progress);
-
-    // Определяем последний доступный день
-    const completedWorkouts = progress.completedWorkouts || [];
-    // Исправляем логику определения следующего доступного дня
-    const lastCompletedDay = completedWorkouts.length > 0 
-        ? Math.max(...completedWorkouts.map(w => w.day))
-        : 0;
-    const nextAvailableDay = lastCompletedDay + 1;
-
-    console.log('Последний завершенный день:', lastCompletedDay);
-    console.log('Следующий доступный день:', nextAvailableDay);
 
     programsList.innerHTML = `
         <div class="program-workouts">
@@ -2116,21 +2088,11 @@ async function showProgramWorkouts(program) {
             </div>
             <div class="program-days">
                 ${program.workouts.map((workout, index) => {
-                    // Первый день всегда доступен
-                    const isAvailable = index === 0 || workout.day <= nextAvailableDay;
-                    const isCompleted = completedWorkouts.some(w => w.day === workout.day);
+                    console.log('Рендеринг тренировки:', workout);
                     return `
-                        <div class="workout-day ${isCompleted ? 'completed' : ''} ${isAvailable ? 'available' : 'locked'}">
+                        <div class="workout-day">
                             <div class="day-header">
                                 <span class="day-number">День ${workout.day}</span>
-                                <span class="day-status">
-                                    ${isCompleted ? 
-                                        '<span class="material-symbols-rounded">task_alt</span>' :
-                                        isAvailable ? 
-                                            '<span class="material-symbols-rounded">lock_open</span>' : 
-                                            '<span class="material-symbols-rounded">lock</span>'
-                                    }
-                                </span>
                             </div>
                             <div class="day-info">
                                 <h3>${workout.title}</h3>
@@ -2145,18 +2107,10 @@ async function showProgramWorkouts(program) {
                                     </span>
                                 </div>
                             </div>
-                            ${isAvailable && !isCompleted ? `
-                                <button class="start-workout-btn" data-workout-index="${index}">
-                                    <span class="material-symbols-rounded">play_arrow</span>
-                                    Начать тренировку
-                                </button>
-                            ` : ''}
-                            ${isCompleted ? `
-                                <button class="repeat-workout-btn" data-workout-index="${index}">
-                                    <span class="material-symbols-rounded">replay</span>
-                                    Повторить
-                                </button>
-                            ` : ''}
+                            <button class="start-workout-btn" data-workout-index="${index}">
+                                <span class="material-symbols-rounded">play_arrow</span>
+                                Начать тренировку
+                            </button>
                         </div>
                     `;
                 }).join('')}
@@ -2171,7 +2125,7 @@ async function showProgramWorkouts(program) {
         tg.HapticFeedback.impactOccurred('medium');
     });
 
-    const workoutBtns = programsList.querySelectorAll('.start-workout-btn, .repeat-workout-btn');
+    const workoutBtns = programsList.querySelectorAll('.start-workout-btn');
     workoutBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const workoutIndex = parseInt(btn.dataset.workoutIndex);
