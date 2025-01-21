@@ -762,6 +762,7 @@ function startWorkoutExecution(workout) {
     if (!container) return;
 
     let currentExerciseIndex = 0;
+    let currentSet = 1; // Добавляем счетчик подходов
     let isResting = false;
     let restTimeLeft = 0;
     let restInterval;
@@ -810,10 +811,18 @@ function startWorkoutExecution(workout) {
     function showRestScreen() {
         isResting = true;
         const exercise = workout.exercises[currentExerciseIndex];
-        startRestTimer(exercise.rest);
+        
+        // Проверяем, нужно ли переходить к следующему упражнению
+        if (currentSet >= exercise.sets) {
+            currentSet = 1; // Сбрасываем счетчик подходов
+            startRestTimer(exercise.rest, true); // Передаем флаг окончания упражнения
+        } else {
+            currentSet++; // Увеличиваем счетчик подходов
+            startRestTimer(exercise.rest, false); // Обычный отдых между подходами
+        }
     }
 
-    function startRestTimer(duration) {
+    function startRestTimer(duration, isExerciseComplete) {
         isResting = true;
         restTimeLeft = duration;
 
@@ -824,6 +833,9 @@ function startWorkoutExecution(workout) {
                         <span class="material-symbols-rounded">timer</span>
                     </div>
                     <h3>Отдых</h3>
+                    <div class="rest-subtitle">
+                        ${isExerciseComplete ? 'Следующее упражнение' : `Подход ${currentSet} из ${workout.exercises[currentExerciseIndex].sets}`}
+                    </div>
                     <div class="rest-timer">${formatTime(restTimeLeft)}</div>
                     <button class="skip-rest-btn">
                         <span class="material-symbols-rounded">skip_next</span>
@@ -836,7 +848,11 @@ function startWorkoutExecution(workout) {
         const skipBtn = container.querySelector('.skip-rest-btn');
         skipBtn?.addEventListener('click', () => {
             clearInterval(restInterval);
-            goToNextExercise();
+            if (isExerciseComplete) {
+                goToNextExercise();
+            } else {
+                renderExercise(); // Возвращаемся к тому же упражнению для следующего подхода
+            }
         });
 
         restInterval = setInterval(() => {
@@ -852,7 +868,11 @@ function startWorkoutExecution(workout) {
 
             if (restTimeLeft <= 0) {
                 clearInterval(restInterval);
-                goToNextExercise();
+                if (isExerciseComplete) {
+                    goToNextExercise();
+                } else {
+                    renderExercise(); // Возвращаемся к тому же упражнению для следующего подхода
+                }
             }
         }, 1000);
     }
@@ -939,7 +959,7 @@ function startWorkoutExecution(workout) {
                     
                     <div class="exercise-content">
                         <h2 class="exercise-name">${exercise.name}</h2>
-                        <div class="exercise-subtitle">Подход ${exercise.currentSet || 1} из ${exercise.sets}</div>
+                        <div class="exercise-subtitle">Подход ${currentSet} из ${exercise.sets}</div>
                         
                         <div class="exercise-counter">
                             <div class="counter-number">${initialValue}</div>
