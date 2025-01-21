@@ -97,5 +97,90 @@ window.programData = {
                 ]
             }
         ]
+    },
+    muscle_gain: {
+        id: 'muscle_gain',
+        title: 'Набор мышечной массы',
+        description: 'Программа для увеличения мышечной массы и силы',
+        duration: '12 недель',
+        difficulty: 'high',
+        category: 'muscle_gain',
+        icon: 'fitness_center',
+        schedule: '4-5 тр/нед',
+        calories_per_week: '4000-4500 ккал',
+        results: [
+            'Увеличение мышечной массы',
+            'Рост силовых показателей',
+            'Улучшение рельефа тела'
+        ],
+        workouts: [
+            {
+                day: 1,
+                title: 'Грудь + Трицепс',
+                duration: 60,
+                calories: 450,
+                type: 'strength',
+                exercises: [
+                    { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
+                    { name: 'Отжимания', sets: 4, reps: '12', rest: 90 },
+                    { name: 'Жим гантелей', sets: 4, reps: '10', rest: 90 },
+                    { name: 'Планка', sets: 3, reps: '45 сек', rest: 60 }
+                ]
+            },
+            {
+                day: 2,
+                title: 'Спина + Бицепс',
+                duration: 60,
+                calories: 450,
+                type: 'strength',
+                exercises: [
+                    { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
+                    { name: 'Подтягивания', sets: 4, reps: '8', rest: 90 },
+                    { name: 'Тяга гантелей', sets: 4, reps: '12', rest: 90 }
+                ]
+            }
+        ]
+    },
+    endurance: {
+        id: 'endurance',
+        title: 'Выносливость',
+        description: 'Программа для развития общей выносливости и работоспособности',
+        duration: '6 недель',
+        difficulty: 'medium',
+        category: 'endurance',
+        icon: 'directions_run',
+        schedule: '3-4 тр/нед',
+        calories_per_week: '3000-3500 ккал',
+        results: [
+            'Повышение выносливости',
+            'Улучшение работы сердечно-сосудистой системы',
+            'Увеличение энергичности'
+        ],
+        workouts: [
+            {
+                day: 1,
+                title: 'Кардио интервалы',
+                duration: 45,
+                calories: 400,
+                type: 'cardio',
+                exercises: [
+                    { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
+                    { name: 'Бёрпи', sets: 5, reps: '30 сек', rest: 30 },
+                    { name: 'Прыжки', sets: 4, reps: '45 сек', rest: 45 }
+                ]
+            },
+            {
+                day: 2,
+                title: 'Силовая выносливость',
+                duration: 40,
+                calories: 350,
+                type: 'circuit',
+                exercises: [
+                    { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
+                    { name: 'Приседания', sets: 3, reps: '20', rest: 45 },
+                    { name: 'Отжимания', sets: 3, reps: '15', rest: 45 }
+                ]
+            }
+        ]
     }
 };

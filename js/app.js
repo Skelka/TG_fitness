@@ -784,13 +784,14 @@ function startWorkoutExecution(workout) {
     }
 
     function startTimer(duration) {
-        isTimerMode = true;
         timerValue = duration;
         clearInterval(timerInterval);
         
+        const counterElement = document.querySelector('.counter-number');
+        const completeBtn = document.querySelector('.complete-btn');
+        
         timerInterval = setInterval(() => {
             timerValue--;
-            const counterElement = document.querySelector('.counter-number');
             if (counterElement) {
                 counterElement.textContent = timerValue;
             }
@@ -977,13 +978,13 @@ function startWorkoutExecution(workout) {
                 </div>
 
                 <div class="exercise-controls">
-                    <button class="control-btn minus-btn" ${isTimerMode ? 'style="display:none"' : ''}>
+                    <button class="control-btn minus-btn" ${isTimerMode ? '' : 'style="display:none"'}>
                         <span class="material-symbols-rounded">remove</span>
                     </button>
                     <button class="complete-btn">
                         ${isTimerMode ? 'Начать' : 'Готово'}
                     </button>
-                    <button class="control-btn plus-btn" ${isTimerMode ? 'style="display:none"' : ''}>
+                    <button class="control-btn plus-btn" ${isTimerMode ? '' : 'style="display:none"'}>
                         <span class="material-symbols-rounded">add</span>
                     </button>
                 </div>
@@ -992,16 +993,50 @@ function startWorkoutExecution(workout) {
 
         setupExerciseHandlers();
 
+        // Если это режим таймера, показываем кнопки +/- для настройки времени
         if (isTimerMode) {
+            const minusBtn = container.querySelector('.minus-btn');
+            const plusBtn = container.querySelector('.plus-btn');
             const completeBtn = container.querySelector('.complete-btn');
-            completeBtn?.addEventListener('click', function() {
-                if (this.textContent === 'Начать') {
-                    startTimer(initialValue);
-                    this.textContent = 'Пропустить';
+            let currentTime = initialValue;
+
+            minusBtn.style.display = 'flex';
+            plusBtn.style.display = 'flex';
+
+            minusBtn.addEventListener('click', () => {
+                if (currentTime > 5) { // Минимальное время 5 секунд
+                    currentTime -= 5;
+                    updateCounter(currentTime);
+                }
+            });
+
+            plusBtn.addEventListener('click', () => {
+                if (currentTime < 300) { // Максимальное время 5 минут
+                    currentTime += 5;
+                    updateCounter(currentTime);
+                }
+            });
+
+            let isTimerRunning = false;
+            completeBtn.addEventListener('click', () => {
+                if (!isTimerRunning) {
+                    // Начинаем отсчет
+                    isTimerRunning = true;
+                    minusBtn.style.display = 'none';
+                    plusBtn.style.display = 'none';
+                    completeBtn.textContent = 'Пропустить';
+                    startTimer(currentTime);
                 } else {
+                    // Пропускаем оставшееся время
                     clearInterval(timerInterval);
                     showRestScreen();
                 }
+            });
+        } else {
+            // Для обычных упражнений оставляем старую логику
+            const completeBtn = container.querySelector('.complete-btn');
+            completeBtn?.addEventListener('click', () => {
+                showRestScreen();
             });
         }
     }
@@ -1598,8 +1633,9 @@ function setupWorkoutControls(workout, programId) {
 // Функция завершения тренировки
 async function completeWorkout(workout, programId) {
     try {
-        clearInterval(timerInterval);
-        clearInterval(restInterval);
+        // Проверяем существование таймеров перед их очисткой
+        if (timerInterval) clearInterval(timerInterval);
+        if (restInterval) clearInterval(restInterval);
 
         // Показываем экран завершения
         container.innerHTML = `
