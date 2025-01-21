@@ -975,6 +975,66 @@ function startWorkoutExecution(workout) {
         });
     }
 
+    function renderExercise() {
+        const exercise = workout.exercises[currentExerciseIndex];
+        isTimerMode = exercise.reps.toString().includes('сек') || 
+                      exercise.reps.toString().includes('мин');
+        
+        let initialValue = isTimerMode ? 
+            parseInt(exercise.reps) || 30 : 
+            0;
+
+        container.innerHTML = `
+            <div class="workout-session">
+                <div class="workout-header">
+                    <button class="back-btn">
+                        <span class="material-symbols-rounded">arrow_back</span>
+                    </button>
+                    <div class="workout-title">
+                        <div>${workout.title}</div>
+                        <div>${exercise.name}</div>
+                    </div>
+                    <div class="workout-progress">
+                        ${currentExerciseIndex + 1}/${workout.exercises.length}
+                    </div>
+                </div>
+
+                <div class="exercise-display">
+                    <img class="exercise-background" 
+                         src="${getExerciseAnimation(exercise.name)}" 
+                         alt="${exercise.name}">
+                    
+                    <div class="exercise-content">
+                        <h2 class="exercise-name">${exercise.name}</h2>
+                        <div class="exercise-subtitle">Подход ${currentSet} из ${exercise.sets}</div>
+                        
+                        <div class="exercise-counter">
+                            <div class="counter-number">${initialValue}</div>
+                            <div class="counter-label">${isTimerMode ? 'секунд' : 'повторений'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="exercise-controls">
+                    <button class="control-btn minus-btn" ${isTimerMode ? '' : 'style="display:none"'}>
+                        <span class="material-symbols-rounded">remove</span>
+                    </button>
+                    <button class="complete-btn">
+                        ${isTimerMode ? 'Начать' : 'Готово'}
+                    </button>
+                    <button class="control-btn plus-btn" ${isTimerMode ? '' : 'style="display:none"'}>
+                        <span class="material-symbols-rounded">add</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        setupExerciseHandlers();
+    }
+
+    // Инициализируем обработчик выхода
+    initExitHandler();
+
     // Начинаем тренировку
     renderExercise();
 
@@ -2245,4 +2305,64 @@ async function saveProfileSettings() {
     };
 
     await setStorageItem('profile', JSON.stringify(updatedProfile));
+} 
+
+function renderWorkouts(program) {
+    const container = document.querySelector('.workouts-list');
+    if (!container) return;
+
+    // Получаем прогресс программы
+    getStorageItem('activeProgram')
+        .then(data => {
+            const progress = data ? JSON.parse(data) : { completedWorkouts: [] };
+            const completedWorkouts = new Set(progress.completedWorkouts.map(w => w.day));
+
+            let html = '';
+            program.workouts.forEach((workout, index) => {
+                const isLocked = index > 0 && !completedWorkouts.has(index);
+                const statusClass = completedWorkouts.has(index + 1) ? 'completed' : 
+                                  isLocked ? 'locked' : '';
+                
+                html += `
+                    <div class="workout-card ${statusClass}">
+                        <div class="workout-header">
+                            <div class="workout-day">День ${index + 1}</div>
+                            <div class="workout-status">
+                                ${completedWorkouts.has(index + 1) ? 
+                                    '<span class="material-symbols-rounded">check_circle</span>' : 
+                                    isLocked ? 
+                                    '<span class="material-symbols-rounded">lock</span>' : 
+                                    ''}
+                            </div>
+                        </div>
+                        <h3>${workout.title}</h3>
+                        <div class="workout-details">
+                            <span>
+                                <span class="material-symbols-rounded">schedule</span>
+                                ${workout.duration} мин
+                            </span>
+                            <span>
+                                <span class="material-symbols-rounded">local_fire_department</span>
+                                ${workout.calories} ккал
+                            </span>
+                        </div>
+                        <div class="workout-actions">
+                            <button class="program-btn info-btn" onclick="showWorkoutDetails(${index})">
+                                <span class="material-symbols-rounded">info</span>
+                                Подробнее
+                            </button>
+                            <button class="program-btn start-btn" 
+                                    onclick="startWorkout(${index})"
+                                    ${isLocked ? 'disabled' : ''}>
+                                <span class="material-symbols-rounded">play_arrow</span>
+                                Начать
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        })
+        .catch(console.error);
 } 

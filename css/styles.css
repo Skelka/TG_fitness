@@ -673,21 +673,26 @@ input:focus, select:focus {
 }
 
 .program-btn {
-    flex: 1;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: 10px;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 12px;
     border: none;
     font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.3s;
 }
 
 .program-btn:active {
-    opacity: 0.8;
+    transform: scale(0.98);
+    opacity: 0.9;
+}
+
+.program-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .program-btn .material-symbols-rounded {
