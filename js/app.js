@@ -2398,16 +2398,33 @@ function clearTimers() {
 
 // Добавляем функцию для проверки возможности добавления на рабочий стол
 async function checkHomeScreenAvailability() {
-    if (tg.platform !== 'android' && tg.platform !== 'ios') {
+    // Проверяем, поддерживается ли платформа
+    if (!tg.isVersionAtLeast('6.1')) {
         return false;
     }
 
-    try {
-        const result = await tg.checkHomeScreenStatus();
-        return !result.is_added; // Возвращаем true если приложение ещё не добавлено
-    } catch (error) {
-        console.warn('Ошибка проверки статуса добавления на рабочий стол:', error);
+    // Проверяем, является ли приложение ботом
+    if (!tg.isBot) {
         return false;
+    }
+
+    // Проверяем, можно ли добавить на рабочий стол
+    if (!tg.canAddToHomeScreen) {
+        return false;
+    }
+
+    return true;
+}
+
+// Функция для добавления на рабочий стол
+async function addToHomeScreen() {
+    try {
+        const canAdd = await checkHomeScreenAvailability();
+        if (canAdd) {
+            tg.addToHomeScreen();
+        }
+    } catch (error) {
+        console.warn('Ошибка при добавлении на рабочий стол:', error);
     }
 }
 
