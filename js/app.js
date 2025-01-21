@@ -742,27 +742,13 @@ function setupEventListeners() {
                     await showPopupSafe({
                         title: 'Расписание тренировок',
                         message: `
-                            <div class="schedule-details">
-                                ${program.workouts.map((workout, index) => `
-                                    <div class="schedule-day">
-                                        <h4>День ${index + 1}</h4>
-                                        <div class="workout-info">
-                                            <p>${workout.title}</p>
-                                            <div class="workout-meta">
-                                                <span>
-                                                    <span class="material-symbols-rounded">schedule</span>
-                                                    ${workout.duration} мин
-                                                </span>
-                                                <span>
-                                                    <span class="material-symbols-rounded">local_fire_department</span>
-                                                    ${workout.calories} ккал
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        `,
+День 1-${program.workouts.length}, ${program.schedule}
+
+${program.workouts.map((workout, index) => 
+    `День ${index + 1}: ${workout.title}
+⏱️ ${workout.duration} мин  •  🔥 ${workout.calories} ккал`
+).join('\n\n')}
+                    `,
                         buttons: [
                             {
                                 type: 'default',
@@ -1151,16 +1137,28 @@ function startWorkoutExecution(workout) {
 
 // Функция показа деталей тренировки
 function showWorkoutDetails(workout) {
+    // Функция для получения типа тренировки на русском
+    function getWorkoutType(type) {
+        const types = {
+            'cardio': 'Кардио',
+            'strength': 'Силовая',
+            'hiit': 'HIIT',
+            'cardio_strength': 'Кардио + Сила',
+            'circuit': 'Круговая'
+        };
+        return types[type] || type;
+    }
+
     tg.showPopup({
         title: workout.title,
         message: `
-${workout.description}
-
+${workout.type ? `📋 Тип: ${getWorkoutType(workout.type)}` : ''}
 🕒 Длительность: ${workout.duration} мин
 🔥 Калории: ${workout.calories} ккал
 
 Упражнения:
-${workout.exercises.map(ex => `• ${ex.name} - ${ex.sets}×${ex.reps} (отдых ${ex.rest} сек)`).join('\n')}
+${workout.exercises.map(ex => `• ${ex.name}
+  ${ex.sets}×${ex.reps}${ex.rest ? ` (отдых ${ex.rest} сек)` : ''}`).join('\n')}
         `,
         buttons: [
             {
