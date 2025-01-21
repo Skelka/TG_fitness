@@ -5,8 +5,21 @@ let tg, mainButton, backButton, currentPeriod, weightChart;
 const popupQueue = [];
 let isPopupShowing = false;
 
-// Инициализация при загрузке страницы
+// В начале файла app.js добавим проверку данных
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('Загруженные программы:', window.programData);
+    console.log('Загруженная база упражнений:', window.exercisesDB);
+
+    if (!window.programData) {
+        console.error('Ошибка: данные программ не загружены');
+        return;
+    }
+
+    if (!window.exercisesDB) {
+        console.error('Ошибка: база упражнений не загружена');
+        return;
+    }
+
     try {
         // Ждем инициализации Telegram WebApp
         await new Promise(resolve => {
@@ -689,10 +702,20 @@ function setupEventListeners() {
 
 // Добавим функцию для запуска тренировки
 async function startWorkout(workout) {
+    console.log('Начинаем тренировку:', workout);
+    console.log('Программы:', window.programData);
+    
     try {
         if (!workout || !workout.exercises || workout.exercises.length === 0) {
             throw new Error('Некорректные данные тренировки');
         }
+
+        // Получаем программу, которой принадлежит тренировка
+        const program = Object.values(window.programData).find(p => 
+            p.workouts.some(w => w.day === workout.day && w.title === workout.title)
+        );
+
+        console.log('Найдена программа:', program?.title);
 
         // Получаем профиль пользователя
         const profileData = await getStorageItem('profile');
@@ -1976,17 +1999,13 @@ async function initStatisticsPage() {
 // Добавим функцию для создания карточек программ
 function renderProgramCards() {
     const programsList = document.querySelector('.programs-list');
-    if (!programsList || !window.programData) return;
+    if (!programsList) return;
 
-    // Очищаем текущий список
     programsList.innerHTML = '';
 
-    // Создаем карточки для каждой программы
     Object.values(window.programData).forEach(program => {
-        const workoutsCount = program.workouts?.length || 0;
-        const schedule = program.schedule || `${workoutsCount} тр/нед`;
-        const difficulty = program.difficulty || program.intensity || 'medium';
-
+        console.log('Рендерим программу:', program.title);
+        
         const card = document.createElement('div');
         card.className = 'program-card';
         card.dataset.program = program.id;
@@ -2005,11 +2024,11 @@ function renderProgramCards() {
                     <div class="program-details">
                         <span>
                             <span class="material-symbols-rounded">calendar_month</span>
-                            ${schedule}
+                            ${program.schedule || `${program.workouts?.length || 0} тр/нед`}
                         </span>
                         <span>
                             <span class="material-symbols-rounded">fitness_center</span>
-                            ${getDifficultyText(difficulty)}
+                            ${getDifficultyText(program.difficulty || program.intensity || 'medium')}
                         </span>
                     </div>
                 </div>
@@ -2018,7 +2037,7 @@ function renderProgramCards() {
                 <div class="progress-bar">
                     <div class="progress" style="width: 0%"></div>
                 </div>
-                <span class="progress-text">0/${workoutsCount} тренировок</span>
+                <span class="progress-text">0/${program.workouts?.length || 0} тренировок</span>
             </div>
             <div class="program-actions">
                 <button class="program-btn info-btn">
@@ -2036,12 +2055,14 @@ function renderProgramCards() {
         const startBtn = card.querySelector('.start-btn');
         const infoBtn = card.querySelector('.info-btn');
 
-        startBtn.addEventListener('click', () => {
+        startBtn?.addEventListener('click', () => {
+            console.log('Нажата кнопка старт для программы:', program.title);
+            console.log('Тренировки в программе:', program.workouts);
             showProgramWorkouts(program);
             tg.HapticFeedback.impactOccurred('medium');
         });
 
-        infoBtn.addEventListener('click', () => {
+        infoBtn?.addEventListener('click', () => {
             showProgramDetails(program);
             tg.HapticFeedback.impactOccurred('medium');
         });
@@ -2052,6 +2073,9 @@ function renderProgramCards() {
 
 // Функция для отображения тренировок программы
 async function showProgramWorkouts(program) {
+    console.log('Показываем программу:', program);
+    console.log('Тренировки в программе:', program.workouts);
+
     const programsList = document.querySelector('.programs-list');
     if (!program || !program.workouts) {
         console.error('Программа или тренировки не определены:', program);
@@ -2067,10 +2091,15 @@ async function showProgramWorkouts(program) {
         console.warn('Ошибка парсинга прогресса:', e);
     }
 
+    console.log('Прогресс пользователя:', progress);
+
     // Определяем последний доступный день
     const completedWorkouts = progress.completedWorkouts || [];
     const lastCompletedDay = Math.max(...completedWorkouts.map(w => w.day) || [0]);
     const nextAvailableDay = lastCompletedDay + 1;
+
+    console.log('Последний завершенный день:', lastCompletedDay);
+    console.log('Следующий доступный день:', nextAvailableDay);
 
     programsList.innerHTML = `
         <div class="program-workouts">
