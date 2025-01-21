@@ -908,137 +908,71 @@ function startWorkoutExecution(workout) {
         const plusBtn = container.querySelector('.plus-btn');
         const completeBtn = container.querySelector('.complete-btn');
 
+        // Обработчик кнопки "Назад"
         backBtn?.addEventListener('click', () => {
             showExitConfirmation();
         });
 
-        // Добавляем обработчик ответа на диалог
-        tg.onEvent('popupClosed', (buttonId) => {
-            if (buttonId === 'exit_workout') {
-                if (timerInterval) clearInterval(timerInterval);
-                if (restInterval) clearInterval(restInterval);
-                document.querySelector('.bottom-nav')?.classList.remove('hidden');
-                renderProgramCards();
+        // Обработчики для кнопок +/-
+        minusBtn?.addEventListener('click', () => {
+            if (isTimerMode) {
+                if (timerValue > 5) {
+                    timerValue -= 5;
+                    updateCounter(timerValue);
+                }
+            } else {
+                updateCounter(currentReps - 1);
             }
         });
 
-        minusBtn?.addEventListener('click', () => {
-            updateCounter(currentReps - 1);
-        });
-
         plusBtn?.addEventListener('click', () => {
-            updateCounter(currentReps + 1);
+            if (isTimerMode) {
+                if (timerValue < 300) {
+                    timerValue += 5;
+                    updateCounter(timerValue);
+                }
+            } else {
+                updateCounter(currentReps + 1);
+            }
         });
-
-        if (!isTimerMode) {
-            completeBtn?.addEventListener('click', () => {
-                showRestScreen();
-            });
-        }
     }
 
-    function renderExercise() {
-        const exercise = workout.exercises[currentExerciseIndex];
-        isTimerMode = exercise.reps.toString().includes('сек') || 
-                      exercise.reps.toString().includes('мин');
-        
-        let initialValue = isTimerMode ? 
-            parseInt(exercise.reps) || 30 : 
-            0;
+    // Выносим обработчик диалога на уровень выше
+    function initExitHandler() {
+        tg.onEvent('popupClosed', (event) => {
+            if (event.button_id === 'exit_workout') {
+                // Очищаем все таймеры
+                if (timerInterval) clearInterval(timerInterval);
+                if (restInterval) clearInterval(restInterval);
+                
+                // Возвращаем нижнюю навигацию
+                document.querySelector('.bottom-nav')?.classList.remove('hidden');
+                
+                // Возвращаемся к списку программ
+                renderProgramCards();
+                
+                // Вибрация
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        });
+    }
 
-        container.innerHTML = `
-            <div class="workout-session">
-                <div class="workout-header">
-                    <button class="back-btn">
-                        <span class="material-symbols-rounded">arrow_back</span>
-                    </button>
-                    <div class="workout-title">
-                        <div>${workout.title}</div>
-                        <div>${exercise.name}</div>
-                    </div>
-                    <div class="workout-progress">
-                        ${currentExerciseIndex + 1}/${workout.exercises.length}
-                    </div>
-                </div>
-
-                <div class="exercise-display">
-                    <img class="exercise-background" 
-                         src="${getExerciseAnimation(exercise.name)}" 
-                         alt="${exercise.name}">
-                    
-                    <div class="exercise-content">
-                        <h2 class="exercise-name">${exercise.name}</h2>
-                        <div class="exercise-subtitle">Подход ${currentSet} из ${exercise.sets}</div>
-                        
-                        <div class="exercise-counter">
-                            <div class="counter-number">${initialValue}</div>
-                            <div class="counter-label">${isTimerMode ? 'секунд' : 'повторений'}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="exercise-controls">
-                    <button class="control-btn minus-btn" ${isTimerMode ? '' : 'style="display:none"'}>
-                        <span class="material-symbols-rounded">remove</span>
-                    </button>
-                    <button class="complete-btn">
-                        ${isTimerMode ? 'Начать' : 'Готово'}
-                    </button>
-                    <button class="control-btn plus-btn" ${isTimerMode ? '' : 'style="display:none"'}>
-                        <span class="material-symbols-rounded">add</span>
-                    </button>
-                </div>
-            </div>
-        `;
-
-        setupExerciseHandlers();
-
-        // Если это режим таймера, показываем кнопки +/- для настройки времени
-        if (isTimerMode) {
-            const minusBtn = container.querySelector('.minus-btn');
-            const plusBtn = container.querySelector('.plus-btn');
-            const completeBtn = container.querySelector('.complete-btn');
-            let currentTime = initialValue;
-
-            minusBtn.style.display = 'flex';
-            plusBtn.style.display = 'flex';
-
-            minusBtn.addEventListener('click', () => {
-                if (currentTime > 5) { // Минимальное время 5 секунд
-                    currentTime -= 5;
-                    updateCounter(currentTime);
+    function showExitConfirmation() {
+        tg.showPopup({
+            title: 'Прервать тренировку?',
+            message: 'Вы уверены, что хотите прервать тренировку? Прогресс будет потерян.',
+            buttons: [
+                {
+                    type: 'destructive',
+                    text: 'Прервать',
+                    id: 'exit_workout'
+                },
+                {
+                    type: 'cancel',
+                    text: 'Продолжить'
                 }
-            });
-
-            plusBtn.addEventListener('click', () => {
-                if (currentTime < 300) { // Максимальное время 5 минут
-                    currentTime += 5;
-                    updateCounter(currentTime);
-                }
-            });
-
-            let isTimerRunning = false;
-            completeBtn.addEventListener('click', () => {
-                if (!isTimerRunning) {
-                    // Начинаем отсчет
-                    isTimerRunning = true;
-                    minusBtn.style.display = 'none';
-                    plusBtn.style.display = 'none';
-                    completeBtn.textContent = 'Пропустить';
-                    startTimer(currentTime);
-                } else {
-                    // Пропускаем оставшееся время
-                    clearInterval(timerInterval);
-                    showRestScreen();
-                }
-            });
-        } else {
-            // Для обычных упражнений оставляем старую логику
-            const completeBtn = container.querySelector('.complete-btn');
-            completeBtn?.addEventListener('click', () => {
-                showRestScreen();
-            });
-        }
+            ]
+        });
     }
 
     // Начинаем тренировку
@@ -1059,24 +993,8 @@ function startWorkoutExecution(workout) {
         }
     }
 
-    // Добавляем функцию для показа диалога подтверждения выхода
-    function showExitConfirmation() {
-        tg.showPopup({
-            title: 'Прервать тренировку?',
-            message: 'Вы уверены, что хотите прервать тренировку? Прогресс будет потерян.',
-            buttons: [
-                {
-                    type: 'destructive',
-                    text: 'Прервать',
-                    id: 'exit_workout'
-                },
-                {
-                    type: 'cancel',
-                    text: 'Продолжить'
-                }
-            ]
-        });
-    }
+    // Предзагружаем анимации для всех упражнений
+    window.preloadExerciseAnimations(workout.exercises);
 }
 
 // Функция показа деталей тренировки

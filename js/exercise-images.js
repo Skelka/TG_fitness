@@ -1,40 +1,74 @@
-// Базовые SVG-анимации для упражнений
+// Базовые анимации для упражнений
 window.exerciseAnimations = {
-    // Приседания
-    squats: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDdtY2JrY3BxOGh6YnB2OHZ5NnBham00d2x6Ym5wNzVlNmFyYmFpbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5hnnXiTIi0jjVeMJqt/giphy.gif',
+    // Разминка и кардио
+    'Разминка': 'https://media.giphy.com/media/3oKIPaGG0c3XRDdXKE/giphy.gif',
+    'Бёрпи': 'https://media.giphy.com/media/5hnnXiTIi0jjVeMJqt/giphy.gif',
+    'Прыжки': 'https://media.giphy.com/media/3oKIPc9VZj4ylzjcys/giphy.gif',
+    'Бег на месте': 'https://media.giphy.com/media/3oKIPaGG0c3XRDdXKE/giphy.gif',
+    'Джампинг джек': 'https://media.giphy.com/media/3oKIPaGG0c3XRDdXKE/giphy.gif',
 
-    // Отжимания
-    pushups: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcWRjMjJ3ZDVrMWF6NXd6ZnJ5NmE4OW1xbDlsZWN6ZHF6YnJ1aHF6eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7YCC7PTNX4ZRxhdzdt/giphy.gif',
-
-    // Планка
-    plank: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbzJnOWJyY3JyZmwwbWd1NXBnOWRxbWRwN2Zya2VpMWF6ZHJ0aXB6eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPqM5Qs5vref1pS/giphy.gif',
-
+    // Ноги
+    'Приседания': 'https://media.giphy.com/media/5hnnXiTIi0jjVeMJqt/giphy.gif',
+    'Выпады': 'https://media.giphy.com/media/7YCC7PTNX4ZRxhdzdt/giphy.gif',
+    'Приседания с гантелями': 'https://media.giphy.com/media/5hnnXiTIi0jjVeMJqt/giphy.gif',
+    'Приседания со штангой': 'https://media.giphy.com/media/5hnnXiTIi0jjVeMJqt/giphy.gif',
+    
+    // Грудь и трицепс
+    'Отжимания': 'https://media.giphy.com/media/7YCC7PTNX4ZRxhdzdt/giphy.gif',
+    'Отжимания с широкой постановкой': 'https://media.giphy.com/media/7YCC7PTNX4ZRxhdzdt/giphy.gif',
+    'Жим гантелей': 'https://media.giphy.com/media/3oKIPqM5Qs5vref1pS/giphy.gif',
+    
+    // Спина и бицепс
+    'Подтягивания': 'https://media.giphy.com/media/3oKIPqM5Qs5vref1pS/giphy.gif',
+    'Тяга гантелей': 'https://media.giphy.com/media/3oKIPqM5Qs5vref1pS/giphy.gif',
+    
+    // Пресс и планки
+    'Планка': 'https://media.giphy.com/media/3oKIPqM5Qs5vref1pS/giphy.gif',
+    'Скручивания': 'https://media.giphy.com/media/xT8qBmCnJ8wZeaXO8M/giphy.gif',
+    
     // Заглушка для остальных упражнений
-    default: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExenJhOWRyY3JyZmwwbWd1NXBnOWRxbWRwN2Zya2VpMWF6ZHJ0aXB6eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPc9VZj4ylzjcys/giphy.gif',
-
-    // Бёрпи
-    burpee: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeHJhOWRyY3JyZmwwbWd1NXBnOWRxbWRwN2Zya2VpMWF6ZHJ0aXB6eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPaGG0c3XRDdXKE/giphy.gif',
-
-    // Выпады
-    lunges: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMno5Y2JrY3BxOGh6YnB2OHZ5NnBham00d2x6Ym5wNzVlNmFyYmFpbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPc9VZj4ylzjcys/giphy.gif',
-
-    // Скручивания
-    crunches: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXJhOWRyY3JyZmwwbWd1NXBnOWRxbWRwN2Zya2VpMWF6ZHJ0aXB6eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT8qBmCnJ8wZeaXO8M/giphy.gif',
-
-    // Разминка
-    warmup: 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJhOWRyY3JyZmwwbWd1NXBnOWRxbWRwN2Zya2VpMWF6ZHJ0aXB6eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPc9VZj4ylzjcys/giphy.gif'
+    'default': 'https://media.giphy.com/media/3oKIPc9VZj4ylzjcys/giphy.gif'
 };
 
-// Функция для получения анимации упражнения
-window.getExerciseAnimation = function(exerciseName) {
-    const key = exerciseName.toLowerCase()
-        .replace(/[^a-zа-яё]/g, '')
-        .replace(/приседания/, 'squats')
-        .replace(/отжимания/, 'pushups')
-        .replace(/планка/, 'plank')
-        .replace(/бёрпи/, 'burpee')
-        .replace(/скручивания/, 'crunches')
-        .replace(/разминка/, 'warmup');
+// Функция для получения анимации упражнения с учетом оборудования
+window.getExerciseAnimation = function(exerciseName, equipment = []) {
+    // Нормализуем название упражнения
+    const normalizedName = exerciseName.toLowerCase()
+        .replace(/ё/g, 'е')
+        .trim();
+
+    // Проверяем наличие специальной версии с оборудованием
+    if (equipment && equipment.length > 0) {
+        const withEquipment = equipment.some(eq => {
+            const fullName = `${normalizedName} с ${eq}`.toLowerCase();
+            return window.exerciseAnimations[fullName];
+        });
+        if (withEquipment) return window.exerciseAnimations[withEquipment];
+    }
+
+    // Ищем базовую версию упражнения
+    for (const [key, value] of Object.entries(window.exerciseAnimations)) {
+        if (key.toLowerCase() === normalizedName) {
+            return value;
+        }
+    }
+
+    // Возвращаем анимацию по умолчанию, если ничего не найдено
+    return window.exerciseAnimations.default;
+};
+
+// Добавляем функцию предзагрузки анимаций
+window.preloadExerciseAnimations = function(exercises) {
+    const uniqueAnimations = new Set();
     
-    return window.exerciseAnimations[key] || window.exerciseAnimations.default;
+    exercises.forEach(exercise => {
+        const animation = window.getExerciseAnimation(exercise.name);
+        uniqueAnimations.add(animation);
+    });
+
+    // Предзагружаем все уникальные анимации
+    uniqueAnimations.forEach(url => {
+        const img = new Image();
+        img.src = url;
+    });
 }; 
