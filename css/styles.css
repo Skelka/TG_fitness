@@ -1616,4 +1616,43 @@ input:focus, select:focus {
     font-size: 14px;
     color: var(--tg-theme-hint-color);
     line-height: 1.4;
+}
+
+.schedule-details {
+    margin-top: 12px;
+}
+
+.schedule-day {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 8px;
+}
+
+.schedule-day h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+}
+
+.workout-info p {
+    margin: 0 0 4px 0;
+    font-size: 15px;
+}
+
+.workout-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--tg-theme-hint-color);
+}
+
+.workout-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.workout-meta .material-symbols-rounded {
+    font-size: 16px;
 } 
