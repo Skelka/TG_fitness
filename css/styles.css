@@ -1588,4 +1588,32 @@ input:focus, select:focus {
 .info-btn:not(.program-btn),
 .start-btn:not(.program-btn) {
     display: none !important;
+}
+
+/* Стили для советов */
+.tips-list {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tip-card {
+    background: var(--tg-theme-bg-color);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: var(--card-shadow);
+    border: var(--card-border);
+}
+
+.tip-card h3 {
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: var(--tg-theme-text-color);
+}
+
+.tip-card p {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+    line-height: 1.4;
 } 

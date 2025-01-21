@@ -492,65 +492,106 @@ function aggregateWeightData(data, period) {
 }
 
 // Обновляем функцию обновления графика
-function updateWeightChart(data, period = 'week') {
+function updateWeightChart(selectedPeriod) {
+    currentPeriod = selectedPeriod; // Сохраняем текущий период
+    
     const ctx = document.getElementById('weight-chart');
     if (!ctx) return;
 
-    // Агрегируем данные в зависимости от периода
-    const aggregatedData = aggregateWeightData(data, period);
-    
-    // Форматируем метки в зависимости от периода
-    const formatLabel = (date) => {
-        const d = new Date(date);
-        switch (period) {
-            case 'week':
-                return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
-            case 'month':
-                return `Неделя ${Math.ceil(d.getDate() / 7)}`;
-            case 'year':
-                return d.toLocaleDateString('ru-RU', { month: 'short' });
-            default:
-                return d.toLocaleDateString('ru-RU');
-        }
-    };
+    const now = new Date();
+    let labels = [];
+    let data = [];
 
-    // Если график уже существует, уничтожаем его
-    if (window.weightChart instanceof Chart) {
-        window.weightChart.destroy();
-    }
+    // Получаем данные о весе
+    getStorageItem('weightHistory')
+        .then(historyStr => {
+            const weightHistory = historyStr ? JSON.parse(historyStr) : [];
+            
+            // Определяем диапазон дат для выбранного периода
+            let startDate = new Date();
+            switch(selectedPeriod) {
+                case 'week':
+                    startDate.setDate(now.getDate() - 7);
+                    for(let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
+                        labels.push(d.toLocaleDateString('ru-RU', { weekday: 'short' }));
+                        const weight = weightHistory.find(w => 
+                            new Date(w.date).toDateString() === d.toDateString()
+                        )?.weight;
+                        data.push(weight || null);
+                    }
+                    break;
+                    
+                case 'month':
+                    startDate.setMonth(now.getMonth() - 1);
+                    for(let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
+                        labels.push(d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }));
+                        const weight = weightHistory.find(w => 
+                            new Date(w.date).toDateString() === d.toDateString()
+                        )?.weight;
+                        data.push(weight || null);
+                    }
+                    break;
+                    
+                case 'year':
+                    startDate.setFullYear(now.getFullYear() - 1);
+                    for(let d = new Date(startDate); d <= now; d.setMonth(d.getMonth() + 1)) {
+                        labels.push(d.toLocaleDateString('ru-RU', { month: 'short' }));
+                        const monthWeights = weightHistory.filter(w => {
+                            const date = new Date(w.date);
+                            return date.getMonth() === d.getMonth() && 
+                                   date.getFullYear() === d.getFullYear();
+                        });
+                        // Берем среднее значение веса за месяц
+                        const avgWeight = monthWeights.length ? 
+                            monthWeights.reduce((sum, w) => sum + w.weight, 0) / monthWeights.length : 
+                            null;
+                        data.push(avgWeight);
+                    }
+                    break;
+            }
 
-    // Создаем новый график
-    window.weightChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: aggregatedData.map(d => formatLabel(d.date)),
-            datasets: [{
-                label: 'Вес (кг)',
-                data: aggregatedData.map(d => d.weight),
-                borderColor: '#40a7e3',
-                backgroundColor: 'rgba(64, 167, 227, 0.1)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    ticks: {
-                        callback: value => `${value} кг`
+            // Обновляем график
+            if (window.weightChart) {
+                window.weightChart.destroy();
+            }
+
+            window.weightChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Вес (кг)',
+                        data: data,
+                        borderColor: '#40a7e3',
+                        tension: 0.4,
+                        fill: false,
+                        pointBackgroundColor: '#40a7e3'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
                     }
                 }
-            }
-        }
-    });
+            });
+        });
 }
 
 // Настройка кнопок периода
@@ -2510,4 +2551,94 @@ async function renderStatistics() {
         console.error('Ошибка при отображении статистики:', error);
         showError('Не удалось загрузить статистику');
     }
+
+    // Добавляем отрисовку советов
+    await renderTips();
+}
+
+// Функция для получения персонализированных советов
+async function getTips() {
+    try {
+        // Получаем данные профиля и прогресса
+        const [profileData, programData] = await Promise.all([
+            getStorageItem('profile').then(data => data ? JSON.parse(data) : null),
+            getStorageItem('activeProgram').then(data => data ? JSON.parse(data) : null)
+        ]);
+
+        const tips = [];
+
+        if (profileData) {
+            // Советы на основе цели
+            switch(profileData.goal) {
+                case 'weight_loss':
+                    tips.push({
+                        title: 'Контроль калорий',
+                        text: 'Старайтесь создавать дефицит 500-700 ккал в день для здорового снижения веса'
+                    });
+                    break;
+                case 'muscle_gain':
+                    tips.push({
+                        title: 'Белок для роста мышц',
+                        text: 'Употребляйте 1.6-2.2г белка на кг веса тела для оптимального роста мышц'
+                    });
+                    break;
+            }
+
+            // Советы на основе места тренировок
+            if (profileData.workoutPlace === 'home') {
+                tips.push({
+                    title: 'Тренировки дома',
+                    text: 'Используйте мебель для увеличения нагрузки: стул для отжиманий, кровать для упражнений на пресс'
+                });
+            }
+        }
+
+        if (programData?.completedWorkouts) {
+            // Советы на основе прогресса
+            const workoutsThisWeek = programData.completedWorkouts.filter(w => 
+                new Date(w.date) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+            ).length;
+
+            if (workoutsThisWeek < 2) {
+                tips.push({
+                    title: 'Регулярность тренировок',
+                    text: 'Старайтесь тренироваться минимум 3 раза в неделю для лучших результатов'
+                });
+            }
+        }
+
+        // Общие советы по здоровью
+        tips.push({
+            title: 'Водный баланс',
+            text: 'Пейте 30-40 мл воды на кг веса тела в день для поддержания здоровья'
+        });
+
+        return tips;
+    } catch (error) {
+        console.error('Ошибка при получении советов:', error);
+        return [];
+    }
+}
+
+// Функция для отображения советов
+async function renderTips() {
+    const tipsContainer = document.querySelector('.tips-list');
+    if (!tipsContainer) return;
+
+    const tips = await getTips();
+    
+    tipsContainer.innerHTML = tips.map(tip => `
+        <div class="tip-card">
+            <h3>${tip.title}</h3>
+            <p>${tip.text}</p>
+        </div>
+    `).join('');
+}
+
+// Добавляем вызов renderTips при загрузке статистики
+async function renderStatistics() {
+    // ... существующий код ...
+
+    // Добавляем отрисовку советов
+    await renderTips();
 } 
