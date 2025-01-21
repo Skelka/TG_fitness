@@ -689,30 +689,43 @@ function setupEventListeners() {
 
 // Добавим функцию для запуска тренировки
 async function startWorkout(workout) {
-    // Получаем профиль пользователя
-    const profileData = await getStorageItem('profile');
-    let profile = {};
     try {
-        profile = JSON.parse(profileData);
-    } catch (e) {
-        console.warn('Ошибка парсинга профиля:', e);
+        if (!workout || !workout.exercises || workout.exercises.length === 0) {
+            throw new Error('Некорректные данные тренировки');
+        }
+
+        // Получаем профиль пользователя
+        const profileData = await getStorageItem('profile');
+        let profile = {};
+        try {
+            profile = JSON.parse(profileData);
+        } catch (e) {
+            console.warn('Ошибка парсинга профиля:', e);
+        }
+
+        const availableEquipment = profile.equipment || [];
+        const userLevel = profile.fitnessLevel || 'medium';
+
+        // Адаптируем упражнения под пользователя
+        const adaptedWorkout = {
+            ...workout,
+            exercises: workout.exercises.map(exercise => ({
+                ...exercise,
+                name: findBestExerciseAlternative(exercise.name, availableEquipment, userLevel)
+            }))
+        };
+
+        // Запускаем тренировку с адаптированными упражнениями
+        startWorkoutExecution(adaptedWorkout);
+
+    } catch (error) {
+        console.error('Ошибка при запуске тренировки:', error);
+        tg.showPopup({
+            title: 'Ошибка',
+            message: error.message,
+            buttons: [{type: 'ok'}]
+        });
     }
-
-    const availableEquipment = profile.equipment || [];
-    const userLevel = profile.fitnessLevel || 'medium';
-    const workoutPlace = profile.workoutPlace || 'home';
-
-    // Адаптируем упражнения под пользователя
-    const adaptedWorkout = {
-        ...workout,
-        exercises: workout.exercises.map(exercise => ({
-            ...exercise,
-            name: findBestExerciseAlternative(exercise.name, availableEquipment, userLevel)
-        }))
-    };
-
-    // Запускаем тренировку с адаптированными упражнениями
-    startWorkoutExecution(adaptedWorkout);
 }
 
 // Основная логика выполнения тренировки переносится в отдельную функцию
@@ -2038,12 +2051,26 @@ function renderProgramCards() {
 }
 
 // Функция для отображения тренировок программы
-function showProgramWorkouts(program) {
+async function showProgramWorkouts(program) {
     const programsList = document.querySelector('.programs-list');
     if (!program || !program.workouts) {
         console.error('Программа или тренировки не определены:', program);
         return;
     }
+
+    // Получаем прогресс пользователя
+    const progressData = await getStorageItem('activeProgram');
+    let progress = {};
+    try {
+        progress = progressData ? JSON.parse(progressData) : {};
+    } catch (e) {
+        console.warn('Ошибка парсинга прогресса:', e);
+    }
+
+    // Определяем последний доступный день
+    const completedWorkouts = progress.completedWorkouts || [];
+    const lastCompletedDay = Math.max(...completedWorkouts.map(w => w.day) || [0]);
+    const nextAvailableDay = lastCompletedDay + 1;
 
     programsList.innerHTML = `
         <div class="program-workouts">
@@ -2054,37 +2081,50 @@ function showProgramWorkouts(program) {
                 <h2>${program.title}</h2>
             </div>
             <div class="program-days">
-                ${program.workouts.map((workout, index) => `
-                    <div class="workout-day ${index === 0 ? 'active' : 'locked'}">
-                        <div class="day-header">
-                            <span class="day-number">День ${workout.day}</span>
-                            <span class="day-status">
-                                ${index === 0 ? 
-                                    '<span class="material-symbols-rounded">lock_open</span>' : 
-                                    '<span class="material-symbols-rounded">lock</span>'}
-                            </span>
-                        </div>
-                        <div class="day-info">
-                            <h3>${workout.title}</h3>
-                            <div class="workout-meta">
-                                <span>
-                                    <span class="material-symbols-rounded">timer</span>
-                                    ${workout.duration} мин
-                                </span>
-                                <span>
-                                    <span class="material-symbols-rounded">local_fire_department</span>
-                                    ${workout.calories} ккал
+                ${program.workouts.map((workout, index) => {
+                    const isAvailable = workout.day <= nextAvailableDay;
+                    const isCompleted = completedWorkouts.some(w => w.day === workout.day);
+                    return `
+                        <div class="workout-day ${isCompleted ? 'completed' : ''} ${isAvailable ? 'available' : 'locked'}">
+                            <div class="day-header">
+                                <span class="day-number">День ${workout.day}</span>
+                                <span class="day-status">
+                                    ${isCompleted ? 
+                                        '<span class="material-symbols-rounded">task_alt</span>' :
+                                        isAvailable ? 
+                                            '<span class="material-symbols-rounded">lock_open</span>' : 
+                                            '<span class="material-symbols-rounded">lock</span>'
+                                    }
                                 </span>
                             </div>
+                            <div class="day-info">
+                                <h3>${workout.title}</h3>
+                                <div class="workout-meta">
+                                    <span>
+                                        <span class="material-symbols-rounded">timer</span>
+                                        ${workout.duration} мин
+                                    </span>
+                                    <span>
+                                        <span class="material-symbols-rounded">local_fire_department</span>
+                                        ${workout.calories} ккал
+                                    </span>
+                                </div>
+                            </div>
+                            ${isAvailable && !isCompleted ? `
+                                <button class="start-workout-btn" data-workout-index="${index}">
+                                    <span class="material-symbols-rounded">play_arrow</span>
+                                    Начать тренировку
+                                </button>
+                            ` : ''}
+                            ${isCompleted ? `
+                                <button class="repeat-workout-btn" data-workout-index="${index}">
+                                    <span class="material-symbols-rounded">replay</span>
+                                    Повторить
+                                </button>
+                            ` : ''}
                         </div>
-                        ${index === 0 ? `
-                            <button class="start-workout-btn" data-day="${workout.day}">
-                                <span class="material-symbols-rounded">play_arrow</span>
-                                Начать тренировку
-                            </button>
-                        ` : ''}
-                    </div>
-                `).join('')}
+                    `;
+                }).join('')}
             </div>
         </div>
     `;
@@ -2096,253 +2136,24 @@ function showProgramWorkouts(program) {
         tg.HapticFeedback.impactOccurred('medium');
     });
 
-    const startWorkoutBtn = programsList.querySelector('.start-workout-btn');
-    if (startWorkoutBtn) {
-        startWorkoutBtn.addEventListener('click', () => {
-            const dayNumber = parseInt(startWorkoutBtn.dataset.day);
-            const workout = program.workouts.find(w => w.day === dayNumber);
-            if (workout) {
+    const workoutBtns = programsList.querySelectorAll('.start-workout-btn, .repeat-workout-btn');
+    workoutBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const workoutIndex = parseInt(btn.dataset.workoutIndex);
+            const workout = program.workouts[workoutIndex];
+            if (workout && workout.exercises && workout.exercises.length > 0) {
                 startWorkout(workout);
                 tg.HapticFeedback.impactOccurred('medium');
             } else {
-                console.error('Тренировка не найдена:', dayNumber);
+                console.error('Некорректные данные тренировки:', workout);
+                tg.showPopup({
+                    title: 'Ошибка',
+                    message: 'Не удалось загрузить тренировку. Попробуйте позже.',
+                    buttons: [{type: 'ok'}]
+                });
             }
         });
-    }
-}
-
-// Функция для начала тренировки
-function startWorkout(workout) {
-    if (!workout || !workout.exercises || !workout.exercises.length) {
-        console.error('Некорректные данные тренировки:', workout);
-        return;
-    }
-
-    const container = document.querySelector('.container');
-    if (!container) return;
-
-    let currentExerciseIndex = 0;
-    let isResting = false;
-    let restTimeLeft = 0;
-    let restInterval;
-    let timerInterval;
-    let currentReps = 0;
-    let timerValue = 0;
-    let isTimerMode = false;
-
-    // Скрываем нижнюю навигацию
-    document.querySelector('.bottom-nav')?.classList.add('hidden');
-
-    function updateCounter(value) {
-        currentReps = Math.max(0, value);
-        const counterElement = document.querySelector('.counter-number');
-        if (counterElement) {
-            counterElement.textContent = currentReps;
-            tg.HapticFeedback.impactOccurred('light');
-        }
-    }
-
-    function formatTime(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-    }
-
-    function startRestTimer(duration) {
-        isResting = true;
-        restTimeLeft = duration;
-
-        container.innerHTML = `
-            <div class="workout-session">
-                <div class="rest-screen">
-                    <div class="rest-icon">
-                        <span class="material-symbols-rounded">timer</span>
-                    </div>
-                    <h3>Отдых</h3>
-                    <div class="rest-timer">${formatTime(restTimeLeft)}</div>
-                    <button class="skip-rest-btn">
-                        <span class="material-symbols-rounded">skip_next</span>
-                        Пропустить
-                    </button>
-                </div>
-            </div>
-        `;
-
-        const skipBtn = container.querySelector('.skip-rest-btn');
-        skipBtn?.addEventListener('click', () => {
-            clearInterval(restInterval);
-            goToNextExercise();
-        });
-
-        restInterval = setInterval(() => {
-            restTimeLeft--;
-            const timerElement = container.querySelector('.rest-timer');
-            if (timerElement) {
-                timerElement.textContent = formatTime(restTimeLeft);
-            }
-
-            if (restTimeLeft <= 3 && restTimeLeft > 0) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-
-            if (restTimeLeft <= 0) {
-                clearInterval(restInterval);
-                goToNextExercise();
-            }
-        }, 1000);
-    }
-
-    function goToNextExercise() {
-        isResting = false;
-        if (currentExerciseIndex < workout.exercises.length - 1) {
-            currentExerciseIndex++;
-            renderExercise();
-        } else {
-            completeWorkout(workout); // Передаем workout в функцию
-        }
-    }
-
-    function setupExerciseHandlers() {
-        const backBtn = container.querySelector('.back-btn');
-        const minusBtn = container.querySelector('.minus-btn');
-        const plusBtn = container.querySelector('.plus-btn');
-        const completeBtn = container.querySelector('.complete-btn');
-
-        backBtn?.addEventListener('click', () => {
-            showExitConfirmation();
-        });
-
-        // Добавляем обработчик ответа на диалог
-        tg.onEvent('popupClosed', (buttonId) => {
-            if (buttonId === 'exit_workout') {
-                if (timerInterval) clearInterval(timerInterval);
-                if (restInterval) clearInterval(restInterval);
-                document.querySelector('.bottom-nav')?.classList.remove('hidden');
-                renderProgramCards();
-            }
-        });
-
-        minusBtn?.addEventListener('click', () => {
-            updateCounter(currentReps - 1);
-        });
-
-        plusBtn?.addEventListener('click', () => {
-            updateCounter(currentReps + 1);
-        });
-
-        if (!isTimerMode) {
-            completeBtn?.addEventListener('click', () => {
-                showRestScreen();
-            });
-        }
-    }
-
-    function renderExercise() {
-        const exercise = workout.exercises[currentExerciseIndex];
-        isTimerMode = exercise.reps.toString().includes('сек') || 
-                      exercise.reps.toString().includes('мин');
-        
-        let initialValue = isTimerMode ? 
-            parseInt(exercise.reps) || 30 : 
-            0;
-
-        container.innerHTML = `
-            <div class="workout-session">
-                <div class="workout-header">
-                    <button class="back-btn">
-                        <span class="material-symbols-rounded">arrow_back</span>
-                    </button>
-                    <div class="workout-title">
-                        <div>${workout.title}</div>
-                        <div>${exercise.name}</div>
-                    </div>
-                    <div class="workout-progress">
-                        ${currentExerciseIndex + 1}/${workout.exercises.length}
-                    </div>
-                </div>
-
-                <div class="exercise-display">
-                    <img class="exercise-background" 
-                         src="${getExerciseAnimation(exercise.name)}" 
-                         alt="${exercise.name}">
-                    
-                    <div class="exercise-content">
-                        <h2 class="exercise-name">${exercise.name}</h2>
-                        <div class="exercise-subtitle">Подход ${exercise.currentSet || 1} из ${exercise.sets}</div>
-                        
-                        <div class="exercise-counter">
-                            <div class="counter-number">${initialValue}</div>
-                            <div class="counter-label">${isTimerMode ? 'секунд' : 'повторений'}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="exercise-controls">
-                    <button class="control-btn minus-btn" ${isTimerMode ? 'style="display:none"' : ''}>
-                        <span class="material-symbols-rounded">remove</span>
-                    </button>
-                    <button class="complete-btn">
-                        ${isTimerMode ? 'Начать' : 'Готово'}
-                    </button>
-                    <button class="control-btn plus-btn" ${isTimerMode ? 'style="display:none"' : ''}>
-                        <span class="material-symbols-rounded">add</span>
-                    </button>
-                </div>
-            </div>
-        `;
-
-        setupExerciseHandlers();
-
-        if (isTimerMode) {
-            const completeBtn = container.querySelector('.complete-btn');
-            completeBtn?.addEventListener('click', function() {
-                if (this.textContent === 'Начать') {
-                    startTimer(initialValue);
-                    this.textContent = 'Пропустить';
-                } else {
-                    clearInterval(timerInterval);
-                    showRestScreen();
-                }
-            });
-        }
-    }
-
-    // Начинаем тренировку
-    renderExercise();
-
-    // Добавляем функцию для сохранения прогресса тренировки
-    async function saveWorkoutProgress() {
-        try {
-            const progress = {
-                workoutId: workout.id,
-                currentExercise: currentExerciseIndex,
-                completedExercises: [],
-                timestamp: Date.now()
-            };
-            await setStorageItem('currentWorkout', JSON.stringify(progress));
-        } catch (error) {
-            console.error('Ошибка сохранения прогресса:', error);
-        }
-    }
-
-    // Добавляем функцию для показа диалога подтверждения выхода
-    function showExitConfirmation() {
-        tg.showPopup({
-            title: 'Прервать тренировку?',
-            message: 'Вы уверены, что хотите прервать тренировку? Прогресс будет потерян.',
-            buttons: [
-                {
-                    type: 'destructive',
-                    text: 'Прервать',
-                    id: 'exit_workout'
-                },
-                {
-                    type: 'cancel',
-                    text: 'Продолжить'
-                }
-            ]
-        });
-    }
+    });
 }
 
 // Вспомогательная функция для получения текста сложности

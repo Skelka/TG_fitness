@@ -719,9 +719,41 @@ input:focus, select:focus {
 }
 
 .workout-day {
-    font-weight: 600;
+    background: var(--tg-theme-bg-color);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s;
+}
+
+.workout-day.locked {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.workout-day.completed {
+    border-left: 4px solid #4CAF50;
+}
+
+.workout-day.available:not(.completed):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.day-status .material-symbols-rounded {
+    font-size: 20px;
+}
+
+.workout-day.completed .day-status .material-symbols-rounded {
+    color: #4CAF50;
+}
+
+.workout-day.available .day-status .material-symbols-rounded {
     color: var(--tg-theme-button-color);
-    min-width: 80px;
+}
+
+.workout-day.locked .day-status .material-symbols-rounded {
+    color: var(--tg-theme-hint-color);
 }
 
 .workout-meta {
@@ -1273,10 +1305,53 @@ input[type="number"]::-webkit-inner-spin-button {
     border-radius: 12px;
     padding: 16px;
     box-shadow: var(--card-shadow);
+    transition: all 0.3s;
 }
 
 .workout-day.locked {
     opacity: 0.7;
+    pointer-events: none;
+}
+
+.workout-day.completed {
+    border-left: 4px solid #4CAF50;
+}
+
+.workout-day.available:not(.completed):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.day-status .material-symbols-rounded {
+    font-size: 20px;
+}
+
+.workout-day.completed .day-status .material-symbols-rounded {
+    color: #4CAF50;
+}
+
+.workout-day.available .day-status .material-symbols-rounded {
+    color: var(--tg-theme-button-color);
+}
+
+.workout-day.locked .day-status .material-symbols-rounded {
+    color: var(--tg-theme-hint-color);
+}
+
+.repeat-workout-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
 }
 
 .day-header {
@@ -1288,11 +1363,6 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .day-number {
     font-weight: 500;
-    color: var(--tg-theme-hint-color);
-}
-
-.day-status .material-symbols-rounded {
-    font-size: 20px;
     color: var(--tg-theme-hint-color);
 }
 
