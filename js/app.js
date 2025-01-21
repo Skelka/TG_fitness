@@ -1587,4 +1587,114 @@ function handleWorkoutExit() {
     document.querySelector('.bottom-nav')?.classList.remove('hidden');
     renderProgramCards();
     tg.HapticFeedback.impactOccurred('medium');
+}
+
+// Добавляем функцию setupProgramHandlers
+function setupProgramHandlers() {
+    // Обработчики для карточек программ
+    document.querySelectorAll('.program-card').forEach(card => {
+        // Обработчик для кнопки "Подробнее"
+        const infoBtn = card.querySelector('.info-btn');
+        infoBtn?.addEventListener('click', () => {
+            const programId = card.dataset.program;
+            const program = window.programData[programId];
+            if (!program) return;
+
+            tg.HapticFeedback.impactOccurred('medium');
+            showProgramDetails(program);
+        });
+
+        // Обработчик для кнопки "Начать"
+        const startBtn = card.querySelector('.start-btn');
+        startBtn?.addEventListener('click', () => {
+            const programId = card.dataset.program;
+            const program = window.programData[programId];
+            if (!program) return;
+
+            tg.HapticFeedback.impactOccurred('medium');
+            startProgram(programId);
+        });
+    });
+}
+
+// Функция для отображения деталей программы
+function showProgramDetails(program) {
+    tg.showPopup({
+        title: program.title,
+        message: `
+${program.description}
+
+🎯 Цель: ${program.goal}
+📅 График: ${program.schedule}
+⚡️ Сложность: ${getDifficultyText(program.difficulty)}
+
+Программа включает:
+${program.features.map(f => `• ${f}`).join('\n')}
+
+Необходимое оборудование:
+${program.equipment.length ? program.equipment.map(e => `• ${e}`).join('\n') : '• Не требуется'}
+        `,
+        buttons: [
+            {
+                type: 'default',
+                text: 'Закрыть'
+            }
+        ]
+    });
+}
+
+// Вспомогательная функция для получения текста сложности
+function getDifficultyText(difficulty) {
+    switch(difficulty) {
+        case 'beginner':
+            return 'Начинающий';
+        case 'intermediate':
+            return 'Средний';
+        case 'advanced':
+            return 'Продвинутый';
+        default:
+            return 'Не указана';
+    }
+} 
+
+function renderProgramCards() {
+    const container = document.querySelector('.programs-list');
+    if (!container) return;
+
+    let html = '';
+    Object.entries(window.programData).forEach(([programId, program]) => {
+        html += `
+            <div class="program-card" data-program="${programId}">
+                <div class="program-content">
+                    <div class="program-icon">
+                        <span class="material-symbols-rounded">${program.icon}</span>
+                    </div>
+                    <h3>${program.title}</h3>
+                    <p class="program-description">${program.description}</p>
+                    <div class="program-details">
+                        <span>
+                            <span class="material-symbols-rounded">calendar_today</span>
+                            ${program.schedule}
+                        </span>
+                        <span>
+                            ${getDifficultyText(program.difficulty)}
+                        </span>
+                    </div>
+                    <div class="program-actions">
+                        <button class="program-btn info-btn">
+                            <span class="material-symbols-rounded">info</span>
+                            Подробнее
+                        </button>
+                        <button class="program-btn start-btn">
+                            <span class="material-symbols-rounded">play_arrow</span>
+                            Начать
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+    setupProgramHandlers(); // Устанавливаем обработчики после рендеринга
 } 
