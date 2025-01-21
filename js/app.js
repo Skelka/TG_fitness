@@ -2167,41 +2167,6 @@ function setupProfileHandlers() {
     }
 }
 
-// Добавим функцию для отображения попапа
-async function showPopupSafe(options) {
-    return new Promise((resolve) => {
-        // Добавляем попап в очередь
-        popupQueue.push({
-            options,
-            resolve
-        });
-        
-        // Если попап не показывается, показываем следующий
-        if (!isPopupShowing) {
-            showNext();
-        }
-    });
-}
-
-// Функция для показа следующего попапа из очереди
-function showNext() {
-    if (popupQueue.length === 0) {
-        isPopupShowing = false;
-        return;
-    }
-
-    isPopupShowing = true;
-    const { options, resolve } = popupQueue[0];
-
-    try {
-        tg.showPopup(options);
-        resolve();
-    } catch (error) {
-        console.error('Ошибка показа попапа:', error);
-        resolve(error);
-    }
-}
-
 // Добавим функцию для работы с фото профиля
 function updateProfilePhoto(photoUrl) {
     const profilePhoto = document.getElementById('profile-photo');
