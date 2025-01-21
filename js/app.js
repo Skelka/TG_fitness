@@ -912,207 +912,6 @@ function startWorkoutExecution(workout) {
     // Скрываем нижнюю навигацию
     document.querySelector('.bottom-nav')?.classList.add('hidden');
 
-    function updateCounter(value) {
-        currentReps = Math.max(0, value);
-        const counterElement = document.querySelector('.counter-number');
-        if (counterElement) {
-            counterElement.textContent = currentReps;
-            tg.HapticFeedback.impactOccurred('light');
-        }
-    }
-
-    function startTimer(duration) {
-        timerValue = duration;
-        clearInterval(timerInterval);
-        
-        const counterElement = document.querySelector('.counter-number');
-        const completeBtn = document.querySelector('.complete-btn');
-        
-        timerInterval = setInterval(() => {
-            timerValue--;
-            if (counterElement) {
-                counterElement.textContent = timerValue;
-            }
-
-            if (timerValue <= 3 && timerValue > 0) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-
-            if (timerValue <= 0) {
-                clearInterval(timerInterval);
-                tg.HapticFeedback.notificationOccurred('success');
-                showRestScreen();
-            }
-        }, 1000);
-    }
-
-    // Добавляем функцию showRestScreen
-    function showRestScreen() {
-        isResting = true;
-        const exercise = workout.exercises[currentExerciseIndex];
-        
-        // Проверяем, нужно ли переходить к следующему упражнению
-        if (currentSet >= exercise.sets) {
-            currentSet = 1; // Сбрасываем счетчик подходов
-            
-            // Проверяем, есть ли следующее упражнение
-            if (currentExerciseIndex < workout.exercises.length - 1) {
-                startRestTimer(exercise.rest, true); // Отдых перед следующим упражнением
-            } else {
-                // Если это было последнее упражнение, завершаем тренировку
-                completeWorkout(workout);
-                return;
-            }
-        } else {
-            currentSet++; // Увеличиваем счетчик подходов
-            startRestTimer(exercise.rest, false); // Обычный отдых между подходами
-        }
-    }
-
-    function startRestTimer(duration, isExerciseComplete) {
-        isResting = true;
-        restTimeLeft = duration;
-
-        container.innerHTML = `
-            <div class="workout-session">
-                <div class="rest-screen">
-                    <div class="rest-icon">
-                        <span class="material-symbols-rounded">timer</span>
-                    </div>
-                    <h3>Отдых</h3>
-                    <div class="rest-subtitle">
-                        ${isExerciseComplete ? 'Следующее упражнение' : `Подход ${currentSet} из ${workout.exercises[currentExerciseIndex].sets}`}
-                    </div>
-                    <div class="rest-timer">${formatTime(restTimeLeft)}</div>
-                    <button class="skip-rest-btn">
-                        <span class="material-symbols-rounded">skip_next</span>
-                        Пропустить
-                    </button>
-                </div>
-            </div>
-        `;
-
-        const skipBtn = container.querySelector('.skip-rest-btn');
-        skipBtn?.addEventListener('click', () => {
-            clearInterval(restInterval);
-            if (isExerciseComplete) {
-            goToNextExercise();
-            } else {
-                renderExercise(); // Возвращаемся к тому же упражнению для следующего подхода
-            }
-        });
-
-        restInterval = setInterval(() => {
-            restTimeLeft--;
-            const timerElement = container.querySelector('.rest-timer');
-            if (timerElement) {
-                timerElement.textContent = formatTime(restTimeLeft);
-            }
-
-            if (restTimeLeft <= 3 && restTimeLeft > 0) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-
-            if (restTimeLeft <= 0) {
-                clearInterval(restInterval);
-                if (isExerciseComplete) {
-                goToNextExercise();
-                } else {
-                    renderExercise(); // Возвращаемся к тому же упражнению для следующего подхода
-                }
-            }
-        }, 1000);
-    }
-
-    function formatTime(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-    }
-
-    function goToNextExercise() {
-        isResting = false;
-        if (currentExerciseIndex < workout.exercises.length - 1) {
-            currentExerciseIndex++;
-            renderExercise();
-        } else {
-            completeWorkout(workout); // Передаем workout в функцию
-        }
-    }
-
-    function setupExerciseHandlers() {
-        const backBtn = container.querySelector('.back-btn');
-        const minusBtn = container.querySelector('.minus-btn');
-        const plusBtn = container.querySelector('.plus-btn');
-        const completeBtn = container.querySelector('.complete-btn');
-
-        // Обработчик кнопки "Назад"
-        backBtn?.addEventListener('click', () => {
-            showExitConfirmation();
-        });
-
-        // Обработчики для кнопок +/-
-        minusBtn?.addEventListener('click', () => {
-            if (isTimerMode) {
-                if (timerValue > 5) {
-                    timerValue -= 5;
-                    updateCounter(timerValue);
-                }
-            } else {
-            updateCounter(currentReps - 1);
-            }
-        });
-
-        plusBtn?.addEventListener('click', () => {
-            if (isTimerMode) {
-                if (timerValue < 300) {
-                    timerValue += 5;
-                    updateCounter(timerValue);
-                }
-            } else {
-            updateCounter(currentReps + 1);
-            }
-        });
-    }
-
-    // Выносим обработчик диалога на уровень выше
-    function initExitHandler() {
-        tg.onEvent('popupClosed', (event) => {
-            if (event.button_id === 'exit_workout') {
-                // Очищаем все таймеры
-                if (timerInterval) clearInterval(timerInterval);
-                if (restInterval) clearInterval(restInterval);
-                
-                // Возвращаем нижнюю навигацию
-                document.querySelector('.bottom-nav')?.classList.remove('hidden');
-                
-                // Возвращаемся к списку программ
-                renderProgramCards();
-                
-                // Вибрация
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-        });
-    }
-
-    function showExitConfirmation() {
-        tg.showPopup({
-            title: 'Прервать тренировку?',
-            message: 'Вы уверены, что хотите прервать тренировку? Прогресс будет потерян.',
-            buttons: [
-                {
-                    type: 'destructive',
-                    text: 'Прервать',
-                    id: 'exit_workout'
-                },
-                {
-                    type: 'cancel',
-                    text: 'Продолжить'
-                }
-            ]
-        });
-    }
-
     function renderExercise() {
         const exercise = workout.exercises[currentExerciseIndex];
         isTimerMode = exercise.reps.toString().includes('сек') || 
@@ -1154,15 +953,19 @@ function startWorkoutExecution(workout) {
                 </div>
 
                 <div class="exercise-controls">
-                    <button class="control-btn minus-btn" ${isTimerMode ? '' : 'style="display:none"'}>
-                        <span class="material-symbols-rounded">remove</span>
-                    </button>
+                    ${isTimerMode ? `
+                        <button class="control-btn minus-btn">
+                            <span class="material-symbols-rounded">remove</span>
+                        </button>
+                    ` : ''}
                     <button class="complete-btn">
                         ${isTimerMode ? 'Начать' : 'Готово'}
                     </button>
-                    <button class="control-btn plus-btn" ${isTimerMode ? '' : 'style="display:none"'}>
-                        <span class="material-symbols-rounded">add</span>
-                    </button>
+                    ${isTimerMode ? `
+                        <button class="control-btn plus-btn">
+                            <span class="material-symbols-rounded">add</span>
+                        </button>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -1175,24 +978,6 @@ function startWorkoutExecution(workout) {
 
     // Начинаем тренировку
     renderExercise();
-
-    // Добавляем функцию для сохранения прогресса тренировки
-    async function saveWorkoutProgress() {
-        try {
-            const progress = {
-                workoutId: workout.id,
-                currentExercise: currentExerciseIndex,
-                completedExercises: [],
-                timestamp: Date.now()
-            };
-            await setStorageItem('currentWorkout', JSON.stringify(progress));
-        } catch (error) {
-            console.error('Ошибка сохранения прогресса:', error);
-        }
-    }
-
-    // Предзагружаем анимации для всех упражнений
-    window.preloadExerciseAnimations(workout.exercises);
 }
 
 // Функция показа деталей тренировки
@@ -1261,24 +1046,17 @@ async function showProgramDetails(programId) {
     const program = window.programData[programId];
     if (!program) return;
 
-    // Сокращаем описание, если оно слишком длинное
-    const description = program.description.length > 50 ? 
-        program.description.substring(0, 50) + '...' : 
-        program.description;
-
-    // Сокращаем результаты до 2-х пунктов
-    const results = program.results.slice(0, 2).map(result => `• ${result}`).join('\n');
-
     await showPopupSafe({
         title: program.title,
         message: `
-${description}
+${program.description}
 
 📅 ${program.duration}
 🏋️ ${program.schedule}
 🔥 ${program.calories_per_week}
 
-${results}`,
+Ожидаемые результаты:
+${program.results.map(result => `• ${result}`).join('\n')}`,
         buttons: [
             {
                 type: 'default',
@@ -2690,3 +2468,26 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTheme();
     // ... остальной код инициализации
 }); 
+
+function setupExerciseHandlers() {
+    const backBtn = container.querySelector('.back-btn');
+    backBtn?.addEventListener('click', () => {
+        tg.showPopup({
+            title: 'Прервать тренировку?',
+            message: 'Вы уверены, что хотите прервать тренировку? Прогресс будет потерян.',
+            buttons: [
+                {
+                    type: 'destructive',
+                    text: 'Прервать',
+                    id: 'exit_workout'
+                },
+                {
+                    type: 'cancel',
+                    text: 'Продолжить'
+                }
+            ]
+        });
+    });
+
+    // ... остальные обработчики
+} 

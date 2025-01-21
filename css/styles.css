@@ -1249,4 +1249,278 @@ input:focus, select:focus {
 
 .workout-meta .material-symbols-rounded {
     font-size: 16px;
+}
+
+/* Стили для экрана тренировки */
+.workout-session {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    background: var(--tg-theme-bg-color);
+}
+
+.workout-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    color: var(--tg-theme-text-color);
+    cursor: pointer;
+}
+
+.workout-title {
+    flex-grow: 1;
+}
+
+.workout-title div:first-child {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+}
+
+.workout-title div:last-child {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.workout-progress {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+}
+
+.exercise-display {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    margin: 24px 0;
+}
+
+.exercise-background {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.exercise-content {
+    width: 100%;
+}
+
+.exercise-name {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.exercise-subtitle {
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 24px;
+}
+
+.exercise-counter {
+    margin: 24px 0;
+}
+
+.counter-number {
+    font-size: 48px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.counter-label {
+    color: var(--tg-theme-hint-color);
+}
+
+.exercise-controls {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+    margin-top: auto;
+    padding: 16px 0;
+}
+
+.control-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
+    border: none;
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.complete-btn {
+    flex: 1;
+    height: 48px;
+    border-radius: 24px;
+    border: none;
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    font-size: 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Стили для профиля */
+.profile-page {
+    padding: 16px;
+}
+
+.profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--tg-theme-bg-color);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+}
+
+.profile-photo {
+    width: 96px;
+    height: 96px;
+    border-radius: 48px;
+    object-fit: cover;
+    background: var(--tg-theme-secondary-bg-color);
+}
+
+.profile-name {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.profile-level {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+}
+
+.profile-section {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--tg-theme-bg-color);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+}
+
+.profile-section h3 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group label {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+}
+
+.input-group input,
+.input-group select {
+    padding: 12px;
+    border: 1px solid var(--tg-theme-secondary-bg-color);
+    border-radius: 8px;
+    font-size: 16px;
+    background: var(--tg-theme-bg-color);
+    color: var(--tg-theme-text-color);
+}
+
+.radio-group {
+    display: flex;
+    gap: 12px;
+}
+
+.radio-option {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    background: var(--tg-theme-secondary-bg-color);
+    text-align: center;
+    cursor: pointer;
+}
+
+.radio-option input {
+    display: none;
+}
+
+.radio-option.selected {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 8px;
+    background: var(--tg-theme-secondary-bg-color);
+    cursor: pointer;
+}
+
+.checkbox-option input {
+    margin: 0;
+}
+
+.profile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.profile-btn {
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.save-profile-btn {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.clear-data-btn {
+    background: var(--tg-theme-secondary-bg-color);
+    color: #ff3b30;
 } 
