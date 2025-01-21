@@ -693,13 +693,18 @@ input:focus, select:focus {
     white-space: nowrap;
 }
 
-.program-btn:active {
-    opacity: 0.7;
+.program-btn.info-btn {
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
 }
 
-.program-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.program-btn.start-btn {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.program-btn:active {
+    opacity: 0.7;
 }
 
 .program-btn .material-symbols-rounded {
@@ -1525,4 +1530,62 @@ input:focus, select:focus {
 
 .workout-card.locked .start-btn {
     background: var(--tg-theme-hint-color);
+}
+
+/* Стили для кнопок */
+.program-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.program-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+    text-transform: none;
+    letter-spacing: normal;
+    white-space: nowrap;
+}
+
+.program-btn.info-btn {
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+}
+
+.program-btn.start-btn {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.program-btn:active {
+    opacity: 0.7;
+}
+
+.program-btn .material-symbols-rounded {
+    font-size: 16px;
+    font-variation-settings: 'FILL' 0, 'wght' 400;
+}
+
+.program-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Удаляем старые стили */
+.workout-btn,
+.action-btn,
+.info-btn:not(.program-btn),
+.start-btn:not(.program-btn) {
+    display: none !important;
 } 

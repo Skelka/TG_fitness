@@ -2011,72 +2011,45 @@ async function initStatisticsPage() {
 
 // Добавим функцию для создания карточек программ
 function renderProgramCards() {
-    const programsList = document.querySelector('.programs-list');
-    if (!programsList) return;
+    const container = document.querySelector('.programs-list');
+    if (!container) return;
 
-    console.log('Начало рендеринга программ');
-    programsList.innerHTML = '';
-
+    let html = '';
     Object.values(window.programData).forEach(program => {
-        console.log('Рендеринг программы:', program.title);
-        console.log('Количество тренировок:', program.workouts.length);
-        console.log('Тренировки:', program.workouts);
-        
-        const card = document.createElement('div');
-        card.className = 'program-card';
-        card.innerHTML = `
-            <div class="program-icon">
-                <span class="material-symbols-rounded">${program.icon}</span>
-            </div>
-            <div class="program-content">
-                <h3>${program.title}</h3>
-                <p class="program-description">${program.description}</p>
-                <div class="program-details">
-                    <span>
-                        <span class="material-symbols-rounded">calendar_month</span>
-                        ${program.schedule}
-                    </span>
-                    <span>
-                        <span class="material-symbols-rounded">fitness_center</span>
-                        ${getDifficultyText(program.difficulty || program.intensity || 'medium')}
-                    </span>
-                </div>
-                <div class="program-progress">
-                    <div class="progress-bar">
-                        <div class="progress" style="width: 0%"></div>
+        html += `
+            <div class="program-card">
+                <div class="program-content">
+                    <div class="program-icon">
+                        <span class="material-symbols-rounded">${program.icon}</span>
                     </div>
-                    <span class="progress-text">0/${program.workouts.length} тренировок</span>
-                </div>
-                <div class="program-actions">
-                    <button class="info-btn">
-                        <span class="material-symbols-rounded">info</span>
-                        Подробнее
-                    </button>
-                    <button class="start-btn">
-                        <span class="material-symbols-rounded">play_arrow</span>
-                        Начать
-                    </button>
+                    <h3>${program.title}</h3>
+                    <p class="program-description">${program.description}</p>
+                    <div class="program-details">
+                        <span>
+                            <span class="material-symbols-rounded">calendar_today</span>
+                            ${program.schedule}
+                        </span>
+                        <span>
+                            <span class="material-symbols-rounded">fitness_center</span>
+                            ${getDifficultyText(program.difficulty)}
+                        </span>
+                    </div>
+                    <div class="program-actions">
+                        <button class="program-btn info-btn" onclick="showProgramDetails('${program.id}')">
+                            <span class="material-symbols-rounded">info</span>
+                            Подробнее
+                        </button>
+                        <button class="program-btn start-btn" onclick="startProgram('${program.id}')">
+                            <span class="material-symbols-rounded">play_arrow</span>
+                            Начать
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
-
-        const startBtn = card.querySelector('.start-btn');
-        const infoBtn = card.querySelector('.info-btn');
-
-        startBtn?.addEventListener('click', () => {
-            console.log('Нажата кнопка старт для программы:', program.title);
-            console.log('Тренировки в программе:', program.workouts);
-            showProgramWorkouts(program);
-            tg.HapticFeedback.impactOccurred('medium');
-        });
-
-        infoBtn?.addEventListener('click', () => {
-            showProgramDetails(program);
-            tg.HapticFeedback.impactOccurred('medium');
-        });
-
-        programsList.appendChild(card);
     });
+
+    container.innerHTML = html;
 }
 
 // Функция для отображения тренировок программы
