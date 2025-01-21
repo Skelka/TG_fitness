@@ -2075,6 +2075,8 @@ function renderProgramCards() {
 async function showProgramWorkouts(program) {
     console.log('Показываем программу:', program);
     console.log('Тренировки в программе:', program.workouts);
+    console.log('Количество тренировок:', program.workouts?.length);
+    console.log('Содержимое data.js:', window.programData);
 
     const programsList = document.querySelector('.programs-list');
     if (!program || !program.workouts) {
