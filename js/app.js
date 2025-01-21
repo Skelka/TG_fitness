@@ -2366,3 +2366,193 @@ function renderWorkouts(program) {
         })
         .catch(console.error);
 } 
+
+async function renderStatistics() {
+    const container = document.querySelector('.statistics-container');
+    if (!container) return;
+
+    try {
+        // Загружаем данные о тренировках
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+
+        if (!activeProgram || !activeProgram.completedWorkouts?.length) {
+            // Показываем заглушку, если нет данных
+            container.innerHTML = `
+                <div class="stats-overview">
+                    <div class="stat-card">
+                        <span class="material-symbols-rounded">exercise</span>
+                        <h3>0</h3>
+                        <p>Тренировок</p>
+                    </div>
+                    <div class="stat-card">
+                        <span class="material-symbols-rounded">timer</span>
+                        <h3>0м</h3>
+                        <p>Общее время</p>
+                    </div>
+                    <div class="stat-card">
+                        <span class="material-symbols-rounded">local_fire_department</span>
+                        <h3>0</h3>
+                        <p>Ккал сожжено</p>
+                    </div>
+                    <div class="stat-card">
+                        <span class="material-symbols-rounded">trending_up</span>
+                        <h3>0%</h3>
+                        <p>Достижение цели</p>
+                    </div>
+                </div>
+                <div class="weight-chart">
+                    <div class="chart-header">
+                        <h3>Динамика веса</h3>
+                        <div class="period-selector">
+                            <button class="period-btn active" data-period="week">Неделя</button>
+                            <button class="period-btn" data-period="month">Месяц</button>
+                            <button class="period-btn" data-period="year">Год</button>
+                        </div>
+                    </div>
+                    <canvas id="weightChart"></canvas>
+                </div>
+            `;
+            return;
+        }
+
+        // Рассчитываем статистику
+        const totalWorkouts = activeProgram.completedWorkouts.length;
+        const totalDuration = activeProgram.completedWorkouts.reduce((sum, w) => sum + (w.duration || 0), 0);
+        const totalCalories = activeProgram.completedWorkouts.reduce((sum, w) => sum + (w.calories || 0), 0);
+        const goalProgress = Math.round((totalWorkouts / activeProgram.workouts.length) * 100);
+
+        // Обновляем общую статистику
+        container.innerHTML = `
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <span class="material-symbols-rounded">exercise</span>
+                    <h3>${totalWorkouts}</h3>
+                    <p>Тренировок</p>
+                </div>
+                <div class="stat-card">
+                    <span class="material-symbols-rounded">timer</span>
+                    <h3>${totalDuration}м</h3>
+                    <p>Общее время</p>
+                </div>
+                <div class="stat-card">
+                    <span class="material-symbols-rounded">local_fire_department</span>
+                    <h3>${totalCalories}</h3>
+                    <p>Ккал сожжено</p>
+                </div>
+                <div class="stat-card">
+                    <span class="material-symbols-rounded">trending_up</span>
+                    <h3>${goalProgress}%</h3>
+                    <p>Достижение цели</p>
+                </div>
+            </div>
+            <div class="weight-chart">
+                <div class="chart-header">
+                    <h3>Динамика веса</h3>
+                    <div class="period-selector">
+                        <button class="period-btn active" data-period="week">Неделя</button>
+                        <button class="period-btn" data-period="month">Месяц</button>
+                        <button class="period-btn" data-period="year">Год</button>
+                    </div>
+                </div>
+                <canvas id="weightChart"></canvas>
+            </div>
+        `;
+
+        // Настраиваем обработчики периодов
+        const periodBtns = container.querySelectorAll('.period-btn');
+        periodBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                periodBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                updateWeightChart(btn.dataset.period);
+            });
+        });
+
+        // Функция обновления графика
+        function updateWeightChart(period) {
+            const ctx = document.getElementById('weightChart').getContext('2d');
+            const now = new Date();
+            let labels = [];
+            let data = [];
+
+            // Формируем данные в зависимости от периода
+            switch(period) {
+                case 'week':
+                    for(let i = 6; i >= 0; i--) {
+                        const date = new Date(now);
+                        date.setDate(date.getDate() - i);
+                        labels.push(date.toLocaleDateString('ru-RU', { weekday: 'short' }));
+                        // Здесь нужно добавить реальные данные о весе
+                        data.push(null); // Заглушка
+                    }
+                    break;
+                case 'month':
+                    for(let i = 29; i >= 0; i--) {
+                        const date = new Date(now);
+                        date.setDate(date.getDate() - i);
+                        labels.push(date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }));
+                        data.push(null);
+                    }
+                    break;
+                case 'year':
+                    for(let i = 11; i >= 0; i--) {
+                        const date = new Date(now);
+                        date.setMonth(date.getMonth() - i);
+                        labels.push(date.toLocaleDateString('ru-RU', { month: 'short' }));
+                        data.push(null);
+                    }
+                    break;
+            }
+
+            // Создаем график
+            if (window.weightChart) {
+                window.weightChart.destroy();
+            }
+
+            window.weightChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Вес (кг)',
+                        data: data,
+                        borderColor: '#40a7e3',
+                        tension: 0.4,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Инициализируем график с недельным периодом
+        updateWeightChart('week');
+
+    } catch (error) {
+        console.error('Ошибка при отображении статистики:', error);
+        showError('Не удалось загрузить статистику');
+    }
+} 
