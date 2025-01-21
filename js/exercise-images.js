@@ -1,5 +1,5 @@
 // Создаем объект с путями к изображениям упражнений
-const exerciseImages = {
+window.exerciseImages = {
     // Базовые упражнения
     'Отжимания': './images/exercises/pushups.gif',
     'Приседания': './images/exercises/squats.gif',
@@ -11,9 +11,6 @@ const exerciseImages = {
 };
 
 // Функция для получения изображения упражнения
-function getExerciseImage(exerciseName) {
-    return exerciseImages[exerciseName] || exerciseImages.default;
-}
-
-// Экспортируем функцию
-export { getExerciseImage }; 
+window.getExerciseImage = function(exerciseName) {
+    return window.exerciseImages[exerciseName] || window.exerciseImages.default;
+}; 

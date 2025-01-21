@@ -1,6 +1,5 @@
 // В начале файла добавляем все необходимые импорты
 import { getTips } from './tips-db.js';
-import { getExerciseImage } from './exercise-images.js';
 
 // Глобальные переменные
 if (!window.Telegram?.WebApp) {
@@ -1582,9 +1581,9 @@ async function renderStatistics() {
     await renderTips();
 } 
 
-// Добавляем функцию для получения изображения упражнения
+// Обновляем функцию getExerciseAnimation
 function getExerciseAnimation(exerciseName) {
-    return getExerciseImage(exerciseName);
+    return window.getExerciseImage(exerciseName);
 }
 
 function clearTimers() {
