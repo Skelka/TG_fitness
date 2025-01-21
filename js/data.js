@@ -138,6 +138,30 @@ window.programData = {
                     { name: 'Подтягивания', sets: 4, reps: '8', rest: 90 },
                     { name: 'Тяга гантелей', sets: 4, reps: '12', rest: 90 }
                 ]
+            },
+            {
+                day: 3,
+                title: 'Ноги + Плечи',
+                duration: 60,
+                calories: 450,
+                type: 'strength',
+                exercises: [
+                    { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
+                    { name: 'Приседания', sets: 4, reps: '12', rest: 90 },
+                    { name: 'Жим гантелей стоя', sets: 4, reps: '10', rest: 90 }
+                ]
+            },
+            {
+                day: 4,
+                title: 'Кардио + Пресс',
+                duration: 45,
+                calories: 350,
+                type: 'cardio',
+                exercises: [
+                    { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
+                    { name: 'Бёрпи', sets: 3, reps: '30 сек', rest: 45 },
+                    { name: 'Скручивания', sets: 3, reps: '20', rest: 45 }
+                ]
             }
         ]
     },
@@ -179,6 +203,18 @@ window.programData = {
                     { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
                     { name: 'Приседания', sets: 3, reps: '20', rest: 45 },
                     { name: 'Отжимания', sets: 3, reps: '15', rest: 45 }
+                ]
+            },
+            {
+                day: 3,
+                title: 'Интервальный бег',
+                duration: 40,
+                calories: 400,
+                type: 'cardio',
+                exercises: [
+                    { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
+                    { name: 'Бег', sets: 5, reps: '2 мин', rest: 60 },
+                    { name: 'Ходьба', sets: 5, reps: '1 мин', rest: 0 }
                 ]
             }
         ]

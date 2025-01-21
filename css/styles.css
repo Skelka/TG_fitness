@@ -670,19 +670,33 @@ input:focus, select:focus {
 .program-actions {
     display: flex;
     gap: 8px;
+    margin-top: 12px;
 }
 
 .program-btn {
+    flex: 1;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 12px 24px;
-    border-radius: 12px;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 8px;
     border: none;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.2s ease;
+}
+
+.info-btn {
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+}
+
+.start-btn {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
 }
 
 .program-btn:active {
@@ -693,6 +707,7 @@ input:focus, select:focus {
 .program-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    background: var(--tg-theme-hint-color);
 }
 
 .program-btn .material-symbols-rounded {
@@ -1626,4 +1641,20 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .action-btn .material-symbols-rounded {
     font-size: 18px;
+}
+
+/* Стили для заблокированных карточек */
+.workout-card.locked {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.workout-card.locked .start-btn {
+    background: var(--tg-theme-hint-color);
+}
+
+/* Убираем ненужные стили */
+.workout-btn,
+.action-btn {
+    display: none;
 } 

@@ -1611,9 +1611,18 @@ function setupWorkoutControls(workout, programId) {
 // Функция завершения тренировки
 async function completeWorkout(workout, programId) {
     try {
-        // Проверяем существование таймеров перед их очисткой
-        if (timerInterval) clearInterval(timerInterval);
-        if (restInterval) clearInterval(restInterval);
+        // Очищаем таймеры
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        if (restInterval) {
+            clearInterval(restInterval);
+            restInterval = null;
+        }
+
+        const container = document.querySelector('.container');
+        if (!container) return;
 
         // Показываем экран завершения
         container.innerHTML = `
