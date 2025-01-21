@@ -586,113 +586,72 @@ input:focus, select:focus {
 }
 
 .program-card {
-    background: var(--tg-theme-bg-color);
-    padding: 16px;
     margin-bottom: 16px;
-    border-radius: 16px;
-    box-shadow: var(--card-shadow);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--tg-theme-bg-color);
     border: var(--card-border);
-    transition: transform 0.2s;
+    box-shadow: var(--card-shadow);
 }
 
-.program-card:active {
-    transform: scale(0.98);
-}
-
-.program-header {
+.program-content {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 12px;
+    padding: 16px;
+    gap: 16px;
 }
 
 .program-icon {
+    flex-shrink: 0;
     width: 48px;
     height: 48px;
-    background: var(--tg-theme-button-color);
     border-radius: 12px;
+    background: var(--tg-theme-button-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
 }
 
 .program-icon .material-symbols-rounded {
     font-size: 24px;
-    color: var(--tg-theme-button-text-color);
+    color: #fff;
 }
 
-.program-info {
-    flex: 1;
-}
-
-.program-info h3 {
-    font-size: 18px;
-    margin: 0;
+.program-text {
+    flex-grow: 1;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.program-duration {
-    font-size: 12px;
-    color: var(--tg-theme-hint-color);
-    background: var(--tg-theme-secondary-bg-color);
-    padding: 4px 8px;
-    border-radius: 12px;
+.program-text h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 .program-description {
+    margin: 0;
     font-size: 14px;
     color: var(--tg-theme-hint-color);
-    margin: 4px 0 12px;
 }
 
 .program-details {
     display: flex;
     gap: 12px;
-    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--tg-theme-hint-color);
 }
 
 .program-details span {
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 13px;
-    color: var(--tg-theme-hint-color);
-}
-
-.program-details .material-symbols-rounded {
-    font-size: 16px;
-}
-
-.program-progress {
-    margin-bottom: 12px;
-}
-
-.progress-bar {
-    height: 4px;
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: 2px;
-    overflow: hidden;
-}
-
-.progress {
-    height: 100%;
-    background: var(--tg-theme-button-color);
-    transition: width 0.3s ease;
-}
-
-.progress-text {
-    font-size: 12px;
-    color: var(--tg-theme-hint-color);
-    margin-top: 4px;
 }
 
 .program-actions {
+    margin-top: 12px;
     display: flex;
     gap: 8px;
-    margin-top: 12px;
 }
 
 .program-btn {
@@ -747,49 +706,54 @@ input:focus, select:focus {
 }
 
 .workout-day {
-    background: var(--tg-theme-bg-color);
+    margin-bottom: 16px;
     border-radius: 12px;
-    padding: 16px;
+    overflow: hidden;
+    background: var(--tg-theme-bg-color);
+    border: var(--card-border);
     box-shadow: var(--card-shadow);
-    transition: all 0.3s;
 }
 
-.workout-day.locked {
-    opacity: 0.7;
-    pointer-events: none;
+.workout-day-content {
+    display: flex;
+    padding: 16px;
+    gap: 16px;
 }
 
-.workout-day.completed {
-    border-left: 4px solid #4CAF50;
+.workout-day-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--tg-theme-button-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.workout-day.available:not(.completed):hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.workout-day-text {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.day-status .material-symbols-rounded {
-    font-size: 20px;
+.workout-day-text h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
 }
 
-.workout-day.completed .day-status .material-symbols-rounded {
-    color: #4CAF50;
-}
-
-.workout-day.available .day-status .material-symbols-rounded {
-    color: var(--tg-theme-button-color);
-}
-
-.workout-day.locked .day-status .material-symbols-rounded {
+.day-number {
+    font-size: 14px;
     color: var(--tg-theme-hint-color);
 }
 
 .workout-meta {
     display: flex;
-    gap: 16px;
+    gap: 12px;
+    font-size: 13px;
     color: var(--tg-theme-hint-color);
-    font-size: 14px;
-    margin-top: 4px;
 }
 
 .workout-meta span {
@@ -802,347 +766,10 @@ input:focus, select:focus {
     font-size: 16px;
 }
 
-.workout-interface {
-    padding: 16px;
-}
-
-.timer {
-    font-size: 48px;
-    text-align: center;
-    margin: 20px 0;
-}
-
-.exercise-list {
-    margin: 20px 0;
-}
-
-.exercise-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px;
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: 8px;
-    margin: 8px 0;
-}
-
-.workout-controls {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
-}
-
-.workout-btn {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.pause-btn {
-    background: var(--tg-theme-secondary-bg-color);
-    color: var(--tg-theme-text-color);
-}
-
-/* Стили для профиля */
-.profile-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
-    padding: 16px;
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: 16px;
-}
-
-.profile-photo {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    overflow: hidden;
-}
-
-.profile-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.profile-info {
-    flex: 1;
-}
-
-.profile-info h3 {
-    margin: 0;
-    font-size: 20px;
-}
-
-.profile-status {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color);
-}
-
-.form-section {
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 16px;
-}
-
-.form-section h4 {
-    margin: 0 0 16px 0;
-    font-size: 16px;
-}
-
-.input-group-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-.checkbox-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    width: 100%;
-}
-
-.checkbox-label {
-    flex: 1;
-    min-width: calc(33.33% - 8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 12px;
-    background: var(--tg-theme-bg-color);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s;
-    text-align: center;
-}
-
-.checkbox-label input {
-    display: none;
-}
-
-.checkbox-label span {
-    font-size: 14px;
-    line-height: 1.2;
-    transition: all 0.3s;
-}
-
-/* Стили для выбранного состояния */
-.checkbox-label input:checked {
-    background: var(--tg-theme-button-color);
-}
-
-.checkbox-label input:checked ~ span {
-    color: var(--tg-theme-button-text-color);
-}
-
-.checkbox-label:has(input:checked) {
-    background: var(--tg-theme-button-color);
-}
-
-/* Удаляем все старые стили для кнопок */
-.workout-btn,
-.action-btn {
-    display: none !important;
-}
-
-/* Стили для контейнера кнопок */
 .workout-actions {
-    display: flex !important;
-    gap: 8px !important;
-    margin-top: 12px !important;
-}
-
-/* Базовые стили для всех кнопок программы */
-.program-btn {
-    flex: 1 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    height: 32px !important;
-    padding: 0 12px !important;
-    border-radius: 8px !important;
-    border: none !important;
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    cursor: pointer !important;
-    transition: opacity 0.15s ease !important;
-    text-transform: none !important;
-    letter-spacing: normal !important;
-    white-space: nowrap !important;
-}
-
-/* Стиль для кнопки "Подробнее" */
-.program-btn.info-btn {
-    background: var(--tg-theme-secondary-bg-color) !important;
-    color: var(--tg-theme-text-color) !important;
-}
-
-/* Стиль для кнопки "Начать" */
-.program-btn.start-btn {
-    background: var(--tg-theme-button-color) !important;
-    color: var(--tg-theme-button-text-color) !important;
-}
-
-/* Эффект при нажатии */
-.program-btn:active {
-    opacity: 0.7 !important;
-}
-
-/* Стиль для иконок в кнопках */
-.program-btn .material-symbols-rounded {
-    font-size: 16px !important;
-    font-variation-settings: 'FILL' 0, 'wght' 400 !important;
-}
-
-/* Стили для карточек программы */
-.workout-card {
-    background: var(--tg-theme-bg-color);
-    padding: 16px;
-    margin-bottom: 16px;
-    border-radius: 16px;
-    box-shadow: var(--card-shadow);
-    border: var(--card-border);
-}
-
-.workout-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.workout-icon {
-    width: 48px;
-    height: 48px;
-    background: var(--tg-theme-button-color);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.workout-icon .material-symbols-rounded {
-    font-size: 24px;
-    color: var(--tg-theme-button-text-color);
-}
-
-.workout-info {
-    flex: 1;
-}
-
-.workout-info h3 {
-    font-size: 18px;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.workout-description {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color);
-    margin: 4px 0 12px;
-}
-
-.workout-details {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.workout-details span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 13px;
-    color: var(--tg-theme-hint-color);
-}
-
-.workout-details .material-symbols-rounded {
-    font-size: 16px;
-}
-
-.workout-actions {
+    margin-top: 12px;
     display: flex;
     gap: 8px;
-}
-
-/* Стили для кнопок действий */
-.action-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: 10px;
-    border: none;
-    font-size: 14px;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.action-btn:active {
-    opacity: 0.8;
-}
-
-.action-btn .material-symbols-rounded {
-    font-size: 18px;
-}
-
-/* Стили для заблокированных карточек */
-.workout-card.locked {
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-.workout-card.locked .start-btn {
-    background: var(--tg-theme-hint-color);
-}
-
-/* Стили для страницы программы */
-.program-workouts {
-    padding: 16px;
-}
-
-.program-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.back-btn {
-    background: none;
-    border: none;
-    padding: 8px;
-    cursor: pointer;
-    color: var(--tg-theme-text-color);
-}
-
-.program-days {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.workout-day {
-    background: var(--tg-theme-bg-color);
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: var(--card-shadow);
-    transition: all 0.3s;
 }
 
 .workout-day.locked {
@@ -1198,27 +825,9 @@ input:focus, select:focus {
     margin-bottom: 12px;
 }
 
-.day-number {
-    font-weight: 500;
-    color: var(--tg-theme-hint-color);
-}
-
 .day-info h3 {
     margin: 0 0 8px 0;
     font-size: 18px;
-}
-
-.workout-meta {
-    display: flex;
-    gap: 16px;
-    color: var(--tg-theme-hint-color);
-    font-size: 14px;
-}
-
-.workout-meta span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
 }
 
 .start-workout-btn {
@@ -1482,134 +1091,97 @@ input:focus, select:focus {
     background: var(--tg-theme-hint-color);
 }
 
-/* Удаляем старые стили */
-.workout-btn,
-.action-btn {
-    display: none;
+/* Стили для страницы программы */
+.program-workouts {
+    padding: 16px;
 }
 
-/* Стили для контейнера кнопок */
+.program-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--tg-theme-text-color);
+}
+
+.program-days {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.workout-day {
+    margin-bottom: 16px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--tg-theme-bg-color);
+    border: var(--card-border);
+    box-shadow: var(--card-shadow);
+}
+
+.workout-day-content {
+    display: flex;
+    padding: 16px;
+    gap: 16px;
+}
+
+.workout-day-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--tg-theme-button-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.workout-day-text {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.workout-day-text h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.day-number {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+}
+
+.workout-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--tg-theme-hint-color);
+}
+
+.workout-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.workout-meta .material-symbols-rounded {
+    font-size: 16px;
+}
+
 .workout-actions {
+    margin-top: 12px;
     display: flex;
     gap: 8px;
-    margin-top: 12px;
-}
-
-/* Базовые стили для всех кнопок программы */
-.program-btn {
-    flex: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    height: 32px;
-    padding: 0 12px;
-    border-radius: 8px;
-    border: none;
-    font-size: 13px;
-    font-weight: 400;
-    cursor: pointer;
-    transition: opacity 0.15s ease;
-    text-transform: none;
-    letter-spacing: normal;
-    white-space: nowrap;
-}
-
-/* Стиль для кнопки "Подробнее" */
-.info-btn {
-    background: var(--tg-theme-secondary-bg-color);
-    color: var(--tg-theme-text-color);
-}
-
-/* Стиль для кнопки "Начать" */
-.start-btn {
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-}
-
-/* Эффект при нажатии */
-.program-btn:active {
-    opacity: 0.7;
-}
-
-/* Стиль для иконок в кнопках */
-.program-btn .material-symbols-rounded {
-    font-size: 16px;
-    font-variation-settings: 'FILL' 0, 'wght' 400;
-}
-
-/* Стиль для заблокированных кнопок */
-.program-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Стиль для заблокированных карточек */
-.workout-card.locked {
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-.workout-card.locked .start-btn {
-    background: var(--tg-theme-hint-color);
-}
-
-/* Стили для кнопок */
-.program-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-}
-
-.program-btn {
-    flex: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    height: 32px;
-    padding: 0 12px;
-    border-radius: 8px;
-    border: none;
-    font-size: 13px;
-    font-weight: 400;
-    cursor: pointer;
-    transition: opacity 0.15s ease;
-    text-transform: none;
-    letter-spacing: normal;
-    white-space: nowrap;
-}
-
-.program-btn.info-btn {
-    background: var(--tg-theme-secondary-bg-color);
-    color: var(--tg-theme-text-color);
-}
-
-.program-btn.start-btn {
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-}
-
-.program-btn:active {
-    opacity: 0.7;
-}
-
-.program-btn .material-symbols-rounded {
-    font-size: 16px;
-    font-variation-settings: 'FILL' 0, 'wght' 400;
-}
-
-.program-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Удаляем старые стили */
-.workout-btn,
-.action-btn,
-.info-btn:not(.program-btn),
-.start-btn:not(.program-btn) {
-    display: none !important;
 }
 
 /* Стили для советов */

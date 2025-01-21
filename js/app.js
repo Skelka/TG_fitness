@@ -1484,7 +1484,6 @@ function renderWorkouts(program) {
     const container = document.querySelector('.workouts-list');
     if (!container) return;
 
-    // Получаем прогресс программы
     getStorageItem('activeProgram')
         .then(data => {
             const progress = data ? JSON.parse(data) : { completedWorkouts: [] };
@@ -1492,49 +1491,42 @@ function renderWorkouts(program) {
 
             let html = '';
             program.workouts.forEach((workout, index) => {
-                // Тренировка заблокирована, если:
-                // 1. Это не первый день (index > 0)
-                // 2. Предыдущий день не выполнен (не содержится в completedWorkouts)
                 const isLocked = index > 0 && !completedWorkouts.has(index);
-                
-                // Определяем статус тренировки
                 const statusClass = completedWorkouts.has(index + 1) ? 'completed' : 
                                   isLocked ? 'locked' : '';
 
                 html += `
-                    <div class="workout-card ${statusClass}">
-                        <div class="workout-header">
-                            <div class="workout-day">День ${index + 1}</div>
-                            <div class="workout-status">
-                                ${completedWorkouts.has(index + 1) ? 
-                                    '<span class="material-symbols-rounded">check_circle</span>' : 
-                                    isLocked ? 
-                                    '<span class="material-symbols-rounded">lock</span>' : 
-                                    ''}
+                    <div class="workout-day ${statusClass}">
+                        <div class="workout-day-content">
+                            <div class="workout-day-icon">
+                                <span class="material-symbols-rounded">fitness_center</span>
                             </div>
-                        </div>
-                        <h3>${workout.title}</h3>
-                        <div class="workout-details">
-                            <span>
-                                <span class="material-symbols-rounded">schedule</span>
-                                ${workout.duration} мин
-                            </span>
-                            <span>
-                                <span class="material-symbols-rounded">local_fire_department</span>
-                                ${workout.calories} ккал
-                            </span>
-                        </div>
-                        <div class="workout-actions">
-                            <button class="program-btn info-btn" onclick="showWorkoutDetails(${JSON.stringify(workout).replace(/"/g, '&quot;')})">
-                                <span class="material-symbols-rounded">info</span>
-                                Подробнее
-                            </button>
-                            <button class="program-btn start-btn" 
-                                    onclick="startWorkout(${JSON.stringify(workout).replace(/"/g, '&quot;')})"
-                                    ${isLocked ? 'disabled' : ''}>
-                                <span class="material-symbols-rounded">play_arrow</span>
-                                Начать
-                            </button>
+                            <div class="workout-day-text">
+                                <div class="day-number">День ${index + 1}</div>
+                                <h3>${workout.title}</h3>
+                                <div class="workout-meta">
+                                    <span>
+                                        <span class="material-symbols-rounded">schedule</span>
+                                        ${workout.duration} мин
+                                    </span>
+                                    <span>
+                                        <span class="material-symbols-rounded">local_fire_department</span>
+                                        ${workout.calories} ккал
+                                    </span>
+                                </div>
+                                <div class="workout-actions">
+                                    <button class="program-btn info-btn" onclick="showWorkoutDetails(${JSON.stringify(workout).replace(/"/g, '&quot;')})">
+                                        <span class="material-symbols-rounded">info</span>
+                                        Подробнее
+                                    </button>
+                                    <button class="program-btn start-btn" 
+                                            onclick="startWorkout(${JSON.stringify(workout).replace(/"/g, '&quot;')})"
+                                            ${isLocked ? 'disabled' : ''}>
+                                        <span class="material-symbols-rounded">play_arrow</span>
+                                        Начать
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -2292,30 +2284,32 @@ function renderProgramCards() {
         html += `
             <div class="program-card">
                 <div class="program-content">
-            <div class="program-icon">
-                <span class="material-symbols-rounded">${program.icon}</span>
-            </div>
-                <h3>${program.title}</h3>
-                <p class="program-description">${program.description}</p>
-                <div class="program-details">
-                    <span>
-                            <span class="material-symbols-rounded">calendar_today</span>
-                        ${program.schedule}
-                    </span>
-                    <span>
-                        <span class="material-symbols-rounded">fitness_center</span>
-                            ${getDifficultyText(program.difficulty)}
-                    </span>
-                </div>
-                <div class="program-actions">
-                        <button class="program-btn info-btn" onclick="showProgramDetails('${programId}')">
-                        <span class="material-symbols-rounded">info</span>
-                        Подробнее
-                    </button>
-                        <button class="program-btn start-btn" onclick="startProgram('${programId}')">
-                        <span class="material-symbols-rounded">play_arrow</span>
-                        Начать
-                    </button>
+                    <div class="program-icon">
+                        <span class="material-symbols-rounded">${program.icon}</span>
+                    </div>
+                    <div class="program-text">
+                        <h3>${program.title}</h3>
+                        <p class="program-description">${program.description}</p>
+                        <div class="program-details">
+                            <span>
+                                <span class="material-symbols-rounded">calendar_today</span>
+                                ${program.schedule}
+                            </span>
+                            <span>
+                                <span class="material-symbols-rounded">fitness_center</span>
+                                ${getDifficultyText(program.difficulty)}
+                            </span>
+                        </div>
+                        <div class="program-actions">
+                            <button class="program-btn info-btn" onclick="showProgramDetails('${programId}')">
+                                <span class="material-symbols-rounded">info</span>
+                                Подробнее
+                            </button>
+                            <button class="program-btn start-btn" onclick="startProgram('${programId}')">
+                                <span class="material-symbols-rounded">play_arrow</span>
+                                Начать
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
