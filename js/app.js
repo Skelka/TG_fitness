@@ -7,9 +7,60 @@ let restInterval = null;
 let currentWorkout = null;
 let currentPeriod, weightChart;
 
-// Добавим очередь для попапов
-const popupQueue = [];
-let isPopupShowing = false;
+// Функция для безопасного показа попапа
+async function showPopupSafe(options) {
+    return new Promise((resolve) => {
+        try {
+            // Закрываем текущий попап, если он открыт
+            tg.closePopup();
+            
+            // Небольшая задержка перед открытием нового попапа
+            setTimeout(() => {
+                tg.showPopup(options);
+                resolve();
+            }, 50);
+        } catch (error) {
+            console.error('Ошибка показа попапа:', error);
+            resolve(error);
+        }
+    });
+}
+
+// Упрощаем обработчик закрытия попапа
+tg.onEvent('popupClosed', async (event) => {
+    console.log('Popup closed with event:', event);
+
+    if (event.button_id) {
+        if (event.button_id.startsWith('start_program_')) {
+            const programId = event.button_id.replace('start_program_', '');
+            await startProgram(programId);
+        } 
+        else if (event.button_id.startsWith('schedule_')) {
+            const programId = event.button_id.replace('schedule_', '');
+            const program = window.programData[programId];
+            if (program) {
+                await showPopupSafe({
+                    title: 'Расписание тренировок',
+                    message: `
+День 1-${program.workouts.length}, ${program.schedule}
+
+${program.workouts.map((workout, index) => 
+    `День ${index + 1}: ${workout.title}
+⏱️ ${workout.duration} мин  •  🔥 ${workout.calories} ккал`
+).join('\n\n')}
+                    `,
+                    buttons: [
+                        {
+                            type: 'default',
+                            text: 'Начать программу',
+                            id: `start_program_${programId}`
+                        }
+                    ]
+                });
+            }
+        }
+    }
+});
 
 // В начале файла app.js добавим проверку данных
 document.addEventListener('DOMContentLoaded', async () => {
@@ -2097,28 +2148,36 @@ function setupProfileHandlers() {
 // Добавим функцию для отображения попапа
 async function showPopupSafe(options) {
     return new Promise((resolve) => {
-        const showNext = async () => {
-            if (popupQueue.length > 0 && !isPopupShowing) {
-                isPopupShowing = true;
-                const { options, resolver } = popupQueue[0];
-                
-                try {
-                    const result = await tg.showPopup(options);
-                    resolver(result);
-                } catch (error) {
-                    console.warn('Ошибка показа попапа:', error);
-                    resolver(null);
-                } finally {
-                    isPopupShowing = false;
-                    popupQueue.shift();
-                    showNext();
-                }
-            }
-        };
-
-        popupQueue.push({ options, resolver: resolve });
-        showNext();
+        // Добавляем попап в очередь
+        popupQueue.push({
+            options,
+            resolve
+        });
+        
+        // Если попап не показывается, показываем следующий
+        if (!isPopupShowing) {
+            showNext();
+        }
     });
+}
+
+// Функция для показа следующего попапа из очереди
+function showNext() {
+    if (popupQueue.length === 0) {
+        isPopupShowing = false;
+        return;
+    }
+
+    isPopupShowing = true;
+    const { options, resolve } = popupQueue[0];
+
+    try {
+        tg.showPopup(options);
+        resolve();
+    } catch (error) {
+        console.error('Ошибка показа попапа:', error);
+        resolve(error);
+    }
 }
 
 // Добавим функцию для работы с фото профиля
