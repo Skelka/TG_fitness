@@ -1753,3 +1753,48 @@ async function initStatisticsPage() {
         showError('Не удалось загрузить статистику');
     }
 } 
+
+// Функция очистки всех данных
+async function clearAllData() {
+    try {
+        tg.showPopup({
+            title: 'Подтверждение',
+            message: 'Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.',
+            buttons: [
+                {
+                    type: 'destructive',
+                    text: 'Очистить',
+                    id: 'clear_confirm'
+                },
+                {
+                    type: 'cancel',
+                    text: 'Отмена'
+                }
+            ]
+        });
+
+        // Добавляем обработчик для подтверждения
+        tg.onEvent('popupClosed', async (event) => {
+            if (event.button_id === 'clear_confirm') {
+                // Очищаем все данные
+                await Promise.all([
+                    setStorageItem('profile', ''),
+                    setStorageItem('activeProgram', ''),
+                    setStorageItem('weightHistory', ''),
+                    setStorageItem('completedWorkouts', '')
+                ]);
+
+                // Обновляем UI
+                fillProfileForm({});
+                updateProfileStatus({});
+                renderProgramCards();
+                
+                tg.HapticFeedback.notificationOccurred('success');
+                showSuccess('Все данные очищены');
+            }
+        });
+    } catch (error) {
+        console.error('Ошибка при очистке данных:', error);
+        showError('Не удалось очистить данные');
+    }
+} 

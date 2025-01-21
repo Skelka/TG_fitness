@@ -68,13 +68,131 @@
 
         <div class="tab-content" id="profile">
             <div class="profile-header">
-                <div class="profile-photo"></div>
-                <h2 id="profile-name"></h2>
-                <div class="profile-status"></div>
+                <div class="profile-photo">
+                    <img src="https://via.placeholder.com/100" alt="Profile photo" id="profile-photo">
+                    <!-- Фото будем брать из Telegram -->
+                </div>
+                <div class="profile-info">
+                    <h3 id="profile-name">Имя пользователя</h3>
+                    <!-- Имя будем брать из Telegram -->
+                    <span class="profile-status">Новичок</span>
+                </div>
             </div>
-            <form id="profile-form">
-                <!-- ... форма профиля ... -->
+
+            <form id="profile-form" class="profile-form">
+                <div class="form-section">
+                    <h4>Основные параметры</h4>
+                    <div class="input-group-row">
+                        <div class="input-group">
+                            <label for="age">Возраст</label>
+                            <input type="number" id="age" name="age" autocomplete="off" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="gender">Пол</label>
+                            <select id="gender" name="gender" required>
+                                <option value="male">Мужской</option>
+                                <option value="female">Женский</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group-row">
+                        <div class="input-group">
+                            <label for="height">Рост (см)</label>
+                            <input type="number" id="height" name="height" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="weight">Вес (кг)</label>
+                            <input type="number" id="weight" name="weight" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>Цели и предпочтения</h4>
+                    <div class="input-group">
+                        <label>Основная цель</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="radio" name="goal" value="weight_loss">
+                                <span>Похудение</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="radio" name="goal" value="muscle_gain">
+                                <span>Набор массы</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="radio" name="goal" value="maintenance">
+                                <span>Поддержание</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Уровень подготовки</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="radio" name="level" value="beginner">
+                                <span>Новичок</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="radio" name="level" value="intermediate">
+                                <span>Средний</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="radio" name="level" value="advanced">
+                                <span>Продвинутый</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Место для тренировок</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="workout_place" value="home">
+                                <span>Дома</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="workout_place" value="gym">
+                                <span>В зале</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="workout_place" value="outdoor">
+                                <span>На улице</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>Доступное оборудование</h4>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="equipment" value="dumbbells">
+                            <span>Гантели</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="equipment" value="barbell">
+                            <span>Штанга</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="equipment" value="kettlebell">
+                            <span>Гири</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="equipment" value="mat">
+                            <span>Коврик</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="equipment" value="resistance_bands">
+                            <span>Резинки</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="equipment" value="pull_up_bar">
+                            <span>Турник</span>
+                        </label>
+                    </div>
+                </div>
             </form>
+            <button onclick="clearAllData()" class="danger-btn">Очистить все данные</button>
         </div>
     </div>
     <script src="js/data.js"></script>
