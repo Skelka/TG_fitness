@@ -168,7 +168,7 @@ window.programData = {
     endurance: {
         id: 'endurance',
         title: 'Выносливость',
-        description: 'Программа для развития общей выносливости и работоспособности',
+        description: 'Программа для развития общей выносливости',
         duration: '6 недель',
         difficulty: 'medium',
         category: 'endurance',
@@ -177,8 +177,8 @@ window.programData = {
         calories_per_week: '3000-3500 ккал',
         results: [
             'Повышение выносливости',
-            'Улучшение работы сердечно-сосудистой системы',
-            'Увеличение энергичности'
+            'Улучшение работы сердца',
+            'Больше энергии'
         ],
         workouts: [
             {

@@ -1201,18 +1201,24 @@ async function showProgramDetails(programId) {
     const program = window.programData[programId];
     if (!program) return;
 
+    // Сокращаем описание, если оно слишком длинное
+    const description = program.description.length > 50 ? 
+        program.description.substring(0, 50) + '...' : 
+        program.description;
+
+    // Сокращаем результаты до 2-х пунктов
+    const results = program.results.slice(0, 2).map(result => `• ${result}`).join('\n');
+
     await showPopupSafe({
         title: program.title,
         message: `
-${program.description}
+${description}
 
-📅 Длительность: ${program.duration}
-🏋️ Тренировки: ${program.schedule}
-🔥 Нагрузка: ${program.calories_per_week}
+📅 ${program.duration}
+🏋️ ${program.schedule}
+🔥 ${program.calories_per_week}
 
-Ожидаемые результаты:
-${program.results.map(result => `• ${result}`).join('\n')}
-        `,
+${results}`,
         buttons: [
             {
                 type: 'default',
