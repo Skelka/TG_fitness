@@ -1203,50 +1203,17 @@ async function showProgramDetails(programId) {
     const program = window.programData[programId];
     if (!program) return;
 
-    const scheduleHtml = `
-        <div class="program-schedule">
-            <h4>Расписание тренировок:</h4>
-            <div class="schedule-list">
-                ${program.workouts.map((workout, index) => `
-                    <div class="schedule-item">
-                        <span>День ${index + 1}</span>
-                        <span>${workout.title}</span>
-                        <span>${workout.duration} мин</span>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-    `;
-
-    const resultsHtml = `
-        <div class="program-results">
-            <h4>Ожидаемые результаты:</h4>
-            <ul>
-                ${program.results.map(result => `<li>${result}</li>`).join('')}
-            </ul>
-        </div>
-    `;
-
     await showPopupSafe({
         title: program.title,
         message: `
-            <div class="program-details">
-                <p>${program.description}</p>
-                <div class="program-info">
-                    <div class="info-item">
-                        <span class="material-symbols-rounded">calendar_month</span>
-                        <span>${program.duration}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="material-symbols-rounded">schedule</span>
-                        <span>${program.schedule}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="material-symbols-rounded">local_fire_department</span>
-                        <span>${program.calories_per_week}</span>
-                    </div>
-                </div>
-            </div>
+${program.description}
+
+📅 Длительность: ${program.duration}
+🏋️ Тренировки: ${program.schedule}
+🔥 Нагрузка: ${program.calories_per_week}
+
+Ожидаемые результаты:
+${program.results.map(result => `• ${result}`).join('\n')}
         `,
         buttons: [
             {
@@ -1769,11 +1736,11 @@ async function completeWorkout(workout, programId) {
         }
 
         // Получаем текущий прогресс программы
-        const activeProgram = await getStorageItem('activeProgram')
+        let activeProgram = await getStorageItem('activeProgram')
             .then(data => data ? JSON.parse(data) : null);
 
         if (activeProgram) {
-            // Проверяем, существует ли массив completedWorkouts
+            // Инициализируем массив, если его нет
             if (!Array.isArray(activeProgram.completedWorkouts)) {
                 activeProgram.completedWorkouts = [];
             }
@@ -1782,55 +1749,60 @@ async function completeWorkout(workout, programId) {
             const today = new Date().toDateString();
             const alreadyCompletedToday = activeProgram.completedWorkouts.some(w => 
                 new Date(w.date).toDateString() === today && 
-                w.workout === workoutToComplete.title
+                w.day === workoutToComplete.day
             );
 
             if (!alreadyCompletedToday) {
-                // Добавляем новую завершенную тренировку в массив
-                activeProgram.completedWorkouts.push({
+                // Создаем новую запись о завершенной тренировке
+                const completedWorkout = {
                     date: Date.now(),
-                    workout: workoutToComplete.title,
+                    day: workoutToComplete.day,
+                    title: workoutToComplete.title,
                     duration: workoutToComplete.duration,
                     calories: workoutToComplete.calories,
-                    day: workoutToComplete.day // Добавляем номер дня
-                });
+                    type: workoutToComplete.type
+                };
+
+                // Добавляем новую тренировку в массив
+                activeProgram.completedWorkouts.push(completedWorkout);
+
+                // Сортируем тренировки по дате
+                activeProgram.completedWorkouts.sort((a, b) => a.date - b.date);
 
                 // Сохраняем обновленный прогресс
                 await setStorageItem('activeProgram', JSON.stringify(activeProgram));
+
+                // Обновляем статистику
+                await updateStatistics();
             }
         }
 
         // Показываем экран завершения
         container.innerHTML = `
-            <div class="workout-session">
-                <div class="workout-complete">
-                    <div class="complete-icon">
-                        <span class="material-symbols-rounded">check_circle</span>
-                    </div>
-                    <h2>Тренировка завершена!</h2>
-                    <div class="workout-stats">
-                        <div class="stat-item">
-                            <span class="stat-value">${workoutToComplete.duration}</span>
-                            <span class="stat-label">минут</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value">${workoutToComplete.calories}</span>
-                            <span class="stat-label">ккал</span>
-                        </div>
-                    </div>
-                    <button class="finish-btn" onclick="renderProgramCards()">
-                        <span class="material-symbols-rounded">home</span>
-                        Вернуться
-                    </button>
+            <div class="workout-complete">
+                <div class="complete-icon">
+                    <span class="material-symbols-rounded">check_circle</span>
                 </div>
+                <h2>Тренировка завершена!</h2>
+                <div class="workout-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">${workoutToComplete.duration}</span>
+                        <span class="stat-label">минут</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">${workoutToComplete.calories}</span>
+                        <span class="stat-label">ккал</span>
+                    </div>
+                </div>
+                <button class="finish-btn" onclick="showProgramsList()">
+                    <span class="material-symbols-rounded">home</span>
+                    Вернуться
+                </button>
             </div>
         `;
 
         // Возвращаем нижнюю навигацию
         document.querySelector('.bottom-nav')?.classList.remove('hidden');
-
-        // Обновляем статистику
-        await updateStatistics();
 
         // Очищаем текущую тренировку
         currentWorkout = null;
@@ -1840,7 +1812,7 @@ async function completeWorkout(workout, programId) {
 
     } catch (error) {
         console.error('Ошибка при завершении тренировки:', error);
-        showError(error);
+        showError(error.message);
     }
 }
 
@@ -2612,4 +2584,23 @@ async function renderTips() {
             <p>${tip.text}</p>
         </div>
     `).join('');
-} 
+}
+
+// В начало файла, после объявления глобальных переменных
+function setupTheme() {
+    // Определяем тему из Telegram WebApp
+    const isDarkTheme = window.Telegram.WebApp.colorScheme === 'dark';
+    document.documentElement.setAttribute('data-theme', isDarkTheme ? 'dark' : 'light');
+
+    // Слушаем изменения темы
+    window.Telegram.WebApp.onEvent('themeChanged', () => {
+        const newTheme = window.Telegram.WebApp.colorScheme;
+        document.documentElement.setAttribute('data-theme', newTheme);
+    });
+}
+
+// Добавляем вызов функции в DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    setupTheme();
+    // ... остальной код инициализации
+}); 
