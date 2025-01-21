@@ -372,56 +372,39 @@ function fillProfileForm(profile) {
 async function saveWeight(weight) {
     try {
         // Получаем текущую историю весов
-        const result = await getStorageItem('weightHistory');
-        let weightHistory = [];
+        const weightHistoryStr = await getStorageItem('weightHistory');
+        const weightHistory = weightHistoryStr ? JSON.parse(weightHistoryStr) : [];
         
-        try {
-            weightHistory = result ? JSON.parse(result) : [];
-            if (!Array.isArray(weightHistory)) weightHistory = [];
-        } catch (e) {
-            console.warn('Ошибка парсинга истории весов:', e);
-        }
-
-        // Создаем новую запись
-        const newEntry = {
+        // Добавляем новую запись
+        weightHistory.push({
             date: new Date().toISOString(),
             weight: parseFloat(weight)
-        };
-
-        console.log('Сохраняем новую запись веса:', newEntry);
-
-        // Проверяем, есть ли уже запись за сегодня
-        const today = new Date().setHours(0, 0, 0, 0);
-        const existingTodayIndex = weightHistory.findIndex(entry => 
-            new Date(entry.date).setHours(0, 0, 0, 0) === today
-        );
-
-        if (existingTodayIndex !== -1) {
-            weightHistory[existingTodayIndex] = newEntry;
-        } else {
-            weightHistory.push(newEntry);
-        }
-
-        // Сортируем записи по дате
-        weightHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
-
+        });
+        
         // Сохраняем обновленную историю
         await setStorageItem('weightHistory', JSON.stringify(weightHistory));
         
-        // Обновляем график
-        const data = await getWeightData(currentPeriod);
-        updateWeightChart(data);
+        // Обновляем график, если мы на странице статистики
+        const statsTab = document.getElementById('stats');
+        if (statsTab && statsTab.classList.contains('active')) {
+            updateWeightChart(currentPeriod);
+        }
 
-        // Показываем уведомление об успехе
-        tg.showPopup({
-            title: 'Вес сохранен',
-            message: 'Данные успешно обновлены',
-            buttons: [{type: 'ok'}]
-        });
-
+        // Добавляем тактильный отклик
+        tg.HapticFeedback.impactOccurred('light');
+        
+        // Убираем попап с сообщением об успехе
+        // await showPopupSafe({
+        //     message: 'Данные успешно обновлены',
+        //     title: 'Вес сохранен',
+        //     buttons: [{
+        //         type: 'ok',
+        //         text: 'OK'
+        //     }]
+        // });
     } catch (error) {
-        console.error('Ошибка при сохранении веса:', error);
-        showError(error);
+        console.error('Ошибка сохранения веса:', error);
+        showError('Не удалось сохранить вес');
     }
 }
 
@@ -552,80 +535,79 @@ function aggregateWeightData(data, period) {
 }
 
 // Обновляем функцию обновления графика
-function updateWeightChart(selectedPeriod) {
+async function updateWeightChart(selectedPeriod) {
     currentPeriod = selectedPeriod; // Сохраняем текущий период
     
     const ctx = document.getElementById('weight-chart');
     if (!ctx) return;
 
+    // Получаем данные о весе
+    const weightHistoryStr = await getStorageItem('weightHistory');
+    const weightHistory = weightHistoryStr ? JSON.parse(weightHistoryStr) : [];
+    
     const now = new Date();
+    let startDate = new Date();
     let labels = [];
     let data = [];
 
-    // Получаем данные о весе
-    getStorageItem('weightHistory')
-        .then(historyStr => {
-            const weightHistory = historyStr ? JSON.parse(historyStr) : [];
-            
-            // Определяем диапазон дат для выбранного периода
-            let startDate = new Date();
-            switch(selectedPeriod) {
-            case 'week':
-                    startDate.setDate(now.getDate() - 7);
-                    for(let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
-                        labels.push(d.toLocaleDateString('ru-RU', { weekday: 'short' }));
-                        const weight = weightHistory.find(w => 
-                            new Date(w.date).toDateString() === d.toDateString()
-                        )?.weight;
-                        data.push(weight || null);
-                    }
-                    break;
-                    
-            case 'month':
-                    startDate.setMonth(now.getMonth() - 1);
-                    for(let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
-                        labels.push(d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }));
-                        const weight = weightHistory.find(w => 
-                            new Date(w.date).toDateString() === d.toDateString()
-                        )?.weight;
-                        data.push(weight || null);
-                    }
-                    break;
-                    
-            case 'year':
-                    startDate.setFullYear(now.getFullYear() - 1);
-                    for(let d = new Date(startDate); d <= now; d.setMonth(d.getMonth() + 1)) {
-                        labels.push(d.toLocaleDateString('ru-RU', { month: 'short' }));
-                        const monthWeights = weightHistory.filter(w => {
-                            const date = new Date(w.date);
-                            return date.getMonth() === d.getMonth() && 
-                                   date.getFullYear() === d.getFullYear();
-                        });
-                        // Берем среднее значение веса за месяц
-                        const avgWeight = monthWeights.length ? 
-                            monthWeights.reduce((sum, w) => sum + w.weight, 0) / monthWeights.length : 
-                            null;
-                        data.push(avgWeight);
-                    }
-                    break;
+    // Определяем диапазон дат для выбранного периода
+    switch(selectedPeriod) {
+        case 'week':
+            startDate.setDate(now.getDate() - 7);
+            for(let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
+                labels.push(d.toLocaleDateString('ru-RU', { weekday: 'short' }));
+                const weight = weightHistory.find(w => 
+                    new Date(w.date).toDateString() === d.toDateString()
+                )?.weight;
+                data.push(weight || null);
             }
+            break;
+            
+        case 'month':
+            startDate.setMonth(now.getMonth() - 1);
+            for(let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
+                labels.push(d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }));
+                const weight = weightHistory.find(w => 
+                    new Date(w.date).toDateString() === d.toDateString()
+                )?.weight;
+                data.push(weight || null);
+            }
+            break;
+            
+        case 'year':
+            startDate.setFullYear(now.getFullYear() - 1);
+            for(let d = new Date(startDate); d <= now; d.setMonth(d.getMonth() + 1)) {
+                labels.push(d.toLocaleDateString('ru-RU', { month: 'short' }));
+                const monthWeights = weightHistory.filter(w => {
+                    const date = new Date(w.date);
+                    return date.getMonth() === d.getMonth() && 
+                           date.getFullYear() === d.getFullYear();
+                });
+                const avgWeight = monthWeights.length ? 
+                    monthWeights.reduce((sum, w) => sum + w.weight, 0) / monthWeights.length : 
+                    null;
+                data.push(avgWeight);
+            }
+            break;
+    }
 
-            // Обновляем график
-            if (window.weightChart) {
+    // Уничтожаем предыдущий график, если он существует
+    if (window.weightChart) {
         window.weightChart.destroy();
     }
 
+    // Создаем новый график
     window.weightChart = new Chart(ctx, {
         type: 'line',
         data: {
-                    labels: labels,
+            labels: labels,
             datasets: [{
                 label: 'Вес (кг)',
-                        data: data,
+                data: data,
                 borderColor: '#40a7e3',
-                        tension: 0.4,
-                        fill: false,
-                        pointBackgroundColor: '#40a7e3'
+                tension: 0.4,
+                fill: false,
+                pointBackgroundColor: '#40a7e3'
             }]
         },
         options: {
@@ -639,18 +621,17 @@ function updateWeightChart(selectedPeriod) {
             scales: {
                 y: {
                     beginAtZero: false,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
                     }
                 }
-            });
+            }
+        }
     });
 }
 
@@ -1227,48 +1208,42 @@ function showProgramsList() {
     const container = document.querySelector('.container');
     if (!container) return;
 
-    // Возвращаем исходный HTML
+    // Возвращаем исходный HTML со всеми вкладками
     container.innerHTML = `
         <div class="tab-content active" id="workouts">
             <div class="programs-list"></div>
         </div>
-        <div class="tab-content" id="calendar"></div>
+        <div class="tab-content" id="calendar">
+            <div class="calendar-container"></div>
+        </div>
         <div class="tab-content" id="stats">
             <div class="statistics-container"></div>
         </div>
         <div class="tab-content" id="profile">
             <div class="profile-container"></div>
         </div>
+        <nav class="bottom-nav">
+            <button class="tab-btn active" data-tab="workouts">
+                <span class="material-symbols-rounded">fitness_center</span>
+                Тренировки
+            </button>
+            <button class="tab-btn" data-tab="calendar">
+                <span class="material-symbols-rounded">calendar_month</span>
+                Календарь
+            </button>
+            <button class="tab-btn" data-tab="stats">
+                <span class="material-symbols-rounded">monitoring</span>
+                Статистика
+            </button>
+            <button class="tab-btn" data-tab="profile">
+                <span class="material-symbols-rounded">person</span>
+                Профиль
+            </button>
+        </nav>
     `;
 
     // Отображаем список программ
     renderProgramCards();
-
-    // Восстанавливаем нижнюю навигацию
-    const bottomNav = document.querySelector('.bottom-nav');
-    if (bottomNav) {
-        bottomNav.classList.remove('hidden');
-        
-        // Активируем вкладку "Тренировки"
-        const tabs = bottomNav.querySelectorAll('.tab-btn');
-        tabs.forEach(tab => {
-            if (tab.dataset.tab === 'workouts') {
-                tab.classList.add('active');
-            } else {
-                tab.classList.remove('active');
-            }
-        });
-
-        // Показываем соответствующий контент
-        const tabContents = document.querySelectorAll('.tab-content');
-        tabContents.forEach(content => {
-            if (content.id === 'workouts') {
-                content.classList.add('active');
-            } else {
-                content.classList.remove('active');
-            }
-        });
-    }
 
     // Восстанавливаем обработчики вкладок
     setupTabHandlers();
@@ -2490,4 +2465,20 @@ function setupExerciseHandlers() {
     });
 
     // ... остальные обработчики
+} 
+
+// Функция для инициализации обработчика выхода из тренировки
+function initExitHandler() {
+    tg.onEvent('popupClosed', (event) => {
+        if (event.button_id === 'exit_workout') {
+            // Очищаем все таймеры
+            clearTimers();
+            
+            // Возвращаемся к списку программ
+            showProgramsList();
+            
+            // Вибрация
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+    });
 } 
