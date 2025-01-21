@@ -6,25 +6,7 @@
     <title>Fitness Bot</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <style>
-        .material-symbols-rounded {
-            font-family: 'Material Symbols Rounded';
-            font-weight: normal;
-            font-style: normal;
-            font-size: 24px;
-            line-height: 1;
-            letter-spacing: normal;
-            text-transform: none;
-            display: inline-block;
-            white-space: nowrap;
-            word-wrap: normal;
-            direction: ltr;
-            font-feature-settings: 'liga';
-            -webkit-font-feature-settings: 'liga';
-            -webkit-font-smoothing: antialiased;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -55,14 +37,100 @@
         </div>
 
         <div class="tab-content" id="calendar">
-            <div class="calendar-container">
-                <!-- Календарь будет добавлен динамически -->
+            <div class="calendar-header">
+                <button class="calendar-nav-btn">
+                    <span class="material-symbols-rounded">chevron_left</span>
+                </button>
+                <h2>Декабрь 2023</h2>
+                <button class="calendar-nav-btn">
+                    <span class="material-symbols-rounded">chevron_right</span>
+                </button>
+            </div>
+            <div class="calendar-weekdays">
+                <span>Пн</span>
+                <span>Вт</span>
+                <span>Ср</span>
+                <span>Чт</span>
+                <span>Пт</span>
+                <span>Сб</span>
+                <span>Вс</span>
+            </div>
+            <div class="calendar-days">
+                <!-- Дни будут добавляться динамически -->
+            </div>
+            <div class="calendar-legend">
+                <div class="legend-item">
+                    <span class="legend-dot completed"></span>
+                    <span>Тренировка выполнена</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot planned"></span>
+                    <span>Запланировано</span>
+                </div>
             </div>
         </div>
 
-        <div class="tab-content" id="stats">
-            <div class="statistics-container">
-                <!-- Статистика будет добавлена динамически -->
+        <div id="stats" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">fitness_center</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="total-workouts">0</span>
+                        <span class="stat-label">Тренировок</span>
+                    </div>
+                </div>
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">local_fire_department</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="total-calories">0</span>
+                        <span class="stat-label">Ккал сожжено</span>
+                    </div>
+                </div>
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">timer</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="total-time">0м</span>
+                        <span class="stat-label">Общее время</span>
+                    </div>
+                </div>
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">trending_up</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="completion-rate">0%</span>
+                        <span class="stat-label">Достижение цели</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="weight-section">
+                <h3>Динамика веса</h3>
+                <div class="period-selector">
+                    <button class="period-btn active" data-period="week">Неделя</button>
+                    <button class="period-btn" data-period="month">Месяц</button>
+                    <button class="period-btn" data-period="year">Год</button>
+                </div>
+                <canvas id="weight-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tips">
+            <div class="tips-list">
+                <div class="tip-card">
+                    <h3>Правильное питание</h3>
+                    <p>Советы по сбалансированному питанию...</p>
+                </div>
+                <div class="tip-card">
+                    <h3>Техника упражнений</h3>
+                    <p>Как правильно выполнять базовые упражнения...</p>
+                </div>
             </div>
         </div>
 
@@ -195,10 +263,9 @@
             <button onclick="clearAllData()" class="danger-btn">Очистить все данные</button>
         </div>
     </div>
-    <script src="js/data.js"></script>
     <script src="js/exercise-images.js"></script>
+    <script src="js/data.js"></script>
     <script src="js/exercises-db.js"></script>
-    <script src="js/tips-db.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html> 

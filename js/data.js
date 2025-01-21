@@ -2,18 +2,19 @@
 window.programData = {
     weight_loss: {
         id: 'weight_loss',
-        title: 'Снижение веса',
-        description: 'Программа для безопасного снижения веса',
-        icon: 'fitness_center',
-        goal: 'Снижение веса',
-        schedule: '3-4 раза в неделю',
-        difficulty: 'beginner',
-        features: [
-            'Кардио тренировки',
-            'Силовые упражнения',
-            'Контроль питания'
+        title: 'Похудение',
+        description: 'Программа для снижения веса и улучшения метаболизма',
+        duration: '8 недель',
+        difficulty: 'medium',
+        category: 'weight_loss',
+        icon: 'monitor_weight',
+        schedule: '3-4 тр/нед',
+        calories_per_week: '3500-4000 ккал',
+        results: [
+            'Снижение веса 0.5-1 кг в неделю',
+            'Улучшение выносливости',
+            'Ускорение метаболизма'
         ],
-        equipment: [],
         workouts: [
             {
                 day: 1,
