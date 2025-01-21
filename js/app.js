@@ -402,44 +402,116 @@ async function getWeightData(period = 'week') {
     }
 }
 
-// Обновление графика веса
-function updateWeightChart(data) {
+// Функция для агрегации данных по периодам
+function aggregateWeightData(data, period) {
+    if (!data || data.length === 0) return [];
+
+    const aggregated = [];
+    
+    switch (period) {
+        case 'week':
+            // Для недели оставляем ежедневные значения
+            return data;
+            
+        case 'month':
+            // Группируем по неделям
+            const weekMap = new Map();
+            data.forEach(entry => {
+                const date = new Date(entry.date);
+                // Получаем номер недели
+                const weekStart = new Date(date);
+                weekStart.setDate(date.getDate() - date.getDay());
+                const weekKey = weekStart.toISOString().split('T')[0];
+                
+                if (!weekMap.has(weekKey)) {
+                    weekMap.set(weekKey, {
+                        weights: [],
+                        date: weekStart
+                    });
+                }
+                weekMap.get(weekKey).weights.push(entry.weight);
+            });
+            
+            // Вычисляем среднее значение для каждой недели
+            weekMap.forEach((value, key) => {
+                const avgWeight = value.weights.reduce((a, b) => a + b, 0) / value.weights.length;
+                aggregated.push({
+                    date: value.date,
+                    weight: Number(avgWeight.toFixed(1))
+                });
+            });
+            break;
+            
+        case 'year':
+            // Группируем по месяцам
+            const monthMap = new Map();
+            data.forEach(entry => {
+                const date = new Date(entry.date);
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                
+                if (!monthMap.has(monthKey)) {
+                    monthMap.set(monthKey, {
+                        weights: [],
+                        date: new Date(date.getFullYear(), date.getMonth(), 1)
+                    });
+                }
+                monthMap.get(monthKey).weights.push(entry.weight);
+            });
+            
+            // Вычисляем среднее значение для каждого месяца
+            monthMap.forEach((value, key) => {
+                const avgWeight = value.weights.reduce((a, b) => a + b, 0) / value.weights.length;
+                aggregated.push({
+                    date: value.date,
+                    weight: Number(avgWeight.toFixed(1))
+                });
+            });
+            break;
+    }
+    
+    return aggregated.sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+
+// Обновляем функцию обновления графика
+function updateWeightChart(data, period = 'week') {
     const ctx = document.getElementById('weight-chart');
     if (!ctx) return;
 
-    // Находим минимальный и максимальный вес
-    const weights = data.map(item => item.weight);
-    const minWeight = Math.min(...weights);
-    const maxWeight = Math.max(...weights);
+    // Агрегируем данные в зависимости от периода
+    const aggregatedData = aggregateWeightData(data, period);
     
-    // Устанавливаем диапазон с отступом в 2 кг
-    const yMin = Math.floor(minWeight) - 1;
-    const yMax = Math.ceil(maxWeight) + 1;
+    // Форматируем метки в зависимости от периода
+    const formatLabel = (date) => {
+        const d = new Date(date);
+        switch (period) {
+            case 'week':
+                return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+            case 'month':
+                return `Неделя ${Math.ceil(d.getDate() / 7)}`;
+            case 'year':
+                return d.toLocaleDateString('ru-RU', { month: 'short' });
+            default:
+                return d.toLocaleDateString('ru-RU');
+        }
+    };
 
-    if (window.weightChart) {
+    // Если график уже существует, уничтожаем его
+    if (window.weightChart instanceof Chart) {
         window.weightChart.destroy();
     }
 
+    // Создаем новый график
     window.weightChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: data.map(item => {
-                const date = new Date(item.date);
-                return date.toLocaleDateString('ru-RU', { 
-                    day: '2-digit',
-                    month: '2-digit'
-                });
-            }),
+            labels: aggregatedData.map(d => formatLabel(d.date)),
             datasets: [{
-                label: 'Вес',
-                data: data.map(item => item.weight),
+                label: 'Вес (кг)',
+                data: aggregatedData.map(d => d.weight),
                 borderColor: '#40a7e3',
                 backgroundColor: 'rgba(64, 167, 227, 0.1)',
-                borderWidth: 2,
                 fill: true,
-                tension: 0.4,
-                pointRadius: 4,
-                pointBackgroundColor: '#40a7e3'
+                tension: 0.4
             }]
         },
         options: {
@@ -448,52 +520,13 @@ function updateWeightChart(data) {
             plugins: {
                 legend: {
                     display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    titleFont: {
-                        size: 14
-                    },
-                    bodyFont: {
-                        size: 14
-                    },
-                    padding: 10,
-                    displayColors: false,
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.parsed.y} кг`;
-                        }
-                    }
                 }
             },
             scales: {
-                x: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        font: {
-                            size: 12
-                        },
-                        color: '#999'
-                    }
-                },
                 y: {
-                    min: yMin,
-                    max: yMax,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    },
+                    beginAtZero: false,
                     ticks: {
-                        font: {
-                            size: 12
-                        },
-                        color: '#999',
-                        callback: function(value) {
-                            return value + ' кг';
-                        }
+                        callback: value => `${value} кг`
                     }
                 }
             }
