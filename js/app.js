@@ -1271,7 +1271,28 @@ async function startProgram(programId) {
             completedWorkouts: []
         }));
 
-        // Переходим к списку тренировок
+        // Очищаем текущий контейнер
+        const container = document.querySelector('.container');
+        if (!container) return;
+
+        // Создаем контейнер для списка тренировок
+        container.innerHTML = `
+            <div class="program-header">
+                <button class="back-btn" onclick="renderProgramCards()">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                <h2>${program.title}</h2>
+            </div>
+            <div class="workouts-list"></div>
+        `;
+
+        // Добавляем обработчик для кнопки "Назад"
+        const backBtn = container.querySelector('.back-btn');
+        backBtn?.addEventListener('click', () => {
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+
+        // Отображаем список тренировок
         renderWorkouts(program);
 
     } catch (error) {
