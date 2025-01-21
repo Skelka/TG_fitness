@@ -1,5 +1,11 @@
 // Глобальные переменные
-let tg, mainButton, backButton, currentPeriod, weightChart;
+let tg = window.Telegram.WebApp;
+let mainButton = tg.MainButton;
+let backButton = tg.BackButton;
+let timerInterval = null;
+let restInterval = null;
+let currentWorkout = null;
+let currentPeriod, weightChart;
 
 // Добавим очередь для попапов
 const popupQueue = [];
@@ -1249,60 +1255,98 @@ function updateProgramProgress(progress) {
     }
 }
 
-// Обновляем функцию startProgram
+// Функция для запуска программы
 async function startProgram(programId) {
-    const program = programData[programId];
-    if (!program) return;
-
     try {
-        // Создаем объект прогресса программы
-        const programProgress = {
-            programId: programId,
-            startDate: Date.now(),
-            currentDay: 1,
-            completedWorkouts: [],
-            plannedWorkouts: []
-        };
-
-        // Планируем все тренировки
-        const startDate = new Date();
-        for (const workout of program.workouts) {
-            const workoutDate = new Date(startDate);
-            workoutDate.setDate(workoutDate.getDate() + workout.day - 1);
-            
-            programProgress.plannedWorkouts.push({
-                day: workout.day,
-                plannedDate: workoutDate.getTime(),
-                title: workout.title,
-                duration: workout.duration,
-                type: workout.type
-            });
+        const program = window.programData[programId];
+        if (!program) {
+            throw new Error('Программа не найдена');
         }
 
-        // Сохраняем прогресс
-        await setStorageItem('activeProgram', JSON.stringify(programProgress));
+        // Сохраняем выбранную программу
+        await setStorageItem('activeProgram', JSON.stringify({
+            id: programId,
+            title: program.title,
+            workouts: program.workouts,
+            completedWorkouts: []
+        }));
 
-        // Обновляем статистику
-        await updateStatistics();
-
-        // Обновляем календарь
-        renderCalendar();
-
-        // Показываем сообщение о начале программы
-        await showPopupSafe({
-            title: 'Программа начата!',
-            message: `Вы начали программу "${program.title}". Первая тренировка запланирована на сегодня.`,
-            buttons: [{
-                type: 'default',
-                text: 'Начать тренировку',
-                id: `start_workout_${programId}_1`
-            }]
-        });
+        // Переходим к списку тренировок
+        renderWorkouts(program);
 
     } catch (error) {
         console.error('Ошибка при запуске программы:', error);
-        showError(error);
+        showError(error.message);
     }
+}
+
+// Функция для отображения тренировок программы
+function renderWorkouts(program) {
+    const container = document.querySelector('.workouts-list');
+    if (!container) return;
+
+    // Получаем прогресс программы
+    getStorageItem('activeProgram')
+        .then(data => {
+            const progress = data ? JSON.parse(data) : { completedWorkouts: [] };
+            const completedWorkouts = new Set(progress.completedWorkouts.map(w => w.day));
+
+            let html = '';
+            program.workouts.forEach((workout, index) => {
+                // Тренировка заблокирована, если:
+                // 1. Это не первый день (index > 0)
+                // 2. Предыдущий день не выполнен (не содержится в completedWorkouts)
+                const isLocked = index > 0 && !completedWorkouts.has(index);
+                
+                // Определяем статус тренировки
+                const statusClass = completedWorkouts.has(index + 1) ? 'completed' : 
+                                  isLocked ? 'locked' : '';
+
+                html += `
+                    <div class="workout-card ${statusClass}">
+                        <div class="workout-header">
+                            <div class="workout-day">День ${index + 1}</div>
+                            <div class="workout-status">
+                                ${completedWorkouts.has(index + 1) ? 
+                                    '<span class="material-symbols-rounded">check_circle</span>' : 
+                                    isLocked ? 
+                                    '<span class="material-symbols-rounded">lock</span>' : 
+                                    ''}
+                            </div>
+                        </div>
+                        <h3>${workout.title}</h3>
+                        <div class="workout-details">
+                            <span>
+                                <span class="material-symbols-rounded">schedule</span>
+                                ${workout.duration} мин
+                            </span>
+                            <span>
+                                <span class="material-symbols-rounded">local_fire_department</span>
+                                ${workout.calories} ккал
+                            </span>
+                        </div>
+                        <div class="workout-actions">
+                            <button class="program-btn info-btn" onclick="showWorkoutDetails(${JSON.stringify(workout).replace(/"/g, '&quot;')})">
+                                <span class="material-symbols-rounded">info</span>
+                                Подробнее
+                            </button>
+                            <button class="program-btn start-btn" 
+                                    onclick="startWorkout(${JSON.stringify(workout).replace(/"/g, '&quot;')})"
+                                    ${isLocked ? 'disabled' : ''}>
+                                <span class="material-symbols-rounded">play_arrow</span>
+                                Начать
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Ошибка при рендеринге тренировок:', error);
+            showError('Не удалось загрузить тренировки');
+        });
 }
 
 // Функция обновления статистики
@@ -2015,7 +2059,7 @@ function renderProgramCards() {
     if (!container) return;
 
     let html = '';
-    Object.values(window.programData).forEach(program => {
+    Object.entries(window.programData).forEach(([programId, program]) => {
         html += `
             <div class="program-card">
                 <div class="program-content">
@@ -2035,11 +2079,11 @@ function renderProgramCards() {
                         </span>
                     </div>
                     <div class="program-actions">
-                        <button class="program-btn info-btn" onclick="showProgramDetails('${program.id}')">
+                        <button class="program-btn info-btn" onclick="showProgramDetails('${programId}')">
                             <span class="material-symbols-rounded">info</span>
                             Подробнее
                         </button>
-                        <button class="program-btn start-btn" onclick="startProgram('${program.id}')">
+                        <button class="program-btn start-btn" onclick="startProgram('${programId}')">
                             <span class="material-symbols-rounded">play_arrow</span>
                             Начать
                         </button>
@@ -2255,66 +2299,6 @@ async function saveProfileSettings() {
     };
 
     await setStorageItem('profile', JSON.stringify(updatedProfile));
-} 
-
-function renderWorkouts(program) {
-    const container = document.querySelector('.workouts-list');
-    if (!container) return;
-
-    // Получаем прогресс программы
-    getStorageItem('activeProgram')
-        .then(data => {
-            const progress = data ? JSON.parse(data) : { completedWorkouts: [] };
-            const completedWorkouts = new Set(progress.completedWorkouts.map(w => w.day));
-
-            let html = '';
-            program.workouts.forEach((workout, index) => {
-                const isLocked = index > 0 && !completedWorkouts.has(index);
-                const statusClass = completedWorkouts.has(index + 1) ? 'completed' : 
-                                  isLocked ? 'locked' : '';
-                
-                html += `
-                    <div class="workout-card ${statusClass}">
-                        <div class="workout-header">
-                            <div class="workout-day">День ${index + 1}</div>
-                            <div class="workout-status">
-                                ${completedWorkouts.has(index + 1) ? 
-                                    '<span class="material-symbols-rounded">check_circle</span>' : 
-                                    isLocked ? 
-                                    '<span class="material-symbols-rounded">lock</span>' : 
-                                    ''}
-                            </div>
-                        </div>
-                        <h3>${workout.title}</h3>
-                        <div class="workout-details">
-                            <span>
-                                <span class="material-symbols-rounded">schedule</span>
-                                ${workout.duration} мин
-                            </span>
-                            <span>
-                                <span class="material-symbols-rounded">local_fire_department</span>
-                                ${workout.calories} ккал
-                            </span>
-                        </div>
-                        <div class="workout-actions">
-                            <button class="program-btn info-btn" onclick="showWorkoutDetails(${JSON.stringify(workout).replace(/"/g, '&quot;')})">
-                                <span class="material-symbols-rounded">info</span>
-                                Подробнее
-                            </button>
-                            <button class="program-btn start-btn" 
-                                    onclick="startWorkout(${JSON.stringify(workout).replace(/"/g, '&quot;')})"
-                                    ${isLocked ? 'disabled' : ''}>
-                                <span class="material-symbols-rounded">play_arrow</span>
-                                Начать
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-        })
-        .catch(console.error);
 } 
 
 async function renderStatistics() {
