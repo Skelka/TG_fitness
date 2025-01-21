@@ -2538,19 +2538,29 @@ async function getTips() {
     }
 }
 
-// Функция для отображения советов
+// Обновляем функцию renderTips
 async function renderTips() {
     const tipsContainer = document.querySelector('.tips-list');
     if (!tipsContainer) return;
 
-    const tips = await getTips();
-    
-    tipsContainer.innerHTML = tips.map(tip => `
-        <div class="tip-card">
-            <h3>${tip.title}</h3>
-            <p>${tip.text}</p>
-        </div>
-    `).join('');
+    try {
+        const tips = await getTips();
+        
+        tipsContainer.innerHTML = tips.map(tip => `
+            <div class="tip-card">
+                <h3>${tip.title}</h3>
+                <p>${tip.text}</p>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Ошибка при отображении советов:', error);
+        tipsContainer.innerHTML = `
+            <div class="tip-card">
+                <h3>Общий совет</h3>
+                <p>Регулярные тренировки и правильное питание - ключ к успеху</p>
+            </div>
+        `;
+    }
 }
 
 // Добавляем вызов renderTips при загрузке статистики
