@@ -79,6 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Инициализируем все компоненты
         setupEventHandlers();
+        setupTabHandlers();
         setupProgramHandlers();
         setupPopupHandlers();
         loadProfile();
@@ -620,58 +621,24 @@ function setupTabHandlers() {
     const contents = document.querySelectorAll('.tab-content');
 
     tabs.forEach(tab => {
-        tab.addEventListener('click', async () => {
+        tab.addEventListener('click', () => {
+            // Убираем активный класс со всех вкладок
             tabs.forEach(t => t.classList.remove('active'));
             contents.forEach(c => c.classList.remove('active'));
 
+            // Добавляем активный класс выбранной вкладке
             tab.classList.add('active');
             const tabId = tab.dataset.tab;
-            const tabContent = document.getElementById(tabId);
-            tabContent.classList.add('active');
+            document.getElementById(tabId)?.classList.add('active');
 
-            // При переключении на вкладку с программами
-            if (tabId === 'workouts') {
-                setupProgramHandlers(); // Переинициализируем обработчики
-                mainButton.hide();
-            } else if (tabId === 'profile' && window.profileData) {
-                fillProfileForm(window.profileData);
-                mainButton.setText('Сохранить профиль');
-                mainButton.show();
-            } else if (tabId === 'stats') {
-                try {
-                    const weightHistory = await getStorageItem('weightHistory')
-                        .then(data => data ? JSON.parse(data) : []);
-                    updateWeightChart(weightHistory);
-                } catch (e) {
-                    console.error('Ошибка при загрузке истории веса:', e);
-                }
-                mainButton.hide();
-            } else {
-                mainButton.hide();
+            // Дополнительные действия при переключении вкладок
+            if (tabId === 'stats') {
+                initStatisticsPage();
+            } else if (tabId === 'profile') {
+                loadProfile();
             }
 
             tg.HapticFeedback.selectionChanged();
-        });
-    });
-
-    // Добавляем обработчики для кнопок периода
-    const periodButtons = document.querySelectorAll('.period-btn');
-    periodButtons.forEach(button => {
-        button.addEventListener('click', async () => {
-            // Обновляем активную кнопку
-            periodButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-
-            // Загружаем данные и обновляем график
-            try {
-                const weightHistory = await getStorageItem('weightHistory')
-                    .then(data => data ? JSON.parse(data) : []);
-                updateWeightChart(weightHistory, button.dataset.period);
-                tg.HapticFeedback.selectionChanged();
-            } catch (e) {
-                console.error('Ошибка при обновлении графика:', e);
-                showError(e);
-            }
         });
     });
 }
@@ -1759,4 +1726,30 @@ function setupProfileHandlers() {
             showError('Не удалось сохранить профиль');
         }
     });
+} 
+
+async function initStatisticsPage() {
+    try {
+        const container = document.querySelector('.statistics-container');
+        if (!container) return;
+
+        // Загружаем данные статистики
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+
+        // Отображаем статистику
+        renderStatisticsContent(activeProgram, container);
+
+        // Настраиваем обработчики периодов
+        setupPeriodHandlers(container);
+
+        // Инициализируем график
+        updateWeightChart('week');
+
+        // Добавляем советы
+        await renderTips();
+    } catch (error) {
+        console.error('Ошибка при инициализации статистики:', error);
+        showError('Не удалось загрузить статистику');
+    }
 } 
