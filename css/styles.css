@@ -1616,4 +1616,237 @@ input:focus, select:focus {
     font-size: 14px;
     color: var(--tg-theme-hint-color);
     line-height: 1.4;
+}
+
+/* Стили для окна тренировки */
+.workout-session {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--tg-theme-bg-color);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+.exercise-display {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.exercise-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.1;
+}
+
+.exercise-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+}
+
+.exercise-name {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.exercise-subtitle {
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 24px;
+}
+
+.exercise-counter {
+    margin: 24px 0;
+}
+
+.counter-number {
+    font-size: 64px;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.counter-label {
+    color: var(--tg-theme-hint-color);
+}
+
+.exercise-controls {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: var(--tg-theme-bg-color);
+    border-top: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+}
+
+.control-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
+    border: none;
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.complete-btn {
+    flex: 1;
+    height: 48px;
+    border-radius: 24px;
+    border: none;
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Стили для экрана отдыха */
+.rest-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.rest-icon {
+    font-size: 48px;
+    color: var(--tg-theme-button-color);
+    margin-bottom: 16px;
+}
+
+.rest-timer {
+    font-size: 64px;
+    font-weight: bold;
+    margin: 24px 0;
+}
+
+.rest-subtitle {
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 16px;
+}
+
+.skip-rest-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 24px;
+    border: none;
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* Стили для заголовка тренировки */
+.workout-header {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    gap: 12px;
+    background: var(--tg-theme-bg-color);
+    border-bottom: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+}
+
+.back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    border: none;
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.workout-title {
+    flex: 1;
+}
+
+.workout-title div:first-child {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.workout-title div:last-child {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+}
+
+.workout-progress {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+}
+
+/* Стили для экрана завершения тренировки */
+.workout-complete {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.complete-icon {
+    font-size: 64px;
+    color: #4CAF50;
+    margin-bottom: 24px;
+}
+
+.workout-stats {
+    display: flex;
+    gap: 32px;
+    margin: 32px 0;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    color: var(--tg-theme-hint-color);
+}
+
+.finish-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 32px;
+    border-radius: 24px;
+    border: none;
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
 } 
