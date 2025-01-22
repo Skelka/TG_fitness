@@ -2,20 +2,19 @@
 let tg = window.Telegram.WebApp;
 let mainButton = tg.MainButton;
 let backButton = tg.BackButton;
-let timerInterval = null;
-let restInterval = null;
 let currentWorkout = null;
 let currentPeriod, weightChart;
 
-// В начало файла добавим глобальные переменные
+// Переменные для тренировки
 let isTimerMode = false;
 let timerValue = 0;
-
-// В начало файла добавим глобальные переменные для тренировки
 let currentExerciseIndex = 0;
 let currentSet = 1;
 let isResting = false;
 let restTimeLeft = 0;
+let timerInterval = null;
+let restInterval = null;
+let workoutStartTime = null; // Добавляем переменную для отслеживания времени тренировки
 
 // Функция для безопасного показа попапа
 async function showPopupSafe(options) {
@@ -919,7 +918,6 @@ async function startWorkout(workout) {
 
 // Основная логика выполнения тренировки переносится в отдельную функцию
 function startWorkoutExecution(workout) {
-    // Сохраняем текущую тренировку
     currentWorkout = workout;
     
     if (!workout || !workout.exercises || !workout.exercises.length) {
@@ -932,6 +930,7 @@ function startWorkoutExecution(workout) {
     currentSet = 1;
     isResting = false;
     restTimeLeft = 0;
+    workoutStartTime = Date.now(); // Запоминаем время начала тренировки
     
     // Очищаем все таймеры
     clearInterval(timerInterval);
@@ -1558,53 +1557,93 @@ function setupWorkoutControls(workout, programId) {
     });
 }
 
-// Функция завершения тренировки
+// Добавим константы для расчета калорий
+const CALORIES_PER_MINUTE = {
+    cardio: 8,      // Кардио упражнения
+    strength: 5,    // Силовые упражнения
+    hiit: 10,       // Высокоинтенсивные интервалы
+    rest: 1         // Отдых между подходами
+};
+
+// Обновим функцию completeWorkout с точным расчетом калорий
 async function completeWorkout(workout, programId) {
     try {
-        // Очищаем таймеры
         clearTimers();
 
         const container = document.querySelector('.container');
         if (!container) return;
 
-        // Используем сохраненный workout, если не передан явно
         const workoutToComplete = workout || currentWorkout;
         if (!workoutToComplete) {
             console.error('Нет данных о тренировке для завершения');
             return;
         }
 
-        // Получаем текущий прогресс программы
+        // Вычисляем фактическое время тренировки
+        const actualDuration = Math.round((Date.now() - workoutStartTime) / (1000 * 60));
+
+        // Рассчитываем фактические калории на основе выполненных упражнений
+        let totalCalories = 0;
+        workoutToComplete.exercises.forEach(exercise => {
+            // Определяем тип упражнения
+            let exerciseType = 'strength'; // По умолчанию считаем упражнение силовым
+            if (exercise.type) {
+                exerciseType = exercise.type;
+            } else if (exercise.name.toLowerCase().includes('бег') || 
+                      exercise.name.toLowerCase().includes('прыжки') ||
+                      exercise.name.toLowerCase().includes('кардио')) {
+                exerciseType = 'cardio';
+            } else if (exercise.name.toLowerCase().includes('интервал') ||
+                      exercise.name.toLowerCase().includes('hiit')) {
+                exerciseType = 'hiit';
+            }
+
+            // Время на упражнение
+            let exerciseTime = 0;
+            if (exercise.reps.toString().includes('сек')) {
+                exerciseTime = parseInt(exercise.reps) * exercise.sets / 60; // переводим в минуты
+            } else if (exercise.reps.toString().includes('мин')) {
+                exerciseTime = parseInt(exercise.reps) * exercise.sets;
+            } else {
+                // Если указаны повторения, считаем примерное время
+                exerciseTime = (exercise.reps * 3 * exercise.sets) / 60; // примерно 3 секунды на повторение
+            }
+
+            // Добавляем время отдыха между подходами
+            const restTime = ((exercise.rest || 30) * (exercise.sets - 1)) / 60; // время отдыха в минутах
+
+            // Рассчитываем калории для упражнения
+            const exerciseCalories = exerciseTime * CALORIES_PER_MINUTE[exerciseType];
+            const restCalories = restTime * CALORIES_PER_MINUTE.rest;
+
+            totalCalories += exerciseCalories + restCalories;
+        });
+
+        // Округляем общее количество калорий
+        totalCalories = Math.round(totalCalories);
+
         let activeProgram = await getStorageItem('activeProgram')
             .then(data => data ? JSON.parse(data) : null);
 
         if (activeProgram) {
-            // Инициализируем массив, если его нет
+            const completedWorkout = {
+                id: Date.now(),
+                date: Date.now(),
+                day: workoutToComplete.day,
+                title: workoutToComplete.title,
+                duration: actualDuration,
+                calories: totalCalories, // Используем рассчитанные калории
+                type: workoutToComplete.type
+            };
+
             if (!Array.isArray(activeProgram.completedWorkouts)) {
                 activeProgram.completedWorkouts = [];
             }
 
-            // Создаем новую запись о завершенной тренировке
-            const completedWorkout = {
-                id: Date.now(), // Добавляем уникальный id
-                date: Date.now(),
-                day: workoutToComplete.day,
-                title: workoutToComplete.title,
-                duration: workoutToComplete.duration,
-                calories: workoutToComplete.calories,
-                type: workoutToComplete.type
-            };
-
-            // Добавляем новую тренировку в массив
             activeProgram.completedWorkouts.push(completedWorkout);
-
-            // Сортируем тренировки по дате
             activeProgram.completedWorkouts.sort((a, b) => b.date - a.date);
 
-            // Сохраняем обновленный прогресс
             await setStorageItem('activeProgram', JSON.stringify(activeProgram));
-
-            // Обновляем статистику
             await updateStatistics();
         }
 
@@ -1617,11 +1656,11 @@ async function completeWorkout(workout, programId) {
                 <h2>Тренировка завершена!</h2>
                 <div class="workout-stats">
                     <div class="stat-item">
-                        <span class="stat-value">${workoutToComplete.duration}</span>
+                        <span class="stat-value">${actualDuration}</span>
                         <span class="stat-label">минут</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-value">${workoutToComplete.calories}</span>
+                        <span class="stat-value">${totalCalories}</span>
                         <span class="stat-label">ккал</span>
                     </div>
                 </div>
@@ -1632,13 +1671,9 @@ async function completeWorkout(workout, programId) {
             </div>
         `;
 
-        // Возвращаем нижнюю навигацию
         document.querySelector('.bottom-nav')?.classList.remove('hidden');
-
-        // Очищаем текущую тренировку
         currentWorkout = null;
-
-        // Вибрация успеха
+        workoutStartTime = null;
         tg.HapticFeedback.notificationOccurred('success');
 
     } catch (error) {
