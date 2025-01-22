@@ -2463,7 +2463,6 @@ document.addEventListener('DOMContentLoaded', () => {
 }); 
 
 function setupExerciseHandlers() {
-    // Получаем container внутри функции
     const container = document.querySelector('.container');
     if (!container) return;
 
@@ -2472,8 +2471,14 @@ function setupExerciseHandlers() {
     const plusBtn = container.querySelector('.plus-btn');
     const completeBtn = container.querySelector('.complete-btn');
 
-    // Обработчик кнопки "Назад"
-    backBtn?.addEventListener('click', () => {
+    // Очищаем старые обработчики
+    backBtn?.removeEventListener('click', handleBackClick);
+    minusBtn?.removeEventListener('click', handleMinusClick);
+    plusBtn?.removeEventListener('click', handlePlusClick);
+    completeBtn?.removeEventListener('click', handleCompleteClick);
+
+    // Функции обработчиков
+    function handleBackClick() {
         tg.showPopup({
             title: 'Прервать тренировку?',
             message: 'Вы уверены, что хотите прервать тренировку? Прогресс будет потерян.',
@@ -2489,12 +2494,10 @@ function setupExerciseHandlers() {
                 }
             ]
         });
-    });
+    }
 
-    // Обработчики для кнопок +/-
-    minusBtn?.addEventListener('click', () => {
+    function handleMinusClick() {
         if (isTimerMode) {
-            // Минимальные значения зависят от типа упражнения
             const exercise = currentWorkout.exercises[currentExerciseIndex];
             let minValue = 10;
             
@@ -2512,26 +2515,36 @@ function setupExerciseHandlers() {
                 tg.HapticFeedback.impactOccurred('light');
             }
         }
-    });
+    }
 
-    plusBtn?.addEventListener('click', () => {
+    function handlePlusClick() {
         if (isTimerMode && timerValue < 300) {
             timerValue += 5;
             updateCounter(timerValue);
             tg.HapticFeedback.impactOccurred('light');
         }
-    });
+    }
 
-    // Обработчик кнопки "Готово"/"Начать"
-    completeBtn?.addEventListener('click', () => {
+    function handleCompleteClick() {
         if (isTimerMode) {
-            startTimer(timerValue);
-            completeBtn.textContent = 'Пропустить';
+            if (!timerInterval) { // Проверяем, не запущен ли уже таймер
+                startTimer(timerValue);
+                completeBtn.textContent = 'Пропустить';
+            } else {
+                clearInterval(timerInterval);
+                showRestScreen();
+            }
         } else {
             showRestScreen();
         }
         tg.HapticFeedback.impactOccurred('medium');
-    });
+    }
+
+    // Добавляем новые обработчики
+    backBtn?.addEventListener('click', handleBackClick);
+    minusBtn?.addEventListener('click', handleMinusClick);
+    plusBtn?.addEventListener('click', handlePlusClick);
+    completeBtn?.addEventListener('click', handleCompleteClick);
 }
 
 // Функция для инициализации обработчика выхода из тренировки
