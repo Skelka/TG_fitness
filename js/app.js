@@ -2559,10 +2559,11 @@ function setupExerciseHandlers() {
         
         if (isTimerMode) {
             if (!timerInterval) {
-                // Запускаем таймер
-                startTimer(timerValue);
-                completeBtn.textContent = 'Пропустить';
-                tg.HapticFeedback.impactOccurred('medium');
+                // Запускаем таймер только если он еще не запущен
+                if (timerValue > 0) {
+                    startTimer(timerValue);
+                    tg.HapticFeedback.impactOccurred('medium');
+                }
             } else {
                 // Пропускаем текущий таймер
                 clearInterval(timerInterval);
@@ -2714,39 +2715,44 @@ function startTimer(duration) {
         clearInterval(timerInterval);
     }
 
+    // Устанавливаем начальное значение
     timerValue = duration;
-    const completeBtn = document.querySelector('.complete-btn');
+    updateCounter(timerValue);
     
+    const completeBtn = document.querySelector('.complete-btn');
+    if (completeBtn) {
+        completeBtn.textContent = 'Пропустить';
+    }
+    
+    // Запускаем таймер
     timerInterval = setInterval(() => {
-        if (timerValue <= 0) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            
-            // Проверяем, есть ли еще подходы
-            const exercise = currentWorkout.exercises[currentExerciseIndex];
-            if (currentSet < exercise.sets) {
-                currentSet++;
-                showRestScreen();
-            } else {
-                // Если подходы закончились, переходим к следующему упражнению
-                if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
-                    currentExerciseIndex++;
-                    currentSet = 1;
-                    renderExercise();
-                } else {
-                    // Если упражнения закончились, завершаем тренировку
-                    completeWorkout();
-                }
-            }
-            return;
-        }
-
+        // Уменьшаем значение
         timerValue--;
         updateCounter(timerValue);
 
         // Вибрация на последних секундах
         if (timerValue <= 3 && timerValue > 0) {
             tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        // Проверяем завершение
+        if (timerValue <= 0) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            
+            const exercise = currentWorkout.exercises[currentExerciseIndex];
+            if (currentSet < exercise.sets) {
+                currentSet++;
+                showRestScreen();
+            } else {
+                if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
+                    currentExerciseIndex++;
+                    currentSet = 1;
+                    renderExercise();
+                } else {
+                    completeWorkout();
+                }
+            }
         }
     }, 1000);
 }
