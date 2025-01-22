@@ -2555,20 +2555,27 @@ function setupExerciseHandlers() {
     }
 
     function handleCompleteClick() {
+        const completeBtn = document.querySelector('.complete-btn');
+        
         if (isTimerMode) {
-            if (!timerInterval) { // Если таймер не запущен
+            if (!timerInterval) {
+                // Запускаем таймер
                 startTimer(timerValue);
                 completeBtn.textContent = 'Пропустить';
-            } else { // Если таймер уже запущен
+                tg.HapticFeedback.impactOccurred('medium');
+            } else {
+                // Пропускаем текущий таймер
                 clearInterval(timerInterval);
                 timerInterval = null;
-                if (currentSet < currentWorkout.exercises[currentExerciseIndex].sets) {
+                
+                const exercise = currentWorkout.exercises[currentExerciseIndex];
+                if (currentSet < exercise.sets) {
                     currentSet++;
-                    renderExercise();
+                    showRestScreen();
                 } else {
-                    currentSet = 1;
                     if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
                         currentExerciseIndex++;
+                        currentSet = 1;
                         renderExercise();
                     } else {
                         completeWorkout();
@@ -2577,7 +2584,8 @@ function setupExerciseHandlers() {
             }
         } else {
             // Для упражнений без таймера
-            if (currentSet < currentWorkout.exercises[currentExerciseIndex].sets) {
+            const exercise = currentWorkout.exercises[currentExerciseIndex];
+            if (currentSet < exercise.sets) {
                 showRestScreen();
             } else {
                 if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
@@ -2589,7 +2597,6 @@ function setupExerciseHandlers() {
                 }
             }
         }
-        tg.HapticFeedback.impactOccurred('medium');
     }
 
     // Добавляем новые обработчики
@@ -2703,17 +2710,43 @@ function showRestScreen() {
 
 // Добавляем функцию для запуска таймера упражнения
 function startTimer(duration) {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+
+    timerValue = duration;
+    const completeBtn = document.querySelector('.complete-btn');
+    
     timerInterval = setInterval(() => {
+        if (timerValue <= 0) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            
+            // Проверяем, есть ли еще подходы
+            const exercise = currentWorkout.exercises[currentExerciseIndex];
+            if (currentSet < exercise.sets) {
+                currentSet++;
+                showRestScreen();
+            } else {
+                // Если подходы закончились, переходим к следующему упражнению
+                if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
+                    currentExerciseIndex++;
+                    currentSet = 1;
+                    renderExercise();
+                } else {
+                    // Если упражнения закончились, завершаем тренировку
+                    completeWorkout();
+                }
+            }
+            return;
+        }
+
         timerValue--;
         updateCounter(timerValue);
 
+        // Вибрация на последних секундах
         if (timerValue <= 3 && timerValue > 0) {
             tg.HapticFeedback.impactOccurred('medium');
-        }
-
-        if (timerValue <= 0) {
-            clearInterval(timerInterval);
-            showRestScreen();
         }
     }, 1000);
 }
