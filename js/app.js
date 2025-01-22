@@ -549,12 +549,12 @@ async function updateWeightChart(selectedPeriod) {
     const weightHistoryStr = await getStorageItem('weightHistory');
     const weightHistory = weightHistoryStr ? JSON.parse(weightHistoryStr) : [];
     
+    console.log('История весов:', weightHistory);
+
     if (weightHistory.length === 0) {
         ctx.innerHTML = '<div class="no-data">Нет данных о весе</div>';
         return;
     }
-
-    console.log('История весов:', weightHistory); // Для отладки
 
     const now = new Date();
     let startDate = new Date();
@@ -565,34 +565,47 @@ async function updateWeightChart(selectedPeriod) {
     switch(selectedPeriod) {
         case 'week':
             startDate.setDate(now.getDate() - 7);
+            startDate.setHours(0, 0, 0, 0);
             for(let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
                 const dateStr = d.toISOString().split('T')[0];
                 labels.push(d.toLocaleDateString('ru-RU', { weekday: 'short' }));
                 
-                const weight = weightHistory.find(w => 
-                    w.date.split('T')[0] === dateStr
-                )?.weight;
+                // Находим все записи за этот день
+                const dayWeights = weightHistory.filter(w => 
+                    new Date(w.date).toISOString().split('T')[0] === dateStr
+                );
                 
-                data.push(weight || null);
+                // Берем последнее значение за день
+                const weight = dayWeights.length > 0 ? 
+                    dayWeights[dayWeights.length - 1].weight : 
+                    null;
+                
+                data.push(weight);
             }
             break;
             
         case 'month':
             startDate.setMonth(now.getMonth() - 1);
+            startDate.setHours(0, 0, 0, 0);
             for(let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
                 const dateStr = d.toISOString().split('T')[0];
                 labels.push(d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }));
                 
-                const weight = weightHistory.find(w => 
-                    w.date.split('T')[0] === dateStr
-                )?.weight;
+                const dayWeights = weightHistory.filter(w => 
+                    new Date(w.date).toISOString().split('T')[0] === dateStr
+                );
                 
-                data.push(weight || null);
+                const weight = dayWeights.length > 0 ? 
+                    dayWeights[dayWeights.length - 1].weight : 
+                    null;
+                
+                data.push(weight);
             }
             break;
             
         case 'year':
             startDate.setFullYear(now.getFullYear() - 1);
+            startDate.setHours(0, 0, 0, 0);
             for(let m = new Date(startDate); m <= now; m.setMonth(m.getMonth() + 1)) {
                 const monthStart = new Date(m.getFullYear(), m.getMonth(), 1);
                 const monthEnd = new Date(m.getFullYear(), m.getMonth() + 1, 0);
@@ -613,7 +626,7 @@ async function updateWeightChart(selectedPeriod) {
             break;
     }
 
-    console.log('Данные для графика:', { labels, data }); // Для отладки
+    console.log('Данные для графика:', { labels, data });
 
     // Находим минимальный и максимальный вес для настройки шкалы
     const weights = data.filter(w => w !== null);
@@ -637,7 +650,7 @@ async function updateWeightChart(selectedPeriod) {
                 tension: 0.4,
                 fill: false,
                 pointBackgroundColor: '#40a7e3',
-                spanGaps: true // Добавляем эту опцию для соединения точек при пропущенных данных
+                spanGaps: true
             }]
         },
         options: {
@@ -2576,3 +2589,98 @@ function updateCounter(value) {
         counterElement.textContent = value;
     }
 } 
+
+// Добавляем функцию для показа экрана отдыха
+function showRestScreen() {
+    const exercise = currentWorkout.exercises[currentExerciseIndex];
+    isResting = true;
+    restTimeLeft = exercise.rest || 30; // Если rest не указан, используем 30 секунд
+
+    const container = document.querySelector('.container');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="workout-session">
+            <div class="rest-screen">
+                <div class="rest-icon">
+                    <span class="material-symbols-rounded">timer</span>
+                </div>
+                <h3>Отдых</h3>
+                <div class="rest-subtitle">
+                    ${currentSet < exercise.sets ? 
+                        `Подход ${currentSet + 1} из ${exercise.sets}` : 
+                        'Следующее упражнение'}
+                </div>
+                <div class="rest-timer">${restTimeLeft}</div>
+                <button class="skip-rest-btn">
+                    <span class="material-symbols-rounded">skip_next</span>
+                    Пропустить
+                </button>
+            </div>
+        </div>
+    `;
+
+    // Запускаем таймер отдыха
+    restInterval = setInterval(() => {
+        restTimeLeft--;
+        const timerElement = container.querySelector('.rest-timer');
+        if (timerElement) {
+            timerElement.textContent = restTimeLeft;
+        }
+
+        if (restTimeLeft <= 3 && restTimeLeft > 0) {
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        if (restTimeLeft <= 0) {
+            clearInterval(restInterval);
+            if (currentSet < exercise.sets) {
+                currentSet++;
+                renderExercise();
+            } else {
+                currentSet = 1;
+                if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
+                    currentExerciseIndex++;
+                    renderExercise();
+                } else {
+                    completeWorkout();
+                }
+            }
+        }
+    }, 1000);
+
+    // Добавляем обработчик для кнопки пропуска
+    const skipBtn = container.querySelector('.skip-rest-btn');
+    skipBtn?.addEventListener('click', () => {
+        clearInterval(restInterval);
+        if (currentSet < exercise.sets) {
+            currentSet++;
+            renderExercise();
+        } else {
+            currentSet = 1;
+            if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
+                currentExerciseIndex++;
+                renderExercise();
+            } else {
+                completeWorkout();
+            }
+        }
+    });
+}
+
+// Добавляем функцию для запуска таймера упражнения
+function startTimer(duration) {
+    timerInterval = setInterval(() => {
+        timerValue--;
+        updateCounter(timerValue);
+
+        if (timerValue <= 3 && timerValue > 0) {
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        if (timerValue <= 0) {
+            clearInterval(timerInterval);
+            showRestScreen();
+        }
+    }, 1000);
+}
