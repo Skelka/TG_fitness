@@ -2633,9 +2633,12 @@ function initExitHandler() {
 
 // Добавим функцию обновления счетчика
 function updateCounter(value) {
+    console.log('Обновление счетчика:', value);
     const counterElement = document.querySelector('.counter-number');
     if (counterElement) {
         counterElement.textContent = value;
+    } else {
+        console.warn('Элемент счетчика не найден');
     }
 } 
 
@@ -2736,10 +2739,26 @@ function startTimer(duration) {
         completeBtn.textContent = 'Пропустить';
     }
 
+    let lastTick = Date.now();
+    
     // Запускаем таймер
     timerInterval = setInterval(() => {
-        console.log('Текущее значение таймера:', timerValue);
+        const now = Date.now();
+        const delta = now - lastTick;
+        lastTick = now;
         
+        console.log('Тик таймера:', {
+            delta: delta,
+            currentValue: timerValue,
+            hasInterval: !!timerInterval
+        });
+        
+        // Проверяем, что интервал все еще существует
+        if (!timerInterval) {
+            console.log('Интервал был удален извне');
+            return;
+        }
+
         // Уменьшаем значение
         timerValue--;
         updateCounter(timerValue);
@@ -2751,11 +2770,20 @@ function startTimer(duration) {
 
         // Проверяем завершение
         if (timerValue <= 0) {
-            console.log('Таймер завершен');
-            clearInterval(timerInterval);
+            console.log('Таймер завершен естественным путем');
+            const currentInterval = timerInterval;
+            clearInterval(currentInterval);
             timerInterval = null;
             
             const exercise = currentWorkout.exercises[currentExerciseIndex];
+            console.log('Текущее упражнение:', {
+                exercise,
+                currentSet,
+                totalSets: exercise.sets,
+                currentExerciseIndex,
+                totalExercises: currentWorkout.exercises.length
+            });
+
             if (currentSet < exercise.sets) {
                 currentSet++;
                 showRestScreen();
