@@ -11,6 +11,12 @@ let currentPeriod, weightChart;
 let isTimerMode = false;
 let timerValue = 0;
 
+// В начало файла добавим глобальные переменные для тренировки
+let currentExerciseIndex = 0;
+let currentSet = 1;
+let isResting = false;
+let restTimeLeft = 0;
+
 // Функция для безопасного показа попапа
 async function showPopupSafe(options) {
     return new Promise((resolve) => {
@@ -913,6 +919,7 @@ async function startWorkout(workout) {
 
 // Основная логика выполнения тренировки переносится в отдельную функцию
 function startWorkoutExecution(workout) {
+    // Сохраняем текущую тренировку
     currentWorkout = workout;
     
     if (!workout || !workout.exercises || !workout.exercises.length) {
@@ -920,102 +927,28 @@ function startWorkoutExecution(workout) {
         return;
     }
 
+    // Сбрасываем все переменные
+    currentExerciseIndex = 0;
+    currentSet = 1;
+    isResting = false;
+    restTimeLeft = 0;
+    
+    // Очищаем все таймеры
+    clearInterval(timerInterval);
+    clearInterval(restInterval);
+    timerInterval = null;
+    restInterval = null;
+
     const container = document.querySelector('.container');
     if (!container) return;
-
-    let currentExerciseIndex = 0;
-    let currentSet = 1;
-    let isResting = false;
-    let restTimeLeft = 0;
-    let currentReps = 0;
-    let timerValue = 0;
-    let isTimerMode = false;
-
-    // Очищаем предыдущие таймеры при старте новой тренировки
-    clearTimers();
 
     // Скрываем нижнюю навигацию
     document.querySelector('.bottom-nav')?.classList.add('hidden');
 
-    function renderExercise() {
-        const exercise = workout.exercises[currentExerciseIndex];
-        isTimerMode = exercise.reps.toString().includes('сек') || 
-                      exercise.reps.toString().includes('мин');
-        
-        // Устанавливаем начальное значение таймера из упражнения
-        timerValue = isTimerMode ? 
-            parseInt(exercise.reps.toString().replace(/[^0-9]/g, '')) : 
-            parseInt(exercise.reps) || 0;
-
-        // Минимальные значения для разных типов упражнений
-        if (isTimerMode) {
-            if (exercise.name.toLowerCase().includes('разминка')) {
-                timerValue = Math.max(timerValue, 30); // Минимум 30 секунд для разминки
-            } else if (exercise.name.toLowerCase().includes('растяжка')) {
-                timerValue = Math.max(timerValue, 20); // Минимум 20 секунд для растяжки
-            } else if (exercise.name.toLowerCase().includes('планка')) {
-                timerValue = Math.max(timerValue, 30); // Минимум 30 секунд для планки
-            } else {
-                timerValue = Math.max(timerValue, 10); // Минимум 10 секунд для остальных
-            }
-        }
-
-        container.innerHTML = `
-            <div class="workout-session">
-                <div class="workout-header">
-                    <button class="back-btn">
-                        <span class="material-symbols-rounded">arrow_back</span>
-                    </button>
-                    <div class="workout-title">
-                        <div>${workout.title}</div>
-                        <div>${exercise.name}</div>
-                    </div>
-                    <div class="workout-progress">
-                        ${currentExerciseIndex + 1}/${workout.exercises.length}
-                    </div>
-                </div>
-
-                <div class="exercise-display">
-                    <img class="exercise-background" 
-                         src="${getExerciseAnimation(exercise.name)}" 
-                         alt="${exercise.name}">
-                    
-                    <div class="exercise-content">
-                        <h2 class="exercise-name">${exercise.name}</h2>
-                        <div class="exercise-subtitle">Подход ${currentSet} из ${exercise.sets}</div>
-                        
-                        <div class="exercise-counter">
-                            <div class="counter-number">${timerValue}</div>
-                            <div class="counter-label">${isTimerMode ? 'секунд' : 'повторений'}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="exercise-controls">
-                    ${isTimerMode ? `
-                        <button class="control-btn minus-btn">
-                            <span class="material-symbols-rounded">remove</span>
-                        </button>
-                    ` : ''}
-                    <button class="complete-btn">
-                        ${isTimerMode ? 'Начать' : 'Готово'}
-                    </button>
-                    ${isTimerMode ? `
-                        <button class="control-btn plus-btn">
-                            <span class="material-symbols-rounded">add</span>
-                        </button>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-
-        setupExerciseHandlers();
-    }
-
     // Инициализируем обработчик выхода
     initExitHandler();
 
-    // Начинаем тренировку
+    // Отображаем первое упражнение
     renderExercise();
 }
 
@@ -2683,4 +2616,83 @@ function startTimer(duration) {
             showRestScreen();
         }
     }, 1000);
+}
+
+// Обновим функцию renderExercise
+function renderExercise() {
+    const container = document.querySelector('.container');
+    if (!container || !currentWorkout) return;
+
+    const exercise = currentWorkout.exercises[currentExerciseIndex];
+    isTimerMode = exercise.reps.toString().includes('сек') || 
+                  exercise.reps.toString().includes('мин');
+    
+    // Устанавливаем начальное значение таймера из упражнения
+    timerValue = isTimerMode ? 
+        parseInt(exercise.reps.toString().replace(/[^0-9]/g, '')) : 
+        parseInt(exercise.reps) || 0;
+
+    // Минимальные значения для разных типов упражнений
+    if (isTimerMode) {
+        if (exercise.name.toLowerCase().includes('разминка')) {
+            timerValue = Math.max(timerValue, 30);
+        } else if (exercise.name.toLowerCase().includes('растяжка')) {
+            timerValue = Math.max(timerValue, 20);
+        } else if (exercise.name.toLowerCase().includes('планка')) {
+            timerValue = Math.max(timerValue, 30);
+        } else {
+            timerValue = Math.max(timerValue, 10);
+        }
+    }
+
+    container.innerHTML = `
+        <div class="workout-session">
+            <div class="workout-header">
+                <button class="back-btn">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                <div class="workout-title">
+                    <div>${currentWorkout.title}</div>
+                    <div>${exercise.name}</div>
+                </div>
+                <div class="workout-progress">
+                    ${currentExerciseIndex + 1}/${currentWorkout.exercises.length}
+                </div>
+            </div>
+
+            <div class="exercise-display">
+                <img class="exercise-background" 
+                     src="${getExerciseAnimation(exercise.name)}" 
+                     alt="${exercise.name}">
+                
+                <div class="exercise-content">
+                    <h2 class="exercise-name">${exercise.name}</h2>
+                    <div class="exercise-subtitle">Подход ${currentSet} из ${exercise.sets}</div>
+                    
+                    <div class="exercise-counter">
+                        <div class="counter-number">${timerValue}</div>
+                        <div class="counter-label">${isTimerMode ? 'секунд' : 'повторений'}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercise-controls">
+                ${isTimerMode ? `
+                    <button class="control-btn minus-btn">
+                        <span class="material-symbols-rounded">remove</span>
+                    </button>
+                ` : ''}
+                <button class="complete-btn">
+                    ${isTimerMode ? 'Начать' : 'Готово'}
+                </button>
+                ${isTimerMode ? `
+                    <button class="control-btn plus-btn">
+                        <span class="material-symbols-rounded">add</span>
+                    </button>
+                ` : ''}
+            </div>
+        </div>
+    `;
+
+    setupExerciseHandlers();
 }
