@@ -1304,55 +1304,84 @@ function renderWorkouts(program) {
 // Функция обновления статистики
 async function updateStatistics() {
     try {
-        // Получаем все необходимые данные
-        const [weightHistoryStr, activeProgramStr] = await Promise.all([
-            getStorageItem('weightHistory'),
-            getStorageItem('activeProgram')
-        ]);
-
-        const weightHistory = weightHistoryStr ? JSON.parse(weightHistoryStr) : [];
-        const activeProgram = activeProgramStr ? JSON.parse(activeProgramStr) : null;
-
-        // Статистика тренировок
-        let stats = {
-            totalWorkouts: 0,
-            totalCalories: 0,
-            totalMinutes: 0,
-            completionRate: 0
-        };
-
-        if (activeProgram?.completedWorkouts) {
-            stats.totalWorkouts = activeProgram.completedWorkouts.length;
-            
-            // Подсчитываем калории и время
-            stats.totalCalories = activeProgram.completedWorkouts.reduce((sum, workout) => 
-                sum + (workout.calories || 0), 0);
-            stats.totalMinutes = activeProgram.completedWorkouts.reduce((sum, workout) => 
-                sum + (workout.duration || 0), 0);
-
-            // Вычисляем процент выполнения программы
-            if (activeProgram.plannedWorkouts && activeProgram.plannedWorkouts.length > 0) {
-                stats.completionRate = Math.round(
-                    (stats.totalWorkouts / activeProgram.plannedWorkouts.length) * 100
-                );
-            }
+        // Проверяем, находимся ли мы на вкладке статистики
+        const statsTab = document.getElementById('stats');
+        if (!statsTab || !statsTab.classList.contains('active')) {
+            // Если мы не на вкладке статистики, просто выходим
+            return;
         }
 
-        // Обновляем UI статистики с проверкой наличия элементов
-        const elements = {
-            'total-workouts': stats.totalWorkouts,
-            'total-calories': stats.totalCalories,
-            'total-time': formatDuration(stats.totalMinutes),
-            'completion-rate': `${stats.completionRate}%`
-        };
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
 
-        Object.entries(elements).forEach(([id, value]) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-            } else {
-                console.warn(`Элемент с id "${id}" не найден`);
-            }
+        if (!activeProgram || !activeProgram.completedWorkouts) {
+            return;
+        }
+
+        // Получаем контейнер статистики
+        const statsContainer = document.querySelector('.statistics-container');
+        if (!statsContainer) return;
+
+        // Обновляем статистику
+        const totalWorkouts = activeProgram.completedWorkouts.length;
+        const totalCalories = activeProgram.completedWorkouts.reduce((sum, w) => sum + w.calories, 0);
+        const totalTime = activeProgram.completedWorkouts.reduce((sum, w) => sum + w.duration, 0);
+        const completionRate = Math.round((totalWorkouts / activeProgram.workouts.length) * 100);
+
+        // Обновляем HTML с статистикой
+        statsContainer.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">fitness_center</span>
+                    </div>
+                    <div class="stat-value">${totalWorkouts}</div>
+                    <div class="stat-label">Тренировок</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">local_fire_department</span>
+                    </div>
+                    <div class="stat-value">${totalCalories}</div>
+                    <div class="stat-label">Ккал сожжено</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">schedule</span>
+                    </div>
+                    <div class="stat-value">${totalTime}</div>
+                    <div class="stat-label">Минут</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">trending_up</span>
+                    </div>
+                    <div class="stat-value">${completionRate}%</div>
+                    <div class="stat-label">Выполнено</div>
+                </div>
+            </div>
+            <div class="weight-chart-container">
+                <h3>Динамика веса</h3>
+                <div class="period-selector">
+                    <button class="period-btn ${currentPeriod === 'week' ? 'active' : ''}" data-period="week">Неделя</button>
+                    <button class="period-btn ${currentPeriod === 'month' ? 'active' : ''}" data-period="month">Месяц</button>
+                    <button class="period-btn ${currentPeriod === 'year' ? 'active' : ''}" data-period="year">Год</button>
+                </div>
+                <canvas id="weight-chart"></canvas>
+            </div>
+        `;
+
+        // Обновляем график веса
+        await updateWeightChart(currentPeriod);
+
+        // Добавляем обработчики для кнопок периода
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPeriod = btn.dataset.period;
+                await updateWeightChart(currentPeriod);
+            });
         });
 
     } catch (error) {
@@ -2527,15 +2556,38 @@ function setupExerciseHandlers() {
 
     function handleCompleteClick() {
         if (isTimerMode) {
-            if (!timerInterval) { // Проверяем, не запущен ли уже таймер
+            if (!timerInterval) { // Если таймер не запущен
                 startTimer(timerValue);
                 completeBtn.textContent = 'Пропустить';
-            } else {
+            } else { // Если таймер уже запущен
                 clearInterval(timerInterval);
-                showRestScreen();
+                timerInterval = null;
+                if (currentSet < currentWorkout.exercises[currentExerciseIndex].sets) {
+                    currentSet++;
+                    renderExercise();
+                } else {
+                    currentSet = 1;
+                    if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
+                        currentExerciseIndex++;
+                        renderExercise();
+                    } else {
+                        completeWorkout();
+                    }
+                }
             }
         } else {
-            showRestScreen();
+            // Для упражнений без таймера
+            if (currentSet < currentWorkout.exercises[currentExerciseIndex].sets) {
+                showRestScreen();
+            } else {
+                if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
+                    currentExerciseIndex++;
+                    currentSet = 1;
+                    renderExercise();
+                } else {
+                    completeWorkout();
+                }
+            }
         }
         tg.HapticFeedback.impactOccurred('medium');
     }
@@ -2575,7 +2627,7 @@ function updateCounter(value) {
 function showRestScreen() {
     const exercise = currentWorkout.exercises[currentExerciseIndex];
     isResting = true;
-    restTimeLeft = exercise.rest || 30; // Если rest не указан, используем 30 секунд
+    restTimeLeft = exercise.rest || 30;
 
     const container = document.querySelector('.container');
     if (!container) return;
