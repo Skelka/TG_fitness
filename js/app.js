@@ -550,6 +550,8 @@ async function updateWeightChart(selectedPeriod) {
         return;
     }
 
+    console.log('История весов:', weightHistory); // Для отладки
+
     const now = new Date();
     let startDate = new Date();
     let labels = [];
@@ -560,10 +562,13 @@ async function updateWeightChart(selectedPeriod) {
         case 'week':
             startDate.setDate(now.getDate() - 7);
             for(let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
+                const dateStr = d.toISOString().split('T')[0];
                 labels.push(d.toLocaleDateString('ru-RU', { weekday: 'short' }));
+                
                 const weight = weightHistory.find(w => 
-                    new Date(w.date).toDateString() === d.toDateString()
+                    w.date.split('T')[0] === dateStr
                 )?.weight;
+                
                 data.push(weight || null);
             }
             break;
@@ -571,30 +576,40 @@ async function updateWeightChart(selectedPeriod) {
         case 'month':
             startDate.setMonth(now.getMonth() - 1);
             for(let d = new Date(startDate); d <= now; d.setDate(d.getDate() + 1)) {
+                const dateStr = d.toISOString().split('T')[0];
                 labels.push(d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }));
+                
                 const weight = weightHistory.find(w => 
-                    new Date(w.date).toDateString() === d.toDateString()
+                    w.date.split('T')[0] === dateStr
                 )?.weight;
+                
                 data.push(weight || null);
             }
             break;
             
         case 'year':
             startDate.setFullYear(now.getFullYear() - 1);
-            for(let d = new Date(startDate); d <= now; d.setMonth(d.getMonth() + 1)) {
-                labels.push(d.toLocaleDateString('ru-RU', { month: 'short' }));
+            for(let m = new Date(startDate); m <= now; m.setMonth(m.getMonth() + 1)) {
+                const monthStart = new Date(m.getFullYear(), m.getMonth(), 1);
+                const monthEnd = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+                
+                labels.push(m.toLocaleDateString('ru-RU', { month: 'short' }));
+                
                 const monthWeights = weightHistory.filter(w => {
                     const date = new Date(w.date);
-                    return date.getMonth() === d.getMonth() && 
-                           date.getFullYear() === d.getFullYear();
+                    return date >= monthStart && date <= monthEnd;
                 });
+                
                 const avgWeight = monthWeights.length ? 
                     monthWeights.reduce((sum, w) => sum + w.weight, 0) / monthWeights.length : 
                     null;
+                
                 data.push(avgWeight);
             }
             break;
     }
+
+    console.log('Данные для графика:', { labels, data }); // Для отладки
 
     // Находим минимальный и максимальный вес для настройки шкалы
     const weights = data.filter(w => w !== null);
@@ -617,7 +632,8 @@ async function updateWeightChart(selectedPeriod) {
                 borderColor: '#40a7e3',
                 tension: 0.4,
                 fill: false,
-                pointBackgroundColor: '#40a7e3'
+                pointBackgroundColor: '#40a7e3',
+                spanGaps: true // Добавляем эту опцию для соединения точек при пропущенных данных
             }]
         },
         options: {
