@@ -2555,17 +2555,24 @@ function setupExerciseHandlers() {
     }
 
     function handleCompleteClick() {
-        const completeBtn = document.querySelector('.complete-btn');
-        
+        console.log('handleCompleteClick вызван');
+        console.log('isTimerMode:', isTimerMode);
+        console.log('timerInterval:', timerInterval);
+        console.log('timerValue:', timerValue);
+
         if (isTimerMode) {
             if (!timerInterval) {
-                // Запускаем таймер только если он еще не запущен
+                // Запускаем таймер только если он еще не запущен и есть значение
                 if (timerValue > 0) {
+                    console.log('Запускаем таймер');
                     startTimer(timerValue);
                     tg.HapticFeedback.impactOccurred('medium');
+                } else {
+                    console.log('Некорректное значение таймера:', timerValue);
                 }
             } else {
                 // Пропускаем текущий таймер
+                console.log('Пропускаем таймер');
                 clearInterval(timerInterval);
                 timerInterval = null;
                 
@@ -2585,6 +2592,7 @@ function setupExerciseHandlers() {
             }
         } else {
             // Для упражнений без таймера
+            console.log('Упражнение без таймера');
             const exercise = currentWorkout.exercises[currentExerciseIndex];
             if (currentSet < exercise.sets) {
                 showRestScreen();
@@ -2711,9 +2719,13 @@ function showRestScreen() {
 
 // Добавляем функцию для запуска таймера упражнения
 function startTimer(duration) {
+    // Проверяем, что таймер не запущен
     if (timerInterval) {
-        clearInterval(timerInterval);
+        console.log('Таймер уже запущен');
+        return;
     }
+
+    console.log('Запускаем таймер с длительностью:', duration);
 
     // Устанавливаем начальное значение
     timerValue = duration;
@@ -2723,9 +2735,11 @@ function startTimer(duration) {
     if (completeBtn) {
         completeBtn.textContent = 'Пропустить';
     }
-    
+
     // Запускаем таймер
     timerInterval = setInterval(() => {
+        console.log('Текущее значение таймера:', timerValue);
+        
         // Уменьшаем значение
         timerValue--;
         updateCounter(timerValue);
@@ -2737,6 +2751,7 @@ function startTimer(duration) {
 
         // Проверяем завершение
         if (timerValue <= 0) {
+            console.log('Таймер завершен');
             clearInterval(timerInterval);
             timerInterval = null;
             
@@ -2755,6 +2770,8 @@ function startTimer(duration) {
             }
         }
     }, 1000);
+
+    console.log('Таймер запущен, ID интервала:', timerInterval);
 }
 
 // Обновим функцию renderExercise
@@ -2834,4 +2851,9 @@ function renderExercise() {
     `;
 
     setupExerciseHandlers();
+
+    // В функции renderExercise добавим логирование
+    console.log('Начальное значение таймера:', timerValue);
+    console.log('Тип упражнения:', exercise.name);
+    console.log('Режим таймера:', isTimerMode);
 }
