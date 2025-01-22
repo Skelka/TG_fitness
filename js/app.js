@@ -7,6 +7,10 @@ let restInterval = null;
 let currentWorkout = null;
 let currentPeriod, weightChart;
 
+// В начало файла добавим глобальные переменные
+let isTimerMode = false;
+let timerValue = 0;
+
 // Функция для безопасного показа попапа
 async function showPopupSafe(options) {
     return new Promise((resolve) => {
@@ -925,9 +929,23 @@ function startWorkoutExecution(workout) {
         isTimerMode = exercise.reps.toString().includes('сек') || 
                       exercise.reps.toString().includes('мин');
         
-        let initialValue = isTimerMode ? 
-            parseInt(exercise.reps) || 30 : 
-            0;
+        // Устанавливаем начальное значение таймера из упражнения
+        timerValue = isTimerMode ? 
+            parseInt(exercise.reps.toString().replace(/[^0-9]/g, '')) : 
+            parseInt(exercise.reps) || 0;
+
+        // Минимальные значения для разных типов упражнений
+        if (isTimerMode) {
+            if (exercise.name.toLowerCase().includes('разминка')) {
+                timerValue = Math.max(timerValue, 30); // Минимум 30 секунд для разминки
+            } else if (exercise.name.toLowerCase().includes('растяжка')) {
+                timerValue = Math.max(timerValue, 20); // Минимум 20 секунд для растяжки
+            } else if (exercise.name.toLowerCase().includes('планка')) {
+                timerValue = Math.max(timerValue, 30); // Минимум 30 секунд для планки
+            } else {
+                timerValue = Math.max(timerValue, 10); // Минимум 10 секунд для остальных
+            }
+        }
 
         container.innerHTML = `
             <div class="workout-session">
@@ -954,7 +972,7 @@ function startWorkoutExecution(workout) {
                         <div class="exercise-subtitle">Подход ${currentSet} из ${exercise.sets}</div>
                         
                         <div class="exercise-counter">
-                            <div class="counter-number">${initialValue}</div>
+                            <div class="counter-number">${timerValue}</div>
                             <div class="counter-label">${isTimerMode ? 'секунд' : 'повторений'}</div>
                         </div>
                     </div>
@@ -2494,10 +2512,24 @@ function setupExerciseHandlers() {
 
     // Обработчики для кнопок +/-
     minusBtn?.addEventListener('click', () => {
-        if (isTimerMode && timerValue > 5) {
-            timerValue -= 5;
-            updateCounter(timerValue);
-            tg.HapticFeedback.impactOccurred('light');
+        if (isTimerMode) {
+            // Минимальные значения зависят от типа упражнения
+            const exercise = currentWorkout.exercises[currentExerciseIndex];
+            let minValue = 10;
+            
+            if (exercise.name.toLowerCase().includes('разминка')) {
+                minValue = 30;
+            } else if (exercise.name.toLowerCase().includes('растяжка')) {
+                minValue = 20;
+            } else if (exercise.name.toLowerCase().includes('планка')) {
+                minValue = 30;
+            }
+
+            if (timerValue > minValue) {
+                timerValue -= 5;
+                updateCounter(timerValue);
+                tg.HapticFeedback.impactOccurred('light');
+            }
         }
     });
 
@@ -2535,4 +2567,12 @@ function initExitHandler() {
             tg.HapticFeedback.impactOccurred('medium');
         }
     });
+} 
+
+// Добавим функцию обновления счетчика
+function updateCounter(value) {
+    const counterElement = document.querySelector('.counter-number');
+    if (counterElement) {
+        counterElement.textContent = value;
+    }
 } 
