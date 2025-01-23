@@ -1621,28 +1621,28 @@ function handleExerciseComplete() {
     });
 
     if (currentSet < exercise.sets) {
-        // Если есть еще подходы, показываем отдых
+        currentSet++; // Увеличиваем счетчик подходов
         showRestScreen(true); // true означает отдых между подходами
     } else if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
         // Если это последний подход, но есть следующее упражнение
         currentExerciseIndex++;
         currentSet = 1;
         showRestScreen(false); // false означает отдых между упражнениями
-            } else {
+    } else {
         // Если это последний подход последнего упражнения
         completeWorkout(currentWorkout);
     }
 }
 
-// Добавляем новую функцию для перехода к следующему упражнению
+// Обновляем функцию moveToNextExercise
 function moveToNextExercise() {
     if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
         currentExerciseIndex++;
         currentSet = 1;
         renderExercise();
     } else {
-        // Передаем полные данные о тренировке
-        completeWorkout(window.programData[currentWorkout.id]);
+        // Передаем текущую тренировку напрямую
+        completeWorkout(currentWorkout);
     }
 }
 
@@ -1693,8 +1693,10 @@ function startTimer(duration) {
 // Обновляем функцию completeWorkout
 async function completeWorkout(workout) {
     try {
+        console.log('Завершение тренировки:', workout);
+        
         // Проверяем наличие необходимых данных
-        if (!workout || !currentWorkout) {
+        if (!workout) {
             throw new Error('Данные о тренировке отсутствуют');
         }
 
@@ -1715,11 +1717,11 @@ async function completeWorkout(workout) {
             const completedWorkout = {
                 id: Date.now(),
                 date: Date.now(),
-                day: workout.day || currentWorkout.day,
-                title: workout.title || currentWorkout.title,
+                day: workout.day,
+                title: workout.title,
                 duration: actualDuration,
-                calories: workout.calories || currentWorkout.calories,
-                type: workout.type || currentWorkout.type
+                calories: workout.calories,
+                type: workout.type
             };
 
             if (!Array.isArray(activeProgram.completedWorkouts)) {
@@ -1731,44 +1733,50 @@ async function completeWorkout(workout) {
         }
 
         // Показываем экран завершения
-        showWorkoutComplete(actualDuration, workout.calories || currentWorkout.calories);
+        showWorkoutComplete(actualDuration, workout.calories);
 
     } catch (error) {
         console.error('Ошибка при завершении тренировки:', error);
-        showError('Не удалось сохранить результаты тренировки. Попробуйте еще раз.');
+        // Показываем более информативное сообщение об ошибке
+        showError('Произошла ошибка при сохранении результатов. Пожалуйста, попробуйте еще раз.');
     }
 }
 
-// Добавляем новую функцию для отображения экрана завершения
+// Обновляем функцию showWorkoutComplete
 function showWorkoutComplete(duration, calories) {
+    console.log('Показываем экран завершения:', { duration, calories });
+    
     const container = document.querySelector('.container');
     if (!container) return;
 
-        container.innerHTML = `
-            <div class="workout-complete">
-                <div class="complete-icon">
-                    <span class="material-symbols-rounded">check_circle</span>
-                </div>
-                <h2>Тренировка завершена!</h2>
-                <div class="workout-stats">
-                    <div class="stat-item">
-                    <span class="stat-value">${duration}</span>
-                        <span class="stat-label">минут</span>
-                    </div>
-                    <div class="stat-item">
-                    <span class="stat-value">${calories}</span>
-                        <span class="stat-label">ккал</span>
-                    </div>
-                </div>
-                <button class="finish-btn" onclick="showProgramsList()">
-                    <span class="material-symbols-rounded">home</span>
-                    Вернуться
-                </button>
+    container.innerHTML = `
+        <div class="workout-complete">
+            <div class="complete-icon">
+                <span class="material-symbols-rounded">check_circle</span>
             </div>
-        `;
+            <h2>Тренировка завершена!</h2>
+            <div class="workout-stats">
+                <div class="stat-item">
+                    <span class="stat-value">${duration || 0}</span>
+                    <span class="stat-label">минут</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">${calories || 0}</span>
+                    <span class="stat-label">ккал</span>
+                </div>
+            </div>
+            <button class="finish-btn" onclick="showProgramsList()">
+                <span class="material-symbols-rounded">home</span>
+                Вернуться
+            </button>
+        </div>
+    `;
 
-        document.querySelector('.bottom-nav')?.classList.remove('hidden');
-        tg.HapticFeedback.notificationOccurred('success');
+    // Показываем нижнюю навигацию
+    document.querySelector('.bottom-nav')?.classList.remove('hidden');
+    
+    // Добавляем тактильный отклик
+    tg.HapticFeedback.notificationOccurred('success');
 }
 
 // Добавим функцию для обработки изменений в чекбоксах
