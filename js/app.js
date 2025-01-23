@@ -16,9 +16,6 @@ let timerInterval = null;
 let restInterval = null;
 let workoutStartTime = null; // Добавляем переменную для отслеживания времени тренировки
 
-// Добавляем глобальную переменную
-let currentProgramId = null;
-
 // Функция для безопасного показа попапа
 async function showPopupSafe(options) {
     return new Promise((resolve) => {
@@ -831,14 +828,10 @@ ${program.workouts.map((workout, index) =>
 // Добавим функцию для запуска тренировки
 async function startWorkout(workout) {
     try {
-        console.log('Начинаем тренировку:', workout);
+    console.log('Начинаем тренировку:', workout);
         
-        if (!workout) {
-            throw new Error('Данные тренировки отсутствуют');
-        }
-
         // Добавляем ID программы к тренировке
-        workout.programId = currentProgramId;
+        workout.programId = workout.programId || currentProgramId;
         
         currentWorkout = workout;
         currentExerciseIndex = 0;
@@ -1093,30 +1086,46 @@ function updateProgramProgress(progress) {
 // Функция для запуска программы
 async function startProgram(programId) {
     try {
-        currentProgramId = programId; // Сохраняем ID текущей программы
         const program = window.programData[programId];
-        
         if (!program) {
             throw new Error('Программа не найдена');
         }
 
-        // Сохраняем активную программу
-        const activeProgram = {
+        // Сохраняем выбранную программу
+        await setStorageItem('activeProgram', JSON.stringify({
             id: programId,
-            startDate: Date.now(),
             title: program.title,
             workouts: program.workouts,
             completedWorkouts: []
-        };
+        }));
 
-        await setStorageItem('activeProgram', JSON.stringify(activeProgram));
-        
-        // Запускаем первую тренировку
-        startWorkout(program.workouts[0]);
+        // Очищаем текущий контейнер
+        const container = document.querySelector('.container');
+        if (!container) return;
+
+        // Создаем контейнер для списка тренировок
+        container.innerHTML = `
+            <div class="program-header">
+                <button class="back-btn" onclick="showProgramsList()">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                <h2>${program.title}</h2>
+            </div>
+            <div class="workouts-list"></div>
+        `;
+
+        // Добавляем обработчик для кнопки "Назад"
+        const backBtn = container.querySelector('.back-btn');
+        backBtn?.addEventListener('click', () => {
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+
+        // Отображаем список тренировок
+        renderWorkouts(program);
 
     } catch (error) {
         console.error('Ошибка при запуске программы:', error);
-        showError('Не удалось начать программу');
+        showError(error.message);
     }
 }
 
@@ -1357,20 +1366,32 @@ function initApp() {
 
 // Обновляем обработчики событий
 function setupProgramHandlers() {
-    document.querySelectorAll('.start-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const programId = btn.dataset.programId;
-            if (programId) {
-                await startProgram(programId);
+    // Обработчики для кнопок в карточках программ
+    document.querySelectorAll('.program-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const programCard = button.closest('.program-card');
+            const programId = programCard.dataset.program;
+            
+            if (button.classList.contains('info-btn')) {
+                tg.HapticFeedback.impactOccurred('medium');
+                showProgramDetails(programId);
+            } else if (button.classList.contains('start-btn')) {
+                tg.HapticFeedback.impactOccurred('medium');
+                startProgram(programId);
             }
         });
     });
 
-    document.querySelectorAll('.info-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const programId = btn.dataset.programId;
-            if (programId) {
-                showProgramInfo(programId);
+    // Добавляем обработчик для всей карточки программы
+    document.querySelectorAll('.program-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.program-btn')) {
+                const programId = card.dataset.program;
+                tg.HapticFeedback.impactOccurred('medium');
+                showProgramDetails(programId);
             }
         });
     });
@@ -2070,42 +2091,44 @@ function renderProgramCards() {
     const container = document.querySelector('.programs-list');
     if (!container) return;
 
-    container.innerHTML = Object.entries(window.programData).map(([id, program]) => `
-        <div class="program-card">
-            <div class="program-info">
-                <div class="program-icon">
-                    <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
-                </div>
-                <div class="program-details">
-                    <h3>${program.title}</h3>
-                    <p>${program.description}</p>
-                    <div class="program-meta">
-                        <div class="program-schedule">
-                            <span class="material-symbols-rounded">calendar_today</span>
-                            ${program.schedule}
+    let html = '';
+    Object.entries(window.programData).forEach(([programId, program]) => {
+        html += `
+            <div class="program-card">
+                <div class="program-content">
+                    <div class="program-icon">
+                        <span class="material-symbols-rounded">${program.icon}</span>
+                    </div>
+                    <div class="program-text">
+                        <h3>${program.title}</h3>
+                        <p class="program-description">${program.description}</p>
+                        <div class="program-details">
+                            <span>
+                                <span class="material-symbols-rounded">calendar_today</span>
+                                ${program.schedule}
+                            </span>
+                            <span>
+                                <span class="material-symbols-rounded">fitness_center</span>
+                                ${getDifficultyText(program.difficulty)}
+                            </span>
                         </div>
-                        <div class="program-difficulty">
-                            <span class="material-symbols-rounded">fitness_center</span>
-                            ${program.difficulty}
+                        <div class="program-actions">
+                            <button class="program-btn info-btn" onclick="showProgramDetails('${programId}')">
+                                <span class="material-symbols-rounded">info</span>
+                                Подробнее
+                            </button>
+                            <button class="program-btn start-btn" onclick="startProgram('${programId}')">
+                                <span class="material-symbols-rounded">play_arrow</span>
+                                Начать
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="program-actions">
-                <button class="info-btn" data-program-id="${id}">
-                    <span class="material-symbols-rounded">info</span>
-                    Подробнее
-                </button>
-                <button class="start-btn" data-program-id="${id}">
-                    <span class="material-symbols-rounded">play_arrow</span>
-                    Начать
-                </button>
-            </div>
-        </div>
-    `).join('');
+        `;
+    });
 
-    // Устанавливаем обработчики после рендеринга
-    setupProgramHandlers();
+    container.innerHTML = html;
 }
 
 // Функция для отображения тренировок программы
@@ -2345,88 +2368,54 @@ async function renderStatistics() {
         const totalDuration = activeProgram?.completedWorkouts?.reduce((sum, w) => sum + (w.duration || 0), 0) || 0;
         const totalCalories = activeProgram?.completedWorkouts?.reduce((sum, w) => sum + (w.calories || 0), 0) || 0;
         const goalProgress = activeProgram ? 
-            Math.round((totalWorkouts / (activeProgram.workouts?.length || 1)) * 100) : 0;
+            Math.round((totalWorkouts / activeProgram.workouts.length) * 100) : 0;
 
+        // Обновляем HTML статистики
         container.innerHTML = `
-            <div class="stats-grid">
-                <div class="stat-mini-card">
-                    <div class="stat-icon">
-                        <span class="material-symbols-rounded">fitness_center</span>
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <span class="material-symbols-rounded">exercise</span>
+                    <h3>${totalWorkouts}</h3>
+                    <p>Тренировок</p>
                 </div>
-                    <div class="stat-content">
-                        <span class="stat-value">${totalWorkouts}</span>
-                        <span class="stat-label">Тренировок</span>
-                    </div>
-                </div>
-                <div class="stat-mini-card">
-                    <div class="stat-icon">
+                <div class="stat-card">
                     <span class="material-symbols-rounded">timer</span>
+                    <h3>${totalDuration}м</h3>
+                    <p>Общее время</p>
                 </div>
-                    <div class="stat-content">
-                        <span class="stat-value">${totalDuration}м</span>
-                        <span class="stat-label">Общее время</span>
-                    </div>
-                </div>
-                <div class="stat-mini-card">
-                    <div class="stat-icon">
+                <div class="stat-card">
                     <span class="material-symbols-rounded">local_fire_department</span>
+                    <h3>${totalCalories}</h3>
+                    <p>Ккал сожжено</p>
                 </div>
-                    <div class="stat-content">
-                        <span class="stat-value">${totalCalories}</span>
-                        <span class="stat-label">Ккал сожжено</span>
-                    </div>
-                </div>
-                <div class="stat-mini-card">
-                    <div class="stat-icon">
+                <div class="stat-card">
                     <span class="material-symbols-rounded">trending_up</span>
-                </div>
-                    <div class="stat-content">
-                        <span class="stat-value">${goalProgress}%</span>
-                        <span class="stat-label">Достижение цели</span>
-            </div>
+                    <h3>${goalProgress}%</h3>
+                    <p>Достижение цели</p>
                 </div>
             </div>
-            <div class="weight-section">
+            <div class="weight-chart">
+                <div class="chart-header">
                     <h3>Динамика веса</h3>
                     <div class="period-selector">
                         <button class="period-btn active" data-period="week">Неделя</button>
                         <button class="period-btn" data-period="month">Месяц</button>
                         <button class="period-btn" data-period="year">Год</button>
+                    </div>
                 </div>
                 <canvas id="weight-chart"></canvas>
             </div>
+            <div class="tips-list"></div>
         `;
 
-        // Добавляем нижнюю навигацию
-        const bottomNav = document.createElement('nav');
-        bottomNav.className = 'tabs';
-        bottomNav.innerHTML = `
-            <button class="tab-btn" data-tab="workouts">
-                <span class="material-symbols-rounded">exercise</span>
-                <span>Тренировки</span>
-            </button>
-            <button class="tab-btn" data-tab="calendar">
-                <span class="material-symbols-rounded">calendar_month</span>
-                <span>Календарь</span>
-            </button>
-            <button class="tab-btn active" data-tab="stats">
-                <span class="material-symbols-rounded">monitoring</span>
-                <span>Статистика</span>
-            </button>
-            <button class="tab-btn" data-tab="profile">
-                <span class="material-symbols-rounded">person</span>
-                <span>Профиль</span>
-            </button>
-        `;
-        container.appendChild(bottomNav);
-
-        // Инициализируем график веса
-        const weightData = await getWeightData(currentPeriod || 'week');
-        await updateWeightChart(weightData);
-
-        // Добавляем обработчики для кнопок периода
+        // Настраиваем обработчики периодов для графика
         setupPeriodButtons();
-        setupTabHandlers();
+        
+        // Инициализируем график с недельным периодом
+        updateWeightChart('week');
+
+        // Добавляем отрисовку советов
+        await renderTips();
 
     } catch (error) {
         console.error('Ошибка при отображении статистики:', error);
@@ -2974,510 +2963,4 @@ function formatScheduleMessage(program) {
     });
 
     return message;
-}
-
-// Обновляем функцию showStats
-async function showStats() {
-    const container = document.querySelector('.container');
-    if (!container) return;
-
-    try {
-        // Получаем данные о тренировках
-        const activeProgram = await getStorageItem('activeProgram')
-            .then(data => data ? JSON.parse(data) : null);
-
-        // Рассчитываем статистику
-        const totalWorkouts = activeProgram?.completedWorkouts?.length || 0;
-        const totalDuration = activeProgram?.completedWorkouts?.reduce((sum, w) => sum + (w.duration || 0), 0) || 0;
-        const totalCalories = activeProgram?.completedWorkouts?.reduce((sum, w) => sum + (w.calories || 0), 0) || 0;
-        const goalProgress = activeProgram ? 
-            Math.round((totalWorkouts / (activeProgram.workouts?.length || 1)) * 100) : 0;
-
-        container.innerHTML = `
-            <div class="stats-grid">
-                <div class="stat-mini-card">
-                    <div class="stat-icon">
-                        <span class="material-symbols-rounded">fitness_center</span>
-                    </div>
-                    <div class="stat-content">
-                        <span class="stat-value">${totalWorkouts}</span>
-                        <span class="stat-label">Тренировок</span>
-                    </div>
-                </div>
-                <div class="stat-mini-card">
-                    <div class="stat-icon">
-                        <span class="material-symbols-rounded">timer</span>
-                    </div>
-                    <div class="stat-content">
-                        <span class="stat-value">${totalDuration}м</span>
-                        <span class="stat-label">Общее время</span>
-                    </div>
-                </div>
-                <div class="stat-mini-card">
-                    <div class="stat-icon">
-                        <span class="material-symbols-rounded">local_fire_department</span>
-                    </div>
-                    <div class="stat-content">
-                        <span class="stat-value">${totalCalories}</span>
-                        <span class="stat-label">Ккал сожжено</span>
-                    </div>
-                </div>
-                <div class="stat-mini-card">
-                    <div class="stat-icon">
-                        <span class="material-symbols-rounded">trending_up</span>
-                    </div>
-                    <div class="stat-content">
-                        <span class="stat-value">${goalProgress}%</span>
-                        <span class="stat-label">Достижение цели</span>
-                    </div>
-                </div>
-            </div>
-            <div class="weight-section">
-                <h3>Динамика веса</h3>
-                <div class="period-selector">
-                    <button class="period-btn active" data-period="week">Неделя</button>
-                    <button class="period-btn" data-period="month">Месяц</button>
-                    <button class="period-btn" data-period="year">Год</button>
-                </div>
-                <canvas id="weight-chart"></canvas>
-            </div>
-        `;
-
-        // Добавляем нижнюю навигацию
-        const bottomNav = document.createElement('nav');
-        bottomNav.className = 'tabs';
-        bottomNav.innerHTML = `
-            <button class="tab-btn" data-tab="workouts">
-                <span class="material-symbols-rounded">exercise</span>
-                <span>Тренировки</span>
-            </button>
-            <button class="tab-btn" data-tab="calendar">
-                <span class="material-symbols-rounded">calendar_month</span>
-                <span>Календарь</span>
-            </button>
-            <button class="tab-btn active" data-tab="stats">
-                <span class="material-symbols-rounded">monitoring</span>
-                <span>Статистика</span>
-            </button>
-            <button class="tab-btn" data-tab="profile">
-                <span class="material-symbols-rounded">person</span>
-                <span>Профиль</span>
-            </button>
-        `;
-        container.appendChild(bottomNav);
-
-        // Инициализируем график веса
-        const weightData = await getWeightData(currentPeriod || 'week');
-        await updateWeightChart(weightData);
-
-        // Добавляем обработчики для кнопок периода
-        setupPeriodButtons();
-        setupTabHandlers();
-
-    } catch (error) {
-        console.error('Ошибка при отображении статистики:', error);
-        showError('Не удалось загрузить статистику');
-    }
-}
-
-// Обновляем функцию updateWeightChart
-async function updateWeightChart(data) {
-    const ctx = document.getElementById('weight-chart');
-    if (!ctx) return;
-
-    // Уничтожаем предыдущий график если он существует
-    if (window.weightChart) {
-        window.weightChart.destroy();
-    }
-
-    if (!data || data.length === 0) {
-        ctx.style.display = 'none';
-        const noDataMsg = document.createElement('div');
-        noDataMsg.className = 'no-data-message';
-        noDataMsg.textContent = 'Нет данных о весе';
-        ctx.parentNode.appendChild(noDataMsg);
-        return;
-    }
-
-    ctx.style.display = 'block';
-    const noDataMsg = ctx.parentNode.querySelector('.no-data-message');
-    if (noDataMsg) {
-        noDataMsg.remove();
-    }
-
-    // Подготавливаем данные для графика
-    const sortedData = data.sort((a, b) => new Date(a.date) - new Date(b.date));
-    const labels = sortedData.map(item => {
-        const date = new Date(item.date);
-        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-    });
-    const weights = sortedData.map(item => item.weight);
-
-    // Находим минимальный и максимальный вес для настройки шкалы
-    const minWeight = Math.min(...weights) - 1;
-    const maxWeight = Math.max(...weights) + 1;
-
-    // Создаем новый график
-    window.weightChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Вес (кг)',
-                data: weights,
-                borderColor: '#40a7e3',
-                backgroundColor: 'rgba(64, 167, 227, 0.1)',
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#40a7e3',
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    min: minWeight,
-                    max: maxWeight,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
-                }
-            }
-        }
-    });
-}
-
-// Обновляем функцию getWeightData
-async function getWeightData(period = 'week') {
-    try {
-        const result = await getStorageItem('weightHistory');
-        let weightHistory = result ? JSON.parse(result) : [];
-        
-        if (!Array.isArray(weightHistory) || weightHistory.length === 0) {
-            return [];
-        }
-
-        const now = new Date();
-        let startDate = new Date();
-
-        switch (period) {
-            case 'week':
-                startDate.setDate(now.getDate() - 7);
-                break;
-            case 'month':
-                startDate.setMonth(now.getMonth() - 1);
-                break;
-            case 'year':
-                startDate.setFullYear(now.getFullYear() - 1);
-                break;
-            default:
-                startDate.setDate(now.getDate() - 7);
-        }
-
-        return weightHistory.filter(entry => {
-            const entryDate = new Date(entry.date);
-            return entryDate >= startDate && entryDate <= now;
-        });
-
-    } catch (error) {
-        console.error('Ошибка при получении данных веса:', error);
-        return [];
-    }
-}
-
-// Добавляем функцию для отображения календаря
-async function showCalendar() {
-    const container = document.querySelector('.container');
-    if (!container) return;
-
-    try {
-        // Получаем данные о выполненных тренировках
-        const activeProgram = await getStorageItem('activeProgram')
-            .then(data => data ? JSON.parse(data) : null);
-        
-        const completedWorkouts = activeProgram?.completedWorkouts || [];
-
-        // Получаем текущую дату
-        const currentDate = new Date();
-        const currentMonth = currentDate.getMonth();
-        const currentYear = currentDate.getFullYear();
-
-        // Создаем календарь
-        container.innerHTML = `
-            <div class="calendar-container">
-                <div class="calendar-header">
-                    <button class="calendar-nav-btn prev-month">
-                        <span class="material-symbols-rounded">chevron_left</span>
-                    </button>
-                    <h2>${new Date(currentYear, currentMonth).toLocaleString('ru-RU', { month: 'long', year: 'numeric' })}</h2>
-                    <button class="calendar-nav-btn next-month">
-                        <span class="material-symbols-rounded">chevron_right</span>
-                    </button>
-                </div>
-                <div class="calendar-weekdays">
-                    <span>Пн</span>
-                    <span>Вт</span>
-                    <span>Ср</span>
-                    <span>Чт</span>
-                    <span>Пт</span>
-                    <span>Сб</span>
-                    <span>Вс</span>
-                </div>
-                <div class="calendar-days">
-                    ${generateCalendarDays(currentYear, currentMonth, completedWorkouts)}
-                </div>
-                <div class="calendar-legend">
-                    <div class="legend-item">
-                        <span class="legend-dot completed"></span>
-                        <span>Тренировка выполнена</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-dot planned"></span>
-                        <span>Запланировано</span>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Добавляем нижнюю навигацию
-        const bottomNav = document.createElement('nav');
-        bottomNav.className = 'tabs';
-        bottomNav.innerHTML = `
-            <button class="tab-btn" data-tab="workouts">
-                <span class="material-symbols-rounded">exercise</span>
-                <span>Тренировки</span>
-            </button>
-            <button class="tab-btn active" data-tab="calendar">
-                <span class="material-symbols-rounded">calendar_month</span>
-                <span>Календарь</span>
-            </button>
-            <button class="tab-btn" data-tab="stats">
-                <span class="material-symbols-rounded">monitoring</span>
-                <span>Статистика</span>
-            </button>
-            <button class="tab-btn" data-tab="profile">
-                <span class="material-symbols-rounded">person</span>
-                <span>Профиль</span>
-            </button>
-        `;
-        container.appendChild(bottomNav);
-
-        // Добавляем обработчики
-        setupCalendarHandlers();
-        setupTabHandlers();
-
-    } catch (error) {
-        console.error('Ошибка при отображении календаря:', error);
-        showError('Не удалось загрузить календарь');
-    }
-}
-
-// Функция для отображения профиля
-async function showProfile() {
-    const container = document.querySelector('.container');
-    if (!container) return;
-
-    try {
-        // Получаем данные профиля
-        const profileData = await getStorageItem('profileData')
-            .then(data => data ? JSON.parse(data) : null);
-
-        container.innerHTML = `
-            <div class="profile-container">
-                <form id="profile-form" class="profile-form">
-                    <div class="form-section">
-                        <h4>Основные данные</h4>
-                        <div class="input-group">
-                            <label>Вес (кг)</label>
-                            <input type="number" name="weight" value="${profileData?.weight || ''}" placeholder="Введите вес">
-                        </div>
-                        <div class="input-group">
-                            <label>Рост (см)</label>
-                            <input type="number" name="height" value="${profileData?.height || ''}" placeholder="Введите рост">
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h4>Цели и предпочтения</h4>
-                        <div class="input-group">
-                            <label>Основная цель</label>
-                            <div class="checkbox-group">
-                                <label class="checkbox-label">
-                                    <input type="radio" name="goal" value="weight_loss" ${profileData?.goal === 'weight_loss' ? 'checked' : ''}>
-                                    <span>Похудение</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="radio" name="goal" value="muscle_gain" ${profileData?.goal === 'muscle_gain' ? 'checked' : ''}>
-                                    <span>Набор массы</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="radio" name="goal" value="maintenance" ${profileData?.goal === 'maintenance' ? 'checked' : ''}>
-                                    <span>Поддержание</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h4>Доступное оборудование</h4>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="equipment" value="dumbbells" ${profileData?.equipment?.includes('dumbbells') ? 'checked' : ''}>
-                                <span>Гантели</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="equipment" value="resistance_bands" ${profileData?.equipment?.includes('resistance_bands') ? 'checked' : ''}>
-                                <span>Резинки</span>
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="equipment" value="mat" ${profileData?.equipment?.includes('mat') ? 'checked' : ''}>
-                                <span>Коврик</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="save-btn">Сохранить</button>
-                </form>
-            </div>
-        `;
-
-        // Добавляем нижнюю навигацию
-        const bottomNav = document.createElement('nav');
-        bottomNav.className = 'tabs';
-        bottomNav.innerHTML = `
-            <button class="tab-btn" data-tab="workouts">
-                <span class="material-symbols-rounded">exercise</span>
-                <span>Тренировки</span>
-            </button>
-            <button class="tab-btn" data-tab="calendar">
-                <span class="material-symbols-rounded">calendar_month</span>
-                <span>Календарь</span>
-            </button>
-            <button class="tab-btn" data-tab="stats">
-                <span class="material-symbols-rounded">monitoring</span>
-                <span>Статистика</span>
-            </button>
-            <button class="tab-btn active" data-tab="profile">
-                <span class="material-symbols-rounded">person</span>
-                <span>Профиль</span>
-            </button>
-        `;
-        container.appendChild(bottomNav);
-
-        // Добавляем обработчики
-        setupProfileHandlers();
-        setupTabHandlers();
-
-    } catch (error) {
-        console.error('Ошибка при отображении профиля:', error);
-        showError('Не удалось загрузить профиль');
-    }
-}
-
-// Вспомогательная функция для генерации дней календаря
-function generateCalendarDays(year, month, completedWorkouts) {
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startDay = firstDay.getDay() || 7; // Получаем день недели (1-7, где 1 - понедельник)
-    const daysInMonth = lastDay.getDate();
-
-    let html = '';
-    
-    // Добавляем пустые ячейки до первого дня месяца
-    for (let i = 1; i < startDay; i++) {
-        html += '<div class="calendar-day empty"></div>';
-    }
-
-    // Добавляем дни месяца
-    for (let day = 1; day <= daysInMonth; day++) {
-        const date = new Date(year, month, day);
-        const hasWorkout = completedWorkouts.some(workout => {
-            const workoutDate = new Date(workout.date);
-            return workoutDate.getDate() === day && 
-                   workoutDate.getMonth() === month && 
-                   workoutDate.getFullYear() === year;
-        });
-
-        html += `
-            <div class="calendar-day ${hasWorkout ? 'completed' : ''}">
-                <span>${day}</span>
-            </div>
-        `;
-    }
-
-    return html;
-}
-
-// Добавляем обработчики для календаря
-function setupCalendarHandlers() {
-    const prevBtn = document.querySelector('.prev-month');
-    const nextBtn = document.querySelector('.next-month');
-
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            // Обработка перехода на предыдущий месяц
-            tg.HapticFeedback.impactOccurred('medium');
-        });
-    }
-
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            // Обработка перехода на следующий месяц
-            tg.HapticFeedback.impactOccurred('medium');
-        });
-    }
-}
-
-// Добавляем обработчики для профиля
-function setupProfileHandlers() {
-    const form = document.getElementById('profile-form');
-    if (!form) return;
-
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        try {
-            const formData = new FormData(form);
-            const profileData = {
-                weight: formData.get('weight'),
-                height: formData.get('height'),
-                goal: formData.get('goal'),
-                equipment: formData.getAll('equipment')
-            };
-
-            // Сохраняем данные профиля
-            await setStorageItem('profileData', JSON.stringify(profileData));
-            
-            // Добавляем запись в историю веса
-            const weightHistory = await getStorageItem('weightHistory')
-                .then(data => data ? JSON.parse(data) : []);
-            
-            weightHistory.push({
-                date: Date.now(),
-                weight: parseFloat(profileData.weight)
-            });
-
-            await setStorageItem('weightHistory', JSON.stringify(weightHistory));
-
-            showError('Профиль успешно сохранен');
-            tg.HapticFeedback.notificationOccurred('success');
-
-        } catch (error) {
-            console.error('Ошибка при сохранении профиля:', error);
-            showError('Не удалось сохранить профиль');
-        }
-    });
 }
