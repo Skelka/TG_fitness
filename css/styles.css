@@ -586,60 +586,57 @@ input:focus, select:focus {
 }
 
 .program-card {
-    margin-bottom: 16px;
-    border-radius: 12px;
-    overflow: hidden;
     background: var(--tg-theme-bg-color);
-    border: var(--card-border);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    padding: 16px;
     box-shadow: var(--card-shadow);
+    border: var(--card-border);
 }
 
 .program-content {
     display: flex;
-    padding: 16px;
     gap: 16px;
+    margin-bottom: 16px;
 }
 
 .program-icon {
-    flex-shrink: 0;
     width: 48px;
     height: 48px;
-    border-radius: 12px;
     background: var(--tg-theme-button-color);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .program-icon .material-symbols-rounded {
+    color: var(--tg-theme-button-text-color);
     font-size: 24px;
-    color: #fff;
 }
 
 .program-text {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex: 1;
 }
 
 .program-text h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: var(--tg-theme-text-color);
 }
 
 .program-description {
-    margin: 0;
-    font-size: 14px;
+    margin: 0 0 12px;
     color: var(--tg-theme-hint-color);
+    font-size: 14px;
+    line-height: 1.4;
 }
 
 .program-details {
     display: flex;
-    gap: 12px;
-    font-size: 13px;
+    gap: 16px;
     color: var(--tg-theme-hint-color);
+    font-size: 14px;
 }
 
 .program-details span {
@@ -649,51 +646,41 @@ input:focus, select:focus {
 }
 
 .program-actions {
-    margin-top: 12px;
     display: flex;
     gap: 8px;
 }
 
 .program-btn {
     flex: 1;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    height: 32px;
-    padding: 0 12px;
+    padding: 12px;
     border-radius: 8px;
     border: none;
-    font-size: 13px;
-    font-weight: 400;
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
-    transition: opacity 0.15s ease;
-    text-transform: none;
-    letter-spacing: normal;
-    white-space: nowrap;
-}
-
-.program-btn.info-btn {
-    background: var(--tg-theme-secondary-bg-color);
-    color: var(--tg-theme-text-color);
-}
-
-.program-btn.start-btn {
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
+    transition: opacity 0.2s;
 }
 
 .program-btn:active {
     opacity: 0.7;
 }
 
-.program-btn .material-symbols-rounded {
-    font-size: 16px;
-    font-variation-settings: 'FILL' 0, 'wght' 400;
+.info-btn {
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-text-color);
 }
 
-.program-schedule {
-    margin-top: 24px;
+.start-btn {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.program-btn .material-symbols-rounded {
+    font-size: 18px;
 }
 
 .workout-item {

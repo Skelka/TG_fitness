@@ -2231,34 +2231,83 @@ function renderProgramCards() {
     }
 
     container.innerHTML = Object.entries(window.programData).map(([id, program]) => `
-        <div class="program-card" data-program-id="${id}">
-            <div class="program-icon">
-                <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
-            </div>
-            <div class="program-info">
-                <h3>${program.title}</h3>
-                <p>${program.description}</p>
-                <div class="program-meta">
-                    <div class="program-schedule">
-                        ${formatSchedule(program)}
-                    </div>
-                    <div class="program-difficulty">
-                        ${program.difficulty || 'Средний'}
+        <div class="program-card">
+            <div class="program-content">
+                <div class="program-icon">
+                    <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
+                </div>
+                <div class="program-text">
+                    <h3>${program.title}</h3>
+                    <p class="program-description">${program.description}</p>
+                    <div class="program-details">
+                        <span>
+                            <span class="material-symbols-rounded">calendar_today</span>
+                            ${program.schedule}
+                        </span>
+                        <span>
+                            <span class="material-symbols-rounded">fitness_center</span>
+                            ${getDifficultyText(program.difficulty)}
+                        </span>
                     </div>
                 </div>
             </div>
             <div class="program-actions">
-                <button class="info-btn" data-program-id="${id}">
+                <button class="program-btn info-btn" onclick="showProgramInfo('${id}')">
                     <span class="material-symbols-rounded">info</span>
                     Подробнее
                 </button>
-                <button class="start-btn" data-program-id="${id}">
+                <button class="program-btn start-btn" onclick="startProgramWorkout('${id}')">
                     <span class="material-symbols-rounded">play_arrow</span>
                     Начать
                 </button>
             </div>
         </div>
     `).join('');
+
+    // Добавляем обработчики после рендеринга
+    setupProgramCardHandlers();
+}
+
+// Добавляем функцию для настройки обработчиков карточек программ
+function setupProgramCardHandlers() {
+    // Обработчики для кнопок "Подробнее"
+    document.querySelectorAll('.info-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const programId = e.currentTarget.closest('.program-card').dataset.programId;
+            showProgramInfo(programId);
+            tg.HapticFeedback.impactOccurred('light');
+        });
+    });
+
+    // Обработчики для кнопок "Начать"
+    document.querySelectorAll('.start-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const programId = e.currentTarget.closest('.program-card').dataset.programId;
+            startProgramWorkout(programId);
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+    });
+}
+
+// Добавляем вспомогательную функцию для отображения сложности
+function getDifficultyText(difficulty) {
+    const difficulties = {
+        'easy': 'Легкий',
+        'medium': 'Средний',
+        'hard': 'Сложный',
+        'low': 'Легкий'
+    };
+    return difficulties[difficulty] || 'Средний';
+}
+
+// Обновляем функцию форматирования расписания
+function formatSchedule(program) {
+    return `
+        <span class="schedule-icon">
+            <span class="material-symbols-rounded">calendar_today</span>
+        </span>
+        <span class="schedule-text">${program.schedule}</span>
+    `;
 }
 
 // Добавляем новую функцию для запуска тренировки из программы
@@ -3012,48 +3061,7 @@ function renderExercise() {
     }, 0);
 }
 
-// Добавим функцию форматирования расписания
-function formatSchedule(program) {
-    return `День 1-${program.workouts.length}, ${program.schedule}`;
-}
-
-// Обновим отображение в списке программ
-function renderPrograms() {
-    const container = document.querySelector('.programs-list');
-    if (!container) return;
-
-    container.innerHTML = Object.entries(window.programData).map(([id, program]) => `
-        <div class="program-card" data-program-id="${id}">
-            <div class="program-icon">
-                <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
-            </div>
-            <div class="program-info">
-                <h3>${program.title}</h3>
-                <p>${program.description}</p>
-                <div class="program-meta">
-                    <div class="program-schedule">
-                        ${formatSchedule(program)}
-                    </div>
-                    <div class="program-difficulty">
-                        ${program.difficulty || 'Средний'}
-                    </div>
-                </div>
-            </div>
-            <div class="program-actions">
-                <button class="info-btn" data-program-id="${id}">
-                    <span class="material-symbols-rounded">info</span>
-                    Подробнее
-                </button>
-                <button class="start-btn" data-program-id="${id}">
-                    <span class="material-symbols-rounded">play_arrow</span>
-                    Начать
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
-
-// Обновим отображение в попапе
+// Обновим функцию showProgramInfo
 async function showProgramInfo(programId) {
     const program = window.programData[programId];
     if (!program) return;
@@ -3087,145 +3095,40 @@ ${program.goals.map(goal => `• ${goal}`).join('\n')}`;
     });
 }
 
-// Добавляем функцию форматирования расписания
-function formatScheduleMessage(program) {
-    const workoutIcons = {
-        cardio: '🏃‍♂️',
-        strength: '💪',
-        hiit: '⚡️',
-        cardio_strength: '💪🏃‍♂️',
-        general: '🎯'
-    };
+// Обновляем функцию renderPrograms
+function renderPrograms() {
+    const container = document.querySelector('.programs-list');
+    if (!container) return;
 
-    const difficultyIcons = {
-        easy: '⭐️',
-        medium: '⭐️⭐️',
-        hard: '⭐️⭐️⭐️'
-    };
-
-    let message = `${program.title}\n`;
-    message += `${difficultyIcons[program.difficulty] || '⭐️'} ${program.description}\n\n`;
-    message += `📅 ${program.schedule}\n`;
-    message += `⏱️ ${program.duration}\n\n`;
-    message += `Тренировки:\n\n`;
-
-    program.workouts.forEach((workout, index) => {
-        const icon = workoutIcons[workout.type] || '🎯';
-        message += `День ${index + 1}: ${icon} ${workout.title}\n`;
-        message += `├ ⏱️ ${workout.duration} мин\n`;
-        message += `├ 🔥 ${workout.calories} ккал\n`;
-        message += `└ 🎯 ${workout.exercises.length} упражнений\n\n`;
-    });
-
-    message += `\nЦели программы:\n`;
-    program.goals.forEach(goal => {
-        message += `• ${goal}\n`;
-    });
-
-    return message;
-}
-
-// Функции для навигации между разделами
-function showTab(tabId) {
-    // Скрываем все вкладки
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-    });
-
-    // Убираем активный класс у всех кнопок
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    // Показываем нужную вкладку
-    const selectedTab = document.getElementById(tabId);
-    if (selectedTab) {
-        selectedTab.classList.add('active');
-    }
-
-    // Активируем соответствующую кнопку
-    const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-    if (activeBtn) {
-        activeBtn.classList.add('active');
-    }
-
-    // Показываем нижнюю навигацию при переключении вкладок
-    const bottomNav = document.querySelector('.bottom-nav');
-    if (bottomNav) {
-        bottomNav.classList.remove('hidden');
-    }
-
-    // Дополнительные действия при переключении вкладок
-    if (tabId === 'stats') {
-        initStatisticsPage();
-    } else if (tabId === 'workouts') {
-        renderProgramCards();
-    }
-}
-
-// Обновляем функцию startWorkout
-async function startWorkout(workout, programId) {
-    console.log('Начинаем тренировку:', workout, 'ID программы:', programId);
-    
-    try {
-        if (!workout || !workout.exercises || workout.exercises.length === 0) {
-            console.error('Некорректные данные тренировки');
-            return;
-        }
-
-        if (!programId || !window.programData[programId]) {
-            console.error('Некорректный ID программы');
-            return;
-        }
-
-        const program = window.programData[programId];
-        const programType = PROGRAM_TYPES[program.category] || PROGRAM_TYPES.weight_loss;
-
-        // Сохраняем данные текущей тренировки и программы
-        currentWorkout = {
-            ...workout,
-            programType: program.category,
-            settings: programType
-        };
-        currentProgramId = programId;
-        currentExerciseIndex = 0;
-        currentSet = 1;
-        workoutStartTime = Date.now();
-
-        // Адаптируем упражнения под тип программы
-        currentWorkout.exercises = currentWorkout.exercises.map(exercise => ({
-            ...exercise,
-            rest: exercise.name.toLowerCase().includes('разминка') 
-                ? 0 
-                : (exercise.rest || programType.restBetweenSets)
-        }));
-
-        // Очищаем все таймеры
-        clearTimers();
-
-        // Скрываем нижнюю навигацию только при начале тренировки
-        const bottomNav = document.querySelector('.bottom-nav');
-        if (bottomNav) {
-            bottomNav.classList.add('hidden');
-        }
-
-        // Предзагружаем анимации упражнений
-        window.preloadExerciseAnimations(workout.exercises);
-
-        // Показываем первое упражнение
-        renderExercise();
-
-        // Специфичная для программы вибрация
-        tg.HapticFeedback.impactOccurred(programType.hapticFeedback);
-
-    } catch (error) {
-        console.error('Ошибка при запуске тренировки:', error);
-        // Показываем нижнюю навигацию в случае ошибки
-        const bottomNav = document.querySelector('.bottom-nav');
-        if (bottomNav) {
-            bottomNav.classList.remove('hidden');
-        }
-    }
+    container.innerHTML = Object.entries(window.programData).map(([id, program]) => `
+        <div class="program-card" data-program-id="${id}">
+            <div class="program-icon">
+                <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
+            </div>
+            <div class="program-info">
+                <h3>${program.title}</h3>
+                <p>${program.description}</p>
+                <div class="program-meta">
+                    <div class="program-schedule">
+                        ${formatSchedule(program)}
+                    </div>
+                    <div class="program-difficulty">
+                        ${program.difficulty || 'Средний'}
+                    </div>
+                </div>
+            </div>
+            <div class="program-actions">
+                <button class="info-btn" data-program-id="${id}">
+                    <span class="material-symbols-rounded">info</span>
+                    Подробнее
+                </button>
+                <button class="start-btn" data-program-id="${id}">
+                    <span class="material-symbols-rounded">play_arrow</span>
+                    Начать
+                </button>
+            </div>
+        </div>
+    `).join('');
 }
 
 // Обновляем обработчики навигации
