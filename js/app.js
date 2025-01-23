@@ -863,51 +863,35 @@ ${program.workouts.map((workout, index) =>
 // Добавим функцию для запуска тренировки
 async function startWorkout(workout) {
     console.log('Начинаем тренировку:', workout);
-    console.log('Программы:', window.programData);
     
     try {
         if (!workout || !workout.exercises || workout.exercises.length === 0) {
             throw new Error('Некорректные данные тренировки');
         }
 
-        // Получаем программу, которой принадлежит тренировка
-        const program = Object.values(window.programData).find(p => 
-            p.workouts.some(w => w.day === workout.day && w.title === workout.title)
-        );
+        // Инициализируем глобальные переменные
+        currentWorkout = workout;
+        currentExerciseIndex = 0;
+        currentSet = 1;
+        isResting = false;
+        restTimeLeft = 0;
+        workoutStartTime = Date.now();
+        
+        // Очищаем все таймеры
+        clearTimers();
 
-        console.log('Найдена программа:', program?.title);
+        // Скрываем нижнюю навигацию
+        document.querySelector('.bottom-nav')?.classList.add('hidden');
 
-        // Получаем профиль пользователя
-        const profileData = await getStorageItem('profile');
-        let profile = {};
-        try {
-            profile = JSON.parse(profileData);
-        } catch (e) {
-            console.warn('Ошибка парсинга профиля:', e);
-        }
+        // Инициализируем обработчик выхода
+        initExitHandler();
 
-        const availableEquipment = profile.equipment || [];
-        const userLevel = profile.fitnessLevel || 'medium';
-
-        // Адаптируем упражнения под пользователя
-        const adaptedWorkout = {
-            ...workout,
-            exercises: workout.exercises.map(exercise => ({
-                ...exercise,
-                name: findBestExerciseAlternative(exercise.name, availableEquipment, userLevel)
-            }))
-        };
-
-        // Запускаем тренировку с адаптированными упражнениями
-        startWorkoutExecution(adaptedWorkout);
+        // Отображаем первое упражнение
+        renderExercise();
 
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
-        tg.showPopup({
-            title: 'Ошибка',
-            message: error.message,
-            buttons: [{type: 'ok'}]
-        });
+        showError(error.message);
     }
 }
 
@@ -1637,12 +1621,13 @@ function handleExerciseComplete() {
     if (currentSet < exercise.sets) {
         currentSet++;
         showRestScreen();
-            } else {
+    } else {
         if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
             currentExerciseIndex++;
             currentSet = 1;
             renderExercise();
         } else {
+            // Передаем весь объект currentWorkout
             completeWorkout(currentWorkout);
         }
     }
@@ -1695,6 +1680,10 @@ function startTimer(duration) {
 // Обновляем функцию completeWorkout
 async function completeWorkout(workout) {
     try {
+        if (!workout || !workout.day) {
+            throw new Error('Некорректные данные тренировки для завершения');
+        }
+
         // Очищаем все таймеры
         clearTimers();
 
@@ -1732,7 +1721,7 @@ async function completeWorkout(workout) {
 
     } catch (error) {
         console.error('Ошибка при завершении тренировки:', error);
-        showError(error.message);
+        showError('Произошла ошибка при сохранении прогресса тренировки');
     }
 }
 
