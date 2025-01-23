@@ -64,7 +64,11 @@ tg.onEvent('popupClosed', async (event) => {
         // Прерываем тренировку
         clearTimers();
         renderProgramCards();
-        document.querySelector('.bottom-nav')?.classList.remove('hidden');
+        // Показываем нижнюю навигацию при выходе из тренировки
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) {
+            bottomNav.classList.remove('hidden');
+        }
     } else if (event.button_id.startsWith('start_program_')) {
             const programId = event.button_id.replace('start_program_', '');
         const program = window.programData[programId];
@@ -946,8 +950,11 @@ async function startWorkout(workout, programId) {
         // Очищаем все таймеры
         clearTimers();
 
-        // Скрываем нижнюю навигацию
-        document.querySelector('.bottom-nav')?.classList.add('hidden');
+        // Скрываем нижнюю навигацию только при начале тренировки
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) {
+            bottomNav.classList.add('hidden');
+        }
 
         // Предзагружаем анимации упражнений
         window.preloadExerciseAnimations(workout.exercises);
@@ -960,6 +967,11 @@ async function startWorkout(workout, programId) {
 
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
+        // Показываем нижнюю навигацию в случае ошибки
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) {
+            bottomNav.classList.remove('hidden');
+        }
     }
 }
 
@@ -1812,8 +1824,19 @@ async function completeWorkout(workout) {
         // Показываем экран завершения
         showWorkoutComplete(actualDuration, workout.calories);
 
+        // Показываем нижнюю навигацию при завершении тренировки
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) {
+            bottomNav.classList.remove('hidden');
+        }
+
     } catch (error) {
         console.error('Ошибка при завершении тренировки:', error);
+        // Показываем нижнюю навигацию в случае ошибки
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) {
+            bottomNav.classList.remove('hidden');
+        }
         showError('Не удалось сохранить результаты тренировки');
     }
 }
@@ -2201,25 +2224,35 @@ function renderProgramCards() {
     const container = document.querySelector('.programs-list');
     if (!container) return;
 
+    // Показываем нижнюю навигацию
+    const bottomNav = document.querySelector('.bottom-nav');
+    if (bottomNav) {
+        bottomNav.classList.remove('hidden');
+    }
+
     container.innerHTML = Object.entries(window.programData).map(([id, program]) => `
-        <div class="program-card">
+        <div class="program-card" data-program-id="${id}">
             <div class="program-icon">
-                <span class="material-symbols-rounded">${program.icon}</span>
+                <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
             </div>
             <div class="program-info">
                 <h3>${program.title}</h3>
                 <p>${program.description}</p>
                 <div class="program-meta">
-                    <span>⏱️ ${program.duration}</span>
-                    <span>📅 ${program.schedule}</span>
+                    <div class="program-schedule">
+                        ${formatSchedule(program)}
+                    </div>
+                    <div class="program-difficulty">
+                        ${program.difficulty || 'Средний'}
+                    </div>
                 </div>
             </div>
             <div class="program-actions">
-                <button class="info-btn" onclick="showProgramInfo('${id}')">
+                <button class="info-btn" data-program-id="${id}">
                     <span class="material-symbols-rounded">info</span>
                     Подробнее
                 </button>
-                <button class="start-btn" onclick="startProgramWorkout('${id}')">
+                <button class="start-btn" data-program-id="${id}">
                     <span class="material-symbols-rounded">play_arrow</span>
                     Начать
                 </button>
@@ -3116,9 +3149,17 @@ function showTab(tabId) {
         activeBtn.classList.add('active');
     }
 
+    // Показываем нижнюю навигацию при переключении вкладок
+    const bottomNav = document.querySelector('.bottom-nav');
+    if (bottomNav) {
+        bottomNav.classList.remove('hidden');
+    }
+
     // Дополнительные действия при переключении вкладок
     if (tabId === 'stats') {
         initStatisticsPage();
+    } else if (tabId === 'workouts') {
+        renderProgramCards();
     }
 }
 
@@ -3162,8 +3203,11 @@ async function startWorkout(workout, programId) {
         // Очищаем все таймеры
         clearTimers();
 
-        // Скрываем нижнюю навигацию
-        document.querySelector('.bottom-nav')?.classList.add('hidden');
+        // Скрываем нижнюю навигацию только при начале тренировки
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) {
+            bottomNav.classList.add('hidden');
+        }
 
         // Предзагружаем анимации упражнений
         window.preloadExerciseAnimations(workout.exercises);
@@ -3176,6 +3220,11 @@ async function startWorkout(workout, programId) {
 
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
+        // Показываем нижнюю навигацию в случае ошибки
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) {
+            bottomNav.classList.remove('hidden');
+        }
     }
 }
 
