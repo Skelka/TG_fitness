@@ -1633,16 +1633,19 @@ function handleExerciseComplete() {
     });
 
     if (currentSet < exercise.sets) {
-        // Если есть еще подходы, показываем отдых
-        showRestScreen(true); // true означает отдых между подходами
-    } else if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
-        // Если это последний подход, но есть следующее упражнение
-        currentExerciseIndex++;
-        currentSet = 1;
-        showRestScreen(false); // false означает отдых между упражнениями
-            } else {
-        // Если это последний подход последнего упражнения
-        completeWorkout(currentWorkout);
+        // Если есть еще подходы в текущем упражнении
+        showRestScreen(true); // отдых между подходами
+    } else {
+        // Если все подходы выполнены
+        if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
+            // Если есть следующее упражнение
+            currentExerciseIndex++;
+            currentSet = 1;
+            showRestScreen(false); // отдых между упражнениями
+        } else {
+            // Если это было последнее упражнение
+            completeWorkout(currentWorkout);
+        }
     }
 }
 
@@ -1705,16 +1708,12 @@ function startTimer(duration) {
 // Обновляем функцию completeWorkout
 async function completeWorkout(workout) {
     try {
-        // Проверяем наличие необходимых данных
-        if (!workout || !currentWorkout) {
+        if (!workout) {
             throw new Error('Данные о тренировке отсутствуют');
         }
 
         // Очищаем все таймеры
         clearTimers();
-
-        const container = document.querySelector('.container');
-        if (!container) return;
 
         // Вычисляем фактическое время тренировки
         const actualDuration = Math.round((Date.now() - workoutStartTime) / (1000 * 60));
@@ -1727,11 +1726,11 @@ async function completeWorkout(workout) {
             const completedWorkout = {
                 id: Date.now(),
                 date: Date.now(),
-                day: workout.day || currentWorkout.day,
-                title: workout.title || currentWorkout.title,
+                day: workout.day,
+                title: workout.title,
                 duration: actualDuration,
-                calories: workout.calories || currentWorkout.calories,
-                type: workout.type || currentWorkout.type
+                calories: workout.calories,
+                type: workout.type
             };
 
             if (!Array.isArray(activeProgram.completedWorkouts)) {
@@ -1743,11 +1742,11 @@ async function completeWorkout(workout) {
         }
 
         // Показываем экран завершения
-        showWorkoutComplete(actualDuration, workout.calories || currentWorkout.calories);
+        showWorkoutComplete(actualDuration, workout.calories);
 
     } catch (error) {
         console.error('Ошибка при завершении тренировки:', error);
-        showError('Не удалось сохранить результаты тренировки. Попробуйте еще раз.');
+        showError('Не удалось сохранить результаты тренировки');
     }
 }
 
@@ -2712,12 +2711,9 @@ function showRestScreen(isBetweenSets) {
     // Определяем текст для следующего действия
     let nextText;
     if (isBetweenSets) {
-        nextText = `Подход ${currentSet} из ${exercise.sets}`;
+        nextText = `Подход ${currentSet + 1} из ${exercise.sets}`;
     } else {
-        nextText = 'Следующее упражнение:';
-        if (nextExercise) {
-            nextText += `\n${nextExercise.name}`;
-        }
+        nextText = 'Следующее упражнение:\n' + nextExercise.name;
     }
 
     container.innerHTML = `
@@ -2747,38 +2743,37 @@ function showRestScreen(isBetweenSets) {
     restInterval = setInterval(() => {
         restTimeLeft--;
         
-        // Обновляем таймер
         if (timerElement) {
             timerElement.textContent = restTimeLeft;
-            
-            // Добавляем класс для анимации на последних секундах
             if (restTimeLeft <= 3) {
                 timerElement.classList.add('ending');
+                tg.HapticFeedback.impactOccurred('medium');
             }
         }
 
-        // Обновляем прогресс-бар
         if (progressBar) {
             const progress = (restTimeLeft / initialRestTime) * 100;
             progressBar.style.width = `${progress}%`;
         }
 
-        if (restTimeLeft <= 3 && restTimeLeft > 0) {
-            tg.HapticFeedback.impactOccurred('medium');
-        }
-
         if (restTimeLeft <= 0) {
             clearInterval(restInterval);
-                renderExercise();
+            if (isBetweenSets) {
+                currentSet++; // Увеличиваем счетчик подходов только после отдыха
+            }
+            renderExercise();
         }
     }, 1000);
 
-    // Добавляем обработчик для кнопки пропуска
+    // Обработчик кнопки пропуска
     const skipBtn = container.querySelector('.skip-rest-btn');
     skipBtn?.addEventListener('click', () => {
         clearInterval(restInterval);
         tg.HapticFeedback.impactOccurred('medium');
-            renderExercise();
+        if (isBetweenSets) {
+            currentSet++; // Увеличиваем счетчик подходов при пропуске отдыха
+        }
+        renderExercise();
     });
 }
 
