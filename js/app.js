@@ -1127,20 +1127,57 @@ async function showProgramSchedule(programId) {
     const program = window.programData[programId];
     if (!program) return;
 
-    // Форматируем расписание в более читаемый вид
-    const scheduleMessage = formatScheduleMessage(program);
+    const container = document.querySelector('.container');
+    if (!container) return;
 
-    await showPopupSafe({
-        title: 'Расписание тренировок',
-        message: scheduleMessage,
-        buttons: [
-            {
-                type: 'default',
-                text: 'Начать программу',
-                id: `start_program_${programId}`
-            }
-        ]
-    });
+    container.innerHTML = `
+        <div class="program-schedule-view">
+            <div class="section-header">
+                <button class="back-btn">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                <h2>${program.title}</h2>
+            </div>
+            <div class="workouts-list">
+                ${program.workouts.map((workout, index) => `
+                    <div class="workout-day">
+                        <div class="workout-day-content">
+                            <div class="workout-day-icon">
+                                <span class="material-symbols-rounded">
+                                    ${getWorkoutIcon(workout.type)}
+                                </span>
+                            </div>
+                            <div class="workout-day-text">
+                                <div class="day-number">День ${index + 1}</div>
+                                <h3>${workout.title}</h3>
+                                <div class="workout-meta">
+                                    <span>
+                                        <span class="material-symbols-rounded">timer</span>
+                                        ${workout.duration} мин
+                                    </span>
+                                    <span>
+                                        <span class="material-symbols-rounded">local_fire_department</span>
+                                        ${workout.calories} ккал
+                                    </span>
+                                </div>
+                            </div>
+                            <button class="start-workout-btn" onclick="startWorkout(${JSON.stringify(workout)}, '${programId}')">
+                                <span class="material-symbols-rounded">play_arrow</span>
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+
+    // Добавляем обработчик для кнопки "Назад"
+    const backBtn = container.querySelector('.back-btn');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            renderProgramCards();
+        });
+    }
 }
 
 // Обновим обработчик событий попапа
@@ -2256,16 +2293,13 @@ function renderProgramCards() {
                     <span class="material-symbols-rounded">info</span>
                     Подробнее
                 </button>
-                <button class="program-btn start-btn" onclick="startProgramWorkout('${id}')">
+                <button class="program-btn start-btn" onclick="showProgramSchedule('${id}')">
                     <span class="material-symbols-rounded">play_arrow</span>
                     Начать
                 </button>
             </div>
         </div>
     `).join('');
-
-    // Добавляем обработчики после рендеринга
-    setupProgramCardHandlers();
 }
 
 // Добавляем функцию для настройки обработчиков карточек программ
@@ -3168,4 +3202,16 @@ function setupNavigationHandlers() {
             }
         }
     });
+}
+
+// Вспомогательная функция для получения иконки типа тренировки
+function getWorkoutIcon(type) {
+    const icons = {
+        cardio: 'directions_run',
+        strength: 'fitness_center',
+        hiit: 'timer',
+        cardio_strength: 'sports_martial_arts',
+        general: 'exercise'
+    };
+    return icons[type] || 'exercise';
 }

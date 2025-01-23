@@ -1711,4 +1711,44 @@ input[type="number"]::-webkit-inner-spin-button {
     height: 100%;
     background: var(--tg-theme-button-color);
     transition: width 1s linear;
+}
+
+.program-schedule-view {
+    padding: 16px;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.workouts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.start-workout-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.start-workout-btn:active {
+    opacity: 0.7;
 } 
