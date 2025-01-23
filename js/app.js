@@ -3203,3 +3203,222 @@ async function getWeightData(period = 'week') {
         return [];
     }
 }
+
+// Функция для отображения профиля
+async function showProfile() {
+    const container = document.querySelector('.container');
+    if (!container) return;
+
+    try {
+        // Получаем данные профиля
+        const profileData = await getStorageItem('profileData')
+            .then(data => data ? JSON.parse(data) : null);
+
+        container.innerHTML = `
+            <form id="profile-form" class="profile-form">
+                <div class="form-section">
+                    <h4>Основные параметры</h4>
+                    <div class="input-group">
+                        <label>Вес (кг)</label>
+                        <input type="number" name="weight" value="${profileData?.weight || ''}" 
+                               placeholder="Введите текущий вес" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Рост (см)</label>
+                        <input type="number" name="height" value="${profileData?.height || ''}" 
+                               placeholder="Введите рост">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>Цели и предпочтения</h4>
+                    <div class="input-group">
+                        <label>Основная цель</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="radio" name="goal" value="weight_loss" 
+                                       ${profileData?.goal === 'weight_loss' ? 'checked' : ''}>
+                                <span>Похудение</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="radio" name="goal" value="muscle_gain"
+                                       ${profileData?.goal === 'muscle_gain' ? 'checked' : ''}>
+                                <span>Набор массы</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="radio" name="goal" value="maintenance"
+                                       ${profileData?.goal === 'maintenance' ? 'checked' : ''}>
+                                <span>Поддержание</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="save-btn" onclick="saveProfile()">
+                    <span class="material-symbols-rounded">save</span>
+                    Сохранить
+                </button>
+            </form>
+        `;
+
+        // Добавляем нижнюю навигацию
+        const bottomNav = document.createElement('nav');
+        bottomNav.className = 'tabs';
+        bottomNav.innerHTML = `
+            <button class="tab-btn" data-tab="workouts">
+                <span class="material-symbols-rounded">exercise</span>
+                <span>Тренировки</span>
+            </button>
+            <button class="tab-btn" data-tab="calendar">
+                <span class="material-symbols-rounded">calendar_month</span>
+                <span>Календарь</span>
+            </button>
+            <button class="tab-btn" data-tab="stats">
+                <span class="material-symbols-rounded">monitoring</span>
+                <span>Статистика</span>
+            </button>
+            <button class="tab-btn active" data-tab="profile">
+                <span class="material-symbols-rounded">person</span>
+                <span>Профиль</span>
+            </button>
+        `;
+        container.appendChild(bottomNav);
+
+        // Добавляем обработчики
+        setupTabHandlers();
+        setupCheckboxHandlers();
+
+    } catch (error) {
+        console.error('Ошибка при отображении профиля:', error);
+        showError('Не удалось загрузить профиль');
+    }
+}
+
+// Функция сохранения профиля
+async function saveProfile() {
+    const form = document.getElementById('profile-form');
+    if (!form) return;
+
+    try {
+        const formData = new FormData(form);
+        const profileData = {
+            weight: parseFloat(formData.get('weight')),
+            height: parseInt(formData.get('height')),
+            goal: formData.get('goal')
+        };
+
+        // Сохраняем вес в историю
+        const weightHistory = await getStorageItem('weightHistory')
+            .then(data => data ? JSON.parse(data) : []);
+        
+        weightHistory.push({
+            date: Date.now(),
+            weight: profileData.weight
+        });
+
+        await setStorageItem('weightHistory', JSON.stringify(weightHistory));
+        await setStorageItem('profileData', JSON.stringify(profileData));
+
+        showPopupSafe({
+            message: 'Профиль успешно сохранен',
+            buttons: [{
+                type: 'ok',
+                text: 'OK'
+            }]
+        });
+
+    } catch (error) {
+        console.error('Ошибка при сохранении профиля:', error);
+        showError('Не удалось сохранить профиль');
+    }
+}
+
+// Функция для отображения календаря
+async function showCalendar() {
+    const container = document.querySelector('.container');
+    if (!container) return;
+
+    try {
+        // Получаем данные о тренировках
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+
+        // Создаем массив дней
+        const days = [];
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            days.push('');
+        }
+        for (let i = 1; i <= daysInMonth; i++) {
+            days.push(i);
+        }
+
+        container.innerHTML = `
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h3>${new Date(currentYear, currentMonth).toLocaleString('ru-RU', { month: 'long', year: 'numeric' })}</h3>
+                </div>
+                <div class="calendar-grid">
+                    <div class="weekday">Пн</div>
+                    <div class="weekday">Вт</div>
+                    <div class="weekday">Ср</div>
+                    <div class="weekday">Чт</div>
+                    <div class="weekday">Пт</div>
+                    <div class="weekday">Сб</div>
+                    <div class="weekday">Вс</div>
+                    ${days.map(day => {
+                        if (!day) return '<div class="day empty"></div>';
+                        
+                        const date = new Date(currentYear, currentMonth, day);
+                        const hasWorkout = activeProgram?.completedWorkouts?.some(w => {
+                            const workoutDate = new Date(w.date);
+                            return workoutDate.toDateString() === date.toDateString();
+                        });
+                        
+                        return `
+                            <div class="day ${hasWorkout ? 'has-workout' : ''} ${date.toDateString() === now.toDateString() ? 'today' : ''}">
+                                ${day}
+                                ${hasWorkout ? '<span class="workout-indicator"></span>' : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+
+        // Добавляем нижнюю навигацию
+        const bottomNav = document.createElement('nav');
+        bottomNav.className = 'tabs';
+        bottomNav.innerHTML = `
+            <button class="tab-btn" data-tab="workouts">
+                <span class="material-symbols-rounded">exercise</span>
+                <span>Тренировки</span>
+            </button>
+            <button class="tab-btn active" data-tab="calendar">
+                <span class="material-symbols-rounded">calendar_month</span>
+                <span>Календарь</span>
+            </button>
+            <button class="tab-btn" data-tab="stats">
+                <span class="material-symbols-rounded">monitoring</span>
+                <span>Статистика</span>
+            </button>
+            <button class="tab-btn" data-tab="profile">
+                <span class="material-symbols-rounded">person</span>
+                <span>Профиль</span>
+            </button>
+        `;
+        container.appendChild(bottomNav);
+
+        // Добавляем обработчики
+        setupTabHandlers();
+
+    } catch (error) {
+        console.error('Ошибка при отображении календаря:', error);
+        showError('Не удалось загрузить календарь');
+    }
+}
