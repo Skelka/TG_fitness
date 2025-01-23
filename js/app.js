@@ -2368,54 +2368,88 @@ async function renderStatistics() {
         const totalDuration = activeProgram?.completedWorkouts?.reduce((sum, w) => sum + (w.duration || 0), 0) || 0;
         const totalCalories = activeProgram?.completedWorkouts?.reduce((sum, w) => sum + (w.calories || 0), 0) || 0;
         const goalProgress = activeProgram ? 
-            Math.round((totalWorkouts / activeProgram.workouts.length) * 100) : 0;
+            Math.round((totalWorkouts / (activeProgram.workouts?.length || 1)) * 100) : 0;
 
-        // Обновляем HTML статистики
         container.innerHTML = `
-            <div class="stats-overview">
-                <div class="stat-card">
-                    <span class="material-symbols-rounded">exercise</span>
-                    <h3>${totalWorkouts}</h3>
-                    <p>Тренировок</p>
+            <div class="stats-grid">
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">fitness_center</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value">${totalWorkouts}</span>
+                        <span class="stat-label">Тренировок</span>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <span class="material-symbols-rounded">timer</span>
-                    <h3>${totalDuration}м</h3>
-                    <p>Общее время</p>
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">timer</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value">${totalDuration}м</span>
+                        <span class="stat-label">Общее время</span>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <span class="material-symbols-rounded">local_fire_department</span>
-                    <h3>${totalCalories}</h3>
-                    <p>Ккал сожжено</p>
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">local_fire_department</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value">${totalCalories}</span>
+                        <span class="stat-label">Ккал сожжено</span>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <span class="material-symbols-rounded">trending_up</span>
-                    <h3>${goalProgress}%</h3>
-                    <p>Достижение цели</p>
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">trending_up</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value">${goalProgress}%</span>
+                        <span class="stat-label">Достижение цели</span>
+                    </div>
                 </div>
             </div>
-            <div class="weight-chart">
-                <div class="chart-header">
-                    <h3>Динамика веса</h3>
-                    <div class="period-selector">
-                        <button class="period-btn active" data-period="week">Неделя</button>
-                        <button class="period-btn" data-period="month">Месяц</button>
-                        <button class="period-btn" data-period="year">Год</button>
-                    </div>
+            <div class="weight-section">
+                <h3>Динамика веса</h3>
+                <div class="period-selector">
+                    <button class="period-btn active" data-period="week">Неделя</button>
+                    <button class="period-btn" data-period="month">Месяц</button>
+                    <button class="period-btn" data-period="year">Год</button>
                 </div>
                 <canvas id="weight-chart"></canvas>
             </div>
-            <div class="tips-list"></div>
         `;
 
-        // Настраиваем обработчики периодов для графика
-        setupPeriodButtons();
-        
-        // Инициализируем график с недельным периодом
-        updateWeightChart('week');
+        // Добавляем нижнюю навигацию
+        const bottomNav = document.createElement('nav');
+        bottomNav.className = 'tabs';
+        bottomNav.innerHTML = `
+            <button class="tab-btn" data-tab="workouts">
+                <span class="material-symbols-rounded">exercise</span>
+                <span>Тренировки</span>
+            </button>
+            <button class="tab-btn" data-tab="calendar">
+                <span class="material-symbols-rounded">calendar_month</span>
+                <span>Календарь</span>
+            </button>
+            <button class="tab-btn active" data-tab="stats">
+                <span class="material-symbols-rounded">monitoring</span>
+                <span>Статистика</span>
+            </button>
+            <button class="tab-btn" data-tab="profile">
+                <span class="material-symbols-rounded">person</span>
+                <span>Профиль</span>
+            </button>
+        `;
+        container.appendChild(bottomNav);
 
-        // Добавляем отрисовку советов
-        await renderTips();
+        // Инициализируем график веса
+        const weightData = await getWeightData(currentPeriod || 'week');
+        await updateWeightChart(weightData);
+
+        // Добавляем обработчики для кнопок периода
+        setupPeriodButtons();
+        setupTabHandlers();
 
     } catch (error) {
         console.error('Ошибка при отображении статистики:', error);
@@ -2963,4 +2997,226 @@ function formatScheduleMessage(program) {
     });
 
     return message;
+}
+
+// Обновляем функцию showStats
+async function showStats() {
+    const container = document.querySelector('.container');
+    if (!container) return;
+
+    try {
+        // Получаем данные о тренировках
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+
+        // Рассчитываем статистику
+        const totalWorkouts = activeProgram?.completedWorkouts?.length || 0;
+        const totalDuration = activeProgram?.completedWorkouts?.reduce((sum, w) => sum + (w.duration || 0), 0) || 0;
+        const totalCalories = activeProgram?.completedWorkouts?.reduce((sum, w) => sum + (w.calories || 0), 0) || 0;
+        const goalProgress = activeProgram ? 
+            Math.round((totalWorkouts / (activeProgram.workouts?.length || 1)) * 100) : 0;
+
+        container.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">fitness_center</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value">${totalWorkouts}</span>
+                        <span class="stat-label">Тренировок</span>
+                    </div>
+                </div>
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">timer</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value">${totalDuration}м</span>
+                        <span class="stat-label">Общее время</span>
+                    </div>
+                </div>
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">local_fire_department</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value">${totalCalories}</span>
+                        <span class="stat-label">Ккал сожжено</span>
+                    </div>
+                </div>
+                <div class="stat-mini-card">
+                    <div class="stat-icon">
+                        <span class="material-symbols-rounded">trending_up</span>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value">${goalProgress}%</span>
+                        <span class="stat-label">Достижение цели</span>
+                    </div>
+                </div>
+            </div>
+            <div class="weight-section">
+                <h3>Динамика веса</h3>
+                <div class="period-selector">
+                    <button class="period-btn active" data-period="week">Неделя</button>
+                    <button class="period-btn" data-period="month">Месяц</button>
+                    <button class="period-btn" data-period="year">Год</button>
+                </div>
+                <canvas id="weight-chart"></canvas>
+            </div>
+        `;
+
+        // Добавляем нижнюю навигацию
+        const bottomNav = document.createElement('nav');
+        bottomNav.className = 'tabs';
+        bottomNav.innerHTML = `
+            <button class="tab-btn" data-tab="workouts">
+                <span class="material-symbols-rounded">exercise</span>
+                <span>Тренировки</span>
+            </button>
+            <button class="tab-btn" data-tab="calendar">
+                <span class="material-symbols-rounded">calendar_month</span>
+                <span>Календарь</span>
+            </button>
+            <button class="tab-btn active" data-tab="stats">
+                <span class="material-symbols-rounded">monitoring</span>
+                <span>Статистика</span>
+            </button>
+            <button class="tab-btn" data-tab="profile">
+                <span class="material-symbols-rounded">person</span>
+                <span>Профиль</span>
+            </button>
+        `;
+        container.appendChild(bottomNav);
+
+        // Инициализируем график веса
+        const weightData = await getWeightData(currentPeriod || 'week');
+        await updateWeightChart(weightData);
+
+        // Добавляем обработчики для кнопок периода
+        setupPeriodButtons();
+        setupTabHandlers();
+
+    } catch (error) {
+        console.error('Ошибка при отображении статистики:', error);
+        showError('Не удалось загрузить статистику');
+    }
+}
+
+// Обновляем функцию updateWeightChart
+async function updateWeightChart(data) {
+    const ctx = document.getElementById('weight-chart');
+    if (!ctx) return;
+
+    // Уничтожаем предыдущий график если он существует
+    if (window.weightChart) {
+        window.weightChart.destroy();
+    }
+
+    if (!data || data.length === 0) {
+        ctx.style.display = 'none';
+        const noDataMsg = document.createElement('div');
+        noDataMsg.className = 'no-data-message';
+        noDataMsg.textContent = 'Нет данных о весе';
+        ctx.parentNode.appendChild(noDataMsg);
+        return;
+    }
+
+    ctx.style.display = 'block';
+    const noDataMsg = ctx.parentNode.querySelector('.no-data-message');
+    if (noDataMsg) {
+        noDataMsg.remove();
+    }
+
+    // Подготавливаем данные для графика
+    const sortedData = data.sort((a, b) => new Date(a.date) - new Date(b.date));
+    const labels = sortedData.map(item => {
+        const date = new Date(item.date);
+        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    });
+    const weights = sortedData.map(item => item.weight);
+
+    // Находим минимальный и максимальный вес для настройки шкалы
+    const minWeight = Math.min(...weights) - 1;
+    const maxWeight = Math.max(...weights) + 1;
+
+    // Создаем новый график
+    window.weightChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Вес (кг)',
+                data: weights,
+                borderColor: '#40a7e3',
+                backgroundColor: 'rgba(64, 167, 227, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#40a7e3',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    min: minWeight,
+                    max: maxWeight,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Обновляем функцию getWeightData
+async function getWeightData(period = 'week') {
+    try {
+        const result = await getStorageItem('weightHistory');
+        let weightHistory = result ? JSON.parse(result) : [];
+        
+        if (!Array.isArray(weightHistory) || weightHistory.length === 0) {
+            return [];
+        }
+
+        const now = new Date();
+        let startDate = new Date();
+
+        switch (period) {
+            case 'week':
+                startDate.setDate(now.getDate() - 7);
+                break;
+            case 'month':
+                startDate.setMonth(now.getMonth() - 1);
+                break;
+            case 'year':
+                startDate.setFullYear(now.getFullYear() - 1);
+                break;
+            default:
+                startDate.setDate(now.getDate() - 7);
+        }
+
+        return weightHistory.filter(entry => {
+            const entryDate = new Date(entry.date);
+            return entryDate >= startDate && entryDate <= now;
+        });
+
+    } catch (error) {
+        console.error('Ошибка при получении данных веса:', error);
+        return [];
+    }
 }
