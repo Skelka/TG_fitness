@@ -2804,30 +2804,58 @@ function startTimer(duration) {
 
 // Обновим функцию renderExercise
 function renderExercise() {
+    console.log('Рендеринг упражнения');
     const container = document.querySelector('.container');
-    if (!container || !currentWorkout) return;
+    if (!container || !currentWorkout) {
+        console.error('Нет контейнера или текущей тренировки');
+        return;
+    }
 
     const exercise = currentWorkout.exercises[currentExerciseIndex];
+    console.log('Текущее упражнение:', exercise);
+
+    // Проверяем корректность данных упражнения
+    if (!exercise || !exercise.reps) {
+        console.error('Некорректные данные упражнения:', exercise);
+        return;
+    }
+
     isTimerMode = exercise.reps.toString().includes('сек') || 
                   exercise.reps.toString().includes('мин');
     
     // Устанавливаем начальное значение таймера из упражнения
-    timerValue = isTimerMode ? 
-        parseInt(exercise.reps.toString().replace(/[^0-9]/g, '')) : 
-        parseInt(exercise.reps) || 0;
-
-    // Минимальные значения для разных типов упражнений
     if (isTimerMode) {
-        if (exercise.name.toLowerCase().includes('разминка')) {
+        const repsStr = exercise.reps.toString();
+        const numericValue = parseInt(repsStr.replace(/[^0-9]/g, ''));
+        console.log('Извлеченное значение таймера:', numericValue);
+        
+        if (isNaN(numericValue)) {
+            console.error('Не удалось извлечь числовое значение из:', repsStr);
+            timerValue = 30; // Значение по умолчанию
+        } else {
+            timerValue = numericValue;
+        }
+
+        // Минимальные значения для разных типов упражнений
+        const exerciseName = exercise.name.toLowerCase();
+        if (exerciseName.includes('разминка')) {
             timerValue = Math.max(timerValue, 30);
-        } else if (exercise.name.toLowerCase().includes('растяжка')) {
+        } else if (exerciseName.includes('растяжка')) {
             timerValue = Math.max(timerValue, 20);
-        } else if (exercise.name.toLowerCase().includes('планка')) {
+        } else if (exerciseName.includes('планка')) {
             timerValue = Math.max(timerValue, 30);
         } else {
             timerValue = Math.max(timerValue, 10);
         }
+    } else {
+        timerValue = parseInt(exercise.reps) || 0;
     }
+
+    console.log('Установленное значение таймера:', timerValue);
+    console.log('Режим таймера:', isTimerMode);
+
+    // Очищаем существующие таймеры
+    clearTimers();
 
     container.innerHTML = `
         <div class="workout-session">
@@ -2878,10 +2906,82 @@ function renderExercise() {
         </div>
     `;
 
-    setupExerciseHandlers();
+    // Устанавливаем обработчики после рендеринга
+    setTimeout(() => {
+        console.log('Установка обработчиков');
+        setupExerciseHandlers();
+    }, 0);
+}
 
-    // В функции renderExercise добавим логирование
-    console.log('Начальное значение таймера:', timerValue);
-    console.log('Тип упражнения:', exercise.name);
-    console.log('Режим таймера:', isTimerMode);
+// Добавим функцию форматирования расписания
+function formatSchedule(program) {
+    return `День 1-${program.workouts.length}, ${program.schedule}`;
+}
+
+// Обновим отображение в списке программ
+function renderPrograms() {
+    const container = document.querySelector('.programs-list');
+    if (!container) return;
+
+    container.innerHTML = Object.entries(window.programData).map(([id, program]) => `
+        <div class="program-card" data-program-id="${id}">
+            <div class="program-icon">
+                <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
+            </div>
+            <div class="program-info">
+                <h3>${program.title}</h3>
+                <p>${program.description}</p>
+                <div class="program-meta">
+                    <div class="program-schedule">
+                        ${formatSchedule(program)}
+                    </div>
+                    <div class="program-difficulty">
+                        ${program.difficulty || 'Средний'}
+                    </div>
+                </div>
+            </div>
+            <div class="program-actions">
+                <button class="info-btn" data-program-id="${id}">
+                    <span class="material-symbols-rounded">info</span>
+                    Подробнее
+                </button>
+                <button class="start-btn" data-program-id="${id}">
+                    <span class="material-symbols-rounded">play_arrow</span>
+                    Начать
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Обновим отображение в попапе
+async function showProgramInfo(programId) {
+    const program = window.programData[programId];
+    if (!program) return;
+
+    await showPopupSafe({
+        title: program.title,
+        message: `
+📋 ${program.description}
+🗓️ ${formatSchedule(program)}
+
+Тренировки:
+${program.workouts.map((workout, index) => 
+    `День ${index + 1}: ${workout.title}
+⏱️ ${workout.duration} мин  •  🔥 ${workout.calories} ккал`
+).join('\n\n')}
+        `,
+        buttons: [
+            {
+                type: 'default',
+                text: 'Расписание',
+                id: `schedule_${programId}`
+            },
+            {
+                type: 'default',
+                text: 'Начать программу',
+                id: `start_program_${programId}`
+            }
+        ]
+    });
 }
