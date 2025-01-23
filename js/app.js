@@ -60,13 +60,17 @@ tg.onEvent('popupClosed', async (event) => {
     // Добавляем небольшую задержку перед следующим действием
     await new Promise(r => setTimeout(r, 100));
 
-        if (event.button_id.startsWith('start_program_')) {
-            const programId = event.button_id.replace('start_program_', '');
-            await startProgram(programId);
-        } 
-        else if (event.button_id.startsWith('schedule_')) {
-            const programId = event.button_id.replace('schedule_', '');
-            await showProgramSchedule(programId);
+    if (event.button_id === 'quit_workout') {
+        // Прерываем тренировку
+        clearTimers();
+        renderProgramCards();
+        document.querySelector('.bottom-nav')?.classList.remove('hidden');
+    } else if (event.button_id.startsWith('start_program_')) {
+        const programId = event.button_id.replace('start_program_', '');
+        const program = window.programData[programId];
+        if (program && program.workouts && program.workouts[0]) {
+            startWorkout(program.workouts[0]);
+        }
     }
 });
 
@@ -172,8 +176,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Рендерим карточки программ
         renderProgramCards();
 
+        // Добавляем обработчики навигации
+        setupNavigationHandlers();
+
+        // Инициализируем первую вкладку
+        showTab('workouts');
+
     } catch (error) {
         console.error('Ошибка инициализации:', error);
+        showError('Произошла ошибка при загрузке приложения');
     }
 });
 
@@ -700,31 +711,61 @@ function setupPeriodButtons() {
 
 // Обновляем обработчик переключения вкладок
 function setupTabHandlers() {
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const tabName = btn.dataset.tab;
-            
-            // Убираем активный класс у всех кнопок
-            tabBtns.forEach(b => b.classList.remove('active'));
-            
-            // Добавляем активный класс текущей кнопке
-            btn.classList.add('active');
-            
-            // Показываем соответствующий контент
-            switch(tabName) {
-                case 'workouts':
-                    showProgramsList();
-                    break;
-                case 'calendar':
-                    showCalendar();
-                    break;
-                case 'stats':
-                    showStats();
-                    break;
-                case 'profile':
-                    showProfile();
-                    break;
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', async () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+
+            tab.classList.add('active');
+            const tabId = tab.dataset.tab;
+            const tabContent = document.getElementById(tabId);
+            tabContent.classList.add('active');
+
+            // При переключении на вкладку с программами
+            if (tabId === 'workouts') {
+                setupProgramHandlers(); // Переинициализируем обработчики
+                mainButton.hide();
+            } else if (tabId === 'profile' && window.profileData) {
+                fillProfileForm(window.profileData);
+                mainButton.setText('Сохранить профиль');
+                mainButton.show();
+            } else if (tabId === 'stats') {
+                try {
+                    const weightHistory = await getStorageItem('weightHistory')
+                        .then(data => data ? JSON.parse(data) : []);
+                    updateWeightChart(weightHistory);
+                } catch (e) {
+                    console.error('Ошибка при загрузке истории веса:', e);
+                }
+                mainButton.hide();
+            } else {
+                mainButton.hide();
+            }
+
+            tg.HapticFeedback.selectionChanged();
+        });
+    });
+
+    // Добавляем обработчики для кнопок периода
+    const periodButtons = document.querySelectorAll('.period-btn');
+    periodButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+            // Обновляем активную кнопку
+            periodButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            // Загружаем данные и обновляем график
+            try {
+                const weightHistory = await getStorageItem('weightHistory')
+                    .then(data => data ? JSON.parse(data) : []);
+                updateWeightChart(weightHistory, button.dataset.period);
+                tg.HapticFeedback.selectionChanged();
+            } catch (e) {
+                console.error('Ошибка при обновлении графика:', e);
+                showError(e);
             }
         });
     });
@@ -827,22 +868,33 @@ ${program.workouts.map((workout, index) =>
 
 // Добавим функцию для запуска тренировки
 async function startWorkout(workout) {
-    try {
     console.log('Начинаем тренировку:', workout);
-        
-        // Добавляем ID программы к тренировке
-        workout.programId = workout.programId || currentProgramId;
-        
+    
+    try {
+        if (!workout || !workout.exercises || workout.exercises.length === 0) {
+            throw new Error('Некорректные данные тренировки');
+        }
+
+        // Сохраняем данные текущей тренировки
         currentWorkout = workout;
         currentExerciseIndex = 0;
         currentSet = 1;
         workoutStartTime = Date.now();
-        
+
+        // Очищаем все таймеры
+        clearTimers();
+
         // Скрываем нижнюю навигацию
-        document.querySelector('.tabs')?.classList.add('hidden');
-        
+        document.querySelector('.bottom-nav')?.classList.add('hidden');
+
+        // Предзагружаем анимации упражнений
+        window.preloadExerciseAnimations(workout.exercises);
+
         // Показываем первое упражнение
         renderExercise();
+
+        // Вибрация при начале тренировки
+        tg.HapticFeedback.impactOccurred('medium');
 
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
@@ -1134,42 +1186,46 @@ function showProgramsList() {
     const container = document.querySelector('.container');
     if (!container) return;
 
-    // Очищаем контейнер
-    container.innerHTML = '';
-
-    // Добавляем нижнюю навигацию
-    const bottomNav = document.createElement('nav');
-    bottomNav.className = 'tabs';
-    bottomNav.innerHTML = `
+    // Возвращаем исходный HTML со всеми вкладками
+    container.innerHTML = `
+        <div class="programs-list"></div>
+        <nav class="bottom-nav">
             <button class="tab-btn active" data-tab="workouts">
-            <span class="material-symbols-rounded">exercise</span>
-            <span>Тренировки</span>
+                <span class="material-symbols-rounded">fitness_center</span>
+                Тренировки
             </button>
             <button class="tab-btn" data-tab="calendar">
                 <span class="material-symbols-rounded">calendar_month</span>
-            <span>Календарь</span>
+                Календарь
             </button>
             <button class="tab-btn" data-tab="stats">
                 <span class="material-symbols-rounded">monitoring</span>
-            <span>Статистика</span>
+                Статистика
             </button>
             <button class="tab-btn" data-tab="profile">
                 <span class="material-symbols-rounded">person</span>
-            <span>Профиль</span>
+                Профиль
             </button>
+        </nav>
     `;
-    container.appendChild(bottomNav);
 
-    // Добавляем контент
-    const content = document.createElement('div');
-    content.className = 'programs-list';
-    container.appendChild(content);
-
-    // Отображаем программы
+    // Отображаем список программ
     renderProgramCards();
 
-    // Добавляем обработчики для табов
+    // Восстанавливаем обработчики вкладок
     setupTabHandlers();
+
+    // Показываем нижнюю навигацию
+    const bottomNav = document.querySelector('.bottom-nav');
+    if (bottomNav) {
+        bottomNav.classList.remove('hidden');
+    }
+
+    // Активируем вкладку "Тренировки"
+    const workoutsTab = document.querySelector('[data-tab="workouts"]');
+    if (workoutsTab) {
+        workoutsTab.classList.add('active');
+    }
 }
 
 // Функция для отображения тренировок программы
@@ -1577,7 +1633,7 @@ function handleExerciseComplete() {
     });
 
     if (currentSet < exercise.sets) {
-        currentSet++; // Увеличиваем счетчик подходов
+        // Если есть еще подходы, показываем отдых
         showRestScreen(true); // true означает отдых между подходами
     } else if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
         // Если это последний подход, но есть следующее упражнение
@@ -1590,15 +1646,15 @@ function handleExerciseComplete() {
     }
 }
 
-// Обновляем функцию moveToNextExercise
+// Добавляем новую функцию для перехода к следующему упражнению
 function moveToNextExercise() {
     if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
         currentExerciseIndex++;
         currentSet = 1;
         renderExercise();
     } else {
-        // Передаем текущую тренировку напрямую
-        completeWorkout(currentWorkout);
+        // Передаем полные данные о тренировке
+        completeWorkout(window.programData[currentWorkout.id]);
     }
 }
 
@@ -1649,14 +1705,16 @@ function startTimer(duration) {
 // Обновляем функцию completeWorkout
 async function completeWorkout(workout) {
     try {
-        console.log('Завершение тренировки:', workout);
-        
-        if (!workout) {
+        // Проверяем наличие необходимых данных
+        if (!workout || !currentWorkout) {
             throw new Error('Данные о тренировке отсутствуют');
         }
 
         // Очищаем все таймеры
         clearTimers();
+
+        const container = document.querySelector('.container');
+        if (!container) return;
 
         // Вычисляем фактическое время тренировки
         const actualDuration = Math.round((Date.now() - workoutStartTime) / (1000 * 60));
@@ -1665,24 +1723,15 @@ async function completeWorkout(workout) {
         let activeProgram = await getStorageItem('activeProgram')
             .then(data => data ? JSON.parse(data) : null);
 
-        if (!activeProgram) {
-            // Если нет активной программы, создаем новую
-            activeProgram = {
-                id: workout.programId || 'default',
-                startDate: Date.now(),
-                completedWorkouts: []
-            };
-        }
-
-        // Добавляем завершенную тренировку
+        if (activeProgram) {
             const completedWorkout = {
                 id: Date.now(),
                 date: Date.now(),
-            day: workout.day,
-            title: workout.title,
+                day: workout.day || currentWorkout.day,
+                title: workout.title || currentWorkout.title,
                 duration: actualDuration,
-            calories: workout.calories,
-            type: workout.type
+                calories: workout.calories || currentWorkout.calories,
+                type: workout.type || currentWorkout.type
             };
 
             if (!Array.isArray(activeProgram.completedWorkouts)) {
@@ -1690,23 +1739,20 @@ async function completeWorkout(workout) {
             }
 
             activeProgram.completedWorkouts.push(completedWorkout);
-
-        // Сохраняем обновленный прогресс
             await setStorageItem('activeProgram', JSON.stringify(activeProgram));
+        }
 
         // Показываем экран завершения
-        showWorkoutComplete(actualDuration, workout.calories);
+        showWorkoutComplete(actualDuration, workout.calories || currentWorkout.calories);
 
     } catch (error) {
         console.error('Ошибка при завершении тренировки:', error);
-        showError('Произошла ошибка при сохранении результатов');
+        showError('Не удалось сохранить результаты тренировки. Попробуйте еще раз.');
     }
 }
 
-// Обновляем функцию showWorkoutComplete
+// Добавляем новую функцию для отображения экрана завершения
 function showWorkoutComplete(duration, calories) {
-    console.log('Показываем экран завершения:', { duration, calories });
-    
     const container = document.querySelector('.container');
     if (!container) return;
 
@@ -1718,11 +1764,11 @@ function showWorkoutComplete(duration, calories) {
                 <h2>Тренировка завершена!</h2>
                 <div class="workout-stats">
                     <div class="stat-item">
-                    <span class="stat-value">${duration || 0}</span>
+                    <span class="stat-value">${duration}</span>
                         <span class="stat-label">минут</span>
                     </div>
                     <div class="stat-item">
-                    <span class="stat-value">${calories || 0}</span>
+                    <span class="stat-value">${calories}</span>
                         <span class="stat-label">ккал</span>
                     </div>
                 </div>
@@ -1733,11 +1779,8 @@ function showWorkoutComplete(duration, calories) {
             </div>
         `;
 
-    // Показываем нижнюю навигацию
         document.querySelector('.bottom-nav')?.classList.remove('hidden');
-    
-    // Добавляем тактильный отклик
-    tg.HapticFeedback.notificationOccurred('success');
+        tg.HapticFeedback.notificationOccurred('success');
 }
 
 // Добавим функцию для обработки изменений в чекбоксах
@@ -2963,4 +3006,109 @@ function formatScheduleMessage(program) {
     });
 
     return message;
+}
+
+// Функции для навигации между разделами
+function showTab(tabId) {
+    // Скрываем все вкладки
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Убираем активный класс у всех кнопок
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Показываем нужную вкладку
+    const selectedTab = document.getElementById(tabId);
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+    }
+
+    // Активируем соответствующую кнопку
+    const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+
+    // Дополнительные действия при переключении вкладок
+    if (tabId === 'stats') {
+        initStatisticsPage();
+    }
+}
+
+// Обновляем функцию startWorkout
+async function startWorkout(workout) {
+    console.log('Начинаем тренировку:', workout);
+    
+    try {
+        if (!workout || !workout.exercises || workout.exercises.length === 0) {
+            throw new Error('Некорректные данные тренировки');
+        }
+
+        // Сохраняем данные текущей тренировки
+        currentWorkout = workout;
+        currentExerciseIndex = 0;
+        currentSet = 1;
+        workoutStartTime = Date.now();
+
+        // Очищаем все таймеры
+        clearTimers();
+
+        // Скрываем нижнюю навигацию
+        document.querySelector('.bottom-nav')?.classList.add('hidden');
+
+        // Предзагружаем анимации упражнений
+        window.preloadExerciseAnimations(workout.exercises);
+
+        // Показываем первое упражнение
+        renderExercise();
+
+        // Вибрация при начале тренировки
+        tg.HapticFeedback.impactOccurred('medium');
+
+    } catch (error) {
+        console.error('Ошибка при запуске тренировки:', error);
+        showError('Не удалось начать тренировку');
+    }
+}
+
+// Обновляем обработчики навигации
+function setupNavigationHandlers() {
+    // Обработчики для кнопок навигации
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.dataset.tab;
+            showTab(tabId);
+            tg.HapticFeedback.impactOccurred('light');
+        });
+    });
+
+    // Обработчик для кнопки "Назад"
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.back-btn')) {
+            tg.HapticFeedback.impactOccurred('medium');
+            if (document.querySelector('.workout-session')) {
+                // Показываем подтверждение выхода из тренировки
+                showPopupSafe({
+                    message: 'Вы уверены, что хотите прервать тренировку?',
+                    buttons: [
+                        {
+                            type: 'destructive',
+                            text: 'Прервать',
+                            id: 'quit_workout'
+                        },
+                        {
+                            type: 'cancel',
+                            text: 'Продолжить'
+                        }
+                    ]
+                });
+            } else {
+                // Возвращаемся к списку программ
+                renderProgramCards();
+            }
+        }
+    });
 }
