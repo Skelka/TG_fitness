@@ -912,7 +912,13 @@ async function startWorkout(workout, programId) {
     
     try {
         if (!workout || !workout.exercises || workout.exercises.length === 0) {
-            throw new Error('Некорректные данные тренировки');
+            console.error('Некорректные данные тренировки');
+            return;
+        }
+
+        if (!programId || !window.programData[programId]) {
+            console.error('Некорректный ID программы');
+            return;
         }
 
         const program = window.programData[programId];
@@ -954,7 +960,6 @@ async function startWorkout(workout, programId) {
 
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
-        showError('Не удалось начать тренировку');
     }
 }
 
@@ -2191,49 +2196,44 @@ async function initStatisticsPage() {
     }
 }
 
-// Добавим функцию для создания карточек программ
+// Обновляем функцию renderProgramCards
 function renderProgramCards() {
     const container = document.querySelector('.programs-list');
     if (!container) return;
 
-    let html = '';
-    Object.entries(window.programData).forEach(([programId, program]) => {
-        html += `
-            <div class="program-card">
-                <div class="program-content">
-                    <div class="program-icon">
-                        <span class="material-symbols-rounded">${program.icon}</span>
-                    </div>
-                    <div class="program-text">
-                        <h3>${program.title}</h3>
-                        <p class="program-description">${program.description}</p>
-                        <div class="program-details">
-                            <span>
-                                <span class="material-symbols-rounded">calendar_today</span>
-                                ${program.schedule}
-                            </span>
-                            <span>
-                                <span class="material-symbols-rounded">fitness_center</span>
-                                ${getDifficultyText(program.difficulty)}
-                            </span>
-                        </div>
-                        <div class="program-actions">
-                            <button class="program-btn info-btn" onclick="showProgramDetails('${programId}')">
-                                <span class="material-symbols-rounded">info</span>
-                                Подробнее
-                            </button>
-                            <button class="program-btn start-btn" onclick="startProgram('${programId}')">
-                                <span class="material-symbols-rounded">play_arrow</span>
-                                Начать
-                            </button>
-                        </div>
-                    </div>
+    container.innerHTML = Object.entries(window.programData).map(([id, program]) => `
+        <div class="program-card">
+            <div class="program-icon">
+                <span class="material-symbols-rounded">${program.icon}</span>
+            </div>
+            <div class="program-info">
+                <h3>${program.title}</h3>
+                <p>${program.description}</p>
+                <div class="program-meta">
+                    <span>⏱️ ${program.duration}</span>
+                    <span>📅 ${program.schedule}</span>
                 </div>
             </div>
-        `;
-    });
+            <div class="program-actions">
+                <button class="info-btn" onclick="showProgramInfo('${id}')">
+                    <span class="material-symbols-rounded">info</span>
+                    Подробнее
+                </button>
+                <button class="start-btn" onclick="startProgramWorkout('${id}')">
+                    <span class="material-symbols-rounded">play_arrow</span>
+                    Начать
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
 
-    container.innerHTML = html;
+// Добавляем новую функцию для запуска тренировки из программы
+function startProgramWorkout(programId) {
+    const program = window.programData[programId];
+    if (program && program.workouts && program.workouts[0]) {
+        startWorkout(program.workouts[0], programId);
+    }
 }
 
 // Функция для отображения тренировок программы
@@ -3128,15 +3128,36 @@ async function startWorkout(workout, programId) {
     
     try {
         if (!workout || !workout.exercises || workout.exercises.length === 0) {
-            throw new Error('Некорректные данные тренировки');
+            console.error('Некорректные данные тренировки');
+            return;
         }
 
+        if (!programId || !window.programData[programId]) {
+            console.error('Некорректный ID программы');
+            return;
+        }
+
+        const program = window.programData[programId];
+        const programType = PROGRAM_TYPES[program.category] || PROGRAM_TYPES.weight_loss;
+
         // Сохраняем данные текущей тренировки и программы
-        currentWorkout = workout;
+        currentWorkout = {
+            ...workout,
+            programType: program.category,
+            settings: programType
+        };
         currentProgramId = programId;
         currentExerciseIndex = 0;
         currentSet = 1;
         workoutStartTime = Date.now();
+
+        // Адаптируем упражнения под тип программы
+        currentWorkout.exercises = currentWorkout.exercises.map(exercise => ({
+            ...exercise,
+            rest: exercise.name.toLowerCase().includes('разминка') 
+                ? 0 
+                : (exercise.rest || programType.restBetweenSets)
+        }));
 
         // Очищаем все таймеры
         clearTimers();
@@ -3150,12 +3171,11 @@ async function startWorkout(workout, programId) {
         // Показываем первое упражнение
         renderExercise();
 
-        // Вибрация при начале тренировки
-        tg.HapticFeedback.impactOccurred('medium');
+        // Специфичная для программы вибрация
+        tg.HapticFeedback.impactOccurred(programType.hapticFeedback);
 
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
-        showError('Не удалось начать тренировку');
     }
 }
 
