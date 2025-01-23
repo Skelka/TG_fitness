@@ -828,7 +828,7 @@ ${program.workouts.map((workout, index) =>
 // Добавим функцию для запуска тренировки
 async function startWorkout(workout) {
     try {
-        console.log('Начинаем тренировку:', workout);
+    console.log('Начинаем тренировку:', workout);
         
         if (!workout) {
             throw new Error('Данные тренировки отсутствуют');
@@ -851,7 +851,7 @@ async function startWorkout(workout) {
         
         // Показываем первое упражнение
         renderExercise();
-        
+
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
         showError('Не удалось начать тренировку');
@@ -1133,22 +1133,22 @@ function showProgramsList() {
     const bottomNav = document.createElement('nav');
     bottomNav.className = 'tabs';
     bottomNav.innerHTML = `
-        <button class="tab-btn active" data-tab="workouts">
+            <button class="tab-btn active" data-tab="workouts">
             <span class="material-symbols-rounded">exercise</span>
             <span>Тренировки</span>
-        </button>
-        <button class="tab-btn" data-tab="calendar">
-            <span class="material-symbols-rounded">calendar_month</span>
+            </button>
+            <button class="tab-btn" data-tab="calendar">
+                <span class="material-symbols-rounded">calendar_month</span>
             <span>Календарь</span>
-        </button>
-        <button class="tab-btn" data-tab="stats">
-            <span class="material-symbols-rounded">monitoring</span>
+            </button>
+            <button class="tab-btn" data-tab="stats">
+                <span class="material-symbols-rounded">monitoring</span>
             <span>Статистика</span>
-        </button>
-        <button class="tab-btn" data-tab="profile">
-            <span class="material-symbols-rounded">person</span>
+            </button>
+            <button class="tab-btn" data-tab="profile">
+                <span class="material-symbols-rounded">person</span>
             <span>Профиль</span>
-        </button>
+            </button>
     `;
     container.appendChild(bottomNav);
 
@@ -1576,7 +1576,7 @@ function handleExerciseComplete() {
         currentExerciseIndex++;
         currentSet = 1;
         showRestScreen(false); // false означает отдых между упражнениями
-    } else {
+            } else {
         // Если это последний подход последнего упражнения
         completeWorkout(currentWorkout);
     }
@@ -1667,24 +1667,24 @@ async function completeWorkout(workout) {
         }
 
         // Добавляем завершенную тренировку
-        const completedWorkout = {
-            id: Date.now(),
-            date: Date.now(),
+            const completedWorkout = {
+                id: Date.now(),
+                date: Date.now(),
             day: workout.day,
             title: workout.title,
-            duration: actualDuration,
+                duration: actualDuration,
             calories: workout.calories,
             type: workout.type
-        };
+            };
 
-        if (!Array.isArray(activeProgram.completedWorkouts)) {
-            activeProgram.completedWorkouts = [];
-        }
+            if (!Array.isArray(activeProgram.completedWorkouts)) {
+                activeProgram.completedWorkouts = [];
+            }
 
-        activeProgram.completedWorkouts.push(completedWorkout);
+            activeProgram.completedWorkouts.push(completedWorkout);
 
         // Сохраняем обновленный прогресс
-        await setStorageItem('activeProgram', JSON.stringify(activeProgram));
+            await setStorageItem('activeProgram', JSON.stringify(activeProgram));
 
         // Показываем экран завершения
         showWorkoutComplete(actualDuration, workout.calories);
@@ -1702,31 +1702,31 @@ function showWorkoutComplete(duration, calories) {
     const container = document.querySelector('.container');
     if (!container) return;
 
-    container.innerHTML = `
-        <div class="workout-complete">
-            <div class="complete-icon">
-                <span class="material-symbols-rounded">check_circle</span>
-            </div>
-            <h2>Тренировка завершена!</h2>
-            <div class="workout-stats">
-                <div class="stat-item">
+        container.innerHTML = `
+            <div class="workout-complete">
+                <div class="complete-icon">
+                    <span class="material-symbols-rounded">check_circle</span>
+                </div>
+                <h2>Тренировка завершена!</h2>
+                <div class="workout-stats">
+                    <div class="stat-item">
                     <span class="stat-value">${duration || 0}</span>
-                    <span class="stat-label">минут</span>
-                </div>
-                <div class="stat-item">
+                        <span class="stat-label">минут</span>
+                    </div>
+                    <div class="stat-item">
                     <span class="stat-value">${calories || 0}</span>
-                    <span class="stat-label">ккал</span>
+                        <span class="stat-label">ккал</span>
+                    </div>
                 </div>
+                <button class="finish-btn" onclick="showProgramsList()">
+                    <span class="material-symbols-rounded">home</span>
+                    Вернуться
+                </button>
             </div>
-            <button class="finish-btn" onclick="showProgramsList()">
-                <span class="material-symbols-rounded">home</span>
-                Вернуться
-            </button>
-        </div>
-    `;
+        `;
 
     // Показываем нижнюю навигацию
-    document.querySelector('.bottom-nav')?.classList.remove('hidden');
+        document.querySelector('.bottom-nav')?.classList.remove('hidden');
     
     // Добавляем тактильный отклик
     tg.HapticFeedback.notificationOccurred('success');
@@ -2084,33 +2084,33 @@ function renderProgramCards() {
     if (!container) return;
 
     container.innerHTML = Object.entries(window.programData).map(([id, program]) => `
-        <div class="program-card">
-            <div class="program-icon">
+            <div class="program-card">
+                    <div class="program-icon">
                 <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
-            </div>
+                    </div>
             <div class="program-info">
-                <h3>${program.title}</h3>
+                        <h3>${program.title}</h3>
                 <p>${program.description}</p>
                 <div class="program-meta">
                     <div class="program-schedule">
-                        ${program.schedule}
+                                ${program.schedule}
                     </div>
                     <div class="program-difficulty">
                         ${program.difficulty || 'Средний'}
                     </div>
                 </div>
-            </div>
-            <div class="program-actions">
+                        </div>
+                        <div class="program-actions">
                 <button class="info-btn" onclick="showProgramInfo('${id}')">
-                    <span class="material-symbols-rounded">info</span>
-                    Подробнее
-                </button>
+                                <span class="material-symbols-rounded">info</span>
+                                Подробнее
+                            </button>
                 <button class="start-btn" onclick="startProgram('${id}')">
-                    <span class="material-symbols-rounded">play_arrow</span>
-                    Начать
-                </button>
-            </div>
-        </div>
+                                <span class="material-symbols-rounded">play_arrow</span>
+                                Начать
+                            </button>
+                        </div>
+                    </div>
     `).join('');
 }
 
@@ -2358,7 +2358,7 @@ async function renderStatistics() {
                 <div class="stat-mini-card">
                     <div class="stat-icon">
                         <span class="material-symbols-rounded">fitness_center</span>
-                    </div>
+                </div>
                     <div class="stat-content">
                         <span class="stat-value">${totalWorkouts}</span>
                         <span class="stat-label">Тренировок</span>
@@ -2366,8 +2366,8 @@ async function renderStatistics() {
                 </div>
                 <div class="stat-mini-card">
                     <div class="stat-icon">
-                        <span class="material-symbols-rounded">timer</span>
-                    </div>
+                    <span class="material-symbols-rounded">timer</span>
+                </div>
                     <div class="stat-content">
                         <span class="stat-value">${totalDuration}м</span>
                         <span class="stat-label">Общее время</span>
@@ -2375,8 +2375,8 @@ async function renderStatistics() {
                 </div>
                 <div class="stat-mini-card">
                     <div class="stat-icon">
-                        <span class="material-symbols-rounded">local_fire_department</span>
-                    </div>
+                    <span class="material-symbols-rounded">local_fire_department</span>
+                </div>
                     <div class="stat-content">
                         <span class="stat-value">${totalCalories}</span>
                         <span class="stat-label">Ккал сожжено</span>
@@ -2384,20 +2384,20 @@ async function renderStatistics() {
                 </div>
                 <div class="stat-mini-card">
                     <div class="stat-icon">
-                        <span class="material-symbols-rounded">trending_up</span>
-                    </div>
+                    <span class="material-symbols-rounded">trending_up</span>
+                </div>
                     <div class="stat-content">
                         <span class="stat-value">${goalProgress}%</span>
                         <span class="stat-label">Достижение цели</span>
-                    </div>
+            </div>
                 </div>
             </div>
             <div class="weight-section">
-                <h3>Динамика веса</h3>
-                <div class="period-selector">
-                    <button class="period-btn active" data-period="week">Неделя</button>
-                    <button class="period-btn" data-period="month">Месяц</button>
-                    <button class="period-btn" data-period="year">Год</button>
+                    <h3>Динамика веса</h3>
+                    <div class="period-selector">
+                        <button class="period-btn active" data-period="week">Неделя</button>
+                        <button class="period-btn" data-period="month">Месяц</button>
+                        <button class="period-btn" data-period="year">Год</button>
                 </div>
                 <canvas id="weight-chart"></canvas>
             </div>
