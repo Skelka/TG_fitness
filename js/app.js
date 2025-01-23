@@ -3197,3 +3197,287 @@ async function getWeightData(period = 'week') {
         return [];
     }
 }
+
+// Добавляем функцию для отображения календаря
+async function showCalendar() {
+    const container = document.querySelector('.container');
+    if (!container) return;
+
+    try {
+        // Получаем данные о выполненных тренировках
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+        
+        const completedWorkouts = activeProgram?.completedWorkouts || [];
+
+        // Получаем текущую дату
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth();
+        const currentYear = currentDate.getFullYear();
+
+        // Создаем календарь
+        container.innerHTML = `
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button class="calendar-nav-btn prev-month">
+                        <span class="material-symbols-rounded">chevron_left</span>
+                    </button>
+                    <h2>${new Date(currentYear, currentMonth).toLocaleString('ru-RU', { month: 'long', year: 'numeric' })}</h2>
+                    <button class="calendar-nav-btn next-month">
+                        <span class="material-symbols-rounded">chevron_right</span>
+                    </button>
+                </div>
+                <div class="calendar-weekdays">
+                    <span>Пн</span>
+                    <span>Вт</span>
+                    <span>Ср</span>
+                    <span>Чт</span>
+                    <span>Пт</span>
+                    <span>Сб</span>
+                    <span>Вс</span>
+                </div>
+                <div class="calendar-days">
+                    ${generateCalendarDays(currentYear, currentMonth, completedWorkouts)}
+                </div>
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <span class="legend-dot completed"></span>
+                        <span>Тренировка выполнена</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot planned"></span>
+                        <span>Запланировано</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Добавляем нижнюю навигацию
+        const bottomNav = document.createElement('nav');
+        bottomNav.className = 'tabs';
+        bottomNav.innerHTML = `
+            <button class="tab-btn" data-tab="workouts">
+                <span class="material-symbols-rounded">exercise</span>
+                <span>Тренировки</span>
+            </button>
+            <button class="tab-btn active" data-tab="calendar">
+                <span class="material-symbols-rounded">calendar_month</span>
+                <span>Календарь</span>
+            </button>
+            <button class="tab-btn" data-tab="stats">
+                <span class="material-symbols-rounded">monitoring</span>
+                <span>Статистика</span>
+            </button>
+            <button class="tab-btn" data-tab="profile">
+                <span class="material-symbols-rounded">person</span>
+                <span>Профиль</span>
+            </button>
+        `;
+        container.appendChild(bottomNav);
+
+        // Добавляем обработчики
+        setupCalendarHandlers();
+        setupTabHandlers();
+
+    } catch (error) {
+        console.error('Ошибка при отображении календаря:', error);
+        showError('Не удалось загрузить календарь');
+    }
+}
+
+// Функция для отображения профиля
+async function showProfile() {
+    const container = document.querySelector('.container');
+    if (!container) return;
+
+    try {
+        // Получаем данные профиля
+        const profileData = await getStorageItem('profileData')
+            .then(data => data ? JSON.parse(data) : null);
+
+        container.innerHTML = `
+            <div class="profile-container">
+                <form id="profile-form" class="profile-form">
+                    <div class="form-section">
+                        <h4>Основные данные</h4>
+                        <div class="input-group">
+                            <label>Вес (кг)</label>
+                            <input type="number" name="weight" value="${profileData?.weight || ''}" placeholder="Введите вес">
+                        </div>
+                        <div class="input-group">
+                            <label>Рост (см)</label>
+                            <input type="number" name="height" value="${profileData?.height || ''}" placeholder="Введите рост">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4>Цели и предпочтения</h4>
+                        <div class="input-group">
+                            <label>Основная цель</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="radio" name="goal" value="weight_loss" ${profileData?.goal === 'weight_loss' ? 'checked' : ''}>
+                                    <span>Похудение</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="radio" name="goal" value="muscle_gain" ${profileData?.goal === 'muscle_gain' ? 'checked' : ''}>
+                                    <span>Набор массы</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="radio" name="goal" value="maintenance" ${profileData?.goal === 'maintenance' ? 'checked' : ''}>
+                                    <span>Поддержание</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4>Доступное оборудование</h4>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="equipment" value="dumbbells" ${profileData?.equipment?.includes('dumbbells') ? 'checked' : ''}>
+                                <span>Гантели</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="equipment" value="resistance_bands" ${profileData?.equipment?.includes('resistance_bands') ? 'checked' : ''}>
+                                <span>Резинки</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="equipment" value="mat" ${profileData?.equipment?.includes('mat') ? 'checked' : ''}>
+                                <span>Коврик</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="save-btn">Сохранить</button>
+                </form>
+            </div>
+        `;
+
+        // Добавляем нижнюю навигацию
+        const bottomNav = document.createElement('nav');
+        bottomNav.className = 'tabs';
+        bottomNav.innerHTML = `
+            <button class="tab-btn" data-tab="workouts">
+                <span class="material-symbols-rounded">exercise</span>
+                <span>Тренировки</span>
+            </button>
+            <button class="tab-btn" data-tab="calendar">
+                <span class="material-symbols-rounded">calendar_month</span>
+                <span>Календарь</span>
+            </button>
+            <button class="tab-btn" data-tab="stats">
+                <span class="material-symbols-rounded">monitoring</span>
+                <span>Статистика</span>
+            </button>
+            <button class="tab-btn active" data-tab="profile">
+                <span class="material-symbols-rounded">person</span>
+                <span>Профиль</span>
+            </button>
+        `;
+        container.appendChild(bottomNav);
+
+        // Добавляем обработчики
+        setupProfileHandlers();
+        setupTabHandlers();
+
+    } catch (error) {
+        console.error('Ошибка при отображении профиля:', error);
+        showError('Не удалось загрузить профиль');
+    }
+}
+
+// Вспомогательная функция для генерации дней календаря
+function generateCalendarDays(year, month, completedWorkouts) {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDay = firstDay.getDay() || 7; // Получаем день недели (1-7, где 1 - понедельник)
+    const daysInMonth = lastDay.getDate();
+
+    let html = '';
+    
+    // Добавляем пустые ячейки до первого дня месяца
+    for (let i = 1; i < startDay; i++) {
+        html += '<div class="calendar-day empty"></div>';
+    }
+
+    // Добавляем дни месяца
+    for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const hasWorkout = completedWorkouts.some(workout => {
+            const workoutDate = new Date(workout.date);
+            return workoutDate.getDate() === day && 
+                   workoutDate.getMonth() === month && 
+                   workoutDate.getFullYear() === year;
+        });
+
+        html += `
+            <div class="calendar-day ${hasWorkout ? 'completed' : ''}">
+                <span>${day}</span>
+            </div>
+        `;
+    }
+
+    return html;
+}
+
+// Добавляем обработчики для календаря
+function setupCalendarHandlers() {
+    const prevBtn = document.querySelector('.prev-month');
+    const nextBtn = document.querySelector('.next-month');
+
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            // Обработка перехода на предыдущий месяц
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            // Обработка перехода на следующий месяц
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+    }
+}
+
+// Добавляем обработчики для профиля
+function setupProfileHandlers() {
+    const form = document.getElementById('profile-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        try {
+            const formData = new FormData(form);
+            const profileData = {
+                weight: formData.get('weight'),
+                height: formData.get('height'),
+                goal: formData.get('goal'),
+                equipment: formData.getAll('equipment')
+            };
+
+            // Сохраняем данные профиля
+            await setStorageItem('profileData', JSON.stringify(profileData));
+            
+            // Добавляем запись в историю веса
+            const weightHistory = await getStorageItem('weightHistory')
+                .then(data => data ? JSON.parse(data) : []);
+            
+            weightHistory.push({
+                date: Date.now(),
+                weight: parseFloat(profileData.weight)
+            });
+
+            await setStorageItem('weightHistory', JSON.stringify(weightHistory));
+
+            showError('Профиль успешно сохранен');
+            tg.HapticFeedback.notificationOccurred('success');
+
+        } catch (error) {
+            console.error('Ошибка при сохранении профиля:', error);
+            showError('Не удалось сохранить профиль');
+        }
+    });
+}
