@@ -19,28 +19,43 @@ let workoutStartTime = null; // Добавляем переменную для �
 // Функция для безопасного показа попапа
 async function showPopupSafe(options) {
     return new Promise((resolve) => {
-        try {
-            // Закрываем текущий попап, если он открыт
+        const tryClosePopup = () => {
             try {
                 tg.closePopup();
+                return true;
             } catch (e) {
                 console.log('Нет открытого попапа для закрытия');
+                return false;
             }
-            
-            // Небольшая задержка перед открытием нового попапа
-            setTimeout(() => {
-                try {
-                    tg.showPopup(options);
-                    resolve();
-                } catch (error) {
+        };
+
+        const tryShowPopup = (retries = 3) => {
+            if (retries <= 0) {
+                console.error('Не удалось показать попап после нескольких попыток');
+                resolve();
+                return;
+            }
+
+            try {
+                tg.showPopup(options);
+                resolve();
+            } catch (error) {
+                if (error.message === 'WebAppPopupOpened') {
+                    // Если попап уже открыт, пытаемся закрыть и показать снова
+                    tryClosePopup();
+                    setTimeout(() => tryShowPopup(retries - 1), 100);
+                } else {
                     console.error('Ошибка при показе попапа:', error);
                     resolve(error);
                 }
-            }, 100);
-        } catch (error) {
-            console.error('Общая ошибка показа попапа:', error);
-            resolve(error);
-        }
+            }
+        };
+
+        // Сначала пытаемся закрыть текущий попап
+        tryClosePopup();
+        
+        // Затем показываем новый попап с небольшой задержкой
+        setTimeout(() => tryShowPopup(), 100);
     });
 }
 
@@ -55,27 +70,7 @@ tg.onEvent('popupClosed', async (event) => {
         } 
         else if (event.button_id.startsWith('schedule_')) {
             const programId = event.button_id.replace('schedule_', '');
-            const program = window.programData[programId];
-            if (program) {
-                await showPopupSafe({
-                    title: 'Расписание тренировок',
-                    message: `
-День 1-${program.workouts.length}, ${program.schedule}
-
-${program.workouts.map((workout, index) => 
-    `День ${index + 1}: ${workout.title}
-⏱️ ${workout.duration} мин  •  🔥 ${workout.calories} ккал`
-).join('\n\n')}
-                    `,
-                    buttons: [
-                        {
-                            type: 'default',
-                            text: 'Начать программу',
-                            id: `start_program_${programId}`
-                        }
-                    ]
-                });
-            }
+            await showProgramSchedule(programId);
         }
     }
 });
@@ -1064,20 +1059,22 @@ function showProgramResults(programId) {
 }
 
 // Функция показа расписания программы
-function showProgramSchedule(programId) {
-    const program = programData[programId];
+async function showProgramSchedule(programId) {
+    const program = window.programData[programId];
     if (!program) return;
 
-    const scheduleInfo = program.workouts
-        .map(workout => `День ${workout.day}: ${workout.title}\n${workout.duration} мин • ${workout.type}`)
-        .join('\n\n');
-
-    tg.showPopup({
+    await showPopupSafe({
         title: 'Расписание тренировок',
-        message: scheduleInfo,
+        message: `${program.workouts.map((workout, index) => 
+            `День ${index + 1}: ${workout.title}
+⏱️ ${workout.duration} мин • ${workout.type}`
+        ).join('\n\n')}`,
         buttons: [
-            {type: 'default', text: '⬅️ Назад', id: `back_to_main_${programId}`},
-            {type: 'default', text: 'Начать программу', id: `start_program_${programId}`}
+            {
+                type: 'default',
+                text: 'Начать программу',
+                id: `start_program_${programId}`
+            }
         ]
     });
 }
@@ -2961,16 +2958,16 @@ async function showProgramInfo(programId) {
 
     await showPopupSafe({
         title: program.title,
-        message: `
-📋 ${program.description}
-🗓️ ${formatSchedule(program)}
+        message: `📋 ${program.description}
 
-Тренировки:
+🎯 Цели программы:
+${program.goals.map(goal => `• ${goal}`).join('\n')}
+
+📅 Расписание:
 ${program.workouts.map((workout, index) => 
     `День ${index + 1}: ${workout.title}
-⏱️ ${workout.duration} мин  •  🔥 ${workout.calories} ккал`
-).join('\n\n')}
-        `,
+⏱️ ${workout.duration} мин • ${workout.type}`
+).join('\n\n')}`,
         buttons: [
             {
                 type: 'default',
