@@ -866,7 +866,47 @@ ${program.workouts.map((workout, index) =>
     setupCheckboxHandlers();
 }
 
-// Добавим функцию для запуска тренировки
+// Добавляем константы для типов программ
+const PROGRAM_TYPES = {
+    weight_loss: {
+        restBetweenSets: 45,
+        restBetweenExercises: 60,
+        minWarmupTime: 300, // 5 минут
+        showCalories: true,
+        hapticFeedback: 'medium',
+        motivationalMessages: [
+            'Каждая тренировка приближает вас к цели!',
+            'Сжигаем калории!',
+            'Отличная работа!'
+        ]
+    },
+    muscle_gain: {
+        restBetweenSets: 90,
+        restBetweenExercises: 120,
+        minWarmupTime: 240, // 4 минуты
+        showWeight: true,
+        hapticFeedback: 'heavy',
+        motivationalMessages: [
+            'Становимся сильнее!',
+            'Работаем на массу!',
+            'Мощная тренировка!'
+        ]
+    },
+    endurance: {
+        restBetweenSets: 30,
+        restBetweenExercises: 45,
+        minWarmupTime: 360, // 6 минут
+        showHeartRate: true,
+        hapticFeedback: 'light',
+        motivationalMessages: [
+            'Развиваем выносливость!',
+            'Держим темп!',
+            'Отличный прогресс!'
+        ]
+    }
+};
+
+// Обновляем функцию startWorkout
 async function startWorkout(workout, programId) {
     console.log('Начинаем тренировку:', workout, 'ID программы:', programId);
     
@@ -875,12 +915,27 @@ async function startWorkout(workout, programId) {
             throw new Error('Некорректные данные тренировки');
         }
 
+        const program = window.programData[programId];
+        const programType = PROGRAM_TYPES[program.category] || PROGRAM_TYPES.weight_loss;
+
         // Сохраняем данные текущей тренировки и программы
-        currentWorkout = workout;
+        currentWorkout = {
+            ...workout,
+            programType: program.category,
+            settings: programType
+        };
         currentProgramId = programId;
         currentExerciseIndex = 0;
         currentSet = 1;
         workoutStartTime = Date.now();
+
+        // Адаптируем упражнения под тип программы
+        currentWorkout.exercises = currentWorkout.exercises.map(exercise => ({
+            ...exercise,
+            rest: exercise.name.toLowerCase().includes('разминка') 
+                ? 0 
+                : (exercise.rest || programType.restBetweenSets)
+        }));
 
         // Очищаем все таймеры
         clearTimers();
@@ -894,8 +949,8 @@ async function startWorkout(workout, programId) {
         // Показываем первое упражнение
         renderExercise();
 
-        // Вибрация при начале тренировки
-        tg.HapticFeedback.impactOccurred('medium');
+        // Специфичная для программы вибрация
+        tg.HapticFeedback.impactOccurred(programType.hapticFeedback);
 
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
@@ -2709,9 +2764,19 @@ function updateCounter(value) {
 function showRestScreen(isBetweenSets) {
     const exercise = currentWorkout.exercises[currentExerciseIndex];
     const nextExercise = currentWorkout.exercises[currentExerciseIndex + 1];
+    const programType = PROGRAM_TYPES[currentWorkout.programType];
+    
     isResting = true;
-    restTimeLeft = exercise.rest || 30;
+    restTimeLeft = isBetweenSets 
+        ? (exercise.rest || programType.restBetweenSets)
+        : programType.restBetweenExercises;
+    
     const initialRestTime = restTimeLeft;
+
+    // Выбираем случайное мотивационное сообщение
+    const motivationalMessage = programType.motivationalMessages[
+        Math.floor(Math.random() * programType.motivationalMessages.length)
+    ];
 
     const container = document.querySelector('.container');
     if (!container) return;
@@ -2732,6 +2797,7 @@ function showRestScreen(isBetweenSets) {
                 </div>
                 <h3>Отдых</h3>
                 <div class="rest-subtitle">${nextText}</div>
+                <div class="motivational-message">${motivationalMessage}</div>
                 <div class="rest-progress">
                     <div class="rest-progress-bar" style="width: 100%"></div>
                 </div>
@@ -2841,8 +2907,22 @@ function renderExercise() {
     // Получаем анимацию для упражнения
     const exerciseAnimation = window.getExerciseAnimation(exercise.name);
 
+    const programType = PROGRAM_TYPES[currentWorkout.programType];
+    
+    // Добавляем специфичные для программы элементы
+    let additionalInfo = '';
+    if (programType.showCalories) {
+        additionalInfo += `<div class="calories-info">🔥 ${exercise.calories || 0} ккал</div>`;
+    }
+    if (programType.showWeight && exercise.weight) {
+        additionalInfo += `<div class="weight-info">💪 ${exercise.weight} кг</div>`;
+    }
+    if (programType.showHeartRate) {
+        additionalInfo += `<div class="heart-rate-zone">❤️ ${exercise.heartRateZone || 'Зона 2-3'}</div>`;
+    }
+
     container.innerHTML = `
-        <div class="workout-session">
+        <div class="workout-session ${currentWorkout.programType}">
             <div class="workout-header">
                 <button class="back-btn">
                     <span class="material-symbols-rounded">arrow_back</span>
@@ -2888,6 +2968,7 @@ function renderExercise() {
                     </button>
                 ` : ''}
             </div>
+            ${additionalInfo}
         </div>
     `;
 
