@@ -830,16 +830,8 @@ async function startWorkout(workout) {
     try {
     console.log('Начинаем тренировку:', workout);
         
-        if (!workout) {
-            throw new Error('Данные тренировки отсутствуют');
-        }
-
-        // Проверяем наличие programId
-        if (!workout.programId) {
-            const activeProgram = await getStorageItem('activeProgram')
-                .then(data => data ? JSON.parse(data) : null);
-            workout.programId = activeProgram?.id || 'default';
-        }
+        // Добавляем ID программы к тренировке
+        workout.programId = workout.programId || currentProgramId;
         
         currentWorkout = workout;
         currentExerciseIndex = 0;
@@ -1099,25 +1091,41 @@ async function startProgram(programId) {
             throw new Error('Программа не найдена');
         }
 
-        // Сохраняем активную программу
-        const activeProgram = {
+        // Сохраняем выбранную программу
+        await setStorageItem('activeProgram', JSON.stringify({
             id: programId,
-            startDate: Date.now(),
-            completedWorkouts: [],
-            workouts: program.workouts
-        };
+            title: program.title,
+            workouts: program.workouts,
+            completedWorkouts: []
+        }));
 
-        await setStorageItem('activeProgram', JSON.stringify(activeProgram));
-        
-        // Запускаем первую тренировку
-        const firstWorkout = program.workouts[0];
-        if (firstWorkout) {
-            firstWorkout.programId = programId; // Добавляем ID программы
-            startWorkout(firstWorkout);
-        }
+        // Очищаем текущий контейнер
+        const container = document.querySelector('.container');
+        if (!container) return;
+
+        // Создаем контейнер для списка тренировок
+        container.innerHTML = `
+            <div class="program-header">
+                <button class="back-btn" onclick="showProgramsList()">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                <h2>${program.title}</h2>
+            </div>
+            <div class="workouts-list"></div>
+        `;
+
+        // Добавляем обработчик для кнопки "Назад"
+        const backBtn = container.querySelector('.back-btn');
+        backBtn?.addEventListener('click', () => {
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+
+        // Отображаем список тренировок
+        renderWorkouts(program);
+
     } catch (error) {
         console.error('Ошибка при запуске программы:', error);
-        showError('Не удалось начать программу');
+        showError(error.message);
     }
 }
 
@@ -2083,35 +2091,44 @@ function renderProgramCards() {
     const container = document.querySelector('.programs-list');
     if (!container) return;
 
-    container.innerHTML = Object.entries(window.programData).map(([id, program]) => `
+    let html = '';
+    Object.entries(window.programData).forEach(([programId, program]) => {
+        html += `
             <div class="program-card">
+                <div class="program-content">
                     <div class="program-icon">
-                <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
+                        <span class="material-symbols-rounded">${program.icon}</span>
                     </div>
-            <div class="program-info">
+                    <div class="program-text">
                         <h3>${program.title}</h3>
-                <p>${program.description}</p>
-                <div class="program-meta">
-                    <div class="program-schedule">
+                        <p class="program-description">${program.description}</p>
+                        <div class="program-details">
+                            <span>
+                                <span class="material-symbols-rounded">calendar_today</span>
                                 ${program.schedule}
-                    </div>
-                    <div class="program-difficulty">
-                        ${program.difficulty || 'Средний'}
-                    </div>
-                </div>
+                            </span>
+                            <span>
+                                <span class="material-symbols-rounded">fitness_center</span>
+                                ${getDifficultyText(program.difficulty)}
+                            </span>
                         </div>
                         <div class="program-actions">
-                <button class="info-btn" onclick="showProgramInfo('${id}')">
+                            <button class="program-btn info-btn" onclick="showProgramDetails('${programId}')">
                                 <span class="material-symbols-rounded">info</span>
                                 Подробнее
                             </button>
-                <button class="start-btn" onclick="startProgram('${id}')">
+                            <button class="program-btn start-btn" onclick="startProgram('${programId}')">
                                 <span class="material-symbols-rounded">play_arrow</span>
                                 Начать
                             </button>
                         </div>
                     </div>
-    `).join('');
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
 }
 
 // Функция для отображения тренировок программы
