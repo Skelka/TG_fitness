@@ -1591,63 +1591,120 @@ const CALORIES_PER_MINUTE = {
     rest: 1         // Отдых между подходами
 };
 
-// Обновим функцию completeWorkout с точным расчетом калорий
-async function completeWorkout(workout, programId) {
+// Обновим функцию handleCompleteClick
+function handleCompleteClick() {
+    console.log('handleCompleteClick вызван');
+    console.log('isTimerMode:', isTimerMode);
+    console.log('timerInterval:', timerInterval);
+    console.log('timerValue:', timerValue);
+
+    if (isTimerMode) {
+        if (!timerInterval) {
+            // Запускаем таймер только если он еще не запущен и есть значение
+            if (timerValue > 0) {
+                console.log('Запускаем таймер');
+                startTimer(timerValue);
+                
+                // Меняем текст кнопки
+                const completeBtn = document.querySelector('.complete-btn');
+                if (completeBtn) {
+                    completeBtn.innerHTML = `
+                        <span class="material-symbols-rounded">skip_next</span>
+                        Пропустить
+                    `;
+                }
+                
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        } else {
+            // Пропускаем текущий таймер
+            console.log('Пропускаем таймер');
+            clearInterval(timerInterval);
+            timerInterval = null;
+            
+            handleExerciseComplete();
+        }
+    } else {
+        // Для упражнений без таймера
+        handleExerciseComplete();
+    }
+}
+
+// Добавляем новую функцию для обработки завершения упражнения
+function handleExerciseComplete() {
+    const exercise = currentWorkout.exercises[currentExerciseIndex];
+    
+    if (currentSet < exercise.sets) {
+        currentSet++;
+        showRestScreen();
+    } else {
+        if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
+            currentExerciseIndex++;
+            currentSet = 1;
+            renderExercise();
+        } else {
+            completeWorkout(currentWorkout);
+        }
+    }
+}
+
+// Обновляем функцию startTimer
+function startTimer(duration) {
+    // Проверяем, что таймер не запущен
+    if (timerInterval) {
+        console.log('Таймер уже запущен');
+        return;
+    }
+
+    console.log('Запускаем таймер с длительностью:', duration);
+
+    // Устанавливаем начальное значение
+    timerValue = duration;
+    updateCounter(timerValue);
+
+    let lastTick = Date.now();
+    
+    // Запускаем таймер
+    timerInterval = setInterval(() => {
+        const now = Date.now();
+        const delta = now - lastTick;
+        lastTick = now;
+        
+        // Уменьшаем значение
+        timerValue--;
+        updateCounter(timerValue);
+
+        // Вибрация на последних секундах
+        if (timerValue <= 3 && timerValue > 0) {
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        // Проверяем завершение
+        if (timerValue <= 0) {
+            console.log('Таймер завершен');
+            clearInterval(timerInterval);
+            timerInterval = null;
+            
+            handleExerciseComplete();
+        }
+    }, 1000);
+
+    console.log('Таймер запущен, ID интервала:', timerInterval);
+}
+
+// Обновляем функцию completeWorkout
+async function completeWorkout(workout) {
     try {
+        // Очищаем все таймеры
         clearTimers();
 
         const container = document.querySelector('.container');
         if (!container) return;
 
-        const workoutToComplete = workout || currentWorkout;
-        if (!workoutToComplete) {
-            console.error('Нет данных о тренировке для завершения');
-            return;
-        }
-
         // Вычисляем фактическое время тренировки
         const actualDuration = Math.round((Date.now() - workoutStartTime) / (1000 * 60));
 
-        // Рассчитываем фактические калории на основе выполненных упражнений
-        let totalCalories = 0;
-        workoutToComplete.exercises.forEach(exercise => {
-            // Определяем тип упражнения
-            let exerciseType = 'strength'; // По умолчанию считаем упражнение силовым
-            if (exercise.type) {
-                exerciseType = exercise.type;
-            } else if (exercise.name.toLowerCase().includes('бег') || 
-                      exercise.name.toLowerCase().includes('прыжки') ||
-                      exercise.name.toLowerCase().includes('кардио')) {
-                exerciseType = 'cardio';
-            } else if (exercise.name.toLowerCase().includes('интервал') ||
-                      exercise.name.toLowerCase().includes('hiit')) {
-                exerciseType = 'hiit';
-            }
-
-            // Время на упражнение
-            let exerciseTime = 0;
-            if (exercise.reps.toString().includes('сек')) {
-                exerciseTime = parseInt(exercise.reps) * exercise.sets / 60; // переводим в минуты
-            } else if (exercise.reps.toString().includes('мин')) {
-                exerciseTime = parseInt(exercise.reps) * exercise.sets;
-            } else {
-                // Если указаны повторения, считаем примерное время
-                exerciseTime = (exercise.reps * 3 * exercise.sets) / 60; // примерно 3 секунды на повторение
-            }
-
-            // Добавляем время отдыха между подходами
-            const restTime = ((exercise.rest || 30) * (exercise.sets - 1)) / 60; // время отдыха в минутах
-
-            // Рассчитываем калории для упражнения
-            const exerciseCalories = exerciseTime * CALORIES_PER_MINUTE[exerciseType];
-            const restCalories = restTime * CALORIES_PER_MINUTE.rest;
-
-            totalCalories += exerciseCalories + restCalories;
-        });
-
-        // Округляем общее количество калорий
-        totalCalories = Math.round(totalCalories);
-
+        // Получаем текущий прогресс
         let activeProgram = await getStorageItem('activeProgram')
             .then(data => data ? JSON.parse(data) : null);
 
@@ -1655,11 +1712,11 @@ async function completeWorkout(workout, programId) {
             const completedWorkout = {
                 id: Date.now(),
                 date: Date.now(),
-                day: workoutToComplete.day,
-                title: workoutToComplete.title,
+                day: workout.day,
+                title: workout.title,
                 duration: actualDuration,
-                calories: totalCalories, // Используем рассчитанные калории
-                type: workoutToComplete.type
+                calories: workout.calories,
+                type: workout.type
             };
 
             if (!Array.isArray(activeProgram.completedWorkouts)) {
@@ -1667,45 +1724,48 @@ async function completeWorkout(workout, programId) {
             }
 
             activeProgram.completedWorkouts.push(completedWorkout);
-            activeProgram.completedWorkouts.sort((a, b) => b.date - a.date);
-
             await setStorageItem('activeProgram', JSON.stringify(activeProgram));
-            await updateStatistics();
         }
 
         // Показываем экран завершения
-        container.innerHTML = `
-            <div class="workout-complete">
-                <div class="complete-icon">
-                    <span class="material-symbols-rounded">check_circle</span>
-                </div>
-                <h2>Тренировка завершена!</h2>
-                <div class="workout-stats">
-                    <div class="stat-item">
-                        <span class="stat-value">${actualDuration}</span>
-                        <span class="stat-label">минут</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-value">${totalCalories}</span>
-                        <span class="stat-label">ккал</span>
-                    </div>
-                </div>
-                <button class="finish-btn" onclick="showProgramsList()">
-                    <span class="material-symbols-rounded">home</span>
-                    Вернуться
-                </button>
-            </div>
-        `;
-
-        document.querySelector('.bottom-nav')?.classList.remove('hidden');
-        currentWorkout = null;
-        workoutStartTime = null;
-        tg.HapticFeedback.notificationOccurred('success');
+        showWorkoutComplete(actualDuration, workout.calories);
 
     } catch (error) {
         console.error('Ошибка при завершении тренировки:', error);
         showError(error.message);
     }
+}
+
+// Добавляем новую функцию для отображения экрана завершения
+function showWorkoutComplete(duration, calories) {
+    const container = document.querySelector('.container');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="workout-complete">
+            <div class="complete-icon">
+                <span class="material-symbols-rounded">check_circle</span>
+            </div>
+            <h2>Тренировка завершена!</h2>
+            <div class="workout-stats">
+                <div class="stat-item">
+                    <span class="stat-value">${duration}</span>
+                    <span class="stat-label">минут</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">${calories}</span>
+                    <span class="stat-label">ккал</span>
+                </div>
+            </div>
+            <button class="finish-btn" onclick="showProgramsList()">
+                <span class="material-symbols-rounded">home</span>
+                Вернуться
+            </button>
+        </div>
+    `;
+
+    document.querySelector('.bottom-nav')?.classList.remove('hidden');
+    tg.HapticFeedback.notificationOccurred('success');
 }
 
 // Добавим функцию для обработки изменений в чекбоксах
@@ -2563,9 +2623,17 @@ function setupExerciseHandlers() {
                 if (timerValue > 0) {
                     console.log('Запускаем таймер');
                     startTimer(timerValue);
+                    
+                    // Меняем текст кнопки
+                    const completeBtn = document.querySelector('.complete-btn');
+                    if (completeBtn) {
+                        completeBtn.innerHTML = `
+                            <span class="material-symbols-rounded">skip_next</span>
+                            Пропустить
+                        `;
+                    }
+                    
                     tg.HapticFeedback.impactOccurred('medium');
-                } else {
-                    console.log('Некорректное значение таймера:', timerValue);
                 }
             } else {
                 // Пропускаем текущий таймер
@@ -2573,35 +2641,11 @@ function setupExerciseHandlers() {
                 clearInterval(timerInterval);
                 timerInterval = null;
                 
-                const exercise = currentWorkout.exercises[currentExerciseIndex];
-                if (currentSet < exercise.sets) {
-                    currentSet++;
-                    showRestScreen();
-                } else {
-                    if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
-                        currentExerciseIndex++;
-                        currentSet = 1;
-                        renderExercise();
-                    } else {
-                        completeWorkout();
-                    }
-                }
+                handleExerciseComplete();
             }
         } else {
             // Для упражнений без таймера
-            console.log('Упражнение без таймера');
-            const exercise = currentWorkout.exercises[currentExerciseIndex];
-            if (currentSet < exercise.sets) {
-                showRestScreen();
-            } else {
-                if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
-                    currentExerciseIndex++;
-                    currentSet = 1;
-                    renderExercise();
-                } else {
-                    completeWorkout();
-                }
-            }
+            handleExerciseComplete();
         }
     }
 
@@ -2715,88 +2759,6 @@ function showRestScreen() {
             }
         }
     });
-}
-
-// Добавляем функцию для запуска таймера упражнения
-function startTimer(duration) {
-    // Проверяем, что таймер не запущен
-    if (timerInterval) {
-        console.log('Таймер уже запущен');
-        return;
-    }
-
-    console.log('Запускаем таймер с длительностью:', duration);
-
-    // Устанавливаем начальное значение
-    timerValue = duration;
-    updateCounter(timerValue);
-    
-    const completeBtn = document.querySelector('.complete-btn');
-    if (completeBtn) {
-        completeBtn.textContent = 'Пропустить';
-    }
-
-    let lastTick = Date.now();
-    
-    // Запускаем таймер
-    timerInterval = setInterval(() => {
-        const now = Date.now();
-        const delta = now - lastTick;
-        lastTick = now;
-        
-        console.log('Тик таймера:', {
-            delta: delta,
-            currentValue: timerValue,
-            hasInterval: !!timerInterval
-        });
-        
-        // Проверяем, что интервал все еще существует
-        if (!timerInterval) {
-            console.log('Интервал был удален извне');
-            return;
-        }
-
-        // Уменьшаем значение
-        timerValue--;
-        updateCounter(timerValue);
-
-        // Вибрация на последних секундах
-        if (timerValue <= 3 && timerValue > 0) {
-            tg.HapticFeedback.impactOccurred('medium');
-        }
-
-        // Проверяем завершение
-        if (timerValue <= 0) {
-            console.log('Таймер завершен естественным путем');
-            const currentInterval = timerInterval;
-            clearInterval(currentInterval);
-            timerInterval = null;
-            
-            const exercise = currentWorkout.exercises[currentExerciseIndex];
-            console.log('Текущее упражнение:', {
-                exercise,
-                currentSet,
-                totalSets: exercise.sets,
-                currentExerciseIndex,
-                totalExercises: currentWorkout.exercises.length
-            });
-
-            if (currentSet < exercise.sets) {
-                currentSet++;
-                showRestScreen();
-            } else {
-                if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
-                    currentExerciseIndex++;
-                    currentSet = 1;
-                    renderExercise();
-                } else {
-                    completeWorkout();
-                }
-            }
-        }
-    }, 1000);
-
-    console.log('Таймер запущен, ID интервала:', timerInterval);
 }
 
 // Обновим функцию renderExercise
