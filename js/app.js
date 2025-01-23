@@ -16,6 +16,9 @@ let timerInterval = null;
 let restInterval = null;
 let workoutStartTime = null; // Добавляем переменную для отслеживания времени тренировки
 
+// Добавляем глобальную переменную
+let currentProgramId = null;
+
 // Функция для безопасного показа попапа
 async function showPopupSafe(options) {
     return new Promise((resolve) => {
@@ -828,10 +831,14 @@ ${program.workouts.map((workout, index) =>
 // Добавим функцию для запуска тренировки
 async function startWorkout(workout) {
     try {
-    console.log('Начинаем тренировку:', workout);
+        console.log('Начинаем тренировку:', workout);
         
+        if (!workout) {
+            throw new Error('Данные тренировки отсутствуют');
+        }
+
         // Добавляем ID программы к тренировке
-        workout.programId = workout.programId || currentProgramId;
+        workout.programId = currentProgramId;
         
         currentWorkout = workout;
         currentExerciseIndex = 0;
@@ -1086,46 +1093,30 @@ function updateProgramProgress(progress) {
 // Функция для запуска программы
 async function startProgram(programId) {
     try {
+        currentProgramId = programId; // Сохраняем ID текущей программы
         const program = window.programData[programId];
+        
         if (!program) {
             throw new Error('Программа не найдена');
         }
 
-        // Сохраняем выбранную программу
-        await setStorageItem('activeProgram', JSON.stringify({
+        // Сохраняем активную программу
+        const activeProgram = {
             id: programId,
+            startDate: Date.now(),
             title: program.title,
             workouts: program.workouts,
             completedWorkouts: []
-        }));
+        };
 
-        // Очищаем текущий контейнер
-        const container = document.querySelector('.container');
-        if (!container) return;
-
-        // Создаем контейнер для списка тренировок
-        container.innerHTML = `
-            <div class="program-header">
-                <button class="back-btn" onclick="showProgramsList()">
-                    <span class="material-symbols-rounded">arrow_back</span>
-                </button>
-                <h2>${program.title}</h2>
-            </div>
-            <div class="workouts-list"></div>
-        `;
-
-        // Добавляем обработчик для кнопки "Назад"
-        const backBtn = container.querySelector('.back-btn');
-        backBtn?.addEventListener('click', () => {
-            tg.HapticFeedback.impactOccurred('medium');
-        });
-
-        // Отображаем список тренировок
-        renderWorkouts(program);
+        await setStorageItem('activeProgram', JSON.stringify(activeProgram));
+        
+        // Запускаем первую тренировку
+        startWorkout(program.workouts[0]);
 
     } catch (error) {
         console.error('Ошибка при запуске программы:', error);
-        showError(error.message);
+        showError('Не удалось начать программу');
     }
 }
 
@@ -1366,32 +1357,20 @@ function initApp() {
 
 // Обновляем обработчики событий
 function setupProgramHandlers() {
-    // Обработчики для кнопок в карточках программ
-    document.querySelectorAll('.program-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const programCard = button.closest('.program-card');
-            const programId = programCard.dataset.program;
-            
-            if (button.classList.contains('info-btn')) {
-                tg.HapticFeedback.impactOccurred('medium');
-                showProgramDetails(programId);
-            } else if (button.classList.contains('start-btn')) {
-                tg.HapticFeedback.impactOccurred('medium');
-                startProgram(programId);
+    document.querySelectorAll('.start-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const programId = btn.dataset.programId;
+            if (programId) {
+                await startProgram(programId);
             }
         });
     });
 
-    // Добавляем обработчик для всей карточки программы
-    document.querySelectorAll('.program-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-            if (!e.target.closest('.program-btn')) {
-                const programId = card.dataset.program;
-                tg.HapticFeedback.impactOccurred('medium');
-                showProgramDetails(programId);
+    document.querySelectorAll('.info-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const programId = btn.dataset.programId;
+            if (programId) {
+                showProgramInfo(programId);
             }
         });
     });
@@ -2091,44 +2070,42 @@ function renderProgramCards() {
     const container = document.querySelector('.programs-list');
     if (!container) return;
 
-    let html = '';
-    Object.entries(window.programData).forEach(([programId, program]) => {
-        html += `
-            <div class="program-card">
-                <div class="program-content">
-                    <div class="program-icon">
-                        <span class="material-symbols-rounded">${program.icon}</span>
-                    </div>
-                    <div class="program-text">
-                        <h3>${program.title}</h3>
-                        <p class="program-description">${program.description}</p>
-                        <div class="program-details">
-                            <span>
-                                <span class="material-symbols-rounded">calendar_today</span>
-                                ${program.schedule}
-                            </span>
-                            <span>
-                                <span class="material-symbols-rounded">fitness_center</span>
-                                ${getDifficultyText(program.difficulty)}
-                            </span>
+    container.innerHTML = Object.entries(window.programData).map(([id, program]) => `
+        <div class="program-card">
+            <div class="program-info">
+                <div class="program-icon">
+                    <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
+                </div>
+                <div class="program-details">
+                    <h3>${program.title}</h3>
+                    <p>${program.description}</p>
+                    <div class="program-meta">
+                        <div class="program-schedule">
+                            <span class="material-symbols-rounded">calendar_today</span>
+                            ${program.schedule}
                         </div>
-                        <div class="program-actions">
-                            <button class="program-btn info-btn" onclick="showProgramDetails('${programId}')">
-                                <span class="material-symbols-rounded">info</span>
-                                Подробнее
-                            </button>
-                            <button class="program-btn start-btn" onclick="startProgram('${programId}')">
-                                <span class="material-symbols-rounded">play_arrow</span>
-                                Начать
-                            </button>
+                        <div class="program-difficulty">
+                            <span class="material-symbols-rounded">fitness_center</span>
+                            ${program.difficulty}
                         </div>
                     </div>
                 </div>
             </div>
-        `;
-    });
+            <div class="program-actions">
+                <button class="info-btn" data-program-id="${id}">
+                    <span class="material-symbols-rounded">info</span>
+                    Подробнее
+                </button>
+                <button class="start-btn" data-program-id="${id}">
+                    <span class="material-symbols-rounded">play_arrow</span>
+                    Начать
+                </button>
+            </div>
+        </div>
+    `).join('');
 
-    container.innerHTML = html;
+    // Устанавливаем обработчики после рендеринга
+    setupProgramHandlers();
 }
 
 // Функция для отображения тренировок программы
