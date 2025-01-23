@@ -30,7 +30,7 @@ async function showPopupSafe(options) {
                     await tg.closePopup();
                     // Ждем немного после закрытия
                     await new Promise(r => setTimeout(r, 100));
-                } catch (e) {
+            } catch (e) {
                     // Игнорируем ошибку, если попап не был открыт
                 }
 
@@ -60,13 +60,13 @@ tg.onEvent('popupClosed', async (event) => {
     // Добавляем небольшую задержку перед следующим действием
     await new Promise(r => setTimeout(r, 100));
 
-    if (event.button_id.startsWith('start_program_')) {
-        const programId = event.button_id.replace('start_program_', '');
-        await startProgram(programId);
-    } 
-    else if (event.button_id.startsWith('schedule_')) {
-        const programId = event.button_id.replace('schedule_', '');
-        await showProgramSchedule(programId);
+        if (event.button_id.startsWith('start_program_')) {
+            const programId = event.button_id.replace('start_program_', '');
+            await startProgram(programId);
+        } 
+        else if (event.button_id.startsWith('schedule_')) {
+            const programId = event.button_id.replace('schedule_', '');
+            await showProgramSchedule(programId);
     }
 });
 
@@ -1570,7 +1570,7 @@ const CALORIES_PER_MINUTE = {
     rest: 1         // Отдых между подходами
 };
 
-// Обновляем функцию handleCompleteClick
+// Обновим функцию handleCompleteClick
 function handleCompleteClick() {
     console.log('handleCompleteClick вызван');
     console.log('isTimerMode:', isTimerMode);
@@ -1622,28 +1622,27 @@ function handleExerciseComplete() {
 
     if (currentSet < exercise.sets) {
         // Если есть еще подходы, показываем отдых
-        currentSet++;
-        showRestScreen(true);
+        showRestScreen(true); // true означает отдых между подходами
     } else if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
         // Если это последний подход, но есть следующее упражнение
         currentExerciseIndex++;
         currentSet = 1;
-        showRestScreen(false);
-    } else {
+        showRestScreen(false); // false означает отдых между упражнениями
+            } else {
         // Если это последний подход последнего упражнения
         completeWorkout(currentWorkout);
     }
 }
 
-// Обновляем функцию moveToNextExercise
+// Добавляем новую функцию для перехода к следующему упражнению
 function moveToNextExercise() {
     if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
         currentExerciseIndex++;
         currentSet = 1;
         renderExercise();
     } else {
-        // Передаем текущую тренировку напрямую
-        completeWorkout(currentWorkout);
+        // Передаем полные данные о тренировке
+        completeWorkout(window.programData[currentWorkout.id]);
     }
 }
 
@@ -1661,8 +1660,15 @@ function startTimer(duration) {
     timerValue = duration;
     updateCounter(timerValue);
 
+    let lastTick = Date.now();
+    
     // Запускаем таймер
     timerInterval = setInterval(() => {
+        const now = Date.now();
+        const delta = now - lastTick;
+        lastTick = now;
+        
+        // Уменьшаем значение
         timerValue--;
         updateCounter(timerValue);
 
@@ -1676,6 +1682,7 @@ function startTimer(duration) {
             console.log('Таймер завершен');
             clearInterval(timerInterval);
             timerInterval = null;
+            
             handleExerciseComplete();
         }
     }, 1000);
@@ -1686,8 +1693,8 @@ function startTimer(duration) {
 // Обновляем функцию completeWorkout
 async function completeWorkout(workout) {
     try {
-        // Проверяем наличие данных тренировки
-        if (!workout) {
+        // Проверяем наличие необходимых данных
+        if (!workout || !currentWorkout) {
             throw new Error('Данные о тренировке отсутствуют');
         }
 
@@ -1708,11 +1715,11 @@ async function completeWorkout(workout) {
             const completedWorkout = {
                 id: Date.now(),
                 date: Date.now(),
-                day: workout.day,
-                title: workout.title,
+                day: workout.day || currentWorkout.day,
+                title: workout.title || currentWorkout.title,
                 duration: actualDuration,
-                calories: workout.calories || 300, // Добавляем значение по умолчанию
-                type: workout.type || 'general'    // Добавляем значение по умолчанию
+                calories: workout.calories || currentWorkout.calories,
+                type: workout.type || currentWorkout.type
             };
 
             if (!Array.isArray(activeProgram.completedWorkouts)) {
@@ -1724,68 +1731,47 @@ async function completeWorkout(workout) {
         }
 
         // Показываем экран завершения
-        showWorkoutComplete(actualDuration, workout.calories || 300);
+        showWorkoutComplete(actualDuration, workout.calories || currentWorkout.calories);
 
     } catch (error) {
         console.error('Ошибка при завершении тренировки:', error);
-        // Показываем более дружелюбное сообщение об ошибке
-        showWorkoutComplete(0, 0);
+        showError('Не удалось сохранить результаты тренировки. Попробуйте еще раз.');
     }
 }
 
-// Обновляем функцию showWorkoutComplete
+// Добавляем новую функцию для отображения экрана завершения
 function showWorkoutComplete(duration, calories) {
     const container = document.querySelector('.container');
     if (!container) return;
 
-    // Очищаем все таймеры для уверенности
-    clearTimers();
-
-    container.innerHTML = `
-        <div class="workout-complete">
-            <div class="complete-icon">
-                <span class="material-symbols-rounded">check_circle</span>
-            </div>
-            <h2>Тренировка завершена!</h2>
-            <div class="workout-stats">
-                <div class="stat-item">
-                    <span class="stat-value">${duration || 0}</span>
-                    <span class="stat-label">минут</span>
+        container.innerHTML = `
+            <div class="workout-complete">
+                <div class="complete-icon">
+                    <span class="material-symbols-rounded">check_circle</span>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-value">${calories || 0}</span>
-                    <span class="stat-label">ккал</span>
+                <h2>Тренировка завершена!</h2>
+                <div class="workout-stats">
+                    <div class="stat-item">
+                    <span class="stat-value">${duration}</span>
+                        <span class="stat-label">минут</span>
+                    </div>
+                    <div class="stat-item">
+                    <span class="stat-value">${calories}</span>
+                        <span class="stat-label">ккал</span>
+                    </div>
                 </div>
+                <button class="finish-btn" onclick="showProgramsList()">
+                    <span class="material-symbols-rounded">home</span>
+                    Вернуться
+                </button>
             </div>
-            <button class="finish-btn" onclick="showProgramsList()">
-                <span class="material-symbols-rounded">home</span>
-                Вернуться
-            </button>
-        </div>
-    `;
+        `;
 
-    // Показываем нижнюю навигацию
-    document.querySelector('.bottom-nav')?.classList.remove('hidden');
-    
-    // Сбрасываем глобальные переменные
-    currentWorkout = null;
-    currentExerciseIndex = 0;
-    currentSet = 1;
-    workoutStartTime = null;
-    
-    // Вибрация успешного завершения
-    tg.HapticFeedback.notificationOccurred('success');
+        document.querySelector('.bottom-nav')?.classList.remove('hidden');
+        tg.HapticFeedback.notificationOccurred('success');
 }
 
-// Обновляем функцию showError
-function showError(message) {
-    // Вместо показа попапа с ошибкой, просто логируем её
-    console.error(message);
-    // И показываем экран завершения с нулевыми значениями
-    showWorkoutComplete(0, 0);
-}
-
-// Добавляем новую функцию для обработки изменений в чекбоксах
+// Добавим функцию для обработки изменений в чекбоксах
 function setupCheckboxHandlers() {
     const form = document.getElementById('profile-form');
     if (!form) return;
@@ -2771,7 +2757,7 @@ function showRestScreen(isBetweenSets) {
 
         if (restTimeLeft <= 0) {
             clearInterval(restInterval);
-            renderExercise();
+                renderExercise();
         }
     }, 1000);
 
@@ -2780,14 +2766,14 @@ function showRestScreen(isBetweenSets) {
     skipBtn?.addEventListener('click', () => {
         clearInterval(restInterval);
         tg.HapticFeedback.impactOccurred('medium');
-        renderExercise();
+            renderExercise();
     });
 }
 
 // Обновим функцию renderExercise
 function renderExercise() {
     console.log('Рендеринг упражнения:', {
-        currentExerciseIndex,
+                currentExerciseIndex,
         currentSet,
         workout: currentWorkout
     });
