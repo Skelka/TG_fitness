@@ -1623,4 +1623,105 @@ input[type="number"]::-webkit-inner-spin-button {
     border-radius: 8px;
     font-size: 16px;
     cursor: pointer;
+}
+
+/* Стили для экрана отдыха */
+.rest-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    text-align: center;
+    background: var(--tg-theme-bg-color);
+}
+
+.rest-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--tg-theme-button-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.rest-icon .material-symbols-rounded {
+    font-size: 40px;
+    color: var(--tg-theme-button-text-color);
+}
+
+.rest-screen h3 {
+    font-size: 24px;
+    margin: 0 0 10px;
+    color: var(--tg-theme-text-color);
+}
+
+.rest-subtitle {
+    font-size: 16px;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 30px;
+}
+
+.rest-timer {
+    font-size: 64px;
+    font-weight: bold;
+    color: var(--tg-theme-text-color);
+    margin-bottom: 40px;
+    font-variant-numeric: tabular-nums;
+    min-width: 120px;
+    text-align: center;
+}
+
+.skip-rest-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    border: none;
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.skip-rest-btn:active {
+    opacity: 0.7;
+}
+
+.skip-rest-btn .material-symbols-rounded {
+    font-size: 20px;
+}
+
+/* Анимация для таймера */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.rest-timer.ending {
+    color: var(--tg-theme-destructive-text-color);
+    animation: pulse 1s infinite;
+}
+
+/* Прогресс-бар для отдыха */
+.rest-progress {
+    width: 100%;
+    height: 4px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 2px;
+    margin: 20px 0;
+    overflow: hidden;
+}
+
+.rest-progress-bar {
+    height: 100%;
+    background: var(--tg-theme-button-color);
+    transition: width 1s linear;
 } 

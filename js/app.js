@@ -1614,22 +1614,32 @@ function handleCompleteClick() {
     }
 }
 
-// Добавляем новую функцию для обработки завершения упражнения
+// Обновляем функцию handleExerciseComplete
 function handleExerciseComplete() {
     const exercise = currentWorkout.exercises[currentExerciseIndex];
     
     if (currentSet < exercise.sets) {
-        currentSet++;
-        showRestScreen();
-    } else {
-        if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
-            currentExerciseIndex++;
-            currentSet = 1;
-            renderExercise();
+        // Перед показом экрана отдыха проверяем, не последний ли это подход
+        if (currentSet < exercise.sets) {
+            currentSet++;
+            showRestScreen();
         } else {
-            // Передаем весь объект currentWorkout
-            completeWorkout(currentWorkout);
+            moveToNextExercise();
         }
+    } else {
+        moveToNextExercise();
+    }
+}
+
+// Добавляем новую функцию для перехода к следующему упражнению
+function moveToNextExercise() {
+    if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
+        currentExerciseIndex++;
+        currentSet = 1;
+        renderExercise();
+    } else {
+        // Передаем полные данные о тренировке
+        completeWorkout(window.programData[currentWorkout.id]);
     }
 }
 
@@ -1680,8 +1690,9 @@ function startTimer(duration) {
 // Обновляем функцию completeWorkout
 async function completeWorkout(workout) {
     try {
-        if (!workout || !workout.day) {
-            throw new Error('Некорректные данные тренировки для завершения');
+        // Проверяем наличие необходимых данных
+        if (!workout || !currentWorkout) {
+            throw new Error('Данные о тренировке отсутствуют');
         }
 
         // Очищаем все таймеры
@@ -1701,11 +1712,11 @@ async function completeWorkout(workout) {
             const completedWorkout = {
                 id: Date.now(),
                 date: Date.now(),
-                day: workout.day,
-                title: workout.title,
+                day: workout.day || currentWorkout.day,
+                title: workout.title || currentWorkout.title,
                 duration: actualDuration,
-                calories: workout.calories,
-                type: workout.type
+                calories: workout.calories || currentWorkout.calories,
+                type: workout.type || currentWorkout.type
             };
 
             if (!Array.isArray(activeProgram.completedWorkouts)) {
@@ -1717,11 +1728,11 @@ async function completeWorkout(workout) {
         }
 
         // Показываем экран завершения
-        showWorkoutComplete(actualDuration, workout.calories);
+        showWorkoutComplete(actualDuration, workout.calories || currentWorkout.calories);
 
     } catch (error) {
         console.error('Ошибка при завершении тренировки:', error);
-        showError('Произошла ошибка при сохранении прогресса тренировки');
+        showError('Не удалось сохранить результаты тренировки. Попробуйте еще раз.');
     }
 }
 
@@ -2677,9 +2688,17 @@ function showRestScreen() {
     const exercise = currentWorkout.exercises[currentExerciseIndex];
     isResting = true;
     restTimeLeft = exercise.rest || 30;
+    const initialRestTime = restTimeLeft;
 
     const container = document.querySelector('.container');
     if (!container) return;
+
+    // Определяем, что будет следующим
+    const nextText = currentSet < exercise.sets ? 
+        `Подход ${currentSet} из ${exercise.sets}` : 
+        currentExerciseIndex < currentWorkout.exercises.length - 1 ? 
+            'Следующее упражнение' : 
+            'Завершение тренировки';
 
     container.innerHTML = `
         <div class="workout-session">
@@ -2688,10 +2707,9 @@ function showRestScreen() {
                     <span class="material-symbols-rounded">timer</span>
                 </div>
                 <h3>Отдых</h3>
-                <div class="rest-subtitle">
-                    ${currentSet < exercise.sets ? 
-                        `Подход ${currentSet + 1} из ${exercise.sets}` : 
-                        'Следующее упражнение'}
+                <div class="rest-subtitle">${nextText}</div>
+                <div class="rest-progress">
+                    <div class="rest-progress-bar" style="width: 100%"></div>
                 </div>
                 <div class="rest-timer">${restTimeLeft}</div>
                 <button class="skip-rest-btn">
@@ -2702,12 +2720,27 @@ function showRestScreen() {
         </div>
     `;
 
+    const timerElement = container.querySelector('.rest-timer');
+    const progressBar = container.querySelector('.rest-progress-bar');
+
     // Запускаем таймер отдыха
     restInterval = setInterval(() => {
         restTimeLeft--;
-        const timerElement = container.querySelector('.rest-timer');
+        
+        // Обновляем таймер
         if (timerElement) {
             timerElement.textContent = restTimeLeft;
+            
+            // Добавляем класс для анимации на последних секундах
+            if (restTimeLeft <= 3) {
+                timerElement.classList.add('ending');
+            }
+        }
+
+        // Обновляем прогресс-бар
+        if (progressBar) {
+            const progress = (restTimeLeft / initialRestTime) * 100;
+            progressBar.style.width = `${progress}%`;
         }
 
         if (restTimeLeft <= 3 && restTimeLeft > 0) {
@@ -2716,18 +2749,7 @@ function showRestScreen() {
 
         if (restTimeLeft <= 0) {
             clearInterval(restInterval);
-            if (currentSet < exercise.sets) {
-                currentSet++;
-                renderExercise();
-            } else {
-                currentSet = 1;
-                if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
-                    currentExerciseIndex++;
-                    renderExercise();
-                } else {
-                    completeWorkout();
-                }
-            }
+            renderExercise();
         }
     }, 1000);
 
@@ -2735,18 +2757,8 @@ function showRestScreen() {
     const skipBtn = container.querySelector('.skip-rest-btn');
     skipBtn?.addEventListener('click', () => {
         clearInterval(restInterval);
-        if (currentSet < exercise.sets) {
-            currentSet++;
-            renderExercise();
-        } else {
-            currentSet = 1;
-            if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
-                currentExerciseIndex++;
-                renderExercise();
-            } else {
-                completeWorkout();
-            }
-        }
+        tg.HapticFeedback.impactOccurred('medium');
+        renderExercise();
     });
 }
 
