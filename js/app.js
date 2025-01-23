@@ -1570,7 +1570,7 @@ const CALORIES_PER_MINUTE = {
     rest: 1         // Отдых между подходами
 };
 
-// Обновим функцию handleCompleteClick
+// Обновляем функцию handleCompleteClick
 function handleCompleteClick() {
     console.log('handleCompleteClick вызван');
     console.log('isTimerMode:', isTimerMode);
@@ -1622,12 +1622,13 @@ function handleExerciseComplete() {
 
     if (currentSet < exercise.sets) {
         // Если есть еще подходы, показываем отдых
-        showRestScreen(true); // true означает отдых между подходами
+        currentSet++;
+        showRestScreen(true);
     } else if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
         // Если это последний подход, но есть следующее упражнение
         currentExerciseIndex++;
         currentSet = 1;
-        showRestScreen(false); // false означает отдых между упражнениями
+        showRestScreen(false);
     } else {
         // Если это последний подход последнего упражнения
         completeWorkout(currentWorkout);
@@ -1660,15 +1661,8 @@ function startTimer(duration) {
     timerValue = duration;
     updateCounter(timerValue);
 
-    let lastTick = Date.now();
-    
     // Запускаем таймер
     timerInterval = setInterval(() => {
-        const now = Date.now();
-        const delta = now - lastTick;
-        lastTick = now;
-        
-        // Уменьшаем значение
         timerValue--;
         updateCounter(timerValue);
 
@@ -1682,7 +1676,6 @@ function startTimer(duration) {
             console.log('Таймер завершен');
             clearInterval(timerInterval);
             timerInterval = null;
-            
             handleExerciseComplete();
         }
     }, 1000);
