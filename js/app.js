@@ -19,59 +19,54 @@ let workoutStartTime = null; // Добавляем переменную для �
 // Функция для безопасного показа попапа
 async function showPopupSafe(options) {
     return new Promise((resolve) => {
-        const tryClosePopup = () => {
-            try {
-                tg.closePopup();
-                return true;
-            } catch (e) {
-                console.log('Нет открытого попапа для закрытия');
-                return false;
-            }
-        };
+        let attempts = 0;
+        const maxAttempts = 5;
+        const delay = 200;
 
-        const tryShowPopup = (retries = 3) => {
-            if (retries <= 0) {
-                console.error('Не удалось показать попап после нескольких попыток');
-                resolve();
-                return;
-            }
-
+        const tryShowPopup = async () => {
             try {
-                tg.showPopup(options);
-                resolve();
+                // Сначала пытаемся закрыть текущий попап
+                try {
+                    await tg.closePopup();
+                    // Ждем немного после закрытия
+                    await new Promise(r => setTimeout(r, 100));
+                } catch (e) {
+                    // Игнорируем ошибку, если попап не был открыт
+                }
+
+                await tg.showPopup(options);
+                resolve(true);
             } catch (error) {
-                if (error.message === 'WebAppPopupOpened') {
-                    // Если попап уже открыт, пытаемся закрыть и показать снова
-                    tryClosePopup();
-                    setTimeout(() => tryShowPopup(retries - 1), 100);
+                attempts++;
+                if (attempts < maxAttempts) {
+                    // Увеличиваем задержку с каждой попыткой
+                    await new Promise(r => setTimeout(r, delay * attempts));
+                    await tryShowPopup();
                 } else {
-                    console.error('Ошибка при показе попапа:', error);
-                    resolve(error);
+                    console.error('Не удалось показать попап после нескольких попыток');
+                    resolve(false);
                 }
             }
         };
 
-        // Сначала пытаемся закрыть текущий попап
-        tryClosePopup();
-        
-        // Затем показываем новый попап с небольшой задержкой
-        setTimeout(() => tryShowPopup(), 100);
+        tryShowPopup();
     });
 }
 
 // Упрощаем обработчик закрытия попапа
 tg.onEvent('popupClosed', async (event) => {
-    console.log('Popup closed with event:', event);
+    if (!event || !event.button_id) return;
 
-    if (event.button_id) {
-        if (event.button_id.startsWith('start_program_')) {
-            const programId = event.button_id.replace('start_program_', '');
-            await startProgram(programId);
-        } 
-        else if (event.button_id.startsWith('schedule_')) {
-            const programId = event.button_id.replace('schedule_', '');
-            await showProgramSchedule(programId);
-        }
+    // Добавляем небольшую задержку перед следующим действием
+    await new Promise(r => setTimeout(r, 100));
+
+    if (event.button_id.startsWith('start_program_')) {
+        const programId = event.button_id.replace('start_program_', '');
+        await startProgram(programId);
+    } 
+    else if (event.button_id.startsWith('schedule_')) {
+        const programId = event.button_id.replace('schedule_', '');
+        await showProgramSchedule(programId);
     }
 });
 
@@ -1047,12 +1042,12 @@ async function showProgramSchedule(programId) {
     const program = window.programData[programId];
     if (!program) return;
 
+    // Форматируем расписание в более читаемый вид
+    const scheduleMessage = formatScheduleMessage(program);
+
     await showPopupSafe({
         title: 'Расписание тренировок',
-        message: `${program.workouts.map((workout, index) => 
-            `День ${index + 1}: ${workout.title}
-⏱️ ${workout.duration} мин • ${workout.type}`
-        ).join('\n\n')}`,
+        message: scheduleMessage,
         buttons: [
             {
                 type: 'default',
@@ -2919,18 +2914,20 @@ async function showProgramInfo(programId) {
     const program = window.programData[programId];
     if (!program) return;
 
-    await showPopupSafe({
-        title: program.title,
-        message: `📋 ${program.description}
+    const message = `${program.title}
+
+📋 ${program.description}
+
+⏱️ Длительность: ${program.duration}
+📅 График: ${program.schedule}
+💪 Сложность: ${program.difficulty}
 
 🎯 Цели программы:
-${program.goals.map(goal => `• ${goal}`).join('\n')}
+${program.goals.map(goal => `• ${goal}`).join('\n')}`;
 
-📅 Расписание:
-${program.workouts.map((workout, index) => 
-    `День ${index + 1}: ${workout.title}
-⏱️ ${workout.duration} мин • ${workout.type}`
-).join('\n\n')}`,
+    await showPopupSafe({
+        title: 'О программе',
+        message: message,
         buttons: [
             {
                 type: 'default',
@@ -2944,4 +2941,42 @@ ${program.workouts.map((workout, index) =>
             }
         ]
     });
+}
+
+// Добавляем функцию форматирования расписания
+function formatScheduleMessage(program) {
+    const workoutIcons = {
+        cardio: '🏃‍♂️',
+        strength: '💪',
+        hiit: '⚡️',
+        cardio_strength: '💪🏃‍♂️',
+        general: '🎯'
+    };
+
+    const difficultyIcons = {
+        easy: '⭐️',
+        medium: '⭐️⭐️',
+        hard: '⭐️⭐️⭐️'
+    };
+
+    let message = `${program.title}\n`;
+    message += `${difficultyIcons[program.difficulty] || '⭐️'} ${program.description}\n\n`;
+    message += `📅 ${program.schedule}\n`;
+    message += `⏱️ ${program.duration}\n\n`;
+    message += `Тренировки:\n\n`;
+
+    program.workouts.forEach((workout, index) => {
+        const icon = workoutIcons[workout.type] || '🎯';
+        message += `День ${index + 1}: ${icon} ${workout.title}\n`;
+        message += `├ ⏱️ ${workout.duration} мин\n`;
+        message += `├ 🔥 ${workout.calories} ккал\n`;
+        message += `└ 🎯 ${workout.exercises.length} упражнений\n\n`;
+    });
+
+    message += `\nЦели программы:\n`;
+    program.goals.forEach(goal => {
+        message += `• ${goal}\n`;
+    });
+
+    return message;
 }
