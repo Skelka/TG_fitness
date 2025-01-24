@@ -911,6 +911,17 @@ async function startWorkout(workout, programId) {
     console.log('Начинаем тренировку:', workout, 'ID программы:', programId);
     
     try {
+        // Проверяем, нет ли уже активной программы
+        const activeProgram = await checkActiveProgram();
+        if (activeProgram && activeProgram.id !== programId) {
+            await showPopupSafe({
+                title: 'Активная программа',
+                message: 'У вас уже есть начатая программа. Завершите или отмените её, прежде чем начать новую.',
+                buttons: [{type: 'ok'}]
+            });
+            return;
+        }
+
         if (!workout || !workout.exercises || workout.exercises.length === 0) {
             throw new Error('Некорректные данные тренировки');
         }
@@ -3196,4 +3207,132 @@ function setupNavigationHandlers() {
             }
         }
     });
+}
+
+// Добавляем функцию проверки активной программы
+async function checkActiveProgram() {
+    try {
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+        
+        if (!activeProgram) return null;
+
+        // Проверяем, есть ли начатая тренировка первого дня
+        const firstWorkoutStarted = activeProgram.workouts?.[0]?.started || false;
+        return firstWorkoutStarted ? activeProgram : null;
+    } catch (error) {
+        console.error('Ошибка при проверке активной программы:', error);
+        return null;
+    }
+}
+
+// Обновляем функцию отображения программ
+async function renderProgramCards() {
+    const container = document.querySelector('.programs-list');
+    if (!container) return;
+
+    const activeProgram = await checkActiveProgram();
+
+    let html = '';
+    Object.entries(window.programData).forEach(([programId, program]) => {
+        const isDisabled = activeProgram && activeProgram.id !== programId;
+        
+        html += `
+            <div class="program-card ${isDisabled ? 'disabled' : ''}" data-program-id="${programId}">
+                <div class="program-content">
+                    <!-- ... остальной HTML остается прежним ... -->
+                    <div class="program-actions">
+                        <button class="program-btn info-btn" ${isDisabled ? 'disabled' : ''}>
+                            <span class="material-symbols-rounded">info</span>
+                            Подробнее
+                        </button>
+                        <button class="program-btn start-btn" ${isDisabled ? 'disabled' : ''}>
+                            <span class="material-symbols-rounded">play_arrow</span>
+                            ${activeProgram && activeProgram.id === programId ? 'Продолжить' : 'Старт'}
+                        </button>
+                    </div>
+                    ${isDisabled ? `
+                        <div class="program-disabled-message">
+                            Завершите или отмените текущую программу
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+// Обновляем функцию начала тренировки
+async function startWorkout(workout, programId) {
+    try {
+        // Проверяем, нет ли уже активной программы
+        const activeProgram = await checkActiveProgram();
+        if (activeProgram && activeProgram.id !== programId) {
+            await showPopupSafe({
+                title: 'Активная программа',
+                message: 'У вас уже есть начатая программа. Завершите или отмените её, прежде чем начать новую.',
+                buttons: [{type: 'ok'}]
+            });
+            return;
+        }
+
+        if (!workout || !workout.exercises || workout.exercises.length === 0) {
+            throw new Error('Некорректные данные тренировки');
+        }
+
+        const program = window.programData[programId];
+        const programType = PROGRAM_TYPES[program.category] || PROGRAM_TYPES.weight_loss;
+
+        // Сохраняем данные текущей тренировки и программы
+        currentWorkout = {
+            ...workout,
+            programType: program.category,
+            settings: programType
+        };
+        currentProgramId = programId;
+        currentExerciseIndex = 0;
+        currentSet = 1;
+        workoutStartTime = Date.now();
+
+        // Адаптируем упражнения под тип программы
+        currentWorkout.exercises = currentWorkout.exercises.map(exercise => ({
+            ...exercise,
+            rest: exercise.name.toLowerCase().includes('разминка') 
+                ? 0 
+                : (exercise.rest || programType.restBetweenSets)
+        }));
+
+        // Очищаем все таймеры
+        clearTimers();
+
+        // Скрываем нижнюю навигацию
+        document.querySelector('.bottom-nav')?.classList.add('hidden');
+
+        // Предзагружаем анимации упражнений
+        window.preloadExerciseAnimations(workout.exercises);
+
+        // Показываем первое упражнение
+        renderExercise();
+
+        // Специфичная для программы вибрация
+        tg.HapticFeedback.impactOccurred(programType.hapticFeedback);
+
+    } catch (error) {
+        console.error('Ошибка при запуске тренировки:', error);
+        showError('Не удалось начать тренировку');
+    }
+}
+
+// Функция отмены программы
+async function cancelProgram() {
+    try {
+        await setStorageItem('activeProgram', '');
+        await renderProgramCards(); // Перерисовываем карточки программ
+        tg.HapticFeedback.notificationOccurred('success');
+    } catch (error) {
+        console.error('Ошибка при отмене программы:', error);
+        showError('Не удалось отменить программу');
+    }
 }

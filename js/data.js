@@ -220,3 +220,48 @@ window.programData = {
         ]
     }
 };
+
+// Обновляем текст кнопки с "Начать" на "Старт"
+function renderProgramCards() {
+    const container = document.querySelector('.programs-list');
+    if (!container) return;
+
+    let html = '';
+    Object.entries(window.programData).forEach(([programId, program]) => {
+        html += `
+            <div class="program-card" data-program-id="${programId}">
+                <div class="program-content">
+                    <div class="program-icon">
+                        <span class="material-symbols-rounded">${program.icon}</span>
+                    </div>
+                    <div class="program-text">
+                        <h3>${program.title}</h3>
+                        <p class="program-description">${program.description}</p>
+                        <div class="program-details">
+                            <span>
+                                <span class="material-symbols-rounded">calendar_today</span>
+                                ${program.schedule}
+                            </span>
+                            <span>
+                                <span class="material-symbols-rounded">fitness_center</span>
+                                ${program.difficulty}
+                            </span>
+                        </div>
+                        <div class="program-actions">
+                            <button class="program-btn info-btn">
+                                <span class="material-symbols-rounded">info</span>
+                                Подробнее
+                            </button>
+                            <button class="program-btn start-btn">
+                                <span class="material-symbols-rounded">play_arrow</span>
+                                Старт
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
