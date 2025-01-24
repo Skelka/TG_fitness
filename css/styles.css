@@ -586,22 +586,27 @@ input:focus, select:focus {
 }
 
 .program-card {
-    margin-bottom: 16px;
-    border-radius: 12px;
-    overflow: hidden;
     background: var(--tg-theme-bg-color);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    overflow: hidden;
     border: var(--card-border);
     box-shadow: var(--card-shadow);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.program-card:active {
+    transform: scale(0.98);
 }
 
 .program-content {
-    display: flex;
     padding: 16px;
+    display: flex;
     gap: 16px;
 }
 
 .program-icon {
-    flex-shrink: 0;
     width: 48px;
     height: 48px;
     border-radius: 12px;
@@ -609,68 +614,46 @@ input:focus, select:focus {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .program-icon .material-symbols-rounded {
     font-size: 24px;
-    color: #fff;
+    color: var(--tg-theme-button-text-color);
 }
 
-.program-text {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.program-text h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.program-description {
-    margin: 0;
-    font-size: 14px;
-    color: var(--tg-theme-hint-color);
-}
-
-.program-details {
+.program-meta {
     display: flex;
     gap: 12px;
     font-size: 13px;
     color: var(--tg-theme-hint-color);
+    margin: 8px 0;
 }
 
-.program-details span {
+.program-meta span {
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
 .program-actions {
-    margin-top: 12px;
     display: flex;
     gap: 8px;
+    margin-top: 12px;
 }
 
 .program-btn {
     flex: 1;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    height: 32px;
-    padding: 0 12px;
-    border-radius: 8px;
+    padding: 8px 16px;
     border: none;
-    font-size: 13px;
-    font-weight: 400;
+    border-radius: 8px;
+    font-size: 14px;
     cursor: pointer;
-    transition: opacity 0.15s ease;
-    text-transform: none;
-    letter-spacing: normal;
-    white-space: nowrap;
+    transition: opacity 0.2s;
 }
 
 .program-btn.info-btn {
@@ -685,11 +668,6 @@ input:focus, select:focus {
 
 .program-btn:active {
     opacity: 0.7;
-}
-
-.program-btn .material-symbols-rounded {
-    font-size: 16px;
-    font-variation-settings: 'FILL' 0, 'wght' 400;
 }
 
 .program-schedule {

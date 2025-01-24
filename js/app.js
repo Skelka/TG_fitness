@@ -2202,49 +2202,94 @@ async function initStatisticsPage() {
     }
 }
 
-// Добавим функцию для создания карточек программ
-function renderProgramCards() {
+// Обновляем функцию отображения программ
+async function renderProgramCards() {
     const container = document.querySelector('.programs-list');
     if (!container) return;
 
+    const activeProgram = await checkActiveProgram();
+
     let html = '';
     Object.entries(window.programData).forEach(([programId, program]) => {
+        const isDisabled = activeProgram && activeProgram.id !== programId;
+        
         html += `
-            <div class="program-card">
+            <div class="program-card ${isDisabled ? 'disabled' : ''}" data-program-id="${programId}">
+                <div class="program-icon">
+                    <span class="material-symbols-rounded">${program.icon}</span>
+                </div>
                 <div class="program-content">
-                    <div class="program-icon">
-                        <span class="material-symbols-rounded">${program.icon}</span>
+                    <h3>${program.title}</h3>
+                    <p class="program-description">${program.description}</p>
+                    <div class="program-meta">
+                        <span>
+                            <span class="material-symbols-rounded">calendar_today</span>
+                            ${program.schedule}
+                        </span>
+                        <span>
+                            <span class="material-symbols-rounded">fitness_center</span>
+                            ${program.difficulty}
+                        </span>
                     </div>
-                    <div class="program-text">
-                        <h3>${program.title}</h3>
-                        <p class="program-description">${program.description}</p>
-                        <div class="program-details">
-                            <span>
-                                <span class="material-symbols-rounded">calendar_today</span>
-                                ${program.schedule}
-                            </span>
-                            <span>
-                                <span class="material-symbols-rounded">fitness_center</span>
-                                ${getDifficultyText(program.difficulty)}
-                            </span>
-                        </div>
-                        <div class="program-actions">
-                            <button class="program-btn info-btn" onclick="showProgramDetails('${programId}')">
-                                <span class="material-symbols-rounded">info</span>
-                                Подробнее
-                            </button>
-                            <button class="program-btn start-btn" onclick="startProgram('${programId}')">
-                                <span class="material-symbols-rounded">play_arrow</span>
-                                Начать
-                            </button>
-                        </div>
+                    <div class="program-actions">
+                        <button class="program-btn info-btn" ${isDisabled ? 'disabled' : ''} onclick="showProgramDetails('${programId}')">
+                            <span class="material-symbols-rounded">info</span>
+                            Подробнее
+                        </button>
+                        <button class="program-btn start-btn" ${isDisabled ? 'disabled' : ''} onclick="startProgram('${programId}')">
+                            <span class="material-symbols-rounded">play_arrow</span>
+                            ${activeProgram && activeProgram.id === programId ? 'Продолжить' : 'Старт'}
+                        </button>
                     </div>
+                    ${isDisabled ? `
+                        <div class="program-disabled-message">
+                            Завершите или отмените текущую программу
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `;
     });
 
     container.innerHTML = html;
+
+    // Добавляем обработчики после рендеринга
+    setupProgramHandlers();
+}
+
+// Обновляем функцию настройки обработчиков программ
+function setupProgramHandlers() {
+    document.querySelectorAll('.program-card').forEach(card => {
+        const programId = card.dataset.programId;
+        
+        // Обработчик для кнопки "Подробнее"
+        const infoBtn = card.querySelector('.info-btn');
+        if (infoBtn) {
+            infoBtn.onclick = (e) => {
+                e.stopPropagation();
+                showProgramDetails(programId);
+                tg.HapticFeedback.impactOccurred('light');
+            };
+        }
+
+        // Обработчик для кнопки "Старт"
+        const startBtn = card.querySelector('.start-btn');
+        if (startBtn) {
+            startBtn.onclick = (e) => {
+                e.stopPropagation();
+                startProgram(programId);
+                tg.HapticFeedback.impactOccurred('medium');
+            };
+        }
+
+        // Обработчик для всей карточки
+        card.onclick = () => {
+            if (!card.classList.contains('disabled')) {
+                showProgramDetails(programId);
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        };
+    });
 }
 
 // Функция для отображения тренировок программы
@@ -3223,105 +3268,6 @@ async function checkActiveProgram() {
     } catch (error) {
         console.error('Ошибка при проверке активной программы:', error);
         return null;
-    }
-}
-
-// Обновляем функцию отображения программ
-async function renderProgramCards() {
-    const container = document.querySelector('.programs-list');
-    if (!container) return;
-
-    const activeProgram = await checkActiveProgram();
-
-    let html = '';
-    Object.entries(window.programData).forEach(([programId, program]) => {
-        const isDisabled = activeProgram && activeProgram.id !== programId;
-        
-        html += `
-            <div class="program-card ${isDisabled ? 'disabled' : ''}" data-program-id="${programId}">
-                <div class="program-content">
-                    <!-- ... остальной HTML остается прежним ... -->
-                    <div class="program-actions">
-                        <button class="program-btn info-btn" ${isDisabled ? 'disabled' : ''}>
-                            <span class="material-symbols-rounded">info</span>
-                            Подробнее
-                        </button>
-                        <button class="program-btn start-btn" ${isDisabled ? 'disabled' : ''}>
-                            <span class="material-symbols-rounded">play_arrow</span>
-                            ${activeProgram && activeProgram.id === programId ? 'Продолжить' : 'Старт'}
-                        </button>
-                    </div>
-                    ${isDisabled ? `
-                        <div class="program-disabled-message">
-                            Завершите или отмените текущую программу
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-    });
-
-    container.innerHTML = html;
-}
-
-// Обновляем функцию начала тренировки
-async function startWorkout(workout, programId) {
-    try {
-        // Проверяем, нет ли уже активной программы
-        const activeProgram = await checkActiveProgram();
-        if (activeProgram && activeProgram.id !== programId) {
-            await showPopupSafe({
-                title: 'Активная программа',
-                message: 'У вас уже есть начатая программа. Завершите или отмените её, прежде чем начать новую.',
-                buttons: [{type: 'ok'}]
-            });
-            return;
-        }
-
-        if (!workout || !workout.exercises || workout.exercises.length === 0) {
-            throw new Error('Некорректные данные тренировки');
-        }
-
-        const program = window.programData[programId];
-        const programType = PROGRAM_TYPES[program.category] || PROGRAM_TYPES.weight_loss;
-
-        // Сохраняем данные текущей тренировки и программы
-        currentWorkout = {
-            ...workout,
-            programType: program.category,
-            settings: programType
-        };
-        currentProgramId = programId;
-        currentExerciseIndex = 0;
-        currentSet = 1;
-        workoutStartTime = Date.now();
-
-        // Адаптируем упражнения под тип программы
-        currentWorkout.exercises = currentWorkout.exercises.map(exercise => ({
-            ...exercise,
-            rest: exercise.name.toLowerCase().includes('разминка') 
-                ? 0 
-                : (exercise.rest || programType.restBetweenSets)
-        }));
-
-        // Очищаем все таймеры
-        clearTimers();
-
-        // Скрываем нижнюю навигацию
-        document.querySelector('.bottom-nav')?.classList.add('hidden');
-
-        // Предзагружаем анимации упражнений
-        window.preloadExerciseAnimations(workout.exercises);
-
-        // Показываем первое упражнение
-        renderExercise();
-
-        // Специфичная для программы вибрация
-        tg.HapticFeedback.impactOccurred(programType.hapticFeedback);
-
-    } catch (error) {
-        console.error('Ошибка при запуске тренировки:', error);
-        showError('Не удалось начать тренировку');
     }
 }
 
