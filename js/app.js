@@ -2860,20 +2860,46 @@ async function renderExercise() {
 
         container.innerHTML = `
             <div class="workout-session">
-                <div class="exercise-header">
+                <div class="workout-header">
                     <button class="back-btn">
                         <span class="material-symbols-rounded">arrow_back</span>
                     </button>
-                    <h2>${exercise.name}</h2>
+                    <div class="workout-progress">
+                        <span>Упражнение ${currentExerciseIndex + 1}/${currentWorkout.exercises.length}</span>
+                    </div>
                 </div>
+                
                 <div class="exercise-content">
+                    <h2 class="exercise-title">${exercise.name}</h2>
+                    
                     <div class="exercise-animation">
                         <img src="${window.getExerciseAnimation(exercise.name)}" alt="${exercise.name}">
                     </div>
+                    
                     <div class="exercise-info">
-                        <div class="set-counter">Подход ${currentSet} из ${exercise.sets}</div>
-                        <div class="rep-counter">${exercise.reps}</div>
+                        <div class="exercise-stats">
+                            <div class="stat-item">
+                                <span class="material-symbols-rounded">repeat</span>
+                                <div class="stat-value">${exercise.reps}</div>
+                                <div class="stat-label">повторений</div>
+                            </div>
+                            <div class="stat-item">
+                                <span class="material-symbols-rounded">fitness_center</span>
+                                <div class="stat-value">${currentSet}/${exercise.sets}</div>
+                                <div class="stat-label">подход</div>
+                            </div>
+                            ${exercise.rest ? `
+                            <div class="stat-item">
+                                <span class="material-symbols-rounded">timer</span>
+                                <div class="stat-value">${exercise.rest}</div>
+                                <div class="stat-label">сек отдых</div>
+                            </div>
+                            ` : ''}
+                        </div>
                     </div>
+                </div>
+                
+                <div class="exercise-controls">
                     <button class="complete-set-btn">
                         <span class="material-symbols-rounded">check</span>
                         Завершить подход
@@ -2887,11 +2913,7 @@ async function renderExercise() {
 
     } catch (error) {
         console.error('Ошибка при отображении упражнения:', error);
-        await showPopupSafe({
-            title: 'Ошибка',
-            message: 'Не удалось отобразить упражнение',
-            buttons: [{type: 'ok'}]
-        });
+        await showError('Не удалось отобразить упражнение');
     }
 }
 

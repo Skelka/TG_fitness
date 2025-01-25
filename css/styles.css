@@ -1259,37 +1259,27 @@ input:focus, select:focus {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 16px;
     background: var(--tg-theme-bg-color);
 }
 
 .workout-header {
+    padding: 16px;
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: 24px;
+    border-bottom: 1px solid var(--tg-theme-secondary-bg-color);
 }
 
 .back-btn {
-    background: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     border: none;
-    padding: 8px;
-    color: var(--tg-theme-text-color);
+    background: var(--tg-theme-secondary-bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-}
-
-.workout-title {
-    flex-grow: 1;
-}
-
-.workout-title div:first-child {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color);
-}
-
-.workout-title div:last-child {
-    font-size: 18px;
-    font-weight: 600;
 }
 
 .workout-progress {
@@ -1297,78 +1287,80 @@ input:focus, select:focus {
     color: var(--tg-theme-hint-color);
 }
 
-.exercise-display {
-    flex-grow: 1;
+.exercise-content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    overflow-y: auto;
+}
+
+.exercise-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color);
+    text-align: center;
+    margin: 0;
+}
+
+.exercise-animation {
+    width: 100%;
+    aspect-ratio: 1;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.exercise-animation img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.exercise-info {
+    padding: 16px;
+}
+
+.exercise-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.stat-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    text-align: center;
-    position: relative;
-    margin: 24px 0;
+    gap: 4px;
 }
 
-.exercise-background {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 12px;
-    margin-bottom: 24px;
-}
-
-.exercise-content {
-    width: 100%;
-}
-
-.exercise-name {
+.stat-item .material-symbols-rounded {
     font-size: 24px;
-    margin-bottom: 8px;
+    color: var(--tg-theme-button-color);
 }
 
-.exercise-subtitle {
-    color: var(--tg-theme-hint-color);
-    margin-bottom: 24px;
-}
-
-.exercise-counter {
-    margin: 24px 0;
-}
-
-.counter-number {
-    font-size: 48px;
+.stat-value {
+    font-size: 20px;
     font-weight: 600;
-    margin-bottom: 8px;
+    color: var(--tg-theme-text-color);
 }
 
-.counter-label {
+.stat-label {
+    font-size: 12px;
     color: var(--tg-theme-hint-color);
 }
 
 .exercise-controls {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    align-items: center;
-    margin-top: auto;
-    padding: 16px 0;
+    padding: 16px;
+    border-top: 1px solid var(--tg-theme-secondary-bg-color);
 }
 
-.control-btn {
-    width: 48px;
+.complete-set-btn {
+    width: 100%;
     height: 48px;
-    border-radius: 24px;
-    border: none;
-    background: var(--tg-theme-secondary-bg-color);
-    color: var(--tg-theme-text-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.complete-btn {
-    flex: 1;
-    height: 48px;
-    border-radius: 24px;
+    border-radius: 12px;
     border: none;
     background: var(--tg-theme-button-color);
     color: var(--tg-theme-button-text-color);
@@ -1378,6 +1370,16 @@ input:focus, select:focus {
     align-items: center;
     justify-content: center;
     gap: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.complete-set-btn:active {
+    opacity: 0.8;
+}
+
+.complete-set-btn .material-symbols-rounded {
+    font-size: 20px;
 }
 
 /* Стили для профиля */
