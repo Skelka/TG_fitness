@@ -3314,3 +3314,83 @@ function showWorkoutDetails(workout) {
         });
     }
 }
+
+// Добавляем функцию completeSet
+async function completeSet() {
+    const exercise = currentWorkout.exercises[currentExerciseIndex];
+    
+    if (currentSet < exercise.sets) {
+        // Если есть еще подходы, показываем экран отдыха
+        if (exercise.rest) {
+            showRestScreen(true);
+        } else {
+            currentSet++;
+            renderExercise();
+        }
+    } else {
+        // Если все подходы выполнены, переходим к следующему упражнению
+        currentSet = 1;
+        
+        if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
+            // Если есть следующее упражнение
+            currentExerciseIndex++;
+            if (exercise.rest) {
+                showRestScreen(false);
+            } else {
+                renderExercise();
+            }
+        } else {
+            // Если это было последнее упражнение
+            await completeWorkout();
+        }
+    }
+}
+
+// Добавляем функцию завершения тренировки
+async function completeWorkout() {
+    try {
+        // Получаем активную программу
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+        
+        if (activeProgram && activeProgram.workouts) {
+            // Находим текущую тренировку
+            const workoutIndex = activeProgram.workouts.findIndex(w => 
+                w.day === currentWorkout.day && w.title === currentWorkout.title);
+            
+            if (workoutIndex !== -1) {
+                // Отмечаем тренировку как завершенную
+                activeProgram.workouts[workoutIndex].completed = true;
+                await setStorageItem('activeProgram', JSON.stringify(activeProgram));
+            }
+        }
+
+        // Показываем поздравление
+        await showPopupSafe({
+            title: 'Тренировка завершена! 🎉',
+            message: 'Отличная работа! Вы успешно завершили тренировку.',
+            buttons: [{
+                type: 'default',
+                text: 'Продолжить'
+            }]
+        });
+
+        // Возвращаемся к списку тренировок
+        const program = window.programData[currentProgramId];
+        if (program) {
+            showProgramWorkouts(program);
+        } else {
+            renderProgramCards();
+        }
+
+        // Показываем нижнюю навигацию
+        document.querySelector('.bottom-nav')?.classList.remove('hidden');
+
+        // Вибрация успеха
+        tg.HapticFeedback.notificationOccurred('success');
+
+    } catch (error) {
+        console.error('Ошибка при завершении тренировки:', error);
+        await showError('Не удалось завершить тренировку');
+    }
+}
