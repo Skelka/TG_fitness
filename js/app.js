@@ -911,57 +911,48 @@ async function startWorkout(workout, programId) {
     console.log('Начинаем тренировку:', workout, 'ID программы:', programId);
     
     try {
-        // Проверяем, нет ли уже активной программы
-        const activeProgram = await checkActiveProgram();
-        if (activeProgram && activeProgram.id !== programId) {
-            await showPopupSafe({
-                title: 'Активная программа',
-                message: 'У вас уже есть начатая программа. Завершите или отмените её, прежде чем начать новую.',
-                buttons: [{type: 'ok'}]
-            });
-            return;
-        }
-
         if (!workout || !workout.exercises || workout.exercises.length === 0) {
             throw new Error('Некорректные данные тренировки');
         }
 
-        const program = window.programData[programId];
-        const programType = PROGRAM_TYPES[program.category] || PROGRAM_TYPES.weight_loss;
-
-        // Сохраняем данные текущей тренировки и программы
-        currentWorkout = {
-            ...workout,
-            programType: program.category,
-            settings: programType
-        };
+        // Сохраняем данные текущей тренировки
+        currentWorkout = workout;
         currentProgramId = programId;
         currentExerciseIndex = 0;
         currentSet = 1;
         workoutStartTime = Date.now();
 
-        // Адаптируем упражнения под тип программы
-        currentWorkout.exercises = currentWorkout.exercises.map(exercise => ({
-            ...exercise,
-            rest: exercise.name.toLowerCase().includes('разминка') 
-                ? 0 
-                : (exercise.rest || programType.restBetweenSets)
-        }));
-
         // Очищаем все таймеры
         clearTimers();
 
-        // Скрываем нижнюю навигацию
-        document.querySelector('.bottom-nav')?.classList.add('hidden');
+        // Теперь скрываем нижнюю навигацию только при начале тренировки
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) bottomNav.classList.add('hidden');
+
+        // Отмечаем тренировку как начатую
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+        
+        if (activeProgram) {
+            const workoutIndex = activeProgram.workouts.findIndex(w => 
+                w.title === workout.title && w.day === workout.day);
+            
+            if (workoutIndex !== -1) {
+                activeProgram.workouts[workoutIndex].started = true;
+                await setStorageItem('activeProgram', JSON.stringify(activeProgram));
+            }
+        }
 
         // Предзагружаем анимации упражнений
-        window.preloadExerciseAnimations(workout.exercises);
+        if (window.preloadExerciseAnimations) {
+            window.preloadExerciseAnimations(workout.exercises);
+        }
 
         // Показываем первое упражнение
-        renderExercise();
+        await renderExercise();
 
-        // Специфичная для программы вибрация
-        tg.HapticFeedback.impactOccurred(programType.hapticFeedback);
+        // Вибрация при начале тренировки
+        tg.HapticFeedback.impactOccurred('medium');
 
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
@@ -1202,49 +1193,27 @@ function updateProgramProgress(progress) {
     }
 }
 
-// Функция для запуска программы
+// Добавим функцию для старта программы
 async function startProgram(programId) {
     try {
         const program = window.programData[programId];
-        if (!program) {
-            throw new Error('Программа не найдена');
+        if (!program || !program.workouts || program.workouts.length === 0) {
+            throw new Error('Некорректные данные программы');
         }
 
-        // Сохраняем выбранную программу
+        // Сохраняем программу как активную
         await setStorageItem('activeProgram', JSON.stringify({
             id: programId,
-            title: program.title,
-            workouts: program.workouts,
-            completedWorkouts: []
+            startDate: Date.now(),
+            workouts: program.workouts.map(w => ({ ...w, completed: false, started: false }))
         }));
 
-        // Очищаем текущий контейнер
-        const container = document.querySelector('.container');
-        if (!container) return;
-
-        // Создаем контейнер для списка тренировок
-        container.innerHTML = `
-            <div class="program-header">
-                <button class="back-btn" onclick="showProgramsList()">
-                    <span class="material-symbols-rounded">arrow_back</span>
-                </button>
-                <h2>${program.title}</h2>
-            </div>
-            <div class="workouts-list"></div>
-        `;
-
-        // Добавляем обработчик для кнопки "Назад"
-        const backBtn = container.querySelector('.back-btn');
-        backBtn?.addEventListener('click', () => {
-            tg.HapticFeedback.impactOccurred('medium');
-        });
-
-        // Отображаем список тренировок
-        renderWorkouts(program);
+        // Начинаем первую тренировку
+        startWorkout(program.workouts[0], programId);
 
     } catch (error) {
         console.error('Ошибка при запуске программы:', error);
-        showError(error.message);
+        showError('Не удалось начать программу');
     }
 }
 
@@ -2292,18 +2261,17 @@ function setupProgramHandlers() {
     });
 }
 
-// Функция для отображения тренировок программы
+// Обновляем функцию showProgramWorkouts
 async function showProgramWorkouts(program) {
     console.log('Показываем программу:', program);
-    console.log('Тренировки в программе:', program.workouts);
-    console.log('Количество тренировок:', program.workouts?.length);
-
+    
     const programsList = document.querySelector('.programs-list');
     if (!program || !program.workouts) {
         console.error('Программа или тренировки не определены:', program);
         return;
     }
 
+    // Убираем скрытие нижней навигации отсюда
     programsList.innerHTML = `
         <div class="program-workouts">
             <div class="program-header">
@@ -2313,62 +2281,36 @@ async function showProgramWorkouts(program) {
                 <h2>${program.title}</h2>
             </div>
             <div class="program-days">
-                ${program.workouts.map((workout, index) => {
-                    console.log('Рендеринг тренировки:', workout);
-                    return `
-                        <div class="workout-day">
-                            <div class="day-header">
-                                <span class="day-number">День ${workout.day}</span>
-                            </div>
-                            <div class="day-info">
-                                <h3>${workout.title}</h3>
-                                <div class="workout-meta">
-                                    <span>
-                                        <span class="material-symbols-rounded">timer</span>
-                                        ${workout.duration} мин
-                                    </span>
-                                    <span>
-                                        <span class="material-symbols-rounded">local_fire_department</span>
-                                        ${workout.calories} ккал
-                                    </span>
-                                </div>
-                            </div>
-                            <button class="start-workout-btn" data-workout-index="${index}">
-                                <span class="material-symbols-rounded">play_arrow</span>
-                                Начать тренировку
-                            </button>
+                ${program.workouts.map((workout, index) => `
+                    <div class="workout-day">
+                        <div class="day-header">
+                            <span class="day-number">День ${workout.day}</span>
                         </div>
-                    `;
-                }).join('')}
+                        <div class="day-info">
+                            <h3>${workout.title}</h3>
+                            <div class="workout-meta">
+                                <span>
+                                    <span class="material-symbols-rounded">timer</span>
+                                    ${workout.duration} мин
+                                </span>
+                                <span>
+                                    <span class="material-symbols-rounded">local_fire_department</span>
+                                    ${workout.calories} ккал
+                                </span>
+                            </div>
+                        </div>
+                        <button class="start-workout-btn" data-workout-index="${index}">
+                            <span class="material-symbols-rounded">play_arrow</span>
+                            Начать
+                        </button>
+                    </div>
+                `).join('')}
             </div>
         </div>
     `;
 
     // Добавляем обработчики
-    const backBtn = programsList.querySelector('.back-btn');
-    backBtn?.addEventListener('click', () => {
-        renderProgramCards();
-        tg.HapticFeedback.impactOccurred('medium');
-    });
-
-    const workoutBtns = programsList.querySelectorAll('.start-workout-btn');
-    workoutBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const workoutIndex = parseInt(btn.dataset.workoutIndex);
-            const workout = program.workouts[workoutIndex];
-            if (workout && workout.exercises && workout.exercises.length > 0) {
-                startWorkout(workout);
-                tg.HapticFeedback.impactOccurred('medium');
-            } else {
-                console.error('Некорректные данные тренировки:', workout);
-                tg.showPopup({
-                    title: 'Ошибка',
-                    message: 'Не удалось загрузить тренировку. Попробуйте позже.',
-                    buttons: [{type: 'ok'}]
-                });
-            }
-        });
-    });
+    setupWorkoutHandlers(program);
 }
 
 // Вспомогательная функция для получения текста сложности
@@ -3187,7 +3129,7 @@ async function startWorkout(workout, programId) {
             throw new Error('Некорректные данные тренировки');
         }
 
-        // Сохраняем данные текущей тренировки и программы
+        // Сохраняем данные текущей тренировки
         currentWorkout = workout;
         currentProgramId = programId;
         currentExerciseIndex = 0;
@@ -3197,14 +3139,31 @@ async function startWorkout(workout, programId) {
         // Очищаем все таймеры
         clearTimers();
 
-        // Скрываем нижнюю навигацию
-        document.querySelector('.bottom-nav')?.classList.add('hidden');
+        // Теперь скрываем нижнюю навигацию только при начале тренировки
+        const bottomNav = document.querySelector('.bottom-nav');
+        if (bottomNav) bottomNav.classList.add('hidden');
+
+        // Отмечаем тренировку как начатую
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+        
+        if (activeProgram) {
+            const workoutIndex = activeProgram.workouts.findIndex(w => 
+                w.title === workout.title && w.day === workout.day);
+            
+            if (workoutIndex !== -1) {
+                activeProgram.workouts[workoutIndex].started = true;
+                await setStorageItem('activeProgram', JSON.stringify(activeProgram));
+            }
+        }
 
         // Предзагружаем анимации упражнений
-        window.preloadExerciseAnimations(workout.exercises);
+        if (window.preloadExerciseAnimations) {
+            window.preloadExerciseAnimations(workout.exercises);
+        }
 
         // Показываем первое упражнение
-        renderExercise();
+        await renderExercise();
 
         // Вибрация при начале тренировки
         tg.HapticFeedback.impactOccurred('medium');
