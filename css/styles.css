@@ -595,6 +595,7 @@ input:focus, select:focus {
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     position: relative;
+    padding: 16px;
 }
 
 .program-card:active {
@@ -603,7 +604,6 @@ input:focus, select:focus {
 }
 
 .program-content {
-    padding: 16px;
     display: flex;
     gap: 16px;
     align-items: flex-start;
@@ -626,7 +626,8 @@ input:focus, select:focus {
 }
 
 .program-text {
-    flex-grow: 1;
+    flex: 1;
+    min-width: 0; /* Для корректного переноса длинного текста */
 }
 
 .program-text h3 {
@@ -664,22 +665,8 @@ input:focus, select:focus {
     opacity: 0.8;
 }
 
-.program-card.disabled {
-    opacity: 0.6;
-    pointer-events: none;
-}
-
-.program-card.disabled::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--tg-theme-bg-color);
-    opacity: 0.4;
-    pointer-events: none;
-    border-radius: inherit;
+.programs-list {
+    padding: 12px;
 }
 
 /* Анимация появления карточек */
@@ -698,8 +685,22 @@ input:focus, select:focus {
     animation: fadeInUp 0.3s ease forwards;
 }
 
-.programs-list {
-    padding: 12px;
+.program-card.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.program-card.disabled::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--tg-theme-bg-color);
+    opacity: 0.4;
+    pointer-events: none;
+    border-radius: inherit;
 }
 
 .workout-item {
