@@ -1462,34 +1462,39 @@ function initApp() {
 
 // Обновляем обработчики событий
 function setupProgramHandlers() {
-    // Обработчики для кнопок в карточках программ
-    document.querySelectorAll('.program-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const programCard = button.closest('.program-card');
-            const programId = programCard.dataset.program;
-            
-            if (button.classList.contains('info-btn')) {
-                tg.HapticFeedback.impactOccurred('medium');
-                showProgramDetails(programId);
-            } else if (button.classList.contains('start-btn')) {
-                tg.HapticFeedback.impactOccurred('medium');
-                startProgram(programId);
-            }
-        });
-    });
-
-    // Добавляем обработчик для всей карточки программы
     document.querySelectorAll('.program-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-            if (!e.target.closest('.program-btn')) {
-                const programId = card.dataset.program;
-                tg.HapticFeedback.impactOccurred('medium');
+        const programId = card.dataset.programId;
+        
+        // Обработчик для кнопки "Подробнее"
+        const infoBtn = card.querySelector('.info-btn');
+        if (infoBtn) {
+            infoBtn.onclick = (e) => {
+                e.stopPropagation();
                 showProgramDetails(programId);
+                tg.HapticFeedback.impactOccurred('light');
+            };
+        }
+
+        // Обработчик для кнопки "Старт"
+        const startBtn = card.querySelector('.start-btn');
+        if (startBtn) {
+            startBtn.onclick = (e) => {
+                e.stopPropagation();
+                const program = window.programData[programId];
+                if (program) {
+                    showProgramWorkouts(program);
+                }
+                tg.HapticFeedback.impactOccurred('medium');
+            };
+        }
+
+        // Обработчик для всей карточки
+        card.onclick = () => {
+            if (!card.classList.contains('disabled')) {
+                showProgramDetails(programId);
+                tg.HapticFeedback.impactOccurred('light');
             }
-        });
+        };
     });
 }
 
@@ -2250,7 +2255,10 @@ function setupProgramHandlers() {
         if (startBtn) {
             startBtn.onclick = (e) => {
                 e.stopPropagation();
-                startProgram(programId);
+                const program = window.programData[programId];
+                if (program) {
+                    showProgramWorkouts(program);
+                }
                 tg.HapticFeedback.impactOccurred('medium');
             };
         }
