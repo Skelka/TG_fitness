@@ -1259,6 +1259,8 @@ input:focus, select:focus {
     height: 100vh;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .exercise-background {
@@ -1329,6 +1331,7 @@ input:focus, select:focus {
     justify-content: center;
     padding: 20px;
     text-align: center;
+    margin-bottom: auto;
 }
 
 .exercise-title {
@@ -1370,8 +1373,15 @@ input:focus, select:focus {
 }
 
 .exercise-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     padding: 16px;
-    margin-bottom: env(safe-area-inset-bottom, 16px);
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    margin-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .complete-set-btn {
