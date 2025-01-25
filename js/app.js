@@ -2180,7 +2180,7 @@ async function initStatisticsPage() {
     }
 }
 
-// Обновляем функцию отображения программ
+// Обновляем функцию renderProgramCards
 async function renderProgramCards() {
     const container = document.querySelector('.programs-list');
     if (!container) return;
@@ -2197,17 +2197,19 @@ async function renderProgramCards() {
                     <span class="material-symbols-rounded">${program.icon}</span>
                 </div>
                 <div class="program-content">
-                    <h3>${program.title}</h3>
-                    <p class="program-description">${program.description}</p>
-                    <div class="program-meta">
-                        <span>
-                            <span class="material-symbols-rounded">calendar_today</span>
-                            ${program.schedule}
-                        </span>
-                        <span>
-                            <span class="material-symbols-rounded">fitness_center</span>
-                            ${program.difficulty}
-                        </span>
+                    <div class="program-info">
+                        <h3>${program.title}</h3>
+                        <p>${program.description}</p>
+                        <div class="program-meta">
+                            <span>
+                                <span class="material-symbols-rounded">calendar_today</span>
+                                ${program.schedule}
+                            </span>
+                            <span>
+                                <span class="material-symbols-rounded">fitness_center</span>
+                                ${program.difficulty}
+                            </span>
+                        </div>
                     </div>
                     <div class="program-actions">
                         <button class="program-btn info-btn" ${isDisabled ? 'disabled' : ''}>
@@ -2219,11 +2221,6 @@ async function renderProgramCards() {
                             ${activeProgram && activeProgram.id === programId ? 'Продолжить' : 'Старт'}
                         </button>
                     </div>
-                    ${isDisabled ? `
-                        <div class="program-disabled-message">
-                            Завершите или отмените текущую программу
-                        </div>
-                    ` : ''}
                 </div>
             </div>
         `;
@@ -2232,7 +2229,44 @@ async function renderProgramCards() {
     container.innerHTML = html;
 
     // Добавляем обработчики после рендеринга
-    setupProgramHandlers();
+    document.querySelectorAll('.program-card').forEach(card => {
+        const programId = card.dataset.programId;
+        
+        // Обработчик для кнопки "Подробнее"
+        const infoBtn = card.querySelector('.info-btn');
+        if (infoBtn) {
+            infoBtn.onclick = (e) => {
+                e.stopPropagation();
+                if (!card.classList.contains('disabled')) {
+                    showProgramDetails(programId);
+                    tg.HapticFeedback.impactOccurred('light');
+                }
+            };
+        }
+
+        // Обработчик для кнопки "Старт"
+        const startBtn = card.querySelector('.start-btn');
+        if (startBtn) {
+            startBtn.onclick = (e) => {
+                e.stopPropagation();
+                if (!card.classList.contains('disabled')) {
+                    const program = window.programData[programId];
+                    if (program) {
+                        showProgramWorkouts(program);
+                        tg.HapticFeedback.impactOccurred('medium');
+                    }
+                }
+            };
+        }
+
+        // Обработчик для всей карточки
+        card.onclick = () => {
+            if (!card.classList.contains('disabled')) {
+                showProgramDetails(programId);
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        };
+    });
 }
 
 // Обновляем функцию настройки обработчиков программ
