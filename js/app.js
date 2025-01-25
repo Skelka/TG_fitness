@@ -44,6 +44,8 @@ async function showPopupSafe(params) {
 
 // Упрощаем обработчик закрытия попапа
 tg.onEvent('popupClosed', async (event) => {
+    console.log('Popup closed with event:', event);
+    
     if (!event || !event.button_id) return;
 
     // Добавляем небольшую задержку перед следующим действием
@@ -62,6 +64,7 @@ tg.onEvent('popupClosed', async (event) => {
         if (program) {
             // Показываем список тренировок программы
             showProgramWorkouts(program);
+            return; // Добавляем return чтобы избежать повторной обработки
         }
     }
 });
