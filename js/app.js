@@ -2860,23 +2860,24 @@ async function renderExercise() {
 
         container.innerHTML = `
             <div class="workout-session">
-                <div class="workout-header">
-                    <button class="back-btn">
-                        <span class="material-symbols-rounded">arrow_back</span>
-                    </button>
-                    <div class="workout-progress">
-                        <span>Упражнение ${currentExerciseIndex + 1}/${currentWorkout.exercises.length}</span>
-                    </div>
+                <div class="exercise-background">
+                    <img src="${window.getExerciseAnimation(exercise.name)}" alt="${exercise.name}">
+                    <div class="overlay"></div>
                 </div>
                 
-                <div class="exercise-content">
-                    <h2 class="exercise-title">${exercise.name}</h2>
-                    
-                    <div class="exercise-animation">
-                        <img src="${window.getExerciseAnimation(exercise.name)}" alt="${exercise.name}">
+                <div class="workout-content">
+                    <div class="workout-header">
+                        <button class="back-btn">
+                            <span class="material-symbols-rounded">arrow_back</span>
+                        </button>
+                        <div class="workout-progress">
+                            <span>Упражнение ${currentExerciseIndex + 1}/${currentWorkout.exercises.length}</span>
+                        </div>
                     </div>
                     
                     <div class="exercise-info">
+                        <h2 class="exercise-title">${exercise.name}</h2>
+                        
                         <div class="exercise-stats">
                             <div class="stat-item">
                                 <span class="material-symbols-rounded">repeat</span>
@@ -2897,13 +2898,13 @@ async function renderExercise() {
                             ` : ''}
                         </div>
                     </div>
-                </div>
-                
-                <div class="exercise-controls">
-                    <button class="complete-set-btn">
-                        <span class="material-symbols-rounded">check</span>
-                        Завершить подход
-                    </button>
+                    
+                    <div class="exercise-controls">
+                        <button class="complete-set-btn">
+                            <span class="material-symbols-rounded">check</span>
+                            Завершить подход
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
