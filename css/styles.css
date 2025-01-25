@@ -598,15 +598,11 @@ input:focus, select:focus {
     padding: 16px;
 }
 
-.program-card:active {
-    transform: scale(0.98);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-}
-
 .program-content {
     display: flex;
     gap: 16px;
     align-items: flex-start;
+    flex-direction: row;
 }
 
 .program-icon {
@@ -620,14 +616,12 @@ input:focus, select:focus {
     flex-shrink: 0;
 }
 
-.program-icon .material-symbols-rounded {
-    font-size: 20px;
-    color: var(--tg-theme-button-text-color);
-}
-
 .program-text {
     flex: 1;
-    min-width: 0; /* Для корректного переноса длинного текста */
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .program-text h3 {
@@ -638,7 +632,7 @@ input:focus, select:focus {
 }
 
 .program-description {
-    margin: 6px 0 8px;
+    margin: 0;
     font-size: 14px;
     color: var(--tg-theme-hint-color);
     line-height: 1.4;
@@ -646,9 +640,10 @@ input:focus, select:focus {
 
 .program-details {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     font-size: 13px;
     color: var(--tg-theme-hint-color);
+    margin-top: 4px;
 }
 
 .program-details span {
@@ -658,11 +653,6 @@ input:focus, select:focus {
     background: var(--tg-theme-secondary-bg-color);
     padding: 4px 8px;
     border-radius: 6px;
-}
-
-.program-details .material-symbols-rounded {
-    font-size: 16px;
-    opacity: 0.8;
 }
 
 .programs-list {
