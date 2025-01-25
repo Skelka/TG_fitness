@@ -2169,10 +2169,10 @@ async function renderProgramCards() {
         
         html += `
             <div class="program-card ${isDisabled ? 'disabled' : ''}" data-program-id="${programId}">
-                <div class="program-icon">
-                    <span class="material-symbols-rounded">${program.icon}</span>
-                </div>
                 <div class="program-content">
+                    <div class="program-icon">
+                        <span class="material-symbols-rounded">${program.icon}</span>
+                    </div>
                     <div class="program-text">
                         <h3>${program.title}</h3>
                         <p class="program-description">${program.description}</p>
