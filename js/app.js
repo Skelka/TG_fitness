@@ -62,12 +62,36 @@ tg.onEvent('popupClosed', async (event) => {
         const program = window.programData[programId];
         
         if (program) {
+            // Инициализируем программу
+            await initializeProgram(program);
             // Показываем список тренировок программы
             showProgramWorkouts(program);
-            return; // Добавляем return чтобы избежать повторной обработки
         }
     }
 });
+
+// Добавляем функцию инициализации программы
+async function initializeProgram(program) {
+    try {
+        // Создаем структуру активной программы
+        const activeProgram = {
+            id: program.id,
+            startDate: Date.now(),
+            workouts: program.workouts.map(w => ({
+                ...w,
+                completed: false,
+                started: false
+            }))
+        };
+
+        // Сохраняем программу
+        await setStorageItem('activeProgram', JSON.stringify(activeProgram));
+        return activeProgram;
+    } catch (error) {
+        console.error('Ошибка при инициализации программы:', error);
+        throw error;
+    }
+}
 
 // В начале файла app.js добавим проверку данных
 document.addEventListener('DOMContentLoaded', async () => {
@@ -920,27 +944,22 @@ async function startWorkout(workout, programId) {
         // Очищаем все таймеры
         clearTimers();
 
-        // Теперь скрываем нижнюю навигацию только при начале тренировки
+        // Скрываем нижнюю навигацию
         const bottomNav = document.querySelector('.bottom-nav');
         if (bottomNav) bottomNav.classList.add('hidden');
 
-        // Отмечаем тренировку как начатую
+        // Получаем активную программу
         const activeProgram = await getStorageItem('activeProgram')
             .then(data => data ? JSON.parse(data) : null);
         
-        if (activeProgram) {
+        if (activeProgram && activeProgram.workouts) {
             const workoutIndex = activeProgram.workouts.findIndex(w => 
-                w.title === workout.title && w.day === workout.day);
+                w.day === workout.day && w.title === workout.title);
             
             if (workoutIndex !== -1) {
                 activeProgram.workouts[workoutIndex].started = true;
                 await setStorageItem('activeProgram', JSON.stringify(activeProgram));
             }
-        }
-
-        // Предзагружаем анимации упражнений
-        if (window.preloadExerciseAnimations) {
-            window.preloadExerciseAnimations(workout.exercises);
         }
 
         // Показываем первое упражнение
@@ -951,7 +970,7 @@ async function startWorkout(workout, programId) {
 
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
-        showError('Не удалось начать тренировку');
+        await showError('Не удалось начать тренировку');
     }
 }
 
@@ -3074,27 +3093,22 @@ async function startWorkout(workout, programId) {
         // Очищаем все таймеры
         clearTimers();
 
-        // Теперь скрываем нижнюю навигацию только при начале тренировки
+        // Скрываем нижнюю навигацию
         const bottomNav = document.querySelector('.bottom-nav');
         if (bottomNav) bottomNav.classList.add('hidden');
 
-        // Отмечаем тренировку как начатую
+        // Получаем активную программу
         const activeProgram = await getStorageItem('activeProgram')
             .then(data => data ? JSON.parse(data) : null);
         
-        if (activeProgram) {
+        if (activeProgram && activeProgram.workouts) {
             const workoutIndex = activeProgram.workouts.findIndex(w => 
-                w.title === workout.title && w.day === workout.day);
+                w.day === workout.day && w.title === workout.title);
             
             if (workoutIndex !== -1) {
                 activeProgram.workouts[workoutIndex].started = true;
                 await setStorageItem('activeProgram', JSON.stringify(activeProgram));
             }
-        }
-
-        // Предзагружаем анимации упражнений
-        if (window.preloadExerciseAnimations) {
-            window.preloadExerciseAnimations(workout.exercises);
         }
 
         // Показываем первое упражнение
