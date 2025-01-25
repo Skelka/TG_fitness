@@ -2167,6 +2167,9 @@ async function renderProgramCards() {
     Object.entries(window.programData).forEach(([programId, program]) => {
         const isDisabled = activeProgram && activeProgram.id !== programId;
         
+        // Добавляем id в сами данные программы
+        program.id = programId;
+        
         html += `
             <div class="program-card ${isDisabled ? 'disabled' : ''}" data-program-id="${programId}">
                 <div class="program-content">
