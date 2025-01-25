@@ -2197,10 +2197,10 @@ async function renderProgramCards() {
                     <span class="material-symbols-rounded">${program.icon}</span>
                 </div>
                 <div class="program-content">
-                    <div class="program-info">
+                    <div class="program-text">
                         <h3>${program.title}</h3>
-                        <p>${program.description}</p>
-                        <div class="program-meta">
+                        <p class="program-description">${program.description}</p>
+                        <div class="program-details">
                             <span>
                                 <span class="material-symbols-rounded">calendar_today</span>
                                 ${program.schedule}
@@ -2235,19 +2235,19 @@ async function renderProgramCards() {
         // Обработчик для кнопки "Подробнее"
         const infoBtn = card.querySelector('.info-btn');
         if (infoBtn) {
-            infoBtn.onclick = (e) => {
+            infoBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (!card.classList.contains('disabled')) {
                     showProgramDetails(programId);
                     tg.HapticFeedback.impactOccurred('light');
                 }
-            };
+            });
         }
 
         // Обработчик для кнопки "Старт"
         const startBtn = card.querySelector('.start-btn');
         if (startBtn) {
-            startBtn.onclick = (e) => {
+            startBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (!card.classList.contains('disabled')) {
                     const program = window.programData[programId];
@@ -2256,16 +2256,16 @@ async function renderProgramCards() {
                         tg.HapticFeedback.impactOccurred('medium');
                     }
                 }
-            };
+            });
         }
 
         // Обработчик для всей карточки
-        card.onclick = () => {
+        card.addEventListener('click', () => {
             if (!card.classList.contains('disabled')) {
                 showProgramDetails(programId);
                 tg.HapticFeedback.impactOccurred('light');
             }
-        };
+        });
     });
 }
 
