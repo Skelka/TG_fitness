@@ -2870,13 +2870,15 @@ async function renderExercise() {
                         <button class="back-btn">
                             <span class="material-symbols-rounded">arrow_back</span>
                         </button>
-                        <div class="workout-progress">
-                            <span>${currentExerciseIndex + 1}/${currentWorkout.exercises.length}</span>
+                        <div class="workout-title">
+                            <h2 class="exercise-title">${exercise.name}</h2>
+                            <div class="workout-progress">
+                                ${currentExerciseIndex + 1}/${currentWorkout.exercises.length}
+                            </div>
                         </div>
                     </div>
                     
                     <div class="exercise-info">
-                        <h2 class="exercise-title">${exercise.name}</h2>
                         <div class="exercise-stats">
                             <div class="stat-item">
                                 <div class="stat-value">${exercise.reps}</div>
@@ -2894,10 +2896,10 @@ async function renderExercise() {
                             ` : ''}
                         </div>
                     </div>
-                    
-                    <div class="exercise-controls">
-                        <button class="complete-set-btn">Завершить подход</button>
-                    </div>
+                </div>
+                
+                <div class="exercise-controls">
+                    <button class="complete-set-btn">Завершить подход</button>
                 </div>
             </div>
         `;
