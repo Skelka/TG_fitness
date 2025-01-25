@@ -66,10 +66,13 @@ tg.onEvent('popupClosed', async (event) => {
         renderProgramCards();
         document.querySelector('.bottom-nav')?.classList.remove('hidden');
     } else if (event.button_id.startsWith('start_program_')) {
-            const programId = event.button_id.replace('start_program_', '');
+        // Получаем ID программы из button_id
+        const programId = event.button_id.replace('start_program_', '');
         const program = window.programData[programId];
-        if (program && program.workouts && program.workouts[0]) {
-            startWorkout(program.workouts[0], programId); // Передаем ID программы
+        
+        if (program) {
+            // Показываем список тренировок программы
+            showProgramWorkouts(program);
         }
     }
 });
@@ -1061,27 +1064,28 @@ async function showProgramDetails(programId) {
     const program = window.programData[programId];
     if (!program) return;
 
+    // Показываем попап с информацией о программе
     await showPopupSafe({
         title: program.title,
         message: `
-${program.description}
-
-📅 ${program.duration}
-🏋️ ${program.schedule}
-🔥 ${program.calories_per_week}
-
-Ожидаемые результаты:
-${program.results.map(result => `• ${result}`).join('\n')}`,
+            ${program.description}
+            
+            Длительность: ${program.duration}
+            Тренировок в неделю: ${program.schedule}
+            Сложность: ${program.difficulty}
+            
+            Ожидаемые результаты:
+            ${program.results.map(r => `• ${r}`).join('\n')}
+        `,
         buttons: [
             {
+                id: `start_program_${programId}`,
                 type: 'default',
-                text: 'Расписание',
-                id: `schedule_${programId}`
+                text: 'Начать программу'
             },
             {
-                type: 'default',
-                text: 'Начать программу',
-                id: `start_program_${programId}`
+                type: 'cancel',
+                text: 'Закрыть'
             }
         ]
     });
@@ -2201,11 +2205,11 @@ async function renderProgramCards() {
                         </span>
                     </div>
                     <div class="program-actions">
-                        <button class="program-btn info-btn" ${isDisabled ? 'disabled' : ''} onclick="showProgramDetails('${programId}')">
+                        <button class="program-btn info-btn" ${isDisabled ? 'disabled' : ''}>
                             <span class="material-symbols-rounded">info</span>
                             Подробнее
                         </button>
-                        <button class="program-btn start-btn" ${isDisabled ? 'disabled' : ''} onclick="startProgram('${programId}')">
+                        <button class="program-btn start-btn" ${isDisabled ? 'disabled' : ''}>
                             <span class="material-symbols-rounded">play_arrow</span>
                             ${activeProgram && activeProgram.id === programId ? 'Продолжить' : 'Старт'}
                         </button>
