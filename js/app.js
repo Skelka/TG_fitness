@@ -314,13 +314,13 @@ async function saveProfile() {
 }
 
 // Вспомогательные функции
-function showError(error) {
-    tg.HapticFeedback.notificationOccurred('error');
-    tg.showPopup({
+async function showError(message) {
+    await showPopupSafe({
         title: 'Ошибка',
-        message: error.message,
+        message: message || 'Произошла ошибка. Попробуйте позже.',
         buttons: [{type: 'ok'}]
     });
+    tg.HapticFeedback.notificationOccurred('error');
 }
 
 // Функция для заполнения формы профиля
@@ -1180,23 +1180,20 @@ function updateProgramProgress(progress) {
 async function startProgram(programId) {
     try {
         const program = window.programData[programId];
-        if (!program || !program.workouts || program.workouts.length === 0) {
-            throw new Error('Некорректные данные программы');
+        if (!program) {
+            throw new Error('Программа не найдена');
         }
 
-        // Сохраняем программу как активную
-        await setStorageItem('activeProgram', JSON.stringify({
-            id: programId,
-            startDate: Date.now(),
-            workouts: program.workouts.map(w => ({ ...w, completed: false, started: false }))
-        }));
-
-        // Начинаем первую тренировку
-        startWorkout(program.workouts[0], programId);
+        // Показываем список тренировок программы
+        showProgramWorkouts(program);
 
     } catch (error) {
         console.error('Ошибка при запуске программы:', error);
-        showError('Не удалось начать программу');
+        await showPopupSafe({
+            title: 'Ошибка',
+            message: 'Не удалось начать программу. Попробуйте позже.',
+            buttons: [{type: 'ok'}]
+        });
     }
 }
 
@@ -2822,131 +2819,91 @@ function showRestScreen(isBetweenSets) {
 }
 
 // Обновим функцию renderExercise
-function renderExercise() {
-    console.log('Рендеринг упражнения:', {
-                currentExerciseIndex,
-        currentSet,
-        workout: currentWorkout
-    });
-
-    const container = document.querySelector('.container');
-    if (!container || !currentWorkout) {
-        console.error('Нет контейнера или текущей тренировки');
-        return;
-    }
-
-    const exercise = currentWorkout.exercises[currentExerciseIndex];
-    if (!exercise) {
-        console.error('Упражнение не найдено');
-        return;
-    }
-
-    // Определяем режим таймера
-    isTimerMode = exercise.reps.toString().includes('сек') || 
-                  exercise.reps.toString().includes('мин');
-    
-    // Устанавливаем начальное значение таймера
-    if (isTimerMode) {
-        const repsStr = exercise.reps.toString();
-        const numericValue = parseInt(repsStr.replace(/[^0-9]/g, ''));
-        
-        if (isNaN(numericValue)) {
-            timerValue = 30; // Значение по умолчанию
-        } else {
-            timerValue = numericValue;
+async function renderExercise() {
+    try {
+        if (!currentWorkout || !currentWorkout.exercises) {
+            throw new Error('Нет данных о текущей тренировке');
         }
 
-        // Минимальные значения для разных типов упражнений
-        const exerciseName = exercise.name.toLowerCase();
-        if (exerciseName.includes('разминка')) {
-            timerValue = Math.max(timerValue, 30);
-        } else if (exerciseName.includes('растяжка')) {
-            timerValue = Math.max(timerValue, 20);
-        } else if (exerciseName.includes('планка')) {
-            timerValue = Math.max(timerValue, 30);
-        } else {
-            timerValue = Math.max(timerValue, 10);
+        const exercise = currentWorkout.exercises[currentExerciseIndex];
+        if (!exercise) {
+            throw new Error('Упражнение не найдено');
         }
-    } else {
-        timerValue = parseInt(exercise.reps) || 0;
-    }
 
-    // Очищаем существующие таймеры
-    clearTimers();
+        const container = document.querySelector('.programs-list');
+        if (!container) return;
 
-    // Получаем анимацию для упражнения
-    const exerciseAnimation = window.getExerciseAnimation(exercise.name);
-
-    const programType = PROGRAM_TYPES[currentWorkout.programType];
-    
-    // Добавляем специфичные для программы элементы
-    let additionalInfo = '';
-    if (programType.showCalories) {
-        additionalInfo += `<div class="calories-info">🔥 ${exercise.calories || 0} ккал</div>`;
-    }
-    if (programType.showWeight && exercise.weight) {
-        additionalInfo += `<div class="weight-info">💪 ${exercise.weight} кг</div>`;
-    }
-    if (programType.showHeartRate) {
-        additionalInfo += `<div class="heart-rate-zone">❤️ ${exercise.heartRateZone || 'Зона 2-3'}</div>`;
-    }
-
-    container.innerHTML = `
-        <div class="workout-session ${currentWorkout.programType}">
-            <div class="workout-header">
-                <button class="back-btn">
-                    <span class="material-symbols-rounded">arrow_back</span>
-                </button>
-                <div class="workout-title">
-                    <div>${currentWorkout.title}</div>
-                    <div>${exercise.name}</div>
+        container.innerHTML = `
+            <div class="workout-session">
+                <div class="exercise-header">
+                    <button class="back-btn">
+                        <span class="material-symbols-rounded">arrow_back</span>
+                    </button>
+                    <h2>${exercise.name}</h2>
                 </div>
-                <div class="workout-progress">
-                    ${currentExerciseIndex + 1}/${currentWorkout.exercises.length}
-                </div>
-            </div>
-
-            <div class="exercise-display">
-                <img class="exercise-background" 
-                     src="${exerciseAnimation}" 
-                     alt="${exercise.name}"
-                     onerror="this.src='${window.exerciseAnimations.default}'">
-                
                 <div class="exercise-content">
-                    <h2 class="exercise-name">${exercise.name}</h2>
-                    <div class="exercise-subtitle">Подход ${currentSet} из ${exercise.sets}</div>
-                    
-                    <div class="exercise-counter">
-                        <div class="counter-number">${timerValue}</div>
-                        <div class="counter-label">${isTimerMode ? 'секунд' : 'повторений'}</div>
+                    <div class="exercise-animation">
+                        <img src="${window.getExerciseAnimation(exercise.name)}" alt="${exercise.name}">
                     </div>
+                    <div class="exercise-info">
+                        <div class="set-counter">Подход ${currentSet} из ${exercise.sets}</div>
+                        <div class="rep-counter">${exercise.reps}</div>
+                    </div>
+                    <button class="complete-set-btn">
+                        <span class="material-symbols-rounded">check</span>
+                        Завершить подход
+                    </button>
                 </div>
             </div>
+        `;
 
-            <div class="exercise-controls">
-                ${isTimerMode ? `
-                    <button class="control-btn minus-btn">
-                        <span class="material-symbols-rounded">remove</span>
-                    </button>
-                ` : ''}
-                <button class="complete-btn">
-                    ${isTimerMode ? 'Начать' : 'Готово'}
-                </button>
-                ${isTimerMode ? `
-                    <button class="control-btn plus-btn">
-                        <span class="material-symbols-rounded">add</span>
-                    </button>
-                ` : ''}
-            </div>
-            ${additionalInfo}
-        </div>
-    `;
-
-    // Устанавливаем обработчики после рендеринга
-    setTimeout(() => {
-        console.log('Установка обработчиков');
+        // Добавляем обработчики
         setupExerciseHandlers();
-    }, 0);
+
+    } catch (error) {
+        console.error('Ошибка при отображении упражнения:', error);
+        await showPopupSafe({
+            title: 'Ошибка',
+            message: 'Не удалось отобразить упражнение',
+            buttons: [{type: 'ok'}]
+        });
+    }
+}
+
+// Добавляем функцию настройки обработчиков упражнения
+function setupExerciseHandlers() {
+    const container = document.querySelector('.workout-session');
+    if (!container) return;
+
+    // Обработчик для кнопки "Назад"
+    const backBtn = container.querySelector('.back-btn');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            showPopupSafe({
+                message: 'Вы уверены, что хотите прервать тренировку?',
+                buttons: [
+                    {
+                        type: 'destructive',
+                        text: 'Прервать',
+                        id: 'quit_workout'
+                    },
+                    {
+                        type: 'cancel',
+                        text: 'Продолжить'
+                    }
+                ]
+            });
+        });
+    }
+
+    // Обработчик для кнопки "Завершить подход"
+    const completeBtn = container.querySelector('.complete-set-btn');
+    if (completeBtn) {
+        completeBtn.addEventListener('click', () => {
+            completeSet();
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+    }
 }
 
 // Добавим функцию форматирования расписания
