@@ -1064,18 +1064,17 @@ async function showProgramDetails(programId) {
     const program = window.programData[programId];
     if (!program) return;
 
-    // Показываем попап с информацией о программе
     await showPopupSafe({
         title: program.title,
         message: `
             ${program.description}
             
-            Длительность: ${program.duration}
-            Тренировок в неделю: ${program.schedule}
-            Сложность: ${program.difficulty}
+            📅 Длительность: ${program.duration}
+            🏋️ Тренировок в неделю: ${program.schedule}
+            💪 Сложность: ${program.difficulty}
             
             Ожидаемые результаты:
-            ${program.results.map(r => `• ${r}`).join('\n')}
+            ${program.results.map(result => `• ${result}`).join('\n')}
         `,
         buttons: [
             {
@@ -2211,16 +2210,6 @@ async function renderProgramCards() {
                             </span>
                         </div>
                     </div>
-                    <div class="program-actions">
-                        <button class="program-btn info-btn" ${isDisabled ? 'disabled' : ''}>
-                            <span class="material-symbols-rounded">info</span>
-                            Подробнее
-                        </button>
-                        <button class="program-btn start-btn" ${isDisabled ? 'disabled' : ''}>
-                            <span class="material-symbols-rounded">play_arrow</span>
-                            ${activeProgram && activeProgram.id === programId ? 'Продолжить' : 'Старт'}
-                        </button>
-                    </div>
                 </div>
             </div>
         `;
@@ -2232,33 +2221,6 @@ async function renderProgramCards() {
     document.querySelectorAll('.program-card').forEach(card => {
         const programId = card.dataset.programId;
         
-        // Обработчик для кнопки "Подробнее"
-        const infoBtn = card.querySelector('.info-btn');
-        if (infoBtn) {
-            infoBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (!card.classList.contains('disabled')) {
-                    showProgramDetails(programId);
-                    tg.HapticFeedback.impactOccurred('light');
-                }
-            });
-        }
-
-        // Обработчик для кнопки "Старт"
-        const startBtn = card.querySelector('.start-btn');
-        if (startBtn) {
-            startBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (!card.classList.contains('disabled')) {
-                    const program = window.programData[programId];
-                    if (program) {
-                        showProgramWorkouts(program);
-                        tg.HapticFeedback.impactOccurred('medium');
-                    }
-                }
-            });
-        }
-
         // Обработчик для всей карточки
         card.addEventListener('click', () => {
             if (!card.classList.contains('disabled')) {
@@ -2269,41 +2231,34 @@ async function renderProgramCards() {
     });
 }
 
-// Обновляем функцию настройки обработчиков программ
-function setupProgramHandlers() {
-    document.querySelectorAll('.program-card').forEach(card => {
-        const programId = card.dataset.programId;
-        
-        // Обработчик для кнопки "Подробнее"
-        const infoBtn = card.querySelector('.info-btn');
-        if (infoBtn) {
-            infoBtn.onclick = (e) => {
-                e.stopPropagation();
-                showProgramDetails(programId);
-                tg.HapticFeedback.impactOccurred('light');
-            };
-        }
+// Обновляем функцию showProgramDetails
+async function showProgramDetails(programId) {
+    const program = window.programData[programId];
+    if (!program) return;
 
-        // Обработчик для кнопки "Старт"
-        const startBtn = card.querySelector('.start-btn');
-        if (startBtn) {
-            startBtn.onclick = (e) => {
-                e.stopPropagation();
-                const program = window.programData[programId];
-                if (program) {
-                    showProgramWorkouts(program);
-                }
-                tg.HapticFeedback.impactOccurred('medium');
-            };
-        }
-
-        // Обработчик для всей карточки
-        card.onclick = () => {
-            if (!card.classList.contains('disabled')) {
-                showProgramDetails(programId);
-                tg.HapticFeedback.impactOccurred('light');
+    await showPopupSafe({
+        title: program.title,
+        message: `
+            ${program.description}
+            
+            📅 Длительность: ${program.duration}
+            🏋️ Тренировок в неделю: ${program.schedule}
+            💪 Сложность: ${program.difficulty}
+            
+            Ожидаемые результаты:
+            ${program.results.map(result => `• ${result}`).join('\n')}
+        `,
+        buttons: [
+            {
+                id: `start_program_${programId}`,
+                type: 'default',
+                text: 'Начать программу'
+            },
+            {
+                type: 'cancel',
+                text: 'Закрыть'
             }
-        };
+        ]
     });
 }
 

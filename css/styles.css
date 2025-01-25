@@ -592,6 +592,12 @@ input:focus, select:focus {
     overflow: hidden;
     border: var(--card-border);
     box-shadow: var(--card-shadow);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.program-card:active {
+    transform: scale(0.98);
 }
 
 .program-content {
@@ -614,10 +620,6 @@ input:focus, select:focus {
     color: var(--tg-theme-button-text-color);
 }
 
-.program-text {
-    flex-grow: 1;
-}
-
 .program-text h3 {
     margin: 0;
     font-size: 16px;
@@ -635,13 +637,18 @@ input:focus, select:focus {
     gap: 12px;
     font-size: 13px;
     color: var(--tg-theme-hint-color);
-    margin-bottom: 12px;
+    margin-top: 8px;
 }
 
 .program-details span {
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+.program-card.disabled {
+    opacity: 0.7;
+    pointer-events: none;
 }
 
 .program-actions {
