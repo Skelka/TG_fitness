@@ -17,40 +17,29 @@ let restInterval = null;
 let workoutStartTime = null; // Добавляем переменную для отслеживания времени тренировки
 
 // Функция для безопасного показа попапа
-async function showPopupSafe(options) {
-    return new Promise((resolve) => {
-        let attempts = 0;
-        const maxAttempts = 5;
-        const delay = 200;
+async function showPopupSafe(params) {
+    const maxAttempts = 3;
+    let attempt = 0;
 
-        const tryShowPopup = async () => {
-            try {
-                // Сначала пытаемся закрыть текущий попап
-                try {
-                    await tg.closePopup();
-                    // Ждем немного после закрытия
-                    await new Promise(r => setTimeout(r, 100));
-            } catch (e) {
-                    // Игнорируем ошибку, если попап не был открыт
-                }
-
-                await tg.showPopup(options);
-                resolve(true);
-            } catch (error) {
-                attempts++;
-                if (attempts < maxAttempts) {
-                    // Увеличиваем задержку с каждой попыткой
-                    await new Promise(r => setTimeout(r, delay * attempts));
-                    await tryShowPopup();
-                } else {
-                    console.error('Не удалось показать попап после нескольких попыток');
-                    resolve(false);
-                }
+    while (attempt < maxAttempts) {
+        try {
+            // Ограничиваем длину сообщения
+            if (params.message && params.message.length > 200) {
+                params.message = params.message.substring(0, 197) + '...';
             }
-        };
-
-        tryShowPopup();
-    });
+            
+            return await new Promise((resolve) => {
+                tg.showPopup(params, resolve);
+            });
+        } catch (error) {
+            attempt++;
+            if (attempt === maxAttempts) {
+                console.error('Не удалось показать попап:', error);
+                return null;
+            }
+            await new Promise(r => setTimeout(r, 100));
+        }
+    }
 }
 
 // Упрощаем обработчик закрытия попапа
@@ -1066,16 +1055,7 @@ async function showProgramDetails(programId) {
 
     await showPopupSafe({
         title: program.title,
-        message: `
-            ${program.description}
-            
-            📅 Длительность: ${program.duration}
-            🏋️ Тренировок в неделю: ${program.schedule}
-            💪 Сложность: ${program.difficulty}
-            
-            Ожидаемые результаты:
-            ${program.results.map(result => `• ${result}`).join('\n')}
-        `,
+        message: `${program.description}\n\n${program.schedule} • ${program.difficulty}\n\nДлительность: ${program.duration}`,
         buttons: [
             {
                 id: `start_program_${programId}`,
@@ -2238,16 +2218,7 @@ async function showProgramDetails(programId) {
 
     await showPopupSafe({
         title: program.title,
-        message: `
-            ${program.description}
-            
-            📅 Длительность: ${program.duration}
-            🏋️ Тренировок в неделю: ${program.schedule}
-            💪 Сложность: ${program.difficulty}
-            
-            Ожидаемые результаты:
-            ${program.results.map(result => `• ${result}`).join('\n')}
-        `,
+        message: `${program.description}\n\n${program.schedule} • ${program.difficulty}\n\nДлительность: ${program.duration}`,
         buttons: [
             {
                 id: `start_program_${programId}`,
