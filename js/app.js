@@ -3241,3 +3241,105 @@ async function cancelProgram() {
         showError('Не удалось отменить программу');
     }
 }
+
+// Добавляем функцию настройки обработчиков для тренировок
+function setupWorkoutHandlers(program) {
+    const programsList = document.querySelector('.programs-list');
+    if (!programsList) return;
+
+    // Обработчик для кнопки "Назад"
+    const backBtn = programsList.querySelector('.back-btn');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            renderProgramCards();
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+    }
+
+    // Обработчики для кнопок "Начать"
+    const workoutBtns = programsList.querySelectorAll('.start-workout-btn');
+    workoutBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const workoutIndex = parseInt(btn.dataset.workoutIndex);
+            const workout = program.workouts[workoutIndex];
+            
+            if (workout && workout.exercises && workout.exercises.length > 0) {
+                startWorkout(workout, program.id);
+                tg.HapticFeedback.impactOccurred('medium');
+            } else {
+                console.error('Некорректные данные тренировки:', workout);
+                showPopupSafe({
+                    title: 'Ошибка',
+                    message: 'Не удалось загрузить тренировку. Попробуйте позже.',
+                    buttons: [{type: 'ok'}]
+                });
+            }
+        });
+    });
+
+    // Обработчики для карточек тренировок (опционально)
+    const workoutDays = programsList.querySelectorAll('.workout-day');
+    workoutDays.forEach(day => {
+        day.addEventListener('click', (e) => {
+            // Предотвращаем срабатывание при клике на кнопку
+            if (!e.target.closest('.start-workout-btn')) {
+                const workoutIndex = day.querySelector('.start-workout-btn').dataset.workoutIndex;
+                showWorkoutDetails(program.workouts[workoutIndex]);
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        });
+    });
+}
+
+// Добавляем функцию для отображения деталей тренировки
+function showWorkoutDetails(workout) {
+    if (!workout) return;
+
+    const container = document.querySelector('.programs-list');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="workout-details">
+            <div class="workout-header">
+                <button class="back-btn">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                <h2>${workout.title}</h2>
+            </div>
+            <div class="workout-content">
+                <div class="workout-meta">
+                    <span>
+                        <span class="material-symbols-rounded">timer</span>
+                        ${workout.duration} мин
+                    </span>
+                    <span>
+                        <span class="material-symbols-rounded">local_fire_department</span>
+                        ${workout.calories} ккал
+                    </span>
+                </div>
+                <div class="exercises-list">
+                    ${workout.exercises.map(exercise => `
+                        <div class="exercise-item">
+                            <h4>${exercise.name}</h4>
+                            <p>${exercise.sets} × ${exercise.reps}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Добавляем обработчик для кнопки "Назад"
+    const backBtn = container.querySelector('.back-btn');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            const program = window.programData[currentProgramId];
+            if (program) {
+                showProgramWorkouts(program);
+            } else {
+                renderProgramCards();
+            }
+            tg.HapticFeedback.impactOccurred('medium');
+        });
+    }
+}
