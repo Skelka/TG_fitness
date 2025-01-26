@@ -2536,4 +2536,207 @@ body {
     right: 16px;
     font-size: 20px;
     color: #4CAF50;
+}
+
+/* Стили для экрана упражнения */
+.workout-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: var(--tg-theme-bg-color);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.workout-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: var(--tg-theme-text-color);
+}
+
+.workout-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.progress-bar {
+    width: 120px;
+    height: 4px;
+    background: var(--tg-theme-hint-color);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--tg-theme-button-color);
+    transition: width 0.3s ease;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    color: var(--tg-theme-hint-color);
+    cursor: pointer;
+}
+
+.exercise-container {
+    background: var(--tg-theme-bg-color);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.exercise-header {
+    margin-bottom: 16px;
+}
+
+.exercise-type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 8px;
+}
+
+.exercise-header h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    color: var(--tg-theme-text-color);
+}
+
+.exercise-description {
+    margin: 0;
+    color: var(--tg-theme-hint-color);
+    line-height: 1.4;
+}
+
+.exercise-image {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.exercise-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.sets-info,
+.reps-info,
+.duration-info,
+.muscle-groups {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 8px;
+    color: var(--tg-theme-text-color);
+}
+
+.timer {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--tg-theme-button-color);
+}
+
+.exercise-sequence,
+.exercise-technique {
+    margin-bottom: 16px;
+}
+
+.exercise-sequence h4,
+.exercise-technique h4 {
+    margin: 0 0 8px 0;
+    color: var(--tg-theme-text-color);
+}
+
+.exercise-sequence ol,
+.exercise-technique ol {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--tg-theme-text-color);
+}
+
+.exercise-sequence li,
+.exercise-technique li {
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.exercise-controls {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 12px;
+}
+
+.control-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.control-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.control-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+}
+
+.control-btn:not(:disabled):active {
+    transform: translateY(0);
+}
+
+.rest-timer {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--tg-theme-bg-color);
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    animation: slideUp 0.3s ease;
+}
+
+.rest-timer h3 {
+    margin: 0 0 8px 0;
+    color: var(--tg-theme-text-color);
+}
+
+.rest-timer .timer {
+    font-size: 24px;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translate(-50%, 100%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
 } 
