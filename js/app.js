@@ -144,11 +144,15 @@ function initApp() {
         console.log('Инициализация WebApp:', tg.initData);
         console.log('Доступные методы WebApp:', Object.keys(tg));
 
+        // Инициализируем все обработчики
         setupEventListeners();
-        setupProgramHandlers();
+        setupNavigationHandlers(); // Добавляем эту функцию
         setupPopupHandlers();
+        setupProfileEquipmentHandlers(); // И эту
+        
+        // Загружаем данные
         loadProfile();
-        loadActiveProgram(); // Теперь эта функция определена
+        loadActiveProgram();
     } catch (error) {
         console.error('Ошибка инициализации:', error);
         showError('Произошла ошибка при загрузке приложения');
@@ -1325,7 +1329,6 @@ async function renderProgramCards() {
                 showProgramDetails(programId);
                 tg.HapticFeedback.impactOccurred('light');
             } else {
-                // Показываем сообщение о недоступности
                 tg.HapticFeedback.notificationOccurred('error');
                 showPopupSafe({
                     title: 'Программа недоступна',
@@ -1334,116 +1337,46 @@ async function renderProgramCards() {
                 });
             }
         });
-    });
-}
 
-// Обновляем функцию showProgramDetails
-async function showProgramDetails(programId) {
-    const program = window.programData[programId];
-    if (!program) return;
+        // Обработчики для кнопок
+        const infoBtn = card.querySelector('.info-btn');
+        const startBtn = card.querySelector('.start-btn');
 
-    await showPopupSafe({
-        title: program.title,
-        message: `${program.description}\n\n${program.schedule} • ${program.difficulty}\n\nДлительность: ${program.duration}`,
-        buttons: [
-            {
-                id: `start_program_${programId}`,
-                type: 'default',
-                text: 'Начать программу'
-            },
-            {
-                type: 'cancel',
-                text: 'Закрыть'
-            }
-        ]
-    });
-}
+        if (infoBtn) {
+            infoBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showProgramDetails(programId);
+                tg.HapticFeedback.impactOccurred('light');
+            });
+        }
 
-// Обновляем функцию showProgramWorkouts
-function showProgramWorkouts(program) {
-    const container = document.querySelector('.programs-list');
-    if (!container) return;
-
-    // Получаем активную программу для проверки прогресса
-    getStorageItem('activeProgram')
-        .then(data => {
-            const activeProgram = data ? JSON.parse(data) : null;
-            const workouts = activeProgram?.workouts || [];
-
-            let html = `
-                <div class="workout-list">
-                    <div class="workout-list-header">
-                        <button class="back-btn">
-                            <span class="material-symbols-rounded">arrow_back</span>
-                        </button>
-                        <h2>${program.title}</h2>
-                    </div>
-            `;
-
-            // Группируем тренировки по неделям
-            const workoutsByWeek = {};
-            program.workouts.forEach(workout => {
-                const week = workout.week || 1;
-                if (!workoutsByWeek[week]) {
-                    workoutsByWeek[week] = [];
+        if (startBtn) {
+            startBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                try {
+                    const program = window.programData[programId];
+                    if (!program) {
+                        throw new Error(`Программа с ID ${programId} не найдена`);
+                    }
+                    
+                    await initializeProgram(program);
+                    showProgramWorkouts(program);
+                    tg.HapticFeedback.impactOccurred('medium');
+                } catch (error) {
+                    console.error('Ошибка при запуске программы:', error);
+                    await showError('Не удалось начать программу');
                 }
-                workoutsByWeek[week].push(workout);
             });
+        }
+    });
 
-            // Отображаем тренировки по неделям
-            Object.entries(workoutsByWeek).forEach(([week, weekWorkouts]) => {
-                html += `
-                    <div class="workout-week">
-                        <div class="week-header">Неделя ${week}</div>
-                `;
-
-                weekWorkouts.forEach((workout, index) => {
-                    const activeWorkout = workouts.find(w => 
-                        w.week === workout.week && w.day === workout.day);
-                    const isCompleted = activeWorkout?.completed || false;
-                    const isPrevCompleted = index === 0 || 
-                        workouts.find(w => 
-                            w.week === workout.week && 
-                            w.day === (workout.day - 1))?.completed;
-                    const isDisabled = !isPrevCompleted && !isCompleted;
-
-                    html += `
-                        <div class="workout-day ${isCompleted ? 'completed' : ''} ${isDisabled ? 'disabled' : ''}">
-                            <div class="workout-day-header">День ${workout.day}</div>
-                            <div class="workout-title">${workout.title}</div>
-                            <div class="workout-meta">
-                                <span>
-                                    <span class="material-symbols-rounded">timer</span>
-                                    ${workout.duration} мин
-                                </span>
-                                <span>
-                                    <span class="material-symbols-rounded">local_fire_department</span>
-                                    ${workout.calories} ккал
-                                </span>
-                            </div>
-                            <button class="start-workout-btn" 
-                                    data-workout-index="${index}" 
-                                    ${isDisabled ? 'disabled' : ''}>
-                                ${isCompleted ? 'Повторить' : 'Начать'}
-                            </button>
-                            ${isDisabled ? `
-                                <div class="workout-disabled-message">
-                                    Сначала завершите предыдущую тренировку
-                                </div>
-                            ` : ''}
-                        </div>
-                    `;
-                });
-
-                html += `</div>`;
-            });
-
-            html += `</div>`;
-            container.innerHTML = html;
-
-            // Добавляем обработчики
-            setupWorkoutHandlers(program);
+    // Обработчик для кнопки "Назад"
+    document.querySelectorAll('.back-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            renderProgramCards();
+            tg.HapticFeedback.impactOccurred('medium');
         });
+    });
 }
 
 // Вспомогательная функция для получения текста сложности
