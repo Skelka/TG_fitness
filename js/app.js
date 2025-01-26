@@ -171,6 +171,9 @@ async function initApp() {
         tg.expand();
         tg.enableClosingConfirmation();
 
+        // Инициализируем программы по умолчанию
+        await initializeDefaultPrograms();
+
         // Загружаем профиль
         await profileModule.loadProfile();
 
@@ -1367,12 +1370,18 @@ async function clearAllData() {
     }
 }
 
-// Функция для обновления графика веса
+// Обновляем функцию updateWeightChart
 async function updateWeightChart(period = 'week') {
     const ctx = document.getElementById('weight-chart');
     if (!ctx) return;
 
     try {
+        // Уничтожаем существующий график, если он есть
+        if (window.weightChart) {
+            window.weightChart.destroy();
+            window.weightChart = null;
+        }
+
         // Получаем историю веса
         const weightHistoryStr = await getStorageItem('weightHistory');
         const weightHistory = weightHistoryStr ? JSON.parse(weightHistoryStr) : [];
@@ -1385,7 +1394,7 @@ async function updateWeightChart(period = 'week') {
 
         ctx.style.display = 'block';
 
-    const now = new Date();
+        const now = new Date();
         let startDate = new Date();
         let labels = [];
         let data = [];
@@ -1435,11 +1444,6 @@ async function updateWeightChart(period = 'week') {
         const weights = data.filter(w => w !== null);
         const minWeight = Math.min(...weights) - 1;
         const maxWeight = Math.max(...weights) + 1;
-
-        // Уничтожаем предыдущий график
-        if (window.weightChart) {
-            window.weightChart.destroy();
-        }
 
         // Создаем новый график
         window.weightChart = new Chart(ctx, {
