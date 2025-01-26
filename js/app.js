@@ -773,97 +773,100 @@ function setupTabHandlers() {
 
 // Настройка обработчиков событий
 function setupEventListeners() {
-    // Обработчик изменения полей формы
-    const form = document.getElementById('profile-form');
-    const formInputs = form.querySelectorAll('input, select');
-    formInputs.forEach(input => {
-        input.addEventListener('input', () => {
-            const hasData = Array.from(formInputs).some(input => input.value);
-            if (hasData) {
-                mainButton.show();
-                backButton.hide();
-            } else {
-                mainButton.hide();
-            }
+    // Обработчики для вкладок
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabName = button.dataset.tab;
+            switchTab(tabName);
+            tg.HapticFeedback.impactOccurred('light');
         });
     });
 
-    // Скрытие клавиатуры
-    document.addEventListener('click', function(e) {
-        if (!e.target.matches('input') && !e.target.matches('select')) {
-            if (document.activeElement instanceof HTMLInputElement || 
-                document.activeElement instanceof HTMLSelectElement) {
-                document.activeElement.blur();
-            }
-        }
+    // Обработчики для кнопок периода в статистике
+    const periodButtons = document.querySelectorAll('.period-btn');
+    periodButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+            periodButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            currentPeriod = button.dataset.period;
+            await updateWeightChart(currentPeriod);
+            tg.HapticFeedback.impactOccurred('light');
+        });
     });
 
-    // Выделение текста в числовых полях
-    document.addEventListener('focus', function(e) {
-        if (e.target.type === 'number') {
-            e.target.select();
-            tg.HapticFeedback.selectionChanged();
-        }
-    }, true);
-
-    // Обработчик нажатия на MainButton
-    mainButton.onClick(saveProfile);
-
-    // Обработчик нажатия на BackButton
-    backButton.onClick(() => {
-        tg.close();
-    });
-
-    // Добавляем новые обработчики
-    setupTabHandlers();
-
-    // Обработка событий попапа
-    tg.onEvent('popupClosed', async (event) => {
-        console.log('Popup closed with event:', event);
-
-        if (event.button_id) {
-            if (event.button_id.startsWith('start_program_')) {
-                const programId = event.button_id.replace('start_program_', '');
-                await startProgram(programId);
-            } 
-            else if (event.button_id.startsWith('schedule_')) {
-                const programId = event.button_id.replace('schedule_', '');
-                const program = window.programData[programId];
-                if (program) {
-                    await showPopupSafe({
-                        title: 'Расписание тренировок',
-                        message: `
-День 1-${program.workouts.length}, ${program.schedule}
-
-${program.workouts.map((workout, index) => 
-    `День ${index + 1}: ${workout.title}
-⏱️ ${workout.duration} мин  •  🔥 ${workout.calories} ккал`
-).join('\n\n')}
-                    `,
-                        buttons: [
-                            {
-                                type: 'default',
-                                text: 'Начать программу',
-                                id: `start_program_${programId}`
-                            }
-                        ]
-                    });
-                }
-            }
-        }
-    });
-
-    // Обработка кнопок в интерфейсе тренировки
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('complete-btn')) {
-            completeWorkout();
-        } else if (e.target.classList.contains('pause-btn')) {
-            toggleWorkoutPause();
-        }
-    });
-
-    // Добавляем обработчики для чекбоксов
+    // Обработчики для чекбоксов
     setupCheckboxHandlers();
+
+    // Обработчик для формы профиля
+    const profileForm = document.getElementById('profile-form');
+    if (profileForm) {
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await saveProfile();
+        });
+    }
+
+    // Обработчик для кнопки очистки данных
+    const clearDataBtn = document.querySelector('.danger-btn');
+    if (clearDataBtn) {
+        clearDataBtn.addEventListener('click', async () => {
+            const confirmed = await showPopupSafe({
+                title: 'Подтверждение',
+                message: 'Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.',
+                buttons: [
+                    {
+                        type: 'destructive',
+                        text: 'Очистить',
+                        id: 'confirm_clear'
+                    },
+                    {
+                        type: 'cancel',
+                        text: 'Отмена'
+                    }
+                ]
+            });
+
+            if (confirmed && confirmed.button_id === 'confirm_clear') {
+                await clearAllData();
+                tg.HapticFeedback.notificationOccurred('success');
+                location.reload();
+            }
+        });
+    }
+}
+
+// Добавляем функцию setupCheckboxHandlers
+function setupCheckboxHandlers() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            // Вибрация при изменении
+            tg.HapticFeedback.impactOccurred('light');
+            
+            // Если это чекбокс оборудования, сохраняем изменения
+            if (checkbox.name === 'equipment') {
+                saveProfileSettings();
+            }
+        });
+    });
+}
+
+// Добавляем функцию для сохранения настроек профиля
+async function saveProfileSettings() {
+    try {
+        const equipmentInputs = document.querySelectorAll('input[name="equipment"]:checked');
+        const selectedEquipment = Array.from(equipmentInputs).map(input => input.value);
+        
+        const profileData = await getStorageItem('profile')
+            .then(data => data ? JSON.parse(data) : {});
+        
+        profileData.equipment = selectedEquipment;
+        
+        await setStorageItem('profile', JSON.stringify(profileData));
+    } catch (error) {
+        console.error('Ошибка при сохранении настроек:', error);
+    }
 }
 
 // Добавляем константы для типов программ
@@ -1025,7 +1028,7 @@ ${workout.exercises.map(ex => `• ${ex.name}
 }
 
 // Обновим обработчики событий
-function setupWorkoutHandlers() {
+function setupWorkoutHandlers(program) {
     document.querySelectorAll('.workout-btn').forEach(button => {
         button.addEventListener('click', (e) => {
             e.preventDefault();
@@ -2249,8 +2252,8 @@ function setupNavigationHandlers() {
     // Обработчики для кнопок навигации
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const tabId = btn.dataset.tab;
-            showTab(tabId);
+            const tabName = btn.dataset.tab;
+            showTab(tabName);
             tg.HapticFeedback.impactOccurred('light');
         });
     });
