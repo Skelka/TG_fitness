@@ -2,6 +2,7 @@
 import { renderStatistics } from './statistics.js';
 import { loadProfile } from './profile.js';
 import { renderCalendar } from './calendar.js';
+import { renderWorkouts } from './workout.js';
 
 export function switchTab(tabName) {
     // Скрываем все вкладки
@@ -36,6 +37,9 @@ export function switchTab(tabName) {
             break;
         case 'calendar':
             renderCalendar();
+            break;
+        case 'workouts':
+            renderWorkouts();
             break;
     }
 

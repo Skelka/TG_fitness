@@ -50,6 +50,13 @@ async function initApp() {
         // Загружаем профиль
         await loadProfile();
 
+        // Инициализируем все компоненты
+        await Promise.all([
+            renderCalendar(),
+            renderStatistics(),
+            updateCalendar()
+        ]);
+
         // Показываем начальный экран
         switchTab('programs');
 

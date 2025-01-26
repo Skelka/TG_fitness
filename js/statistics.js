@@ -11,10 +11,11 @@ export async function renderStatistics() {
                 completedWorkouts: []
             });
 
-        const totalWorkoutsEl = document.querySelector('.stat-total-workouts');
-        const totalTimeEl = document.querySelector('.stat-total-time');
-        const totalCaloriesEl = document.querySelector('.stat-total-calories');
-        const completionRateEl = document.querySelector('.stat-completion-rate');
+        // Обновляем статистику
+        const totalWorkoutsEl = document.getElementById('total-workouts');
+        const totalTimeEl = document.getElementById('total-time');
+        const totalCaloriesEl = document.getElementById('total-calories');
+        const completionRateEl = document.getElementById('completion-rate');
 
         if (totalWorkoutsEl) {
             totalWorkoutsEl.textContent = stats.totalWorkouts || 0;
@@ -34,6 +35,9 @@ export async function renderStatistics() {
 
         // Обновляем график веса
         await updateWeightChart();
+
+        // Обновляем советы
+        await renderTips();
 
     } catch (error) {
         console.error('Ошибка при обновлении статистики:', error);
@@ -103,7 +107,7 @@ export async function updateWeightChart(period = 'week') {
         }
 
         // Создаем новый график
-        const ctx = document.getElementById('weightChart')?.getContext('2d');
+        const ctx = document.getElementById('weight-chart')?.getContext('2d');
         if (!ctx) return;
 
         window.weightChart = new Chart(ctx, {
@@ -146,5 +150,52 @@ export async function updateWeightChart(period = 'week') {
 
     } catch (error) {
         console.error('Ошибка при обновлении графика веса:', error);
+    }
+}
+
+async function renderTips() {
+    try {
+        const tipsContainer = document.querySelector('.tips-list');
+        if (!tipsContainer) return;
+
+        const tips = [
+            {
+                icon: 'water_drop',
+                title: 'Пейте больше воды',
+                text: 'Для поддержания здоровья и эффективных тренировок необходимо пить 2-3 литра воды в день'
+            },
+            {
+                icon: 'timer',
+                title: 'Регулярность важнее интенсивности',
+                text: 'Лучше тренироваться понемногу, но регулярно, чем редко и много'
+            },
+            {
+                icon: 'restaurant',
+                title: 'Следите за питанием',
+                text: 'Правильное питание составляет 70% успеха в достижении фитнес-целей'
+            }
+        ];
+
+        tipsContainer.innerHTML = tips.map(tip => `
+            <div class="tip-card">
+                <div class="tip-icon">
+                    <span class="material-symbols-rounded">${tip.icon}</span>
+                </div>
+                <div class="tip-content">
+                    <h3>${tip.title}</h3>
+                    <p>${tip.text}</p>
+                </div>
+            </div>
+        `).join('');
+
+        // Анимируем появление советов
+        setTimeout(() => {
+            document.querySelectorAll('.tip-card').forEach((card, index) => {
+                setTimeout(() => card.classList.add('visible'), index * 100);
+            });
+        }, 100);
+
+    } catch (error) {
+        console.error('Ошибка при отображении советов:', error);
     }
 } 

@@ -3,6 +3,7 @@ import { showNotification, showError, showPopupSafe } from './ui.js';
 import { clearTimers } from './utils.js';
 import { getExerciseTypeText, getMuscleGroupsText, formatTime } from './utils.js';
 import { updateProgramProgress } from './program.js';
+import { getStorageItem } from './storage.js';
 
 let currentWorkout = null;
 let currentExerciseIndex = 0;
@@ -326,4 +327,116 @@ function getExerciseIcon(type) {
         'general': 'sports_score'
     };
     return icons[type] || 'fitness_center';
+}
+
+export async function renderWorkouts() {
+    try {
+        const container = document.querySelector('.programs-list');
+        if (!container) return;
+
+        // Получаем активную программу
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+
+        if (activeProgram) {
+            // Если есть активная программа, показываем её тренировки
+            container.innerHTML = `
+                <div class="active-program">
+                    <h2>${activeProgram.title}</h2>
+                    <div class="workouts-list">
+                        ${activeProgram.workouts.map((workout, index) => `
+                            <div class="workout-card ${workout.completed ? 'completed' : ''}">
+                                <div class="workout-header">
+                                    <span class="workout-day">День ${index + 1}</span>
+                                    ${workout.completed ? '<span class="completed-badge">✓</span>' : ''}
+                                </div>
+                                <h3>${workout.title}</h3>
+                                <div class="workout-meta">
+                                    <span>
+                                        <span class="material-symbols-rounded">timer</span>
+                                        ${Math.round(workout.duration)} мин
+                                    </span>
+                                    <span>
+                                        <span class="material-symbols-rounded">local_fire_department</span>
+                                        ${workout.calories} ккал
+                                    </span>
+                                </div>
+                                <button class="start-workout-btn" onclick="startWorkout('${activeProgram.id}', '${workout.id}')">
+                                    <span class="material-symbols-rounded">play_arrow</span>
+                                    Начать
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        } else {
+            // Если нет активной программы, показываем список доступных программ
+            const programs = [
+                {
+                    id: 'weight_loss',
+                    title: 'Снижение веса',
+                    description: 'Программа для снижения веса и улучшения формы тела',
+                    duration: '8 недель',
+                    workoutsPerWeek: '3-4',
+                    icon: 'monitor_weight'
+                },
+                {
+                    id: 'muscle_gain',
+                    title: 'Набор мышечной массы',
+                    description: 'Программа для увеличения мышечной массы и силы',
+                    duration: '12 недель',
+                    workoutsPerWeek: '4-5',
+                    icon: 'fitness_center'
+                },
+                {
+                    id: 'endurance',
+                    title: 'Выносливость',
+                    description: 'Программа для развития общей выносливости',
+                    duration: '6 недель',
+                    workoutsPerWeek: '3',
+                    icon: 'directions_run'
+                }
+            ];
+
+            container.innerHTML = `
+                <div class="programs-grid">
+                    ${programs.map(program => `
+                        <div class="program-card">
+                            <div class="program-icon">
+                                <span class="material-symbols-rounded">${program.icon}</span>
+                            </div>
+                            <div class="program-content">
+                                <h3>${program.title}</h3>
+                                <p>${program.description}</p>
+                                <div class="program-meta">
+                                    <span>
+                                        <span class="material-symbols-rounded">calendar_month</span>
+                                        ${program.duration}
+                                    </span>
+                                    <span>
+                                        <span class="material-symbols-rounded">exercise</span>
+                                        ${program.workoutsPerWeek} тр/нед
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="program-actions">
+                                <button class="info-btn" onclick="showProgramDetails('${program.id}')">
+                                    <span class="material-symbols-rounded">info</span>
+                                    Подробнее
+                                </button>
+                                <button class="start-btn" onclick="initializeProgram('${program.id}')">
+                                    <span class="material-symbols-rounded">play_arrow</span>
+                                    Начать
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Ошибка при отображении тренировок:', error);
+        showError('Не удалось загрузить тренировки');
+    }
 } 
