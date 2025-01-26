@@ -706,6 +706,7 @@ async function renderProgramCards() {
         window.programData.forEach((program) => {
             const isActive = activeProgram?.id === program.id;
             const isDisabled = activeProgram && !isActive;
+            const durationText = program.duration === 'unlimited' ? 'Бессрочная' : `${program.duration} недель`;
 
             html += `
                 <div class="program-card ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}" data-program-id="${program.id}">
@@ -718,7 +719,7 @@ async function renderProgramCards() {
                         <div class="program-meta">
                             <span>
                                 <span class="material-symbols-rounded">timer</span>
-                                ${program.duration} недель
+                                ${durationText}
                             </span>
                             <span>
                                 <span class="material-symbols-rounded">calendar_month</span>
@@ -1568,6 +1569,74 @@ async function initializeDefaultPrograms() {
                             name: 'Гипертрофия',
                             description: 'Тренировка на рост мышечной массы',
                             duration: 55,
+                            exercises: []
+                        }
+                    ]
+                },
+                {
+                    id: 'morning_workout',
+                    name: 'Утренняя зарядка',
+                    description: 'Легкая зарядка для бодрого начала каждого дня',
+                    icon: 'wb_sunny',
+                    difficulty: 'beginner',
+                    duration: 'unlimited', // Бессрочная программа
+                    workoutsPerWeek: 7,
+                    isCompleted: false,
+                    workouts: [
+                        {
+                            id: 'morning_1',
+                            name: 'Утренний комплекс',
+                            description: 'Разминка всего тела, растяжка и легкие упражнения для заряда энергией',
+                            duration: 15,
+                            type: 'morning',
+                            exercises: []
+                        }
+                    ],
+                    features: [
+                        'Мягкая разминка суставов',
+                        'Легкие кардио упражнения',
+                        'Растяжка основных мышц',
+                        'Дыхательные упражнения'
+                    ],
+                    benefits: [
+                        'Улучшение кровообращения',
+                        'Повышение гибкости',
+                        'Заряд энергией на весь день',
+                        'Ускорение метаболизма'
+                    ]
+                },
+                {
+                    id: 'weight_loss_intensive',
+                    name: 'Интенсивное похудение',
+                    description: 'Программа для быстрого и эффективного снижения веса',
+                    icon: 'monitor_weight',
+                    difficulty: 'intermediate',
+                    duration: 6,
+                    workoutsPerWeek: 5,
+                    isCompleted: false,
+                    workouts: [
+                        {
+                            id: 'weight_loss_1',
+                            name: 'Жиросжигающая тренировка',
+                            description: 'Интенсивная тренировка для сжигания жира',
+                            duration: 40,
+                            type: 'hiit',
+                            exercises: []
+                        },
+                        {
+                            id: 'weight_loss_2',
+                            name: 'Кардио + Силовая',
+                            description: 'Комбинированная тренировка для ускорения метаболизма',
+                            duration: 45,
+                            type: 'cardio_strength',
+                            exercises: []
+                        },
+                        {
+                            id: 'weight_loss_3',
+                            name: 'Табата',
+                            description: 'Высокоинтенсивная интервальная тренировка',
+                            duration: 25,
+                            type: 'tabata',
                             exercises: []
                         }
                     ]
