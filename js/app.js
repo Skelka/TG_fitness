@@ -702,10 +702,28 @@ async function renderProgramCards() {
             .then(data => data ? JSON.parse(data) : null);
 
         let html = '';
-        // Теперь перебираем массив программ
-        window.programData.forEach((program) => {
+        
+        // Сначала сортируем программы, чтобы утренняя зарядка и активная программа были первыми
+        const sortedPrograms = [...window.programData].sort((a, b) => {
+            // Утренняя зарядка всегда первая
+            if (a.id === 'morning_workout') return -1;
+            if (b.id === 'morning_workout') return 1;
+            
+            // Активная программа вторая
+            const isActiveA = activeProgram?.id === a.id;
+            const isActiveB = activeProgram?.id === b.id;
+            if (isActiveA && !isActiveB) return -1;
+            if (!isActiveA && isActiveB) return 1;
+            
+            // Остальные программы без изменения порядка
+            return 0;
+        });
+
+        // Теперь перебираем отсортированный массив программ
+        sortedPrograms.forEach((program) => {
             const isActive = activeProgram?.id === program.id;
-            const isDisabled = activeProgram && !isActive;
+            // Утренняя зарядка не блокируется и не блокирует другие программы
+            const isDisabled = program.id !== 'morning_workout' && activeProgram && !isActive && activeProgram.id !== 'morning_workout';
             const durationText = program.duration === 'unlimited' ? 'Бессрочная' : `${program.duration} недель`;
 
             html += `
@@ -745,7 +763,7 @@ async function renderProgramCards() {
                 if (!card.classList.contains('disabled') && program) {
                     await showProgramDetails(program);
                     tg.HapticFeedback.impactOccurred('light');
-                } else {
+                } else if (card.classList.contains('disabled')) {
                     tg.HapticFeedback.notificationOccurred('error');
                     showNotification('Сначала завершите текущую программу', true);
                 }
