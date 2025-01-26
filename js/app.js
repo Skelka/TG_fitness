@@ -27,8 +27,8 @@ let exerciseTimer = null;
 
 let isTimerPaused = false;
 
-// Функция для показа уведомления
-function showNotification(message, isError = false) {
+// Делаем showNotification доступной глобально
+window.showNotification = function(message, isError = false) {
     // Удаляем предыдущее уведомление, если оно есть
     const existingNotification = document.querySelector('.notification');
     if (existingNotification) {
@@ -55,7 +55,7 @@ function showNotification(message, isError = false) {
             notification.remove();
         }, 300);
     }, 3000);
-}
+};
 
 // Упрощаем обработчик закрытия попапа
 tg.onEvent('popupClosed', async (event) => {
