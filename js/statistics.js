@@ -8,10 +8,22 @@ async function updateWeightChart(period = 'week') {
         const weightHistory = await getStorageItem('weightHistory')
             .then(data => data ? JSON.parse(data) : []);
 
+        const chartCanvas = document.getElementById('weight-chart');
+        if (!chartCanvas) return;
+
+        // Уничтожаем существующий график
+        if (window.weightChart) {
+            window.weightChart.destroy();
+            window.weightChart = null;
+        }
+
         if (!weightHistory.length) {
-            document.getElementById('weight-chart').style.display = 'none';
+            chartCanvas.style.display = 'none';
+            chartCanvas.parentElement.innerHTML = '<div class="no-data">Нет данных о весе</div>';
             return;
         }
+
+        chartCanvas.style.display = 'block';
 
         // Сортируем историю по дате
         weightHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -49,14 +61,8 @@ async function updateWeightChart(period = 'week') {
 
         const weights = filteredHistory.map(record => record.weight);
 
-        // Если график уже существует, обновляем его данные
-        if (window.weightChart) {
-            window.weightChart.destroy();
-            window.weightChart = null;
-        }
-
         // Создаем новый график
-        const ctx = document.getElementById('weight-chart').getContext('2d');
+        const ctx = chartCanvas.getContext('2d');
         window.weightChart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -101,6 +107,11 @@ async function updateWeightChart(period = 'week') {
 
     } catch (error) {
         console.error('Ошибка при обновлении графика:', error);
+        const chartCanvas = document.getElementById('weight-chart');
+        if (chartCanvas) {
+            chartCanvas.style.display = 'none';
+            chartCanvas.parentElement.innerHTML = '<div class="no-data">Ошибка при загрузке данных</div>';
+        }
     }
 }
 

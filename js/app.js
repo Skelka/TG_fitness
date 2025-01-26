@@ -1581,7 +1581,7 @@ function renderStatistics() {
                 completionRateEl.textContent = `${completionRate}%`;
             }
 
-            // Обновляем график веса
+            // Обновляем график веса через модуль статистики
             statisticsModule.updateWeightChart('week');
             
             // Добавляем вызов renderTips
