@@ -137,7 +137,7 @@ async function loadActiveProgram() {
 }
 
 // Обновляем функцию initApp
-function initApp() {
+async function initApp() {
     try {
         console.log('Версия WebApp:', tg.version);
         console.log('Платформа:', tg.platform);
@@ -145,16 +145,17 @@ function initApp() {
         console.log('Доступные методы WebApp:', Object.keys(tg));
 
         // Инициализируем программы при первом запуске
-        initializeDefaultPrograms().then(() => {
-            // Инициализируем все обработчики
-            setupEventListeners();
-            setupPopupHandlers();
-            setupProfileEquipmentHandlers();
-            
-            // Загружаем данные
-            loadProfile();
-            loadActiveProgram();
-        });
+        await initializeDefaultPrograms();
+        
+        // Инициализируем все обработчики
+        setupEventListeners();
+        setupPopupHandlers();
+        setupProfileEquipmentHandlers();
+        
+        // Загружаем данные
+        await loadProfile();
+        await loadActiveProgram();
+        
     } catch (error) {
         console.error('Ошибка инициализации:', error);
         showError('Произошла ошибка при загрузке приложения');
@@ -162,7 +163,7 @@ function initApp() {
 }
 
 // Обновляем обработчик DOMContentLoaded
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     console.log('Загруженные программы:', window.programData);
     console.log('Загруженная база упражнений:', window.exercisesDB);
 
@@ -176,7 +177,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    initApp();
+    initApp().catch(error => {
+        console.error('Ошибка при инициализации приложения:', error);
+        showError('Не удалось загрузить приложение');
+    });
 });
 
 // Функции для работы с CloudStorage
@@ -1316,99 +1320,104 @@ function renderStatistics() {
         });
 }
 
-function initializeDefaultPrograms() {
-    const existingPrograms = getStorageItem('programs');
-    if (!existingPrograms) {
-        const defaultPrograms = [
-            {
-                id: 'beginner_strength',
-                name: 'Базовая сила',
-                description: 'Программа для начинающих, направленная на развитие силы и мышечной массы',
-                icon: 'fitness_center',
-                difficulty: 'beginner',
-                duration: 4,
-                workoutsPerWeek: 3,
-                isCompleted: false,
-                workouts: [
-                    {
-                        id: 'workout_1',
-                        name: 'Тренировка A',
-                        description: 'Фокус на верхнюю часть тела',
-                        duration: 45,
-                        exercises: []
-                    },
-                    {
-                        id: 'workout_2',
-                        name: 'Тренировка B',
-                        description: 'Фокус на нижнюю часть тела',
-                        duration: 45,
-                        exercises: []
-                    },
-                    {
-                        id: 'workout_3',
-                        name: 'Тренировка C',
-                        description: 'Общая тренировка',
-                        duration: 45,
-                        exercises: []
-                    }
-                ]
-            },
-            {
-                id: 'cardio_endurance',
-                name: 'Кардио и выносливость',
-                description: 'Программа для улучшения выносливости и сжигания жира',
-                icon: 'directions_run',
-                difficulty: 'intermediate',
-                duration: 6,
-                workoutsPerWeek: 4,
-                isCompleted: false,
-                workouts: [
-                    {
-                        id: 'workout_1',
-                        name: 'ВИИТ',
-                        description: 'Высокоинтенсивная интервальная тренировка',
-                        duration: 30,
-                        exercises: []
-                    },
-                    {
-                        id: 'workout_2',
-                        name: 'Круговая тренировка',
-                        description: 'Комплексная тренировка на все тело',
-                        duration: 40,
-                        exercises: []
-                    }
-                ]
-            },
-            {
-                id: 'advanced_strength',
-                name: 'Продвинутая сила',
-                description: 'Программа для опытных атлетов, нацеленная на максимальную силу',
-                icon: 'exercise',
-                difficulty: 'advanced',
-                duration: 8,
-                workoutsPerWeek: 5,
-                isCompleted: false,
-                workouts: [
-                    {
-                        id: 'workout_1',
-                        name: 'Силовая тренировка',
-                        description: 'Тяжелые базовые упражнения',
-                        duration: 60,
-                        exercises: []
-                    },
-                    {
-                        id: 'workout_2',
-                        name: 'Гипертрофия',
-                        description: 'Тренировка на рост мышечной массы',
-                        duration: 55,
-                        exercises: []
-                    }
-                ]
-            }
-        ];
+async function initializeDefaultPrograms() {
+    try {
+        const existingPrograms = await getStorageItem('programs');
+        if (!existingPrograms) {
+            const defaultPrograms = [
+                {
+                    id: 'beginner_strength',
+                    name: 'Базовая сила',
+                    description: 'Программа для начинающих, направленная на развитие силы и мышечной массы',
+                    icon: 'fitness_center',
+                    difficulty: 'beginner',
+                    duration: 4,
+                    workoutsPerWeek: 3,
+                    isCompleted: false,
+                    workouts: [
+                        {
+                            id: 'workout_1',
+                            name: 'Тренировка A',
+                            description: 'Фокус на верхнюю часть тела',
+                            duration: 45,
+                            exercises: []
+                        },
+                        {
+                            id: 'workout_2',
+                            name: 'Тренировка B',
+                            description: 'Фокус на нижнюю часть тела',
+                            duration: 45,
+                            exercises: []
+                        },
+                        {
+                            id: 'workout_3',
+                            name: 'Тренировка C',
+                            description: 'Общая тренировка',
+                            duration: 45,
+                            exercises: []
+                        }
+                    ]
+                },
+                {
+                    id: 'cardio_endurance',
+                    name: 'Кардио и выносливость',
+                    description: 'Программа для улучшения выносливости и сжигания жира',
+                    icon: 'directions_run',
+                    difficulty: 'intermediate',
+                    duration: 6,
+                    workoutsPerWeek: 4,
+                    isCompleted: false,
+                    workouts: [
+                        {
+                            id: 'workout_1',
+                            name: 'ВИИТ',
+                            description: 'Высокоинтенсивная интервальная тренировка',
+                            duration: 30,
+                            exercises: []
+                        },
+                        {
+                            id: 'workout_2',
+                            name: 'Круговая тренировка',
+                            description: 'Комплексная тренировка на все тело',
+                            duration: 40,
+                            exercises: []
+                        }
+                    ]
+                },
+                {
+                    id: 'advanced_strength',
+                    name: 'Продвинутая сила',
+                    description: 'Программа для опытных атлетов, нацеленная на максимальную силу',
+                    icon: 'exercise',
+                    difficulty: 'advanced',
+                    duration: 8,
+                    workoutsPerWeek: 5,
+                    isCompleted: false,
+                    workouts: [
+                        {
+                            id: 'workout_1',
+                            name: 'Силовая тренировка',
+                            description: 'Тяжелые базовые упражнения',
+                            duration: 60,
+                            exercises: []
+                        },
+                        {
+                            id: 'workout_2',
+                            name: 'Гипертрофия',
+                            description: 'Тренировка на рост мышечной массы',
+                            duration: 55,
+                            exercises: []
+                        }
+                    ]
+                }
+            ];
 
-        setStorageItem('programs', defaultPrograms);
-        console.log('Программы по умолчанию инициализированы');
+            await setStorageItem('programs', JSON.stringify(defaultPrograms));
+            console.log('Программы по умолчанию инициализированы');
+        }
+    } catch (error) {
+        console.error('Ошибка при инициализации программ:', error);
+        throw error;
     }
 }
 
