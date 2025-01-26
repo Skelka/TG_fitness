@@ -532,12 +532,19 @@ const PROGRAM_TYPES = {
 };
 
 // Обновляем функцию startWorkout
-async function startWorkout(workout, programId) {
-    console.log('Начинаем тренировку:', workout, 'ID программы:', programId);
+async function startWorkout(programId, workoutId) {
+    console.log('Начинаем тренировку:', 'ID программы:', programId, 'ID тренировки:', workoutId);
     
     try {
+        // Получаем программу и тренировку по ID
+        const program = window.programData.find(p => p.id === programId);
+        if (!program) {
+            throw new Error('Программа не найдена');
+        }
+
+        const workout = program.workouts.find(w => w.id === workoutId);
         if (!workout) {
-            throw new Error('Данные тренировки не переданы');
+            throw new Error('Тренировка не найдена');
         }
 
         // Сохраняем данные текущей тренировки
@@ -559,8 +566,7 @@ async function startWorkout(workout, programId) {
             .then(data => data ? JSON.parse(data) : null);
         
         if (activeProgram && activeProgram.workouts) {
-            const workoutIndex = activeProgram.workouts.findIndex(w => 
-                w.id === workout.id && w.name === workout.name);
+            const workoutIndex = activeProgram.workouts.findIndex(w => w.id === workoutId);
             
             if (workoutIndex !== -1) {
                 activeProgram.workouts[workoutIndex].started = true;
@@ -663,7 +669,7 @@ function setupWorkoutHandlers(program) {
                 showWorkoutDetails(workoutId);
             } else if (button.classList.contains('start-btn')) {
                 tg.HapticFeedback.impactOccurred('medium');
-                startWorkout(workoutId);
+                startWorkout(program.id, workoutId);
             }
         });
     });
@@ -772,7 +778,7 @@ async function showProgramWorkouts(program) {
             <button class="back-btn" onclick="renderProgramCards()">
                 <span class="material-symbols-rounded">arrow_back</span>
             </button>
-            <h2>${program.name}</h2>
+            <h2>${program.name || program.title}</h2>
         </div>
         <div class="program-days">
             ${program.workouts.map((workout, index) => `
@@ -793,7 +799,7 @@ async function showProgramWorkouts(program) {
                             </div>
                         </div>
                     </div>
-                    <button class="start-workout-btn" onclick="startWorkout(${JSON.stringify(workout)}, '${program.id}')">
+                    <button class="start-workout-btn" onclick="startWorkout('${program.id}', '${workout.id}')">
                         <span class="material-symbols-rounded">play_arrow</span>
                         Начать тренировку
                     </button>
@@ -1358,6 +1364,44 @@ async function initializeDefaultPrograms() {
         if (!existingPrograms) {
             const defaultPrograms = [
                 {
+                    id: 'weight_loss',
+                    name: 'Снижение веса',
+                    title: 'Снижение веса',
+                    description: 'Программа для снижения веса и улучшения метаболизма',
+                    icon: 'monitor_weight',
+                    difficulty: 'beginner',
+                    duration: 8,
+                    schedule: '3-4 тр/нед',
+                    workoutsPerWeek: 3,
+                    isCompleted: false,
+                    workouts: [
+                        {
+                            id: 'workout_1',
+                            name: 'Кардио + Сила',
+                            description: 'Сочетание кардио и силовых упражнений',
+                            duration: 45,
+                            type: 'cardio_strength',
+                            exercises: []
+                        },
+                        {
+                            id: 'workout_2',
+                            name: 'ВИИТ тренировка',
+                            description: 'Высокоинтенсивная интервальная тренировка',
+                            duration: 30,
+                            type: 'hiit',
+                            exercises: []
+                        },
+                        {
+                            id: 'workout_3',
+                            name: 'Круговая тренировка',
+                            description: 'Круговая тренировка для сжигания жира',
+                            duration: 40,
+                            type: 'circuit',
+                            exercises: []
+                        }
+                    ]
+                },
+                {
                     id: 'endurance',
                     name: 'Выносливость',
                     title: 'Выносливость',
@@ -1521,7 +1565,11 @@ async function initializeDefaultPrograms() {
             ];
 
             await setStorageItem('programs', JSON.stringify(defaultPrograms));
-            console.log('Программы по умолчанию инициализированы');
+            window.programData = defaultPrograms;
+            console.log('Программы по умолчанию инициализированы:', defaultPrograms);
+        } else {
+            window.programData = JSON.parse(existingPrograms);
+            console.log('Загружены существующие программы:', window.programData);
         }
     } catch (error) {
         console.error('Ошибка при инициализации программ:', error);
