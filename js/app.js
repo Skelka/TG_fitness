@@ -53,7 +53,7 @@ tg.onEvent('popupClosed', async (event) => {
         renderProgramCards();
         document.querySelector('.bottom-nav')?.classList.remove('hidden');
     } else if (event.button_id.startsWith('start_program_')) {
-        const programId = event.button_id.replace('start_program_', '');
+            const programId = event.button_id.replace('start_program_', '');
         const program = window.programData.find(p => p.id === programId);
         
         if (!program) {
@@ -70,8 +70,8 @@ tg.onEvent('popupClosed', async (event) => {
             if (!profileData) {
                 showError('Пожалуйста, заполните профиль перед началом программы');
                 switchTab('profile');
-                return;
-            }
+        return;
+    }
 
             await initializeProgram(program);
             showProgramWorkouts(program);
@@ -173,10 +173,7 @@ async function initApp() {
             console.log('Анализ базы упражнений завершен');
         }
 
-        // Очищаем старые программы
-        await setStorageItem('programs', '');
-        
-        // Инициализируем программы заново
+        // Инициализируем программы при первом запуске
         await initializeDefaultPrograms();
         
         // Инициализируем все обработчики
@@ -209,12 +206,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Очищаем данные и перезагружаем приложение
-    clearAllData().then(() => {
-        initApp().catch(error => {
-            console.error('Ошибка при инициализации приложения:', error);
-            showError('Не удалось загрузить приложение');
-        });
+    initApp().catch(error => {
+        console.error('Ошибка при инициализации приложения:', error);
+        showError('Не удалось загрузить приложение');
     });
 });
 
@@ -930,7 +924,7 @@ async function updateProgramProgress(workout, isCompleted) {
             // Проверяем завершение программы
         const activeProgram = await getStorageItem('activeProgram')
             .then(data => data ? JSON.parse(data) : null);
-        
+
         if (activeProgram) {
                 const allWorkouts = activeProgram.workouts.length;
                 const completed = activeProgram.workouts.filter(w => w.completed).length;
@@ -1028,7 +1022,7 @@ function navigateCalendar(direction) {
     const currentDate = new Date();
     if (direction === 'prev') {
         currentDate.setMonth(currentDate.getMonth() - 1);
-    } else {
+        } else {
         currentDate.setMonth(currentDate.getMonth() + 1);
     }
     renderCalendar();
@@ -1079,7 +1073,7 @@ function switchTab(tabName) {
     tg.HapticFeedback.impactOccurred('light');
 }
 
-// Обновляем функцию clearAllData
+// Функция для очистки всех данных
 async function clearAllData() {
     try {
         // Список ключей для очистки
@@ -1087,8 +1081,7 @@ async function clearAllData() {
             'profile',
             'activeProgram',
             'workoutStats',
-            'weightHistory',
-            'programs'  // Добавляем programs в список очистки
+            'weightHistory'
         ];
 
         // Очищаем данные в CloudStorage и localStorage
@@ -1098,13 +1091,17 @@ async function clearAllData() {
         }
 
         // Показываем уведомление об успешной очистке
-        showNotification('Данные очищены');
+        await showPopupSafe({
+            title: 'Готово',
+            message: 'Все данные успешно очищены',
+            buttons: [{type: 'ok'}]
+        });
 
         // Перезагружаем страницу
         location.reload();
     } catch (error) {
         console.error('Ошибка при очистке данных:', error);
-        showError('Не удалось очистить данные');
+        await showError('Не удалось очистить данные');
     }
 }
 
@@ -1126,7 +1123,7 @@ async function updateWeightChart(period = 'week') {
 
         ctx.style.display = 'block';
 
-        const now = new Date();
+    const now = new Date();
         let startDate = new Date();
         let labels = [];
         let data = [];
@@ -1291,7 +1288,7 @@ async function saveProfile() {
         // Показываем уведомление об успешном сохранении
         showNotification('Профиль обновлен');
         tg.HapticFeedback.notificationOccurred('success');
-
+        
     } catch (error) {
         console.error('Ошибка при сохранении:', error);
         showNotification('Ошибка при сохранении', 'error');
@@ -1680,20 +1677,20 @@ async function renderTips() {
         // Получаем данные профиля и статистику
         const profileData = await getStorageItem('profile')
             .then(data => data ? JSON.parse(data) : null);
-        
+
         const stats = await getStorageItem('workoutStats')
             .then(data => data ? JSON.parse(data) : null);
 
         const tips = [];
 
         // Базовые советы (всегда показываются)
-        tips.push({
+                    tips.push({
             icon: 'water_drop',
             title: 'Пейте больше воды',
             text: 'Поддерживайте водный баланс. Рекомендуется выпивать 30мл воды на кг веса тела.'
-        });
+                    });
 
-        tips.push({
+                    tips.push({
             icon: 'schedule',
             title: 'Регулярность важна',
             text: 'Тренируйтесь регулярно, даже если это будут короткие тренировки. Регулярность важнее интенсивности.'
@@ -1729,7 +1726,7 @@ async function renderTips() {
         // Советы на основе статистики
         if (stats) {
             if (stats.totalWorkouts === 0) {
-                tips.push({
+        tips.push({
                     icon: 'fitness_center',
                     title: 'Начните свой путь',
                     text: 'Выберите программу тренировок, соответствующую вашему уровню и целям.'
@@ -1758,8 +1755,8 @@ async function renderTips() {
                     <span class="material-symbols-rounded">${tip.icon}</span>
                 </div>
                 <div class="tip-content">
-                    <h3>${tip.title}</h3>
-                    <p>${tip.text}</p>
+            <h3>${tip.title}</h3>
+            <p>${tip.text}</p>
         </div>
     `;
 
@@ -1860,8 +1857,8 @@ async function generateWorkoutPlan(program, profileData) {
 
                 if (suitableExercises.length > 0) {
                     const exercise = suitableExercises[Math.floor(Math.random() * suitableExercises.length)];
-                    const sets = Math.floor((Math.random() * (setsPerExercise.max - setsPerExercise.min + 1)) + setsPerExercise.min);
-                    const reps = Math.floor((Math.random() * (repsPerSet.max - repsPerSet.min + 1)) + repsPerSet.min);
+                    const sets = Math.floor(Math.random() * (setsPerExercise.max - setsPerExercise.min + 1)) + setsPerExercise.min;
+                    const reps = Math.floor(Math.random() * (repsPerSet.max - repsPerSet.min + 1)) + repsPerSet.min;
 
                     workoutExercises.push({
                         id: exercise.id || `exercise_${i}`,
