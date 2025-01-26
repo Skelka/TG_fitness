@@ -1214,12 +1214,55 @@ async function updateProgramProgress(workout, isCompleted) {
 
 // Функция обновления календаря
 function updateCalendar() {
-    // Существующий код обновления календаря...
+    const calendarContainer = document.querySelector('.calendar-days');
+    if (!calendarContainer) return;
+
+    getStorageItem('workoutStats')
+        .then(data => {
+            const stats = data ? JSON.parse(data) : { completedWorkouts: [] };
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+
+            // Получаем все даты тренировок для текущего месяца
+            const workoutDates = stats.completedWorkouts
+                .map(w => new Date(w.date))
+                .filter(date => 
+                    date.getMonth() === currentMonth && 
+                    date.getFullYear() === currentYear
+                )
+                .map(date => date.getDate());
+
+            // Обновляем календарь
+            renderCalendar(currentYear, currentMonth, workoutDates);
+        });
 }
 
 // Функция обновления статистики
 function updateStatistics() {
-    // Существующий код обновления статистики...
+    const statsContainer = document.querySelector('.stats-grid');
+    if (!statsContainer) return;
+
+    getStorageItem('workoutStats')
+        .then(data => {
+            const stats = data ? JSON.parse(data) : {
+                totalWorkouts: 0,
+                totalCalories: 0,
+                totalMinutes: 0
+            };
+
+            // Обновляем значения в карточках статистики
+            document.getElementById('total-workouts').textContent = stats.totalWorkouts;
+            document.getElementById('total-calories').textContent = stats.totalCalories;
+            document.getElementById('total-time').textContent = `${stats.totalMinutes}м`;
+            
+            // Обновляем прогресс цели
+            const activeProgram = window.programData[currentProgramId];
+            if (activeProgram) {
+                const progress = Math.round((stats.totalWorkouts / activeProgram.workouts.length) * 100);
+                document.getElementById('completion-rate').textContent = `${progress}%`;
+            }
+        });
 }
 
 // Обновляем функцию renderProgramCards
@@ -1324,15 +1367,7 @@ function showProgramWorkouts(program) {
             const activeProgram = data ? JSON.parse(data) : null;
             const workouts = activeProgram?.workouts || [];
 
-            // Группируем тренировки по неделям
-            const workoutsByWeek = program.workouts.reduce((acc, workout) => {
-                const week = workout.week || 1;
-                if (!acc[week]) acc[week] = [];
-                acc[week].push(workout);
-                return acc;
-            }, {});
-
-            container.innerHTML = `
+            let html = `
                 <div class="workout-list">
                     <div class="workout-list-header">
                         <button class="back-btn">
@@ -1340,54 +1375,70 @@ function showProgramWorkouts(program) {
                         </button>
                         <h2>${program.title}</h2>
                     </div>
-                    
-                    ${Object.entries(workoutsByWeek).map(([week, weekWorkouts]) => `
-                        <div class="workout-week">
-                            <div class="week-header">Неделя ${week}</div>
-                            ${weekWorkouts.map((workout, index) => {
-                                const activeWorkout = workouts.find(w => 
-                                    w.week === workout.week && w.day === workout.day);
-                                const isCompleted = activeWorkout?.completed || false;
-                                const prevWorkout = weekWorkouts[index - 1];
-                                const isPrevCompleted = index === 0 || 
-                                    workouts.find(w => 
-                                        w.week === prevWorkout.week && 
-                                        w.day === prevWorkout.day)?.completed;
-                                const isDisabled = !isPrevCompleted && !isCompleted;
-
-                                return `
-                                    <div class="workout-day ${isCompleted ? 'completed' : ''} 
-                                                           ${isDisabled ? 'disabled' : ''}">
-                                        <div class="workout-day-header">День ${workout.day}</div>
-                                        <div class="workout-title">${workout.title}</div>
-                                        <div class="workout-meta">
-                                            <span>
-                                                <span class="material-symbols-rounded">timer</span>
-                                                ${workout.duration} мин
-                                            </span>
-                                            <span>
-                                                <span class="material-symbols-rounded">local_fire_department</span>
-                                                ${workout.calories} ккал
-                                            </span>
-                                        </div>
-                                        <button class="start-workout-btn" 
-                                                data-workout-index="${index}" 
-                                                ${isDisabled ? 'disabled' : ''}>
-                                            ${isCompleted ? 'Повторить' : 'Начать'}
-                                        </button>
-                                        ${isDisabled ? `
-                                            <div class="workout-disabled-message">
-                                                Сначала завершите предыдущую тренировку
-                                            </div>
-                                        ` : ''}
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    `).join('')}
-                </div>
             `;
 
+            // Группируем тренировки по неделям
+            const workoutsByWeek = {};
+            program.workouts.forEach(workout => {
+                const week = workout.week || 1;
+                if (!workoutsByWeek[week]) {
+                    workoutsByWeek[week] = [];
+                }
+                workoutsByWeek[week].push(workout);
+            });
+
+            // Отображаем тренировки по неделям
+            Object.entries(workoutsByWeek).forEach(([week, weekWorkouts]) => {
+                html += `
+                    <div class="workout-week">
+                        <div class="week-header">Неделя ${week}</div>
+                `;
+
+                weekWorkouts.forEach((workout, index) => {
+                    const activeWorkout = workouts.find(w => 
+                        w.week === workout.week && w.day === workout.day);
+                    const isCompleted = activeWorkout?.completed || false;
+                    const isPrevCompleted = index === 0 || 
+                        workouts.find(w => 
+                            w.week === workout.week && 
+                            w.day === (workout.day - 1))?.completed;
+                    const isDisabled = !isPrevCompleted && !isCompleted;
+
+                    html += `
+                        <div class="workout-day ${isCompleted ? 'completed' : ''} ${isDisabled ? 'disabled' : ''}">
+                            <div class="workout-day-header">День ${workout.day}</div>
+                            <div class="workout-title">${workout.title}</div>
+                            <div class="workout-meta">
+                                <span>
+                                    <span class="material-symbols-rounded">timer</span>
+                                    ${workout.duration} мин
+                                </span>
+                                <span>
+                                    <span class="material-symbols-rounded">local_fire_department</span>
+                                    ${workout.calories} ккал
+                                </span>
+                            </div>
+                            <button class="start-workout-btn" 
+                                    data-workout-index="${index}" 
+                                    ${isDisabled ? 'disabled' : ''}>
+                                ${isCompleted ? 'Повторить' : 'Начать'}
+                            </button>
+                            ${isDisabled ? `
+                                <div class="workout-disabled-message">
+                                    Сначала завершите предыдущую тренировку
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+            });
+
+            html += `</div>`;
+            container.innerHTML = html;
+
+            // Добавляем обработчики
             setupWorkoutHandlers(program);
         });
 }
