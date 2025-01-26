@@ -88,12 +88,25 @@ async function initializeProgram(program) {
             }
         }
 
+        // Получаем данные профиля
+        const profileData = await getStorageItem('profile')
+            .then(data => data ? JSON.parse(data) : null);
+
+        if (!profileData) {
+            throw new Error('Необходимо заполнить профиль перед началом программы');
+        }
+
+        // Генерируем план тренировок
+        const workouts = await generateWorkoutPlan(program, profileData);
+        if (!workouts) {
+            throw new Error('Не удалось сгенерировать план тренировок');
+        }
+
         // Создаем новую структуру активной программы
         const activeProgram = {
-            id: program.id, // Убеждаемся, что id берется из программы
-            title: program.title,
+            ...program,
             startDate: Date.now(),
-            workouts: program.workouts.map(w => ({
+            workouts: workouts.map(w => ({
                 ...w,
                 completed: false,
                 started: false
@@ -103,7 +116,6 @@ async function initializeProgram(program) {
         // Сохраняем программу
         await setStorageItem('activeProgram', JSON.stringify(activeProgram));
         
-        // Для отладки
         console.log('Инициализирована программа:', activeProgram);
         
         return activeProgram;
@@ -144,6 +156,10 @@ async function initApp() {
         console.log('Инициализация WebApp:', tg.initData);
         console.log('Доступные методы WebApp:', Object.keys(tg));
 
+        // Анализируем базу упражнений
+        const exercisesAnalysis = analyzeExercisesDatabase();
+        console.log('Анализ базы упражнений завершен');
+
         // Инициализируем программы при первом запуске
         await initializeDefaultPrograms();
         
@@ -155,7 +171,7 @@ async function initApp() {
         // Загружаем данные
         await loadProfile();
         await loadActiveProgram();
-        
+
     } catch (error) {
         console.error('Ошибка инициализации:', error);
         showError('Произошла ошибка при загрузке приложения');
@@ -329,7 +345,7 @@ function showNotification(message, isError = false) {
     document.body.appendChild(notification);
 
     // Показываем уведомление
-    setTimeout(() => {
+        setTimeout(() => {
         notification.classList.add('show');
     }, 100);
 
@@ -371,7 +387,7 @@ function setupEventListeners() {
     profileInputs.forEach(input => {
         input.addEventListener('change', async () => {
             await saveProfile();
-            tg.HapticFeedback.impactOccurred('light');
+        tg.HapticFeedback.impactOccurred('light');
         });
     });
 
@@ -919,7 +935,7 @@ function renderCalendar() {
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
-
+    
     // Устанавливаем заголовок календаря
     const monthNames = [
         'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
@@ -1016,7 +1032,7 @@ function switchTab(tabName) {
             loadActiveProgram();
             break;
         case 'calendar':
-            renderCalendar();
+    renderCalendar();
             break;
     }
 
@@ -1522,13 +1538,13 @@ async function renderTips() {
                 <div class="tip-content">
                     <h3>${tip.title}</h3>
                     <p>${tip.text}</p>
-                </div>
-            `;
+        </div>
+    `;
 
             tipsContainer.appendChild(tipElement);
 
             // Добавляем анимацию появления с задержкой
-            setTimeout(() => {
+    setTimeout(() => {
                 tipElement.classList.add('visible');
             }, index * 100);
         });
@@ -1537,4 +1553,166 @@ async function renderTips() {
         console.error('Ошибка при отображении советов:', error);
         tipsContainer.innerHTML = '<div class="no-data">Не удалось загрузить советы</div>';
     }
+}
+
+async function generateWorkoutPlan(program, profileData) {
+    try {
+        if (!program || !profileData) return null;
+
+        const exercises = window.exercisesDB.exercises;
+        const workouts = [];
+
+        // Определяем базовые параметры на основе уровня подготовки
+        const setsPerExercise = {
+            'beginner': { min: 2, max: 3 },
+            'intermediate': { min: 3, max: 4 },
+            'advanced': { min: 4, max: 5 }
+        }[profileData.level] || { min: 2, max: 3 };
+
+        const repsPerSet = {
+            'beginner': { min: 8, max: 12 },
+            'intermediate': { min: 10, max: 15 },
+            'advanced': { min: 12, max: 20 }
+        }[profileData.level] || { min: 8, max: 12 };
+
+        // Подбираем упражнения в зависимости от цели
+        const targetMuscleGroups = {
+            'weight_loss': ['legs', 'back', 'chest', 'core'], // Большие мышечные группы для сжигания калорий
+            'muscle_gain': ['chest', 'back', 'legs', 'shoulders', 'arms'],
+            'endurance': ['legs', 'core', 'back', 'cardio']
+        }[profileData.goal] || ['legs', 'back', 'chest', 'core'];
+
+        // Фильтруем упражнения по доступному оборудованию
+        const availableEquipment = profileData.equipment || [];
+        const workoutPlaces = profileData.workoutPlaces || [];
+
+        program.workouts.forEach((workout, index) => {
+            const workoutExercises = [];
+            const usedMuscleGroups = new Set();
+            const exercisesPerWorkout = profileData.level === 'beginner' ? 5 : 
+                                      profileData.level === 'intermediate' ? 7 : 9;
+
+            // Подбираем упражнения для тренировки
+            for (let i = 0; i < exercisesPerWorkout; i++) {
+                // Выбираем мышечную группу
+                const availableMuscleGroups = targetMuscleGroups.filter(group => 
+                    !usedMuscleGroups.has(group) || usedMuscleGroups.size >= targetMuscleGroups.length
+                );
+                const muscleGroup = availableMuscleGroups[Math.floor(Math.random() * availableMuscleGroups.length)];
+
+                // Фильтруем подходящие упражнения
+                const suitableExercises = Object.values(exercises).filter(exercise => {
+                    const hasRequiredEquipment = !exercise.equipment || 
+                        exercise.equipment.every(eq => availableEquipment.includes(eq));
+                    const suitablePlace = !exercise.place || workoutPlaces.includes(exercise.place);
+                    const matchesDifficulty = exercise.difficulty <= 
+                        (profileData.level === 'beginner' ? 1 : 
+                         profileData.level === 'intermediate' ? 2 : 3);
+                    const matchesMuscleGroup = exercise.muscleGroups.includes(muscleGroup);
+
+                    return hasRequiredEquipment && suitablePlace && matchesDifficulty && matchesMuscleGroup;
+                });
+
+                if (suitableExercises.length > 0) {
+                    const exercise = suitableExercises[Math.floor(Math.random() * suitableExercises.length)];
+                    const sets = Math.floor(Math.random() * (setsPerExercise.max - setsPerExercise.min + 1)) + setsPerExercise.min;
+                    const reps = Math.floor(Math.random() * (repsPerSet.max - repsPerSet.min + 1)) + repsPerSet.min;
+
+                    workoutExercises.push({
+                        id: exercise.id,
+                        name: exercise.name,
+                        sets: sets,
+                        reps: reps,
+                        rest: profileData.goal === 'endurance' ? 30 : 
+                              profileData.goal === 'weight_loss' ? 45 : 60,
+                        type: exercise.type,
+                        equipment: exercise.equipment,
+                        description: exercise.description,
+                        image: exercise.image
+                    });
+
+                    usedMuscleGroups.add(muscleGroup);
+                }
+            }
+
+            // Добавляем разминку и заминку
+            const warmup = {
+                id: 'warmup',
+                name: 'Разминка',
+                duration: 5,
+                type: 'warmup',
+                description: 'Разогрев мышц и суставов перед тренировкой'
+            };
+
+            const cooldown = {
+                id: 'cooldown',
+                name: 'Заминка',
+                duration: 5,
+                type: 'cooldown',
+                description: 'Растяжка и восстановление после тренировки'
+            };
+
+            workout.exercises = [warmup, ...workoutExercises, cooldown];
+            workouts.push(workout);
+        });
+
+        return workouts;
+    } catch (error) {
+        console.error('Ошибка при генерации плана тренировок:', error);
+        return null;
+    }
+}
+
+function analyzeExercisesDatabase() {
+    const exercises = window.exercisesDB.exercises;
+    if (!exercises) {
+        console.error('База упражнений не загружена');
+        return;
+    }
+
+    const analysis = {
+        total: Object.keys(exercises).length,
+        byEquipment: {},
+        byMuscleGroup: {},
+        byDifficulty: {
+            1: 0, // beginner
+            2: 0, // intermediate
+            3: 0  // advanced
+        },
+        byPlace: {
+            home: 0,
+            gym: 0,
+            outdoor: 0,
+            any: 0
+        }
+    };
+
+    Object.values(exercises).forEach(exercise => {
+        // Подсчет по оборудованию
+        if (exercise.equipment && exercise.equipment.length) {
+            exercise.equipment.forEach(eq => {
+                analysis.byEquipment[eq] = (analysis.byEquipment[eq] || 0) + 1;
+            });
+        } else {
+            analysis.byEquipment['bodyweight'] = (analysis.byEquipment['bodyweight'] || 0) + 1;
+        }
+
+        // Подсчет по мышечным группам
+        exercise.muscleGroups.forEach(group => {
+            analysis.byMuscleGroup[group] = (analysis.byMuscleGroup[group] || 0) + 1;
+        });
+
+        // Подсчет по сложности
+        analysis.byDifficulty[exercise.difficulty] = (analysis.byDifficulty[exercise.difficulty] || 0) + 1;
+
+        // Подсчет по месту выполнения
+        if (exercise.place) {
+            analysis.byPlace[exercise.place]++;
+        } else {
+            analysis.byPlace.any++;
+        }
+    });
+
+    console.log('Анализ базы упражнений:', analysis);
+    return analysis;
 }
