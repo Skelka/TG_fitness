@@ -860,16 +860,18 @@ function setupCheckboxHandlers() {
 async function saveProfileSettings() {
     try {
         const equipmentInputs = document.querySelectorAll('input[name="equipment"]:checked');
-        const selectedEquipment = Array.from(equipmentInputs).map(input => input.value);
+        const placeButtons = document.querySelectorAll('.place-btn.active');
         
         const profileData = await getStorageItem('profile')
             .then(data => data ? JSON.parse(data) : {});
         
-        profileData.equipment = selectedEquipment;
+        profileData.equipment = Array.from(equipmentInputs).map(input => input.value);
+        profileData.workoutPlaces = Array.from(placeButtons).map(btn => btn.dataset.place);
         
         await setStorageItem('profile', JSON.stringify(profileData));
     } catch (error) {
         console.error('Ошибка при сохранении настроек:', error);
+        showError('Не удалось сохранить настройки');
     }
 }
 
@@ -1489,7 +1491,10 @@ function setupProfileEquipmentHandlers() {
 
     // Обработчики для оборудования
     equipmentInputs.forEach(input => {
-        input.addEventListener('change', saveProfileSettings);
+        input.addEventListener('change', () => {
+            tg.HapticFeedback.impactOccurred('light');
+            saveProfileSettings();
+        });
     });
 
     // Обработчики для места тренировок
@@ -1497,10 +1502,39 @@ function setupProfileEquipmentHandlers() {
         btn.addEventListener('click', () => {
             placeButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            tg.HapticFeedback.impactOccurred('light');
             saveProfileSettings();
         });
     });
-} 
+}
+
+// Функция загрузки настроек профиля
+async function loadProfileSettings() {
+    try {
+        const profileData = await getStorageItem('profile')
+            .then(data => data ? JSON.parse(data) : {});
+
+        // Заполняем чекбоксы оборудования
+        if (profileData.equipment) {
+            const equipmentInputs = document.querySelectorAll('input[name="equipment"]');
+            equipmentInputs.forEach(input => {
+                input.checked = profileData.equipment.includes(input.value);
+            });
+        }
+
+        // Устанавливаем место тренировок
+        if (profileData.workoutPlaces) {
+            const placeButtons = document.querySelectorAll('.place-btn');
+            placeButtons.forEach(btn => {
+                if (profileData.workoutPlaces.includes(btn.dataset.place)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке настроек профиля:', error);
+    }
+}
 
 // Функция для отображения статистики
 async function renderStatistics() {
