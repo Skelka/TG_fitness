@@ -1,27 +1,21 @@
 import { tg } from './globals.js';
 import { renderStatistics } from './statistics.js';
 import { loadProfile } from './profile.js';
+import { renderCalendar } from './calendar.js';
 
-// UI функции
+// Переключение табов
 export function switchTab(tabName) {
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
+    // Обновляем активный элемент навигации
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.tab === tabName);
     });
 
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
+    // Обновляем активный контент
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.toggle('active', content.id === tabName);
     });
 
-    const selectedTab = document.getElementById(tabName);
-    if (selectedTab) {
-        selectedTab.classList.add('active');
-    }
-
-    const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
-    if (activeBtn) {
-        activeBtn.classList.add('active');
-    }
-
+    // Дополнительные действия при переключении табов
     switch(tabName) {
         case 'stats':
             renderStatistics();
@@ -29,34 +23,29 @@ export function switchTab(tabName) {
         case 'profile':
             loadProfile();
             break;
+        case 'calendar':
+            renderCalendar();
+            break;
     }
 }
 
+// Показ уведомлений
 export function showNotification(message, isError = false) {
-    const existingNotification = document.querySelector('.notification');
-    if (existingNotification) {
-        existingNotification.remove();
-    }
-
     const notification = document.createElement('div');
     notification.className = `notification${isError ? ' error' : ''}`;
     notification.textContent = message;
-
     document.body.appendChild(notification);
-    tg.HapticFeedback.notificationOccurred(isError ? 'error' : 'success');
 
     setTimeout(() => {
         notification.remove();
     }, 3000);
 }
 
+// Безопасный показ попапа
 export async function showPopupSafe(params) {
     return new Promise((resolve) => {
-        try {
-            tg.showPopup(params, resolve);
-        } catch (error) {
-            console.error('Ошибка при показе попапа:', error);
-            resolve({ button_id: 'error' });
-        }
+        tg.showPopup(params, (result) => {
+            resolve(result);
+        });
     });
 } 

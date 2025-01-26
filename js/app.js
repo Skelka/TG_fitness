@@ -117,31 +117,5 @@ async function clearAllData() {
     }
 }
 
-// Переключение табов
-export function switchTab(tabName) {
-    // Обновляем активный элемент навигации
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.toggle('active', item.dataset.tab === tabName);
-    });
-
-    // Обновляем активный контент
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.toggle('active', content.id === tabName);
-    });
-
-    // Дополнительные действия при переключении табов
-    switch(tabName) {
-        case 'stats':
-            renderStatistics();
-            break;
-        case 'profile':
-            loadProfile();
-            break;
-        case 'calendar':
-            renderCalendar();
-            break;
-    }
-}
-
 // Запуск приложения
 document.addEventListener('DOMContentLoaded', initApp);
