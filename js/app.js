@@ -144,14 +144,17 @@ function initApp() {
         console.log('Инициализация WebApp:', tg.initData);
         console.log('Доступные методы WebApp:', Object.keys(tg));
 
-        // Инициализируем все обработчики
-        setupEventListeners();
-        setupPopupHandlers();
-        setupProfileEquipmentHandlers();
-        
-        // Загружаем данные
-        loadProfile();
-        loadActiveProgram();
+        // Инициализируем программы при первом запуске
+        initializeDefaultPrograms().then(() => {
+            // Инициализируем все обработчики
+            setupEventListeners();
+            setupPopupHandlers();
+            setupProfileEquipmentHandlers();
+            
+            // Загружаем данные
+            loadProfile();
+            loadActiveProgram();
+        });
     } catch (error) {
         console.error('Ошибка инициализации:', error);
         showError('Произошла ошибка при загрузке приложения');
@@ -1289,16 +1292,27 @@ function renderStatistics() {
                 completedWorkouts: []
             };
 
-            // Обновляем карточки статистики
-            document.querySelector('.total-workouts').textContent = stats.totalWorkouts;
-            document.querySelector('.total-time').textContent = `${Math.round(stats.totalMinutes)} мин`;
-            document.querySelector('.total-calories').textContent = `${Math.round(stats.totalCalories)} ккал`;
+            // Проверяем наличие элементов перед обновлением
+            const totalWorkoutsEl = document.querySelector('.total-workouts');
+            const totalTimeEl = document.querySelector('.total-time');
+            const totalCaloriesEl = document.querySelector('.total-calories');
+            const completionRateEl = document.querySelector('.completion-rate');
 
-            // Вычисляем процент выполнения
-            const completionRate = stats.completedWorkouts.length > 0 
-                ? Math.round((stats.completedWorkouts.filter(w => w.completed).length / stats.completedWorkouts.length) * 100)
-                : 0;
-            document.querySelector('.completion-rate').textContent = `${completionRate}%`;
+            if (totalWorkoutsEl) {
+                totalWorkoutsEl.textContent = stats.totalWorkouts || 0;
+            }
+            if (totalTimeEl) {
+                totalTimeEl.textContent = `${Math.round(stats.totalMinutes || 0)} мин`;
+            }
+            if (totalCaloriesEl) {
+                totalCaloriesEl.textContent = `${Math.round(stats.totalCalories || 0)} ккал`;
+            }
+            if (completionRateEl) {
+                const completionRate = stats.completedWorkouts?.length > 0 
+                    ? Math.round((stats.completedWorkouts.filter(w => w.completed).length / stats.completedWorkouts.length) * 100)
+                    : 0;
+                completionRateEl.textContent = `${completionRate}%`;
+            }
 
             // Обновляем график веса
             updateWeightChart('week');
@@ -1307,4 +1321,100 @@ function renderStatistics() {
             console.error('Ошибка при загрузке статистики:', error);
             showError('Не удалось загрузить статистику');
         });
+}
+
+async function initializeDefaultPrograms() {
+    try {
+        // Проверяем, были ли уже инициализированы программы
+        const programsInitialized = await getStorageItem('programsInitialized');
+        if (programsInitialized) return;
+
+        // Базовые программы
+        const defaultPrograms = {
+            weight_loss: {
+                id: 'weight_loss',
+                title: 'Снижение веса',
+                description: 'Программа для безопасного снижения веса с комбинацией кардио и силовых тренировок',
+                duration: '8 недель',
+                schedule: '3-4 тренировки в неделю',
+                difficulty: 'beginner',
+                icon: 'monitor_weight',
+                workouts: [
+                    {
+                        day: 1,
+                        title: 'Кардио + Пресс',
+                        duration: 45,
+                        calories: 350,
+                        type: 'cardio',
+                        exercises: [
+                            { name: 'Разминка', duration: 5 },
+                            { name: 'Бег/Ходьба', duration: 20 },
+                            { name: 'Скручивания', sets: 3, reps: 15 },
+                            { name: 'Планка', duration: 3 },
+                            { name: 'Растяжка', duration: 5 }
+                        ]
+                    },
+                    {
+                        day: 2,
+                        title: 'Силовая тренировка',
+                        duration: 50,
+                        calories: 400,
+                        type: 'strength',
+                        exercises: [
+                            { name: 'Приседания', sets: 3, reps: 15 },
+                            { name: 'Отжимания', sets: 3, reps: 10 },
+                            { name: 'Выпады', sets: 3, reps: 12 },
+                            { name: 'Планка', duration: 1 }
+                        ]
+                    }
+                ]
+            },
+            muscle_gain: {
+                id: 'muscle_gain',
+                title: 'Набор мышечной массы',
+                description: 'Программа для эффективного набора мышечной массы с акцентом на силовые упражнения',
+                duration: '12 недель',
+                schedule: '4 тренировки в неделю',
+                difficulty: 'intermediate',
+                icon: 'fitness_center',
+                workouts: [
+                    {
+                        day: 1,
+                        title: 'Грудь + Трицепс',
+                        duration: 60,
+                        calories: 450,
+                        type: 'strength',
+                        exercises: [
+                            { name: 'Жим лежа', sets: 4, reps: 12 },
+                            { name: 'Отжимания', sets: 3, reps: 15 },
+                            { name: 'Разгибания трицепса', sets: 3, reps: 12 }
+                        ]
+                    },
+                    {
+                        day: 2,
+                        title: 'Спина + Бицепс',
+                        duration: 60,
+                        calories: 450,
+                        type: 'strength',
+                        exercises: [
+                            { name: 'Подтягивания', sets: 4, reps: '8-10' },
+                            { name: 'Тяга в наклоне', sets: 3, reps: 12 },
+                            { name: 'Сгибания на бицепс', sets: 3, reps: 12 }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // Сохраняем программы
+        await setStorageItem('programData', JSON.stringify(defaultPrograms));
+        await setStorageItem('programsInitialized', 'true');
+
+        // Обновляем глобальную переменную
+        window.programData = defaultPrograms;
+
+        console.log('Программы успешно инициализированы');
+    } catch (error) {
+        console.error('Ошибка при инициализации программ:', error);
+    }
 }

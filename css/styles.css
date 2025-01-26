@@ -49,7 +49,7 @@ body {
 }
 
 .profile-form {
-    padding: 16px;
+    padding: 0 16px;
 }
 
 .form-group {
@@ -82,8 +82,17 @@ body {
 .radio-label {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 8px;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.radio-label:has(input:checked) {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
 }
 
 .radio-label input[type="radio"] {
@@ -108,20 +117,28 @@ body {
 }
 
 .workout-place-selector {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
 }
 
 .place-btn {
-    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     padding: 12px;
-    border: none;
-    border-radius: 8px;
     background: var(--tg-theme-secondary-bg-color);
+    border: none;
+    border-radius: 12px;
     color: var(--tg-theme-hint-color);
-    font-size: 14px;
+    font-size: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
+}
+
+.place-btn .material-symbols-rounded {
+    font-size: 24px;
 }
 
 .place-btn.active {
@@ -138,25 +155,51 @@ body {
 .equipment-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 12px;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.equipment-item input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    margin: 0;
+.equipment-item input {
+    display: none;
+}
+
+.equipment-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--tg-theme-bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.equipment-item:has(input:checked) {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.equipment-item:has(input:checked) .equipment-icon {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.equipment-item span {
+    font-size: 14px;
 }
 
 .danger-btn {
     width: 100%;
-    padding: 12px;
+    padding: 16px;
     margin-top: 24px;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     background: #ff3b30;
     color: white;
-    font-size: 14px;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1587,35 +1630,27 @@ body {
 }
 
 .profile-header {
+    background: var(--tg-theme-bg-color);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: 24px;
-    padding: 16px;
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: 16px;
+    box-shadow: var(--card-shadow);
 }
 
 .profile-photo {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    overflow: hidden;
-}
-
-.profile-photo img {
-    width: 100%;
-    height: 100%;
     object-fit: cover;
-}
-
-.profile-info {
-    flex: 1;
 }
 
 .profile-info h3 {
     margin: 0;
     font-size: 20px;
+    color: var(--tg-theme-text-color);
 }
 
 .profile-status {
@@ -1623,16 +1658,22 @@ body {
     color: var(--tg-theme-hint-color);
 }
 
+.profile-form {
+    padding: 0 16px;
+}
+
 .form-section {
-    background: var(--tg-theme-secondary-bg-color);
+    background: var(--tg-theme-bg-color);
     border-radius: 16px;
     padding: 16px;
     margin-bottom: 16px;
+    box-shadow: var(--card-shadow);
 }
 
 .form-section h4 {
     margin: 0 0 16px 0;
     font-size: 16px;
+    color: var(--tg-theme-text-color);
 }
 
 .input-group-row {
@@ -1642,75 +1683,52 @@ body {
     margin-bottom: 16px;
 }
 
-.checkbox-group {
+.input-group {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 8px;
-    width: 100%;
-}
-
-.checkbox-label {
-    flex: 1;
-    min-width: calc(33.33% - 8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 12px;
-    background: var(--tg-theme-bg-color);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s;
-    text-align: center;
-}
-
-.checkbox-label input {
-    display: none;
-}
-
-.checkbox-label span {
-    font-size: 14px;
-    line-height: 1.2;
-    transition: all 0.3s;
-}
-
-.checkbox-label input:checked {
-    background: var(--tg-theme-button-color);
-}
-
-.checkbox-label input:checked ~ span {
-    color: var(--tg-theme-button-text-color);
-}
-
-.checkbox-label:has(input:checked) {
-    background: var(--tg-theme-button-color);
-}
-
-input[type="number"] {
-    appearance: textfield;
-    -moz-appearance: textfield;
-    -webkit-appearance: textfield;
-}
-
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    appearance: none;
-    margin: 0;
 }
 
 .input-group label {
-    display: block;
-    margin-bottom: 8px;
     font-size: 14px;
     color: var(--tg-theme-hint-color);
-    text-align: center;
+}
+
+.input-group input {
+    padding: 12px;
+    border: 1px solid var(--tg-theme-hint-color);
+    border-radius: 8px;
+    font-size: 16px;
+    background: var(--tg-theme-bg-color);
+    color: var(--tg-theme-text-color);
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.radio-label:has(input:checked) {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
 }
 
 .goals-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
-    margin-bottom: 16px;
 }
 
 .goal-item {
@@ -1719,10 +1737,10 @@ input[type="number"]::-webkit-inner-spin-button {
     align-items: center;
     gap: 8px;
     padding: 12px;
-    background: var(--tg-theme-bg-color);
+    background: var(--tg-theme-secondary-bg-color);
     border-radius: 12px;
     cursor: pointer;
-    text-align: center;
+    transition: all 0.2s ease;
 }
 
 .goal-item input {
@@ -1732,32 +1750,127 @@ input[type="number"]::-webkit-inner-spin-button {
 .goal-icon {
     width: 48px;
     height: 48px;
+    border-radius: 12px;
+    background: var(--tg-theme-bg-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--tg-theme-secondary-bg-color);
-    border-radius: 12px;
-    transition: all 0.3s;
+    transition: all 0.2s ease;
 }
 
-.goal-item input:checked + .goal-icon {
+.goal-item:has(input:checked) {
     background: var(--tg-theme-button-color);
+}
+
+.goal-item:has(input:checked) .goal-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--tg-theme-button-text-color);
+}
+
+.goal-item:has(input:checked) .goal-label {
     color: var(--tg-theme-button-text-color);
 }
 
 .goal-label {
-    font-size: 14px;
+    font-size: 12px;
     text-align: center;
-    line-height: 1.2;
+    color: var(--tg-theme-hint-color);
 }
 
-.equipment-icon .material-symbols-rounded {
+.workout-place-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.place-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color);
+    border: none;
+    border-radius: 12px;
+    color: var(--tg-theme-hint-color);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.place-btn .material-symbols-rounded {
     font-size: 24px;
 }
 
-.goal-item input:checked + .goal-icon,
-.equipment-item input:checked + .equipment-icon {
-    transform: scale(1.05);
+.place-btn.active {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.equipment-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.equipment-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.equipment-item input {
+    display: none;
+}
+
+.equipment-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--tg-theme-bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.equipment-item:has(input:checked) {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.equipment-item:has(input:checked) .equipment-icon {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.equipment-item span {
+    font-size: 14px;
+}
+
+.danger-btn {
+    width: 100%;
+    padding: 16px;
+    margin-top: 24px;
+    border: none;
+    border-radius: 12px;
+    background: #ff3b30;
+    color: white;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.danger-btn:active {
+    opacity: 0.8;
 }
 
 /* Стили для экрана завершения тренировки */
@@ -2035,12 +2148,11 @@ input[type="number"]::-webkit-inner-spin-button {
 .start-workout-btn {
     width: 100%;
     height: 48px;
-    border-radius: 12px;
     border: none;
+    border-radius: 12px;
     background: var(--tg-theme-button-color);
     color: var(--tg-theme-button-text-color);
     font-size: 16px;
-    font-weight: 500;
     display: flex;
     align-items: center;
     justify-content: center;
