@@ -489,6 +489,18 @@ const PROGRAM_TYPES = {
             'Отличная работа!'
         ]
     },
+    maintenance: {
+        restBetweenSets: 60,
+        restBetweenExercises: 90,
+        minWarmupTime: 300, // 5 минут
+        showCalories: true,
+        hapticFeedback: 'medium',
+        motivationalMessages: [
+            'Поддерживаем форму!',
+            'Отличный темп!',
+            'Так держать!'
+        ]
+    },
     muscle_gain: {
         restBetweenSets: 90,
         restBetweenExercises: 120,
@@ -1341,6 +1353,82 @@ async function initializeDefaultPrograms() {
         const existingPrograms = await getStorageItem('programs');
         if (!existingPrograms) {
             const defaultPrograms = [
+                {
+                    id: 'endurance',
+                    name: 'Выносливость',
+                    title: 'Выносливость',
+                    description: 'Программа для развития общей выносливости',
+                    icon: 'directions_run',
+                    difficulty: 'beginner',
+                    duration: 6,
+                    schedule: '4-5 тр/нед',
+                    workoutsPerWeek: 4,
+                    isCompleted: false,
+                    workouts: [
+                        {
+                            id: 'workout_1',
+                            name: 'ВИИТ тренировка',
+                            description: 'Высокоинтенсивная интервальная тренировка',
+                            duration: 30,
+                            type: 'hiit',
+                            exercises: []
+                        },
+                        {
+                            id: 'workout_2',
+                            name: 'Кардио выносливость',
+                            description: 'Развитие общей выносливости',
+                            duration: 45,
+                            type: 'cardio',
+                            exercises: []
+                        },
+                        {
+                            id: 'workout_3',
+                            name: 'Круговая тренировка',
+                            description: 'Комплексная тренировка на все тело',
+                            duration: 40,
+                            type: 'circuit',
+                            exercises: []
+                        }
+                    ]
+                },
+                {
+                    id: 'maintenance',
+                    name: 'Поддержание формы',
+                    title: 'Поддержание формы',
+                    description: 'Программа для поддержания текущей формы и тонуса мышц',
+                    icon: 'sports_gymnastics',
+                    difficulty: 'beginner',
+                    duration: 4,
+                    schedule: '3-4 тр/нед',
+                    workoutsPerWeek: 3,
+                    isCompleted: false,
+                    workouts: [
+                        {
+                            id: 'workout_1',
+                            name: 'Общая тренировка',
+                            description: 'Комплексная тренировка на все тело',
+                            duration: 40,
+                            type: 'general',
+                            exercises: []
+                        },
+                        {
+                            id: 'workout_2',
+                            name: 'Кардио + Сила',
+                            description: 'Сочетание кардио и силовых упражнений',
+                            duration: 35,
+                            type: 'cardio_strength',
+                            exercises: []
+                        },
+                        {
+                            id: 'workout_3',
+                            name: 'Функциональная тренировка',
+                            description: 'Упражнения на функциональную силу и гибкость',
+                            duration: 45,
+                            type: 'functional',
+                            exercises: []
+                        }
+                    ]
+                },
                 {
                     id: 'beginner_strength',
                     name: 'Базовая сила',
