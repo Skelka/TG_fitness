@@ -73,7 +73,18 @@ tg.onEvent('popupClosed', async (event) => {
 // Добавляем функцию инициализации программы
 async function initializeProgram(program) {
     try {
-        // Создаем структуру активной программы
+        // Проверяем, нет ли уже активной программы
+        const existingProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+            
+        if (existingProgram) {
+            // Если это та же программа, просто возвращаем её
+            if (existingProgram.id === program.id) {
+                return existingProgram;
+            }
+        }
+
+        // Создаем новую структуру активной программы
         const activeProgram = {
             id: program.id,
             startDate: Date.now(),
@@ -159,7 +170,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupProgramHandlers();
         setupPopupHandlers();
         loadProfile();
-        loadActiveProgram();
+        
+        // Загружаем активную программу
+        await loadActiveProgram();
 
         // Инициализируем страницу статистики только если мы на вкладке статистики
         const statsTab = document.getElementById('stats');
@@ -1437,10 +1450,19 @@ async function loadActiveProgram() {
             .then(data => data ? JSON.parse(data) : null);
         
         if (activeProgram) {
-            updateProgramProgress(activeProgram);
+            const program = window.programData[activeProgram.id];
+            if (program) {
+                // Показываем список тренировок активной программы
+                showProgramWorkouts(program);
+                return;
+            }
         }
+        
+        // Если нет активной программы, показываем список всех программ
+        renderProgramCards();
     } catch (error) {
         console.error('Ошибка при загрузке активной программы:', error);
+        renderProgramCards();
     }
 }
 
@@ -1749,54 +1771,50 @@ function startTimer(duration) {
 }
 
 // Обновляем функцию completeWorkout
-async function completeWorkout(workout) {
+async function completeWorkout() {
     try {
-        if (!workout || !currentProgramId) {
-            throw new Error('Данные о тренировке отсутствуют');
-        }
-
-        // Получаем полные данные о программе
-        const program = window.programData[currentProgramId];
-        if (!program) {
-            throw new Error('Программа не найдена');
-        }
-
-        // Очищаем все таймеры
-        clearTimers();
-
-        // Вычисляем фактическое время тренировки
-        const actualDuration = Math.round((Date.now() - workoutStartTime) / (1000 * 60));
-
-        // Получаем текущий прогресс
-        let activeProgram = await getStorageItem('activeProgram')
+        // Получаем активную программу
+        const activeProgram = await getStorageItem('activeProgram')
             .then(data => data ? JSON.parse(data) : null);
-
-        if (activeProgram) {
-            const completedWorkout = {
-                id: Date.now(),
-                programId: currentProgramId,
-                date: Date.now(),
-                day: workout.day,
-                title: workout.title,
-                duration: actualDuration,
-                calories: workout.calories,
-                type: workout.type
-            };
-
-            if (!Array.isArray(activeProgram.completedWorkouts)) {
-                activeProgram.completedWorkouts = [];
+        
+        if (activeProgram && activeProgram.workouts) {
+            // Находим текущую тренировку
+            const workoutIndex = activeProgram.workouts.findIndex(w => 
+                w.day === currentWorkout.day && w.title === currentWorkout.title);
+            
+            if (workoutIndex !== -1) {
+                // Отмечаем тренировку как завершенную
+                activeProgram.workouts[workoutIndex].completed = true;
+                // Сохраняем обновленное состояние
+                await setStorageItem('activeProgram', JSON.stringify(activeProgram));
             }
-
-            activeProgram.completedWorkouts.push(completedWorkout);
-            await setStorageItem('activeProgram', JSON.stringify(activeProgram));
         }
 
-        // Показываем экран завершения
-        showWorkoutComplete(actualDuration, workout.calories);
+        // Показываем поздравление
+        await showPopupSafe({
+            title: 'Тренировка завершена! 🎉',
+            message: 'Отличная работа! Вы успешно завершили тренировку.',
+            buttons: [{
+                type: 'default',
+                text: 'Продолжить'
+            }]
+        });
+
+        // Возвращаемся к списку тренировок
+        const program = window.programData[currentProgramId];
+        if (program) {
+            showProgramWorkouts(program);
+        }
+
+        // Показываем нижнюю навигацию
+        document.querySelector('.bottom-nav')?.classList.remove('hidden');
+
+        // Вибрация успеха
+        tg.HapticFeedback.notificationOccurred('success');
 
     } catch (error) {
         console.error('Ошибка при завершении тренировки:', error);
-        showError('Не удалось сохранить результаты тренировки');
+        await showError('Не удалось завершить тренировку');
     }
 }
 
@@ -3364,6 +3382,7 @@ async function completeWorkout() {
             if (workoutIndex !== -1) {
                 // Отмечаем тренировку как завершенную
                 activeProgram.workouts[workoutIndex].completed = true;
+                // Сохраняем обновленное состояние
                 await setStorageItem('activeProgram', JSON.stringify(activeProgram));
             }
         }
@@ -3382,8 +3401,6 @@ async function completeWorkout() {
         const program = window.programData[currentProgramId];
         if (program) {
             showProgramWorkouts(program);
-        } else {
-            renderProgramCards();
         }
 
         // Показываем нижнюю навигацию
