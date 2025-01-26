@@ -156,45 +156,33 @@ async function saveProfile() {
         const activePlace = form.querySelector('.place-btn.active');
         
         const profileData = {
-            age: parseInt(form.querySelector('input[name="age"]').value),
-            height: parseInt(form.querySelector('input[name="height"]').value),
-            weight: parseFloat(form.querySelector('input[name="weight"]').value),
-            gender: form.querySelector('input[name="gender"]:checked')?.value,
-            goal: form.querySelector('input[name="goal"]:checked')?.value,
-            level: form.querySelector('input[name="level"]:checked')?.value,
-            workoutPlace: activePlace ? activePlace.dataset.place : 'home', // Значение по умолчанию
+            age: parseInt(form.querySelector('input[name="age"]').value) || null,
+            height: parseInt(form.querySelector('input[name="height"]').value) || null,
+            weight: parseFloat(form.querySelector('input[name="weight"]').value) || null,
+            gender: form.querySelector('input[name="gender"]:checked')?.value || null,
+            goal: form.querySelector('input[name="goal"]:checked')?.value || null,
+            level: form.querySelector('input[name="level"]:checked')?.value || null,
+            workoutPlace: activePlace ? activePlace.dataset.place : 'home',
             equipment: Array.from(form.querySelectorAll('input[name="equipment"]:checked'))
                 .map(input => input.value)
         };
 
-        // Проверяем обязательные поля
-        if (!profileData.age || !profileData.height || !profileData.weight) {
-            showError('Пожалуйста, заполните все обязательные поля');
-            return;
-        }
-
-        // Проверяем обязательные радио-кнопки
-        if (!profileData.gender || !profileData.goal || !profileData.level) {
-            showError('Пожалуйста, выберите все необходимые параметры');
-            return;
-        }
-
         await setStorageItem('profile', JSON.stringify(profileData));
-        showNotification('Профиль успешно сохранен');
         updateProfileStatus(profileData);
 
-        // Сохраняем начальный вес в истории
-        const weightHistory = await getStorageItem('weightHistory')
-            .then(data => data ? JSON.parse(data) : []);
+        // Сохраняем вес в историю только если он указан
+        if (profileData.weight) {
+            const weightHistory = await getStorageItem('weightHistory')
+                .then(data => data ? JSON.parse(data) : []);
 
-        if (!weightHistory.length) {
-            await saveWeight(profileData.weight);
+            if (!weightHistory.length) {
+                await saveWeight(profileData.weight);
+            }
         }
 
         return profileData;
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
-        showError('Не удалось сохранить профиль');
         return null;
     }
 }
