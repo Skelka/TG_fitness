@@ -32,14 +32,18 @@ export function previousExercise() {
     if (!currentWorkout || currentExerciseIndex <= 0) return;
     currentExerciseIndex--;
     renderExercise(currentWorkout.exercises[currentExerciseIndex], currentExerciseIndex, currentWorkout.exercises.length);
-    tg.HapticFeedback.notificationOccurred('medium');
+    if (window.tg?.HapticFeedback) {
+        window.tg.HapticFeedback.notificationOccurred('medium');
+    }
 }
 
 export function nextExercise() {
     if (!currentWorkout || currentExerciseIndex >= currentWorkout.exercises.length - 1) return;
     currentExerciseIndex++;
     renderExercise(currentWorkout.exercises[currentExerciseIndex], currentExerciseIndex, currentWorkout.exercises.length);
-    tg.HapticFeedback.notificationOccurred('medium');
+    if (window.tg?.HapticFeedback) {
+        window.tg.HapticFeedback.notificationOccurred('medium');
+    }
 }
 
 export async function confirmQuitWorkout() {
@@ -63,7 +67,9 @@ export async function confirmQuitWorkout() {
         clearTimers();
         renderProgramCards();
         document.querySelector('.bottom-nav')?.classList.remove('hidden');
-        tg.HapticFeedback.notificationOccurred('warning');
+        if (window.tg?.HapticFeedback) {
+            window.tg.HapticFeedback.notificationOccurred('warning');
+        }
     }
 }
 
@@ -82,7 +88,9 @@ export async function completeExercise() {
     } else {
         // Показываем уведомление
         showNotification('Упражнение завершено!');
-        tg.HapticFeedback.notificationOccurred('success');
+        if (window.tg?.HapticFeedback) {
+            window.tg.HapticFeedback.notificationOccurred('success');
+        }
 
         // Запускаем таймер отдыха
         const restTime = exercise.rest || 60;
@@ -131,7 +139,9 @@ export function closeWorkout() {
     currentWorkout = null;
     currentExerciseIndex = 0;
     showTab('programs');
-    tg.HapticFeedback.notificationOccurred('medium');
+    if (window.tg?.HapticFeedback) {
+        window.tg.HapticFeedback.notificationOccurred('medium');
+    }
 }
 
 export function saveWorkoutProgress(workoutId) {
@@ -279,7 +289,9 @@ export function startRestTimer(duration) {
             clearInterval(restTimer);
             restTimerElement.remove();
             showNotification('Отдых завершен!');
-            tg.HapticFeedback.notificationOccurred('success');
+            if (window.tg?.HapticFeedback) {
+                window.tg.HapticFeedback.notificationOccurred('success');
+            }
         }
     }, 1000);
 }
@@ -288,7 +300,9 @@ export function skipRest() {
     clearInterval(restTimer);
     document.querySelector('.rest-timer')?.remove();
     showNotification('Отдых пропущен');
-    tg.HapticFeedback.notificationOccurred('medium');
+    if (window.tg?.HapticFeedback) {
+        window.tg.HapticFeedback.notificationOccurred('medium');
+    }
 }
 
 function updateTimerDisplay(seconds) {

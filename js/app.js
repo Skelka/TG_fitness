@@ -65,7 +65,9 @@ function setupEventListeners() {
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             switchTab(btn.dataset.tab);
-            tg.HapticFeedback.impactOccurred('light');
+            if (window.tg?.HapticFeedback) {
+                window.tg.HapticFeedback.impactOccurred('light');
+            }
         });
     });
 
@@ -76,7 +78,9 @@ function setupEventListeners() {
             periodButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
             await renderStatistics(button.dataset.period);
-            tg.HapticFeedback.impactOccurred('light');
+            if (window.tg?.HapticFeedback) {
+                window.tg.HapticFeedback.impactOccurred('light');
+            }
         });
     });
 
@@ -85,7 +89,9 @@ function setupEventListeners() {
     profileInputs.forEach(input => {
         input.addEventListener('change', async () => {
             await saveProfile();
-        tg.HapticFeedback.impactOccurred('light');
+            if (window.tg?.HapticFeedback) {
+                window.tg.HapticFeedback.impactOccurred('light');
+            }
         });
     });
 
@@ -102,38 +108,39 @@ function setupEventListeners() {
     setupProfileEquipmentHandlers();
 
     // Обработчик закрытия попапа
-tg.onEvent('popupClosed', async (event) => {
-    console.log('Popup closed with event:', event);
-    
-    if (!event || !event.button_id) return;
+    if (window.tg?.onEvent) {
+        window.tg.onEvent('popupClosed', async (event) => {
+            console.log('Popup closed with event:', event);
+            
+            if (!event || !event.button_id) return;
 
-    if (event.button_id === 'quit_workout') {
-            closeWorkout();
-    } else if (event.button_id.startsWith('start_program_')) {
-            const programId = event.button_id.replace('start_program_', '');
-        const program = window.programData.find(p => p.id === programId);
-        
-        if (!program) {
-            console.error('Программа не найдена:', programId);
-            showError('Программа не найдена');
-            return;
-        }
+            if (event.button_id === 'quit_workout') {
+                closeWorkout();
+            } else if (event.button_id.startsWith('start_program_')) {
+                const programId = event.button_id.replace('start_program_', '');
+                const program = window.programData.find(p => p.id === programId);
+                
+                if (!program) {
+                    console.error('Программа не найдена:', programId);
+                    showError('Программа не найдена');
+                    return;
+                }
 
-        try {
-            await initializeProgram(program);
-                showNotification('Программа успешно запущена!');
-                switchTab('programs');
-        } catch (error) {
-                showError(error.message);
-            }
-        } else if (event.button_id.startsWith('start_workout_')) {
-            const [_, __, programId, workoutId] = event.button_id.split('_');
-            startWorkout(programId, workoutId);
+                try {
+                    await initializeProgram(program);
+                    showNotification('Программа успешно запущена!');
+                    switchTab('programs');
+                } catch (error) {
+                    showError(error.message);
+                }
+            } else if (event.button_id.startsWith('start_workout_')) {
+                const [_, __, programId, workoutId] = event.button_id.split('_');
+                startWorkout(programId, workoutId);
             } else {
                 const [action, ...params] = event.button_id.split('_');
                 switch(action) {
                     case 'results':
-                    showProgramDetails(params[0]);
+                        showProgramDetails(params[0]);
                         break;
                     case 'schedule':
                         showProgramSchedule(params[0]);
@@ -141,9 +148,10 @@ tg.onEvent('popupClosed', async (event) => {
                     case 'back':
                         showProgramDetails(params[0]);
                         break;
+                }
             }
-        }
-    });
+        });
+    }
 }
 
 // Экспортируем глобальные функции

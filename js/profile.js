@@ -6,16 +6,16 @@ export async function loadProfile() {
     try {
         // Загружаем фото профиля из Telegram
         const profilePhoto = document.getElementById('profile-photo');
-        if (profilePhoto && tg.initDataUnsafe.user?.photo_url) {
-            profilePhoto.src = tg.initDataUnsafe.user.photo_url;
+        if (profilePhoto && window.tg?.initDataUnsafe?.user?.photo_url) {
+            profilePhoto.src = window.tg.initDataUnsafe.user.photo_url;
         } else if (profilePhoto) {
             profilePhoto.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23999" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
         }
 
         // Загружаем имя пользователя
         const profileName = document.getElementById('profile-name');
-        if (profileName && tg.initDataUnsafe.user?.first_name) {
-            profileName.textContent = tg.initDataUnsafe.user.first_name;
+        if (profileName && window.tg?.initDataUnsafe?.user?.first_name) {
+            profileName.textContent = window.tg.initDataUnsafe.user.first_name;
         }
 
         // Загружаем данные профиля
@@ -108,12 +108,16 @@ export async function saveProfile() {
         await setStorageItem('weightHistory', JSON.stringify(weightHistory));
 
         showNotification('Профиль сохранен');
-        tg.HapticFeedback.notificationOccurred('success');
+        if (window.tg?.HapticFeedback) {
+            window.tg.HapticFeedback.notificationOccurred('success');
+        }
 
     } catch (error) {
         console.error('Ошибка при сохранении:', error);
         showNotification('Ошибка при сохранении', 'error');
-        tg.HapticFeedback.notificationOccurred('error');
+        if (window.tg?.HapticFeedback) {
+            window.tg.HapticFeedback.notificationOccurred('error');
+        }
     }
 }
 
@@ -122,7 +126,9 @@ export function setupProfileEquipmentHandlers() {
     equipmentCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', async () => {
             await saveProfile();
-            tg.HapticFeedback.impactOccurred('light');
+            if (window.tg?.HapticFeedback) {
+                window.tg.HapticFeedback.impactOccurred('light');
+            }
         });
     });
 
@@ -131,7 +137,9 @@ export function setupProfileEquipmentHandlers() {
         button.addEventListener('click', async () => {
             button.classList.toggle('active');
             await saveProfile();
-            tg.HapticFeedback.impactOccurred('light');
+            if (window.tg?.HapticFeedback) {
+                window.tg.HapticFeedback.impactOccurred('light');
+            }
         });
     });
 } 
