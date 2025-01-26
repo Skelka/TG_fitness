@@ -1260,7 +1260,7 @@ input:focus, select:focus {
     position: relative;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Запрещаем прокрутку */
+    overflow: hidden;
 }
 
 .workout-content {
@@ -1269,7 +1269,7 @@ input:focus, select:focus {
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Запрещаем прокрутку */
+    overflow: hidden;
 }
 
 .exercise-background {
@@ -1366,12 +1366,15 @@ input:focus, select:focus {
 }
 
 .exercise-controls {
-    position: relative;
+    position: fixed; /* Меняем на fixed */
+    bottom: 0;
+    left: 0;
+    right: 0;
     padding: 16px;
     background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(10px);
-    z-index: 3; /* Поднимаем выше остального контента */
-    padding-bottom: max(16px, env(safe-area-inset-bottom)); /* Учитываем отступ для iPhone */
+    z-index: 100; /* Увеличиваем z-index, чтобы быть выше навигации */
+    padding-bottom: calc(env(safe-area-inset-bottom) + 60px); /* Добавляем отступ для навигации */
 }
 
 .complete-set-btn {
@@ -1878,5 +1881,5 @@ input[type="number"]::-webkit-inner-spin-button {
 
 /* Обновляем стили для нижней навигации */
 .bottom-nav {
-    z-index: 4; /* Поднимаем навигацию выше всего */
+    z-index: 99; /* Чуть ниже, чем у кнопки */
 } 

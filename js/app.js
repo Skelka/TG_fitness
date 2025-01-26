@@ -2739,95 +2739,83 @@ function updateCounter(value) {
     }
 } 
 
-// Добавляем функцию для показа экрана отдыха
+// Добавляем константы для отдыха
+const REST_CONFIG = {
+    restBetweenExercises: 60, // секунд
+    motivationalMessages: [
+        "Отличная работа! Время для короткого отдыха",
+        "Восстанавливаем силы перед следующим упражнением",
+        "Небольшой перерыв пойдет на пользу",
+        "Используйте это время для восстановления"
+    ]
+};
+
+// Обновляем функцию showRestScreen
 function showRestScreen(isBetweenSets) {
     const exercise = currentWorkout.exercises[currentExerciseIndex];
-    const nextExercise = currentWorkout.exercises[currentExerciseIndex + 1];
-    const programType = PROGRAM_TYPES[currentWorkout.programType];
+    const restTime = isBetweenSets ? exercise.rest : REST_CONFIG.restBetweenExercises;
+    const messages = REST_CONFIG.motivationalMessages;
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
     
-    isResting = true;
-    restTimeLeft = isBetweenSets 
-        ? (exercise.rest || programType.restBetweenSets)
-        : programType.restBetweenExercises;
-    
-    const initialRestTime = restTimeLeft;
-
-    // Выбираем случайное мотивационное сообщение
-    const motivationalMessage = programType.motivationalMessages[
-        Math.floor(Math.random() * programType.motivationalMessages.length)
-    ];
-
-    const container = document.querySelector('.container');
+    const container = document.querySelector('.programs-list');
     if (!container) return;
 
-    // Определяем текст для следующего действия
-    let nextText;
-    if (isBetweenSets) {
-        nextText = `Подход ${currentSet + 1} из ${exercise.sets}`;
-    } else {
-        nextText = 'Следующее упражнение:\n' + nextExercise.name;
-    }
-
     container.innerHTML = `
-        <div class="workout-session">
-            <div class="rest-screen">
-                <div class="rest-icon">
-                    <span class="material-symbols-rounded">timer</span>
-                </div>
-                <h3>Отдых</h3>
-                <div class="rest-subtitle">${nextText}</div>
-                <div class="motivational-message">${motivationalMessage}</div>
-                <div class="rest-progress">
-                    <div class="rest-progress-bar" style="width: 100%"></div>
-                </div>
-                <div class="rest-timer">${restTimeLeft}</div>
-                <button class="skip-rest-btn">
-                    <span class="material-symbols-rounded">skip_next</span>
-                    Пропустить
-                </button>
+        <div class="rest-screen">
+            <div class="rest-icon">
+                <span class="material-symbols-rounded">timer</span>
             </div>
+            <h3>Время отдохнуть</h3>
+            <p class="rest-subtitle">${randomMessage}</p>
+            <div class="rest-timer">${restTime}</div>
+            <div class="rest-progress">
+                <div class="rest-progress-bar" style="width: 100%"></div>
+            </div>
+            <button class="skip-rest-btn">
+                <span class="material-symbols-rounded">skip_next</span>
+                Пропустить
+            </button>
         </div>
     `;
 
+    let timeLeft = restTime;
     const timerElement = container.querySelector('.rest-timer');
     const progressBar = container.querySelector('.rest-progress-bar');
 
-    // Запускаем таймер отдыха
-    restInterval = setInterval(() => {
-        restTimeLeft--;
-        
+    // Запускаем таймер
+    const interval = setInterval(() => {
+        timeLeft--;
         if (timerElement) {
-            timerElement.textContent = restTimeLeft;
-            if (restTimeLeft <= 3) {
+            timerElement.textContent = timeLeft;
+            if (timeLeft <= 3) {
                 timerElement.classList.add('ending');
                 tg.HapticFeedback.impactOccurred('medium');
             }
         }
-
         if (progressBar) {
-            const progress = (restTimeLeft / initialRestTime) * 100;
-            progressBar.style.width = `${progress}%`;
+            progressBar.style.width = `${(timeLeft / restTime) * 100}%`;
         }
-
-        if (restTimeLeft <= 0) {
-            clearInterval(restInterval);
+        if (timeLeft <= 0) {
+            clearInterval(interval);
             if (isBetweenSets) {
-                currentSet++; // Увеличиваем счетчик подходов только после отдыха
+                currentSet++;
             }
-                renderExercise();
+            renderExercise();
         }
     }, 1000);
 
     // Обработчик кнопки пропуска
     const skipBtn = container.querySelector('.skip-rest-btn');
-    skipBtn?.addEventListener('click', () => {
-        clearInterval(restInterval);
+    if (skipBtn) {
+        skipBtn.addEventListener('click', () => {
+            clearInterval(interval);
+            if (isBetweenSets) {
+                currentSet++;
+            }
+            renderExercise();
             tg.HapticFeedback.impactOccurred('medium');
-        if (isBetweenSets) {
-            currentSet++; // Увеличиваем счетчик подходов при пропуске отдыха
-        }
-                    renderExercise();
-    });
+        });
+    }
 }
 
 // Обновим функцию renderExercise
