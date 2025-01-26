@@ -1,176 +1,120 @@
-// Основной файл приложения
-import { getStorageItem, setStorageItem, clearAllData } from './storage.js';
-import { showNotification, showError, showPopupSafe, switchTab } from './ui.js';
-import { renderCalendar, updateCalendar } from './calendar.js';
+import { tg, initGlobalHandlers } from './globals.js';
+import { getStorageItem, setStorageItem } from './storage.js';
+import { switchTab, showNotification, showPopupSafe } from './ui.js';
+import { renderCalendar } from './calendar.js';
 import { renderStatistics } from './statistics.js';
-import { loadProfile, saveProfile, setupProfileEquipmentHandlers } from './profile.js';
-import { 
-    startWorkout, 
-    previousExercise, 
-    nextExercise, 
-    confirmQuitWorkout,
-    completeExercise,
-    completeWorkout,
-    closeWorkout,
-    skipRest
-} from './workout.js';
-import {
-    initializeProgram,
-    loadActiveProgram,
-    updateProgramProgress,
-    showProgramDetails,
-    showProgramSchedule
-} from './program.js';
-
-// Глобальные переменные
-window.currentProgramId = null;
-window.tg = window.Telegram?.WebApp;
+import { loadProfile, saveProfile } from './profile.js';
+import { startWorkout, completeWorkout, previousExercise, nextExercise } from './workout.js';
+import { initializeProgram, showProgramDetails, showProgramList } from './program.js';
 
 // Инициализация приложения
 async function initApp() {
     try {
-        // Проверяем инициализацию Telegram Web App
-        if (!window.tg) {
-            throw new Error('Telegram Web App не инициализирован. Пожалуйста, откройте приложение через Telegram.');
-        }
+        // Настройка Telegram WebApp
+        tg.expand();
+        tg.enableClosingConfirmation();
 
-        // Настраиваем Telegram WebApp
-        window.tg.expand();
-        window.tg.enableClosingConfirmation();
+        // Инициализация глобальных обработчиков
+        initGlobalHandlers({
+            saveProfile,
+            showProgramList,
+            startWorkout,
+            previousExercise,
+            nextExercise,
+            completeWorkout,
+            clearAllData
+        });
 
-        // Загружаем активную программу
-        const activeProgram = await loadActiveProgram();
-        if (activeProgram) {
-            window.currentProgramId = activeProgram.id;
-        }
+        // Загрузка активной программы
+        await loadActiveProgram();
 
-        // Устанавливаем обработчики событий
+        // Настройка обработчиков событий
         setupEventListeners();
-        
-        // Загружаем профиль
-        await loadProfile();
 
-        // Инициализируем все компоненты
-        await Promise.all([
-            renderCalendar(),
-            renderStatistics(),
-            updateCalendar()
-        ]);
+        // Инициализация первого таба
+        switchTab('workouts');
 
-        // Показываем начальный экран
-        switchTab('programs');
+        // Отображение календаря
+        renderCalendar();
 
     } catch (error) {
-        console.error('Ошибка при инициализации приложения:', error);
-        showError(error.message || 'Не удалось инициализировать приложение');
+        console.error('Ошибка при инициализации:', error);
+        showNotification('Ошибка при инициализации приложения', true);
     }
 }
 
 // Настройка обработчиков событий
 function setupEventListeners() {
-    // Обработчики вкладок
+    // Обработчики для табов
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            switchTab(btn.dataset.tab);
-            if (window.tg?.HapticFeedback) {
-                window.tg.HapticFeedback.impactOccurred('light');
-            }
+            const tabName = btn.dataset.tab;
+            switchTab(tabName);
+            tg.HapticFeedback.impactOccurred('light');
         });
     });
-
-    // Обработчики для кнопок периода в статистике
-    const periodButtons = document.querySelectorAll('.period-btn');
-    periodButtons.forEach(button => {
-        button.addEventListener('click', async () => {
-            periodButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            await renderStatistics(button.dataset.period);
-            if (window.tg?.HapticFeedback) {
-                window.tg.HapticFeedback.impactOccurred('light');
-            }
-        });
-    });
-
-    // Обработчики для полей профиля
-    const profileInputs = document.querySelectorAll('#profile-form input');
-    profileInputs.forEach(input => {
-        input.addEventListener('change', async () => {
-            await saveProfile();
-            if (window.tg?.HapticFeedback) {
-                window.tg.HapticFeedback.impactOccurred('light');
-            }
-        });
-    });
-
-    // Обработчик для формы профиля
-    const profileForm = document.getElementById('profile-form');
-    if (profileForm) {
-        profileForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await saveProfile();
-        });
-    }
-
-    // Обработчики для оборудования в профиле
-    setupProfileEquipmentHandlers();
 
     // Обработчик закрытия попапа
-    if (window.tg?.onEvent) {
-        window.tg.onEvent('popupClosed', async (event) => {
-            console.log('Popup closed with event:', event);
-            
-            if (!event || !event.button_id) return;
-
-            if (event.button_id === 'quit_workout') {
-                closeWorkout();
-            } else if (event.button_id.startsWith('start_program_')) {
-                const programId = event.button_id.replace('start_program_', '');
-                const program = window.programData.find(p => p.id === programId);
-                
-                if (!program) {
-                    console.error('Программа не найдена:', programId);
-                    showError('Программа не найдена');
-                    return;
-                }
-
-                try {
-                    await initializeProgram(program);
-                    showNotification('Программа успешно запущена!');
-                    switchTab('programs');
-                } catch (error) {
-                    showError(error.message);
-                }
-            } else if (event.button_id.startsWith('start_workout_')) {
+    tg.onEvent('popupClosed', async (event) => {
+        if (event && event.button_id) {
+            if (event.button_id.startsWith('start_workout_')) {
                 const [_, __, programId, workoutId] = event.button_id.split('_');
-                startWorkout(programId, workoutId);
+                await startWorkout(programId, workoutId);
             } else {
                 const [action, ...params] = event.button_id.split('_');
                 switch(action) {
-                    case 'results':
-                        showProgramDetails(params[0]);
+                    case 'program':
+                        await showProgramDetails(params[0]);
                         break;
-                    case 'schedule':
-                        showProgramSchedule(params[0]);
-                        break;
-                    case 'back':
-                        showProgramDetails(params[0]);
+                    case 'start':
+                        if (params[0] === 'program') {
+                            await initializeProgram(params[1]);
+                        }
                         break;
                 }
             }
-        });
+        }
+    });
+}
+
+// Загрузка активной программы
+async function loadActiveProgram() {
+    try {
+        const activeProgramData = await getStorageItem('activeProgram');
+        if (activeProgramData) {
+            const program = JSON.parse(activeProgramData);
+            // Отображение активной программы
+            await showProgramDetails(program.id);
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке активной программы:', error);
     }
 }
 
-// Экспортируем глобальные функции
-window.startWorkout = startWorkout;
-window.previousExercise = previousExercise;
-window.nextExercise = nextExercise;
-window.confirmQuitWorkout = confirmQuitWorkout;
-window.completeExercise = completeExercise;
-window.completeWorkout = completeWorkout;
-window.closeWorkout = closeWorkout;
-window.skipRest = skipRest;
-window.clearAllData = clearAllData;
+// Очистка всех данных
+async function clearAllData() {
+    try {
+        await showPopupSafe({
+            title: 'Внимание',
+            message: 'Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.',
+            buttons: [
+                {type: 'destructive', text: 'Очистить', id: 'clear'},
+                {type: 'default', text: 'Отмена', id: 'cancel'}
+            ]
+        }).then(async (result) => {
+            if (result.button_id === 'clear') {
+                await setStorageItem('profile', '');
+                await setStorageItem('activeProgram', '');
+                await setStorageItem('workoutStats', '');
+                showNotification('Все данные очищены');
+                location.reload();
+            }
+        });
+    } catch (error) {
+        console.error('Ошибка при очистке данных:', error);
+        showNotification('Ошибка при очистке данных', true);
+    }
+}
 
-// Запускаем приложение
+// Запуск приложения
 document.addEventListener('DOMContentLoaded', initApp);

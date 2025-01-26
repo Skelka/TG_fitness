@@ -1390,44 +1390,55 @@ body {
 
 /* Стили для советов */
 .tips-list {
-    display: grid;
-    gap: 12px;
-    margin-top: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .tip-card {
     background: var(--tg-theme-bg-color);
     border-radius: 12px;
     padding: 16px;
-    display: grid;
-    grid-template-columns: auto 1fr;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
     gap: 16px;
-    box-shadow: var(--card-shadow);
-    border: var(--card-border);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease-out;
+}
+
+.tip-card.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .tip-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
     background: var(--tg-theme-button-color);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.tip-icon .material-symbols-rounded {
-    font-size: 20px;
+.tip-icon span {
     color: var(--tg-theme-button-text-color);
+    font-size: 24px;
 }
 
-.tip-content h4 {
-    margin: 0 0 4px 0;
+.tip-content {
+    flex: 1;
+}
+
+.tip-card h3 {
+    margin: 0 0 8px 0;
     font-size: 16px;
     color: var(--tg-theme-text-color);
 }
 
-.tip-content p {
+.tip-card p {
     margin: 0;
     font-size: 14px;
     color: var(--tg-theme-hint-color);
@@ -2382,6 +2393,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .program-icon span {
@@ -2727,108 +2739,4 @@ body {
         transform: translate(-50%, 0);
         opacity: 1;
     }
-}
-
-.programs-grid {
-    display: grid;
-    gap: 12px;
-    padding: 16px;
-}
-
-.program-card {
-    background: var(--tg-theme-bg-color);
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: var(--card-shadow);
-    border: var(--card-border);
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 16px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.program-card:active {
-    transform: scale(0.98);
-}
-
-.program-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background: var(--tg-theme-button-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.program-icon .material-symbols-rounded {
-    font-size: 24px;
-    color: var(--tg-theme-button-text-color);
-}
-
-.program-content h3 {
-    font-size: 16px;
-    margin: 0 0 4px 0;
-    color: var(--tg-theme-text-color);
-}
-
-.program-content p {
-    font-size: 14px;
-    color: var(--tg-theme-hint-color);
-    margin: 0;
-    line-height: 1.4;
-}
-
-.program-meta {
-    display: flex;
-    gap: 12px;
-    font-size: 13px;
-    color: var(--tg-theme-hint-color);
-    margin-top: 8px;
-}
-
-.program-meta span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.program-meta .material-symbols-rounded {
-    font-size: 16px;
-    opacity: 0.7;
-}
-
-.program-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: auto;
-}
-
-.info-btn, .start-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px;
-    border: none;
-    border-radius: 12px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: opacity 0.3s;
-}
-
-.info-btn {
-    background: var(--tg-theme-secondary-bg-color);
-    color: var(--tg-theme-text-color);
-}
-
-.start-btn {
-    background: var(--tg-theme-button-color);
-    color: var(--tg-theme-button-text-color);
-}
-
-.info-btn:active, .start-btn:active {
-    opacity: 0.8;
 } 

@@ -1,145 +1,173 @@
-// Функции для работы с профилем
+import { tg } from './globals.js';
 import { getStorageItem, setStorageItem } from './storage.js';
-import { showNotification, showError } from './ui.js';
+import { showNotification } from './ui.js';
 
 export async function loadProfile() {
     try {
-        // Загружаем фото профиля из Telegram
-        const profilePhoto = document.getElementById('profile-photo');
-        if (profilePhoto && window.tg?.initDataUnsafe?.user?.photo_url) {
-            profilePhoto.src = window.tg.initDataUnsafe.user.photo_url;
-        } else if (profilePhoto) {
-            profilePhoto.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23999" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
-        }
-
-        // Загружаем имя пользователя
-        const profileName = document.getElementById('profile-name');
-        if (profileName && window.tg?.initDataUnsafe?.user?.first_name) {
-            profileName.textContent = window.tg.initDataUnsafe.user.first_name;
-        }
-
-        // Загружаем данные профиля
         const profileData = await getStorageItem('profile')
-            .then(data => data ? JSON.parse(data) : {});
-
-        // Заполняем форму данными
-        Object.entries(profileData).forEach(([key, value]) => {
-            const input = document.querySelector(`[name="${key}"]`);
-            if (input) {
-                if (input.type === 'radio') {
-                    const radioInput = document.querySelector(`[name="${key}"][value="${value}"]`);
-                    if (radioInput) radioInput.checked = true;
-                } else if (input.type !== 'checkbox') {
-                    input.value = value;
-                }
-            }
-        });
-
-        // Восстанавливаем выбранное оборудование
-        if (profileData.equipment) {
-            const equipmentCheckboxes = document.querySelectorAll('input[name="equipment"]');
-            equipmentCheckboxes.forEach(checkbox => {
-                checkbox.checked = profileData.equipment.includes(checkbox.value);
+            .then(data => data ? JSON.parse(data) : {
+                gender: 'male',
+                age: '',
+                weight: '',
+                height: '',
+                goal: 'strength',
+                level: 'beginner',
+                equipment: [],
+                workoutPlaces: ['home'],
+                lastUpdated: null
             });
-        }
 
-        // Восстанавливаем места тренировок
-        if (profileData.workoutPlaces) {
-            const placeButtons = document.querySelectorAll('.place-btn');
-            placeButtons.forEach(button => {
-                button.classList.toggle('active', 
-                    profileData.workoutPlaces.includes(button.dataset.place)
-                );
-            });
-        }
+        const container = document.querySelector('#profile');
+        if (!container) return;
 
-        // Обновляем статус профиля
-        updateProfileStatus(profileData);
+        container.innerHTML = `
+            <div class="profile-header">
+                <h2>Ваш профиль</h2>
+                <div class="profile-status">Новичок</div>
+            </div>
 
-        // Устанавливаем обработчики после загрузки данных
-        setupProfileEquipmentHandlers();
+            <form class="profile-form" onsubmit="saveProfile(event)">
+                <div class="form-group">
+                    <label>Пол</label>
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="gender" value="male" ${profileData.gender === 'male' ? 'checked' : ''}>
+                            <span>Мужской</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="gender" value="female" ${profileData.gender === 'female' ? 'checked' : ''}>
+                            <span>Женский</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Возраст</label>
+                    <input type="number" name="age" value="${profileData.age}" placeholder="Лет">
+                </div>
+
+                <div class="form-group">
+                    <label>Вес</label>
+                    <input type="number" name="weight" value="${profileData.weight}" placeholder="кг">
+                </div>
+
+                <div class="form-group">
+                    <label>Рост</label>
+                    <input type="number" name="height" value="${profileData.height}" placeholder="см">
+                </div>
+
+                <div class="form-group">
+                    <label>Цель</label>
+                    <select name="goal">
+                        <option value="strength" ${profileData.goal === 'strength' ? 'selected' : ''}>Набор мышечной массы</option>
+                        <option value="weight_loss" ${profileData.goal === 'weight_loss' ? 'selected' : ''}>Снижение веса</option>
+                        <option value="endurance" ${profileData.goal === 'endurance' ? 'selected' : ''}>Выносливость</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Уровень подготовки</label>
+                    <select name="level">
+                        <option value="beginner" ${profileData.level === 'beginner' ? 'selected' : ''}>Начинающий</option>
+                        <option value="intermediate" ${profileData.level === 'intermediate' ? 'selected' : ''}>Средний</option>
+                        <option value="advanced" ${profileData.level === 'advanced' ? 'selected' : ''}>Продвинутый</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Доступное оборудование</label>
+                    <div class="equipment-grid">
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="dumbbells" ${profileData.equipment?.includes('dumbbells') ? 'checked' : ''}>
+                            <span>Гантели</span>
+                        </label>
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="barbell" ${profileData.equipment?.includes('barbell') ? 'checked' : ''}>
+                            <span>Штанга</span>
+                        </label>
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="resistance_bands" ${profileData.equipment?.includes('resistance_bands') ? 'checked' : ''}>
+                            <span>Резинки</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Место тренировок</label>
+                    <div class="place-buttons">
+                        <button type="button" class="place-btn ${profileData.workoutPlaces?.includes('home') ? 'active' : ''}" data-place="home">
+                            <span class="material-symbols-rounded">home</span>
+                            <span>Дома</span>
+                        </button>
+                        <button type="button" class="place-btn ${profileData.workoutPlaces?.includes('gym') ? 'active' : ''}" data-place="gym">
+                            <span class="material-symbols-rounded">fitness_center</span>
+                            <span>В зале</span>
+                        </button>
+                        <button type="button" class="place-btn ${profileData.workoutPlaces?.includes('outdoor') ? 'active' : ''}" data-place="outdoor">
+                            <span class="material-symbols-rounded">park</span>
+                            <span>На улице</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="save-btn">
+                    <span class="material-symbols-rounded">save</span>
+                    Сохранить
+                </button>
+            </form>
+        `;
+
+        setupProfileHandlers();
 
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
-        showError('Не удалось загрузить профиль');
+        showNotification('Ошибка при загрузке профиля', true);
     }
 }
 
-export function updateProfileStatus(profile) {
-    const statusElement = document.querySelector('.profile-status');
-    if (!statusElement) return;
+function setupProfileHandlers() {
+    // Обработчики для кнопок места тренировок
+    document.querySelectorAll('.place-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.classList.toggle('active');
+            tg.HapticFeedback.impactOccurred('light');
+        });
+    });
 
-    // Определяем статус на основе заполненности профиля и активности
-    let status = 'Новичок';
-    if (profile.completedWorkouts > 20) {
-        status = 'Продвинутый';
-    } else if (profile.completedWorkouts > 5) {
-        status = 'Опытный';
+    // Обработчик формы
+    const form = document.querySelector('.profile-form');
+    if (form) {
+        form.addEventListener('submit', saveProfile);
     }
-    statusElement.textContent = status;
 }
 
-export async function saveProfile() {
+export async function saveProfile(event) {
+    if (event) event.preventDefault();
+
     try {
-        const formData = new FormData(document.getElementById('profile-form'));
+        const form = document.querySelector('.profile-form');
+        if (!form) return;
+
+        const formData = new FormData(form);
         const profileData = {
             gender: formData.get('gender'),
-            age: parseInt(formData.get('age')),
-            weight: parseFloat(formData.get('weight')),
-            height: parseInt(formData.get('height')),
+            age: formData.get('age'),
+            weight: formData.get('weight'),
+            height: formData.get('height'),
             goal: formData.get('goal'),
-            activityLevel: formData.get('activityLevel'),
+            level: formData.get('level'),
             equipment: formData.getAll('equipment'),
+            workoutPlaces: Array.from(document.querySelectorAll('.place-btn.active')).map(btn => btn.dataset.place),
             lastUpdated: Date.now()
         };
 
-        // Сохраняем данные профиля
         await setStorageItem('profile', JSON.stringify(profileData));
-        
-        // Обновляем историю веса
-        const weightHistory = await getStorageItem('weightHistory')
-            .then(data => data ? JSON.parse(data) : []);
-        
-        weightHistory.push({
-            date: Date.now(),
-            weight: profileData.weight
-        });
-
-        await setStorageItem('weightHistory', JSON.stringify(weightHistory));
-
         showNotification('Профиль сохранен');
-        if (window.tg?.HapticFeedback) {
-            window.tg.HapticFeedback.notificationOccurred('success');
-        }
+        tg.HapticFeedback.notificationOccurred('success');
 
     } catch (error) {
-        console.error('Ошибка при сохранении:', error);
-        showNotification('Ошибка при сохранении', 'error');
-        if (window.tg?.HapticFeedback) {
-            window.tg.HapticFeedback.notificationOccurred('error');
-        }
+        console.error('Ошибка при сохранении профиля:', error);
+        showNotification('Ошибка при сохранении профиля', true);
+        tg.HapticFeedback.notificationOccurred('error');
     }
-}
-
-export function setupProfileEquipmentHandlers() {
-    const equipmentCheckboxes = document.querySelectorAll('input[name="equipment"]');
-    equipmentCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', async () => {
-            await saveProfile();
-            if (window.tg?.HapticFeedback) {
-                window.tg.HapticFeedback.impactOccurred('light');
-            }
-        });
-    });
-
-    const placeButtons = document.querySelectorAll('.place-btn');
-    placeButtons.forEach(button => {
-        button.addEventListener('click', async () => {
-            button.classList.toggle('active');
-            await saveProfile();
-            if (window.tg?.HapticFeedback) {
-                window.tg.HapticFeedback.impactOccurred('light');
-            }
-        });
-    });
 } 

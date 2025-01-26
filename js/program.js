@@ -1,172 +1,127 @@
-// Функции для работы с программами тренировок
+import { tg } from './globals.js';
 import { getStorageItem, setStorageItem } from './storage.js';
-import { showNotification, showError, showPopupSafe } from './ui.js';
-import { programs } from './data/programs.js';
+import { showNotification, showPopupSafe } from './ui.js';
 
 export async function initializeProgram(programId) {
     try {
-        const program = programs[programId];
+        const program = window.programData[programId];
         if (!program) {
             throw new Error('Программа не найдена');
         }
 
-        // Сохраняем программу как активную
-        await setStorageItem('activeProgram', JSON.stringify({
-            id: program.id,
-            title: program.title,
-            workouts: program.workouts.map(w => ({
-                ...w,
+        // Проверяем, нет ли уже активной программы
+        const activeProgram = await getStorageItem('activeProgram')
+            .then(data => data ? JSON.parse(data) : null);
+
+        if (activeProgram && activeProgram.id !== programId && programId !== 'morning_workout') {
+            await showPopupSafe({
+                title: 'Внимание',
+                message: 'У вас уже есть активная программа. Хотите её заменить?',
+                buttons: [
+                    {type: 'destructive', text: 'Заменить', id: 'replace'},
+                    {type: 'default', text: 'Отмена', id: 'cancel'}
+                ]
+            });
+            return;
+        }
+
+        // Инициализируем программу
+        const initializedProgram = {
+            ...program,
+            startDate: Date.now(),
+            workouts: program.workouts.map(workout => ({
+                ...workout,
                 completed: false
             }))
-        }));
+        };
 
-        showNotification('Программа успешно запущена!');
-        return true;
+        await setStorageItem('activeProgram', JSON.stringify(initializedProgram));
+        showNotification('Программа успешно активирована');
+
+        // Показываем детали программы
+        await showProgramDetails(programId);
+
     } catch (error) {
         console.error('Ошибка при инициализации программы:', error);
-        showError('Не удалось запустить программу');
-        return false;
-    }
-}
-
-export async function loadActiveProgram() {
-    try {
-        return await getStorageItem('activeProgram')
-            .then(data => data ? JSON.parse(data) : null);
-    } catch (error) {
-        console.error('Ошибка при загрузке активной программы:', error);
-        return null;
-    }
-}
-
-export async function updateProgramProgress(workout, isCompleted) {
-    try {
-        // Получаем текущую статистику
-        const stats = await getStorageItem('workoutStats')
-            .then(data => data ? JSON.parse(data) : {
-                totalWorkouts: 0,
-                totalCalories: 0,
-                totalMinutes: 0,
-                completedWorkouts: []
-            });
-
-        if (isCompleted) {
-            // Обновляем статистику
-            stats.totalWorkouts++;
-            stats.totalCalories += workout.calories;
-            stats.totalMinutes += workout.duration;
-            stats.completedWorkouts.push({
-                date: Date.now(),
-                programId: workout.programId,
-                workout: workout
-            });
-
-            // Сохраняем обновленную статистику
-            await setStorageItem('workoutStats', JSON.stringify(stats));
-
-            // Проверяем завершение программы
-            const activeProgram = await getStorageItem('activeProgram')
-                .then(data => data ? JSON.parse(data) : null);
-
-            if (activeProgram) {
-                const allWorkouts = activeProgram.workouts.length;
-                const completed = activeProgram.workouts.filter(w => w.completed).length;
-
-                if (completed === allWorkouts) {
-                    // Программа завершена
-                    await showPopupSafe({
-                        title: 'Поздравляем! 🎉',
-                        message: 'Вы успешно завершили программу тренировок!',
-                        buttons: [{
-                            type: 'default',
-                            text: 'Отлично!'
-                        }]
-                    });
-
-                    // Очищаем активную программу
-                    await setStorageItem('activeProgram', '');
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Ошибка при обновлении прогресса:', error);
+        showNotification('Ошибка при инициализации программы', true);
     }
 }
 
 export async function showProgramDetails(programId) {
-    try {
-        const program = programs[programId];
-        if (!program) throw new Error('Программа не найдена');
+    const program = window.programData[programId];
+    if (!program) return;
 
-        await showPopupSafe({
-            title: program.title,
-            message: `
-                ${program.description}
-                
-                📅 Длительность: ${program.duration}
-                🏋️‍♂️ График: ${program.schedule}
-                💪 Сложность: ${getDifficultyText(program.difficulty)}
-                
-                Программа включает:
-                ${program.workouts.slice(0, 3).map(w => `• ${w.title}`).join('\n')}
-                ${program.workouts.length > 3 ? '\n... и другие тренировки' : ''}
-            `,
-            buttons: [
-                {
-                    id: `start_program_${program.id}`,
-                    type: 'default',
-                    text: 'Начать программу'
-                },
-                {
-                    id: `schedule_${program.id}`,
-                    type: 'default',
-                    text: 'График тренировок'
-                }
-            ]
-        });
-    } catch (error) {
-        console.error('Ошибка при показе деталей программы:', error);
-        showError('Не удалось загрузить детали программы');
-    }
+    const container = document.querySelector('.programs-list');
+    if (!container) return;
+
+    const activeProgram = await getStorageItem('activeProgram')
+        .then(data => data ? JSON.parse(data) : null);
+
+    const isActive = activeProgram && activeProgram.id === programId;
+
+    container.innerHTML = `
+        <div class="program-header">
+            <button class="back-btn" onclick="showProgramList()">
+                <span class="material-symbols-rounded">arrow_back</span>
+            </button>
+            <h2>${program.name}</h2>
+        </div>
+        <div class="program-details">
+            <div class="program-info">
+                <p>${program.description}</p>
+                <div class="program-meta">
+                    <span>
+                        <span class="material-symbols-rounded">timer</span>
+                        ${program.duration} недель
+                    </span>
+                    <span>
+                        <span class="material-symbols-rounded">calendar_month</span>
+                        ${program.workoutsPerWeek} тр/нед
+                    </span>
+                </div>
+            </div>
+            <div class="program-workouts">
+                ${program.workouts.map((workout, index) => `
+                    <div class="workout-card ${activeProgram?.workouts[index]?.completed ? 'completed' : ''}">
+                        <div class="workout-info">
+                            <h3>${workout.name}</h3>
+                            <p>${workout.description}</p>
+                        </div>
+                        <button class="start-workout-btn" onclick="startWorkout('${programId}', '${workout.id}')"
+                            ${activeProgram?.workouts[index]?.completed ? 'disabled' : ''}>
+                            <span class="material-symbols-rounded">play_arrow</span>
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
 }
 
-export async function showProgramSchedule(programId) {
-    try {
-        const program = programs[programId];
-        if (!program) throw new Error('Программа не найдена');
+export function showProgramList() {
+    const container = document.querySelector('.programs-list');
+    if (!container) return;
 
-        await showPopupSafe({
-            title: 'График тренировок',
-            message: formatScheduleMessage(program),
-            buttons: [
-                {
-                    id: `back_${program.id}`,
-                    type: 'default',
-                    text: 'Назад'
-                }
-            ]
-        });
-    } catch (error) {
-        console.error('Ошибка при показе графика:', error);
-        showError('Не удалось загрузить график');
-    }
-}
+    let html = '<div class="programs-grid">';
+    
+    Object.entries(window.programData).forEach(([id, program]) => {
+        html += `
+            <div class="program-card" onclick="showProgramDetails('${id}')">
+                <div class="program-icon">
+                    <span class="material-symbols-rounded">${program.icon}</span>
+                </div>
+                <div class="program-info">
+                    <h3>${program.name}</h3>
+                    <p>${program.description}</p>
+                    <div class="program-meta">
+                        <span>${program.duration} недель</span>
+                        <span>${program.workoutsPerWeek} тр/нед</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
 
-function formatScheduleMessage(program) {
-    return `📅 График тренировок:\n\n` +
-           `• ${program.schedule} тренировок в неделю\n` +
-           `• Длительность программы: ${program.duration}\n\n` +
-           `🎯 Рекомендуемые дни:\n` +
-           program.workouts.map((workout, index) => 
-               `День ${index + 1}: ${workout.title} (${workout.duration} мин)`
-           ).join('\n');
-}
-
-function getDifficultyText(difficulty) {
-    switch(difficulty) {
-        case 'low': return 'Начальный';
-        case 'medium': return 'Средний';
-        case 'high': return 'Продвинутый';
-        default: return 'Не указано';
-    }
+    html += '</div>';
+    container.innerHTML = html;
 } 
