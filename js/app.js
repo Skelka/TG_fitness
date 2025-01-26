@@ -167,34 +167,40 @@ async function loadActiveProgram() {
 // Обновляем функцию initApp
 async function initApp() {
     try {
-        console.log('Версия WebApp:', tg.version);
-        console.log('Платформа:', tg.platform);
-        console.log('Инициализация WebApp:', tg.initData);
-        console.log('Доступные методы WebApp:', Object.keys(tg));
+        // Инициализируем Telegram WebApp
+        window.tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
 
-        // Анализируем базу упражнений
-        const exercisesAnalysis = analyzeExercisesDatabase();
-        if (!exercisesAnalysis) {
-            console.warn('Анализ базы упражнений не выполнен, продолжаем инициализацию...');
-        } else {
-            console.log('Анализ базы упражнений завершен');
-        }
+        // Загружаем профиль
+        await profileModule.loadProfile();
 
-        // Инициализируем программы при первом запуске
-        await initializeDefaultPrograms();
-        
-        // Инициализируем все обработчики
+        // Настраиваем обработчики событий
         setupEventListeners();
-        setupPopupHandlers();
-        setupProfileEquipmentHandlers();
-        
-        // Загружаем данные
-        await loadProfile();
+        setupCheckboxHandlers();
+        profileModule.setupProfileEquipmentHandlers();
+
+        // Загружаем активную программу
         await loadActiveProgram();
 
+        // Рендерим карточки программ
+        await renderProgramCards();
+
+        // Обновляем график веса
+        await updateWeightChart();
+
+        // Рендерим статистику
+        renderStatistics();
+
+        // Рендерим советы
+        await renderTips();
+
+        // Рендерим календарь
+        renderCalendar();
+
     } catch (error) {
-        console.error('Ошибка инициализации:', error);
-        showError('Произошла ошибка при загрузке приложения');
+        console.error('Ошибка при инициализации приложения:', error);
+        showError('Не удалось инициализировать приложение');
     }
 }
 
@@ -470,28 +476,10 @@ function setupCheckboxHandlers() {
 
 // Добавляем функцию для сохранения настроек профиля
 async function saveProfileSettings() {
-    try {
-        // Получаем текущие данные профиля
-        const profileData = await getStorageItem('profile')
-            .then(data => data ? JSON.parse(data) : {});
-
-        // Собираем выбранное оборудование
-        const equipmentInputs = document.querySelectorAll('input[name="equipment"]:checked');
-        profileData.equipment = Array.from(equipmentInputs).map(input => input.value);
-
-        // Собираем выбранные места тренировок
-        const placeButtons = document.querySelectorAll('.place-btn.active');
-        profileData.workoutPlaces = Array.from(placeButtons).map(btn => btn.dataset.place);
-
-        // Сохраняем обновленные данные
-        await setStorageItem('profile', JSON.stringify(profileData));
-
-        // Показываем уведомление об успешном сохранении
-        showNotification('Настройки сохранены');
-
-    } catch (error) {
-        console.error('Ошибка при сохранении настроек:', error);
-        showError('Не удалось сохранить настройки');
+    const profileData = await profileModule.saveProfile();
+    if (profileData) {
+        // Генерируем план тренировок на основе профиля
+        await generateWorkoutPlan(window.programData, profileData);
     }
 }
 
@@ -1537,47 +1525,6 @@ async function saveWeight(weight) {
     } catch (error) {
         console.error('Ошибка сохранения веса:', error);
         showNotification('Не удалось сохранить вес', 'error');
-    }
-}
-
-// Обновляем функцию saveProfile
-async function saveProfile() {
-    try {
-        const form = document.getElementById('profile-form');
-        const formData = new FormData(form);
-
-        // Собираем все данные из формы
-        const profileData = {
-            age: parseInt(formData.get('age')) || 0,
-            gender: formData.get('gender'),
-            height: parseFloat(formData.get('height')) || 0,
-            weight: parseFloat(formData.get('weight')) || 0,
-            goal: formData.get('goal'),
-            level: formData.get('level'),
-            workoutPlaces: formData.getAll('workout_place'),
-            equipment: formData.getAll('equipment'),
-            lastUpdated: Date.now()
-        };
-
-        // Сохраняем данные профиля
-        await setStorageItem('profile', JSON.stringify(profileData));
-
-        // Сохраняем вес в историю, если он указан
-        if (profileData.weight > 0) {
-            await saveWeight(profileData.weight);
-        }
-
-        // Обновляем UI
-        updateProfileStatus(profileData);
-
-        // Показываем уведомление об успешном сохранении
-        showNotification('Профиль обновлен');
-        tg.HapticFeedback.notificationOccurred('success');
-        
-    } catch (error) {
-        console.error('Ошибка при сохранении:', error);
-        showNotification('Ошибка при сохранении', 'error');
-        tg.HapticFeedback.notificationOccurred('error');
     }
 }
 
