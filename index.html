@@ -20,25 +20,7 @@
 </head>
 <body>
     <div class="container">
-        <nav class="tabs">
-            <button class="tab-btn active" data-tab="workouts">
-                <span class="material-symbols-rounded">exercise</span>
-                <span>Тренировки</span>
-            </button>
-            <button class="tab-btn" data-tab="calendar">
-                <span class="material-symbols-rounded">calendar_month</span>
-                <span>Календарь</span>
-            </button>
-            <button class="tab-btn" data-tab="stats">
-                <span class="material-symbols-rounded">monitoring</span>
-                <span>Статистика</span>
-            </button>
-            <button class="tab-btn" data-tab="profile">
-                <span class="material-symbols-rounded">person</span>
-                <span>Профиль</span>
-            </button>
-        </nav>
-
+        <!-- Контент табов -->
         <div class="tab-content active" id="workouts">
             <div class="programs-list">
                 <!-- Карточки программ будут добавлены динамически -->
@@ -123,7 +105,7 @@
             </div>
         </div>
 
-        <div id="profile" class="tab-content">
+        <div class="tab-content" id="profile">
             <div class="profile-header">
                 <img id="profile-photo" src="" alt="Фото профиля" class="profile-photo">
                 <div class="profile-info">
@@ -296,6 +278,28 @@
                 </button>
             </form>
         </div>
+
+        <!-- Нижняя навигация -->
+        <nav class="bottom-nav">
+            <div class="nav-list">
+                <a href="#" class="nav-item active" data-tab="workouts">
+                    <span class="material-symbols-rounded nav-icon">exercise</span>
+                    <span class="nav-label">Тренировки</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="calendar">
+                    <span class="material-symbols-rounded nav-icon">calendar_month</span>
+                    <span class="nav-label">Календарь</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="stats">
+                    <span class="material-symbols-rounded nav-icon">monitoring</span>
+                    <span class="nav-label">Статистика</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="profile">
+                    <span class="material-symbols-rounded nav-icon">person</span>
+                    <span class="nav-label">Профиль</span>
+                </a>
+            </div>
+        </nav>
     </div>
 
     <script src="js/exercise-images.js" type="module"></script>

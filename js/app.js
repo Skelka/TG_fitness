@@ -45,10 +45,11 @@ async function initApp() {
 
 // Настройка обработчиков событий
 function setupEventListeners() {
-    // Обработчики для табов
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const tabName = btn.dataset.tab;
+    // Обработчики для навигации
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const tabName = item.dataset.tab;
             switchTab(tabName);
             tg.HapticFeedback.impactOccurred('light');
         });
@@ -113,6 +114,32 @@ async function clearAllData() {
     } catch (error) {
         console.error('Ошибка при очистке данных:', error);
         showNotification('Ошибка при очистке данных', true);
+    }
+}
+
+// Переключение табов
+export function switchTab(tabName) {
+    // Обновляем активный элемент навигации
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.tab === tabName);
+    });
+
+    // Обновляем активный контент
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.toggle('active', content.id === tabName);
+    });
+
+    // Дополнительные действия при переключении табов
+    switch(tabName) {
+        case 'stats':
+            renderStatistics();
+            break;
+        case 'profile':
+            loadProfile();
+            break;
+        case 'calendar':
+            renderCalendar();
+            break;
     }
 }
 

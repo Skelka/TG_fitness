@@ -1,6 +1,7 @@
 /* Профиль */
 .profile-container {
     padding: var(--spacing-md);
+    padding-bottom: calc(var(--spacing-xl) + 60px); /* Учитываем нижнюю навигацию */
 }
 
 .profile-header {
@@ -304,10 +305,14 @@
 
 /* Кнопка удаления данных */
 .delete-data-section {
-    margin-top: var(--spacing-xl);
+    position: fixed;
+    bottom: 60px; /* Высота нижней навигации */
+    left: 0;
+    right: 0;
     padding: var(--spacing-md);
-    background-color: var(--error-light);
-    border-radius: var(--radius-md);
+    background-color: var(--background-main);
+    border-top: 1px solid var(--error-light);
+    z-index: 900;
 }
 
 .delete-data-section h4 {
