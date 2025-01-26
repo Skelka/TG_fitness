@@ -22,6 +22,9 @@ let exerciseTimer = null;
 
 let isTimerPaused = false;
 
+// Импортируем модуль календаря
+import calendarModule from './calendar.js';
+
 // Функция для безопасного показа попапа
 async function showPopupSafe(params) {
     const maxAttempts = 3;
@@ -194,8 +197,8 @@ async function initApp() {
         // Рендерим советы
         await renderTips();
 
-        // Рендерим календарь
-        renderCalendar();
+        // Инициализируем календарь
+        calendarModule.initCalendar();
 
     } catch (error) {
         console.error('Ошибка при инициализации приложения:', error);
@@ -1329,12 +1332,14 @@ function switchTab(tabName) {
             loadActiveProgram();
             break;
         case 'calendar':
-    renderCalendar();
+            calendarModule.renderCalendar();
             break;
     }
 
     // Вибрация при переключении
-    tg.HapticFeedback.impactOccurred('light');
+    if (window.tg) {
+        window.tg.HapticFeedback.impactOccurred('light');
+    }
 }
 
 // Функция для очистки всех данных
