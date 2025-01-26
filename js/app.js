@@ -2136,7 +2136,7 @@ function formatScheduleMessage(program) {
 }
 
 // Функции для навигации между разделами
-function showTab(tabId) {
+function showTab(tabName) {
     // Скрываем все вкладки
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
@@ -2148,21 +2148,32 @@ function showTab(tabId) {
     });
 
     // Показываем нужную вкладку
-    const selectedTab = document.getElementById(tabId);
+    const selectedTab = document.getElementById(tabName);
     if (selectedTab) {
         selectedTab.classList.add('active');
     }
 
     // Активируем соответствующую кнопку
-    const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+    const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
     if (activeBtn) {
         activeBtn.classList.add('active');
     }
 
     // Дополнительные действия при переключении вкладок
-    if (tabId === 'stats') {
-        initStatisticsPage();
+    switch(tabName) {
+        case 'stats':
+            updateWeightChart(currentPeriod || 'week');
+            break;
+        case 'profile':
+            loadProfile();
+            break;
+        case 'workouts':
+            loadActiveProgram();
+            break;
     }
+
+    // Вибрация при переключении
+    tg.HapticFeedback.impactOccurred('light');
 }
 
 // Обновляем функцию startWorkout
@@ -2412,5 +2423,131 @@ async function completeSet() {
             // Если это было последнее упражнение
             await completeWorkout();
         }
+    }
+}
+
+// Функция для отображения тренировок программы
+async function showProgramWorkouts(program) {
+    if (!program || !program.workouts) return;
+
+    const container = document.querySelector('.programs-list');
+    if (!container) return;
+
+    // Получаем активную программу для проверки прогресса
+    const activeProgram = await getStorageItem('activeProgram')
+        .then(data => data ? JSON.parse(data) : null);
+
+    container.innerHTML = `
+        <div class="program-header">
+            <button class="back-btn">
+                <span class="material-symbols-rounded">arrow_back</span>
+            </button>
+            <h2>${program.title}</h2>
+        </div>
+        <div class="workouts-list">
+            ${program.workouts.map((workout, index) => {
+                const isCompleted = activeProgram?.workouts[index]?.completed;
+                const isStarted = activeProgram?.workouts[index]?.started;
+                return `
+                    <div class="workout-day ${isCompleted ? 'completed' : ''} ${isStarted ? 'started' : ''}">
+                        <div class="workout-info">
+                            <h3>День ${index + 1}</h3>
+                            <h4>${workout.title}</h4>
+                            <div class="workout-meta">
+                                <span>
+                                    <span class="material-symbols-rounded">timer</span>
+                                    ${workout.duration} мин
+                                </span>
+                                <span>
+                                    <span class="material-symbols-rounded">local_fire_department</span>
+                                    ${workout.calories} ккал
+                                </span>
+                            </div>
+                        </div>
+                        <button class="start-workout-btn" data-workout-index="${index}">
+                            ${isCompleted ? 
+                                '<span class="material-symbols-rounded">check_circle</span>Повторить' : 
+                                '<span class="material-symbols-rounded">play_arrow</span>Начать'}
+                        </button>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+
+    // Добавляем обработчики
+    setupWorkoutHandlers(program);
+}
+
+// Функция для переключения вкладок
+function switchTab(tabName) {
+    // Скрываем все вкладки
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Убираем активный класс у всех кнопок
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // Показываем нужную вкладку
+    const selectedTab = document.getElementById(tabName);
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+    }
+
+    // Активируем соответствующую кнопку
+    const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+
+    // Дополнительные действия при переключении вкладок
+    switch(tabName) {
+        case 'stats':
+            updateWeightChart(currentPeriod || 'week');
+            break;
+        case 'profile':
+            loadProfile();
+            break;
+        case 'workouts':
+            loadActiveProgram();
+            break;
+    }
+
+    // Вибрация при переключении
+    tg.HapticFeedback.impactOccurred('light');
+}
+
+// Функция для очистки всех данных
+async function clearAllData() {
+    try {
+        // Список ключей для очистки
+        const keysToDelete = [
+            'profile',
+            'activeProgram',
+            'workoutStats',
+            'weightHistory'
+        ];
+
+        // Очищаем данные в CloudStorage и localStorage
+        for (const key of keysToDelete) {
+            await setStorageItem(key, '');
+            localStorage.removeItem(key);
+        }
+
+        // Показываем уведомление об успешной очистке
+        await showPopupSafe({
+            title: 'Готово',
+            message: 'Все данные успешно очищены',
+            buttons: [{type: 'ok'}]
+        });
+
+        // Перезагружаем страницу
+        location.reload();
+    } catch (error) {
+        console.error('Ошибка при очистке данных:', error);
+        await showError('Не удалось очистить данные');
     }
 }
