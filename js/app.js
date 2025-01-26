@@ -24,13 +24,19 @@ import {
 
 // Глобальные переменные
 window.currentProgramId = null;
+window.tg = window.Telegram?.WebApp;
 
 // Инициализация приложения
 async function initApp() {
     try {
+        // Проверяем инициализацию Telegram Web App
+        if (!window.tg) {
+            throw new Error('Telegram Web App не инициализирован. Пожалуйста, откройте приложение через Telegram.');
+        }
+
         // Настраиваем Telegram WebApp
-        tg.expand();
-        tg.enableClosingConfirmation();
+        window.tg.expand();
+        window.tg.enableClosingConfirmation();
 
         // Загружаем активную программу
         const activeProgram = await loadActiveProgram();
@@ -49,7 +55,7 @@ async function initApp() {
 
     } catch (error) {
         console.error('Ошибка при инициализации приложения:', error);
-        showError('Не удалось инициализировать приложение');
+        showError(error.message || 'Не удалось инициализировать приложение');
     }
 }
 

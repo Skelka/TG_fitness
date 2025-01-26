@@ -40,7 +40,9 @@ export function switchTab(tabName) {
     }
 
     // Вибрация при переключении
-    tg.HapticFeedback.impactOccurred('light');
+    if (window.tg?.HapticFeedback) {
+        window.tg.HapticFeedback.impactOccurred('light');
+    }
 }
 
 export function showNotification(message, isError = false) {
@@ -59,10 +61,12 @@ export function showNotification(message, isError = false) {
     document.body.appendChild(notification);
 
     // Вибрация в зависимости от типа уведомления
-    if (isError) {
-        tg.HapticFeedback.notificationOccurred('error');
-    } else {
-        tg.HapticFeedback.notificationOccurred('success');
+    if (window.tg?.HapticFeedback) {
+        if (isError) {
+            window.tg.HapticFeedback.notificationOccurred('error');
+        } else {
+            window.tg.HapticFeedback.notificationOccurred('success');
+        }
     }
 
     // Удаляем уведомление через 3 секунды
@@ -73,13 +77,21 @@ export function showNotification(message, isError = false) {
 
 export function showError(message) {
     showNotification(message, true);
-    tg.HapticFeedback.notificationOccurred('error');
+    if (window.tg?.HapticFeedback) {
+        window.tg.HapticFeedback.notificationOccurred('error');
+    }
 }
 
 export async function showPopupSafe(params) {
     return new Promise((resolve) => {
         try {
-            tg.showPopup(params, (event) => {
+            if (!window.tg?.showPopup) {
+                console.warn('Telegram Web App API не доступен для показа попапа');
+                resolve(null);
+                return;
+            }
+
+            window.tg.showPopup(params, (event) => {
                 resolve(event);
             });
         } catch (error) {
