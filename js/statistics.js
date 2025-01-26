@@ -197,5 +197,6 @@ window.statisticsModule = {
     renderStatistics,
     updateStatistics,
     formatTime,
-    get currentPeriod() { return currentPeriod; }
-}; 
+    get currentPeriod() { return currentPeriod; },
+    get weightChart() { return weightChart; }
+};

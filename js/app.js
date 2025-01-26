@@ -3,7 +3,6 @@ let tg = window.Telegram.WebApp;
 let mainButton = tg.MainButton;
 let backButton = tg.BackButton;
 let currentWorkout = null;
-let weightChart;
 
 // Переменные для тренировки
 let isTimerMode = false;
@@ -401,7 +400,7 @@ function setupEventListeners() {
             periodButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
             statisticsModule.currentPeriod = button.dataset.period;
-            await updateWeightChart(statisticsModule.currentPeriod);
+            await statisticsModule.updateWeightChart(statisticsModule.currentPeriod);
             tg.HapticFeedback.impactOccurred('light');
         });
     });
@@ -1369,7 +1368,7 @@ async function clearAllData() {
 }
 
 // Функция для обновления графика веса
-async function updateWeightChart(period = 'week') {
+async function statisticsModule.updateWeightChart(period = 'week') {
     const ctx = document.getElementById('weight-chart');
     if (!ctx) return;
 
@@ -1580,7 +1579,7 @@ function renderStatistics() {
             }
 
             // Обновляем график веса
-            updateWeightChart('week');
+            statisticsModule.updateWeightChart('week');
             
             // Добавляем вызов renderTips
             renderTips();
