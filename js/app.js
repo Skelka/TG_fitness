@@ -232,7 +232,6 @@ async function loadProfile() {
         if (profilePhoto && tg.initDataUnsafe.user?.photo_url) {
             profilePhoto.src = tg.initDataUnsafe.user.photo_url;
         } else if (profilePhoto) {
-            // Если фото нет, используем дефолтную иконку
             profilePhoto.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23999" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
         }
 
@@ -247,21 +246,47 @@ async function loadProfile() {
             .then(data => data ? JSON.parse(data) : null);
 
         if (profileData) {
-            // Заполняем форму сохраненными данными
+            // Заполняем текстовые поля и радиокнопки
             Object.entries(profileData).forEach(([key, value]) => {
                 const input = document.querySelector(`[name="${key}"]`);
                 if (input) {
-                    if (input.type === 'radio' || input.type === 'checkbox') {
-                        const radioOrCheck = document.querySelector(`[name="${key}"][value="${value}"]`);
-                        if (radioOrCheck) radioOrCheck.checked = true;
-                    } else {
+                    if (input.type === 'radio') {
+                        const radioInput = document.querySelector(`[name="${key}"][value="${value}"]`);
+                        if (radioInput) radioInput.checked = true;
+                    } else if (input.type !== 'checkbox') {
                         input.value = value;
                     }
                 }
             });
+
+            // Восстанавливаем выбранное оборудование
+            if (profileData.equipment) {
+                const equipmentCheckboxes = document.querySelectorAll('input[name="equipment"]');
+                equipmentCheckboxes.forEach(checkbox => {
+                    checkbox.checked = profileData.equipment.includes(checkbox.value);
+                });
+            }
+
+            // Восстанавливаем места тренировок
+            if (profileData.workoutPlaces) {
+                const placeButtons = document.querySelectorAll('.place-btn');
+                placeButtons.forEach(button => {
+                    button.classList.toggle('active', 
+                        profileData.workoutPlaces.includes(button.dataset.place)
+                    );
+                });
+            }
+
+            // Обновляем статус профиля
+            updateProfileStatus(profileData);
         }
+
+        // Устанавливаем обработчики после загрузки данных
+        setupProfileEquipmentHandlers();
+
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
+        showError('Не удалось загрузить профиль');
     }
 }
 
@@ -391,16 +416,24 @@ function setupCheckboxHandlers() {
 // Добавляем функцию для сохранения настроек профиля
 async function saveProfileSettings() {
     try {
-        const equipmentInputs = document.querySelectorAll('input[name="equipment"]:checked');
-        const placeButtons = document.querySelectorAll('.place-btn.active');
-        
+        // Получаем текущие данные профиля
         const profileData = await getStorageItem('profile')
             .then(data => data ? JSON.parse(data) : {});
-        
+
+        // Собираем выбранное оборудование
+        const equipmentInputs = document.querySelectorAll('input[name="equipment"]:checked');
         profileData.equipment = Array.from(equipmentInputs).map(input => input.value);
+
+        // Собираем выбранные места тренировок
+        const placeButtons = document.querySelectorAll('.place-btn.active');
         profileData.workoutPlaces = Array.from(placeButtons).map(btn => btn.dataset.place);
-        
+
+        // Сохраняем обновленные данные
         await setStorageItem('profile', JSON.stringify(profileData));
+
+        // Показываем уведомление об успешном сохранении
+        showNotification('Настройки сохранены');
+
     } catch (error) {
         console.error('Ошибка при сохранении настроек:', error);
         showError('Не удалось сохранить настройки');
@@ -1215,4 +1248,63 @@ async function saveProfile() {
         showNotification('Ошибка при сохранении', 'error');
         tg.HapticFeedback.notificationOccurred('error');
     }
+}
+
+// Функция для настройки обработчиков оборудования в профиле
+function setupProfileEquipmentHandlers() {
+    // Обработчики для кнопок места тренировки
+    const placeButtons = document.querySelectorAll('.place-btn');
+    placeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            button.classList.toggle('active');
+            saveProfileSettings();
+            tg.HapticFeedback.impactOccurred('light');
+        });
+    });
+
+    // Обработчики для чекбоксов оборудования
+    const equipmentCheckboxes = document.querySelectorAll('.equipment-item input[type="checkbox"]');
+    equipmentCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            saveProfileSettings();
+            tg.HapticFeedback.impactOccurred('light');
+        });
+    });
+}
+
+// Функция для отображения ошибок
+function showError(message) {
+    showNotification(message, 'error');
+    tg.HapticFeedback.notificationOccurred('error');
+}
+
+// Функция для отображения статистики
+function renderStatistics() {
+    getStorageItem('workoutStats')
+        .then(data => {
+            const stats = data ? JSON.parse(data) : {
+                totalWorkouts: 0,
+                totalCalories: 0,
+                totalMinutes: 0,
+                completedWorkouts: []
+            };
+
+            // Обновляем карточки статистики
+            document.querySelector('.total-workouts').textContent = stats.totalWorkouts;
+            document.querySelector('.total-time').textContent = `${Math.round(stats.totalMinutes)} мин`;
+            document.querySelector('.total-calories').textContent = `${Math.round(stats.totalCalories)} ккал`;
+
+            // Вычисляем процент выполнения
+            const completionRate = stats.completedWorkouts.length > 0 
+                ? Math.round((stats.completedWorkouts.filter(w => w.completed).length / stats.completedWorkouts.length) * 100)
+                : 0;
+            document.querySelector('.completion-rate').textContent = `${completionRate}%`;
+
+            // Обновляем график веса
+            updateWeightChart('week');
+        })
+        .catch(error => {
+            console.error('Ошибка при загрузке статистики:', error);
+            showError('Не удалось загрузить статистику');
+        });
 }
