@@ -186,11 +186,9 @@ async function initApp() {
         // Рендерим карточки программ
         await renderProgramCards();
 
-        // Обновляем график веса
-        await updateWeightChart();
-
-        // Рендерим статистику
-        renderStatistics();
+        // Обновляем график веса и статистику
+        await statisticsModule.updateWeightChart();
+        statisticsModule.renderStatistics();
 
         // Рендерим советы
         await renderTips();
@@ -618,35 +616,31 @@ async function completeExercise() {
     }
 }
 
-function completeWorkout() {
-    const container = document.querySelector('.workout-content');
-    if (!container) return;
-    
-    container.innerHTML = `
-        <div class="workout-complete">
-            <div class="complete-icon">
-                <span class="material-symbols-rounded">task_alt</span>
-            </div>
-            <h2>Тренировка завершена!</h2>
-            <div class="workout-stats">
-                <div class="stat-item">
-                    <div class="stat-value">${currentWorkout.exercises.length}</div>
-                    <div class="stat-label">Упражнений</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">${Math.floor(currentWorkout.duration / 60)}</div>
-                    <div class="stat-label">Минут</div>
-                </div>
-            </div>
-            <button class="finish-btn" onclick="closeWorkout()">
-                <span class="material-symbols-rounded">home</span>
-                Вернуться
-            </button>
-        </div>
-    `;
-    
-    saveWorkoutProgress(currentWorkout.id);
-    showNotification('Отличная работа! Тренировка завершена!');
+async function completeWorkout() {
+    try {
+        if (!currentWorkout) return;
+
+        // Обновляем статистику
+        await statisticsModule.updateStatistics({
+            duration: currentWorkout.duration,
+            calories: currentWorkout.calories
+        });
+
+        // Очищаем таймеры
+        clearTimers();
+
+        // Показываем уведомление
+        showNotification('Тренировка завершена!');
+        tg.HapticFeedback.notificationOccurred('success');
+
+        // Возвращаемся к списку программ
+        renderProgramCards();
+        document.querySelector('.bottom-nav')?.classList.remove('hidden');
+
+    } catch (error) {
+        console.error('Ошибка при завершении тренировки:', error);
+        showError('Не удалось завершить тренировку');
+    }
 }
 
 function closeWorkout() {
