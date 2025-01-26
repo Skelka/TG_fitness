@@ -2274,38 +2274,57 @@ function showProgramWorkouts(program) {
     const container = document.querySelector('.programs-list');
     if (!container) return;
 
-    container.innerHTML = `
-        <div class="workout-list">
-            <div class="workout-list-header">
-                <button class="back-btn">
-                    <span class="material-symbols-rounded">arrow_back</span>
-                </button>
-                <h2>${program.title}</h2>
-            </div>
-            
-            ${program.workouts.map((workout, index) => `
-                <div class="workout-day ${workout.completed ? 'completed' : ''}">
-                    <div class="workout-day-header">День ${workout.day}</div>
-                    <div class="workout-title">${workout.title}</div>
-                    <div class="workout-meta">
-                        <span>
-                            <span class="material-symbols-rounded">timer</span>
-                            ${workout.duration} мин
-                        </span>
-                        <span>
-                            <span class="material-symbols-rounded">local_fire_department</span>
-                            ${workout.calories} ккал
-                        </span>
-                    </div>
-                    <button class="start-workout-btn" data-workout-index="${index}">
-                        ${workout.completed ? 'Повторить' : 'Начать'}
-                    </button>
-                </div>
-            `).join('')}
-        </div>
-    `;
+    // Получаем активную программу для проверки прогресса
+    getStorageItem('activeProgram')
+        .then(data => {
+            const activeProgram = data ? JSON.parse(data) : null;
+            const workouts = activeProgram?.workouts || [];
 
-    setupWorkoutHandlers(program);
+            container.innerHTML = `
+                <div class="workout-list">
+                    <div class="workout-list-header">
+                        <button class="back-btn">
+                            <span class="material-symbols-rounded">arrow_back</span>
+                        </button>
+                        <h2>${program.title}</h2>
+                    </div>
+                    
+                    ${program.workouts.map((workout, index) => {
+                        const activeWorkout = workouts.find(w => w.day === workout.day);
+                        const isCompleted = activeWorkout?.completed || false;
+                        const isPrevCompleted = index === 0 || workouts[index - 1]?.completed;
+                        const isDisabled = !isPrevCompleted && !isCompleted;
+
+                        return `
+                            <div class="workout-day ${isCompleted ? 'completed' : ''} ${isDisabled ? 'disabled' : ''}">
+                                <div class="workout-day-header">День ${workout.day}</div>
+                                <div class="workout-title">${workout.title}</div>
+                                <div class="workout-meta">
+                                    <span>
+                                        <span class="material-symbols-rounded">timer</span>
+                                        ${workout.duration} мин
+                                    </span>
+                                    <span>
+                                        <span class="material-symbols-rounded">local_fire_department</span>
+                                        ${workout.calories} ккал
+                                    </span>
+                                </div>
+                                <button class="start-workout-btn" data-workout-index="${index}" ${isDisabled ? 'disabled' : ''}>
+                                    ${isCompleted ? 'Повторить' : 'Начать'}
+                                </button>
+                                ${isDisabled ? `
+                                    <div class="workout-disabled-message">
+                                        Сначала завершите предыдущую тренировку
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+
+            setupWorkoutHandlers(program);
+        });
 }
 
 // Вспомогательная функция для получения текста сложности
