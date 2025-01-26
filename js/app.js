@@ -171,6 +171,16 @@ async function initApp() {
         tg.expand();
         tg.enableClosingConfirmation();
 
+        // Инициализируем программы по умолчанию
+        await initializeDefaultPrograms();
+
+        // Проверяем, что программы успешно инициализированы
+        if (!window.programData || !Array.isArray(window.programData)) {
+            console.error('Ошибка: программы не инициализированы корректно');
+            showError('Ошибка при загрузке программ');
+            return;
+        }
+
         // Загружаем профиль
         await profileModule.loadProfile();
 
@@ -186,8 +196,15 @@ async function initApp() {
         await renderProgramCards();
 
         // Обновляем график веса и статистику
-        await statisticsModule.updateWeightChart();
-        statisticsModule.renderStatistics();
+        try {
+            if (window.weightChart) {
+                window.weightChart.destroy();
+            }
+            await statisticsModule.updateWeightChart();
+            statisticsModule.renderStatistics();
+        } catch (error) {
+            console.warn('Ошибка при обновлении графика:', error);
+        }
 
         // Рендерим советы
         await renderTips();
@@ -945,39 +962,59 @@ async function renderProgramCards() {
         const activeProgram = await getStorageItem('activeProgram')
             .then(data => data ? JSON.parse(data) : null);
 
+        // Проверяем наличие данных программ
+        if (!window.programData || typeof window.programData !== 'object') {
+            console.error('Данные программ отсутствуют или некорректны');
+            container.innerHTML = '<div class="error-message">Ошибка загрузки программ</div>';
+            return;
+        }
+
+        let programsArray = Array.isArray(window.programData) ? 
+            window.programData : Object.values(window.programData);
+
+        if (!programsArray.length) {
+            console.error('Список программ пуст');
+            container.innerHTML = '<div class="error-message">Нет доступных программ</div>';
+            return;
+        }
+
         let html = '';
         
-        // Сначала сортируем программы, чтобы утренняя зарядка и активная программа были первыми
-        const sortedPrograms = [...window.programData].sort((a, b) => {
-            // Утренняя зарядка всегда первая
+        // Сортируем программы
+        const sortedPrograms = [...programsArray].sort((a, b) => {
             if (a.id === 'morning_workout') return -1;
             if (b.id === 'morning_workout') return 1;
             
-            // Активная программа вторая
             const isActiveA = activeProgram?.id === a.id;
             const isActiveB = activeProgram?.id === b.id;
             if (isActiveA && !isActiveB) return -1;
             if (!isActiveA && isActiveB) return 1;
             
-            // Остальные программы без изменения порядка
             return 0;
         });
 
-        // Теперь перебираем отсортированный массив программ
+        // Генерируем HTML для каждой программы
         sortedPrograms.forEach((program) => {
+            if (!program || !program.id) return;
+
             const isActive = activeProgram?.id === program.id;
-            // Утренняя зарядка не блокируется и не блокирует другие программы
-            const isDisabled = program.id !== 'morning_workout' && activeProgram && !isActive && activeProgram.id !== 'morning_workout';
-            const durationText = program.duration === 'unlimited' ? 'Бессрочная' : `${program.duration} недель`;
+            const isDisabled = program.id !== 'morning_workout' && 
+                             activeProgram && !isActive && 
+                             activeProgram.id !== 'morning_workout';
+            const durationText = program.duration === 'unlimited' ? 
+                'Бессрочная' : `${program.duration} недель`;
 
             html += `
-                <div class="program-card ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}" data-program-id="${program.id}">
+                <div class="program-card ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}" 
+                     data-program-id="${program.id}">
                     <div class="program-icon">
-                        <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
+                        <span class="material-symbols-rounded">
+                            ${program.icon || 'fitness_center'}
+                        </span>
                     </div>
                     <div class="program-info">
-                        <h3>${program.name}</h3>
-                        <p>${program.description}</p>
+                        <h3>${program.name || 'Программа без названия'}</h3>
+                        <p>${program.description || ''}</p>
                         <div class="program-meta">
                             <span>
                                 <span class="material-symbols-rounded">timer</span>
@@ -985,7 +1022,7 @@ async function renderProgramCards() {
                             </span>
                             <span>
                                 <span class="material-symbols-rounded">calendar_month</span>
-                                ${program.workoutsPerWeek} тр/нед
+                                ${program.workoutsPerWeek || 0} тр/нед
                             </span>
                             <span class="difficulty-badge">
                                 ${getDifficultyText(program.difficulty)}
@@ -1002,7 +1039,7 @@ async function renderProgramCards() {
         document.querySelectorAll('.program-card').forEach(card => {
             card.addEventListener('click', async () => {
                 const programId = card.dataset.programId;
-                const program = window.programData.find(p => p.id === programId);
+                const program = programsArray.find(p => p.id === programId);
                 
                 if (!card.classList.contains('disabled') && program) {
                     await showProgramDetails(program);
@@ -1016,7 +1053,7 @@ async function renderProgramCards() {
 
     } catch (error) {
         console.error('Ошибка при отображении программ:', error);
-        container.innerHTML = '<div class="no-data">Ошибка при загрузке программ</div>';
+        container.innerHTML = '<div class="error-message">Ошибка при загрузке программ</div>';
     }
 }
 
@@ -1367,12 +1404,18 @@ async function clearAllData() {
     }
 }
 
-// Функция для обновления графика веса
+// Обновляем функцию updateWeightChart
 async function updateWeightChart(period = 'week') {
     const ctx = document.getElementById('weight-chart');
     if (!ctx) return;
 
     try {
+        // Уничтожаем предыдущий график, если он существует
+        if (window.weightChart) {
+            window.weightChart.destroy();
+            window.weightChart = null;
+        }
+
         // Получаем историю веса
         const weightHistoryStr = await getStorageItem('weightHistory');
         const weightHistory = weightHistoryStr ? JSON.parse(weightHistoryStr) : [];
@@ -1385,7 +1428,7 @@ async function updateWeightChart(period = 'week') {
 
         ctx.style.display = 'block';
 
-    const now = new Date();
+        const now = new Date();
         let startDate = new Date();
         let labels = [];
         let data = [];
@@ -1436,11 +1479,6 @@ async function updateWeightChart(period = 'week') {
         const minWeight = Math.min(...weights) - 1;
         const maxWeight = Math.max(...weights) + 1;
 
-        // Уничтожаем предыдущий график
-        if (window.weightChart) {
-            window.weightChart.destroy();
-        }
-
         // Создаем новый график
         window.weightChart = new Chart(ctx, {
             type: 'line',
@@ -1482,8 +1520,10 @@ async function updateWeightChart(period = 'week') {
         });
     } catch (error) {
         console.error('Ошибка при обновлении графика веса:', error);
-        ctx.style.display = 'none';
-        ctx.parentElement.innerHTML = '<div class="no-data">Ошибка при загрузке данных</div>';
+        if (ctx) {
+            ctx.style.display = 'none';
+            ctx.parentElement.innerHTML = '<div class="error-message">Ошибка при загрузке данных</div>';
+        }
     }
 }
 
@@ -1593,1213 +1633,28 @@ function renderStatistics() {
 async function initializeDefaultPrograms() {
     try {
         const existingPrograms = await getStorageItem('programs');
+        
         if (!existingPrograms) {
-            const defaultPrograms = [
-                {
-                    id: 'weight_loss',
-                    name: 'Снижение веса',
-                    title: 'Снижение веса',
-                    description: 'Программа для снижения веса и улучшения метаболизма',
-                    icon: 'monitor_weight',
-                    difficulty: 'beginner',
-                    duration: 8,
-                    schedule: '3-4 тр/нед',
-                    workoutsPerWeek: 3,
-                    isCompleted: false,
-                    workouts: [
-                        {
-                            id: 'workout_1',
-                            name: 'Кардио + Сила',
-                            description: 'Сочетание кардио и силовых упражнений',
-                            duration: 45,
-                            type: 'cardio_strength',
-                            exercises: []
-                        },
-                        {
-                            id: 'workout_2',
-                            name: 'ВИИТ тренировка',
-                            description: 'Высокоинтенсивная интервальная тренировка',
-                            duration: 30,
-                            type: 'hiit',
-                            exercises: []
-                        },
-                        {
-                            id: 'workout_3',
-                            name: 'Круговая тренировка',
-                            description: 'Круговая тренировка для сжигания жира',
-                            duration: 40,
-                            type: 'circuit',
-                            exercises: []
-                        }
-                    ]
-                },
-                {
-                    id: 'endurance',
-                    name: 'Выносливость',
-                    title: 'Выносливость',
-                    description: 'Программа для развития общей выносливости',
-                    icon: 'directions_run',
-                    difficulty: 'beginner',
-                    duration: 6,
-                    schedule: '4-5 тр/нед',
-                    workoutsPerWeek: 4,
-                    isCompleted: false,
-                    workouts: [
-                        {
-                            id: 'workout_1',
-                            name: 'ВИИТ тренировка',
-                            description: 'Высокоинтенсивная интервальная тренировка',
-                            duration: 30,
-                            type: 'hiit',
-                            exercises: []
-                        },
-                        {
-                            id: 'workout_2',
-                            name: 'Кардио выносливость',
-                            description: 'Развитие общей выносливости',
-                            duration: 45,
-                            type: 'cardio',
-                            exercises: []
-                        },
-                        {
-                            id: 'workout_3',
-                            name: 'Круговая тренировка',
-                            description: 'Комплексная тренировка на все тело',
-                            duration: 40,
-                            type: 'circuit',
-                            exercises: []
-                        }
-                    ]
-                },
-                {
-                    id: 'maintenance',
-                    name: 'Поддержание формы',
-                    title: 'Поддержание формы',
-                    description: 'Программа для поддержания текущей формы и тонуса мышц',
-                    icon: 'sports_gymnastics',
-                    difficulty: 'beginner',
-                    duration: 4,
-                    schedule: '3-4 тр/нед',
-                    workoutsPerWeek: 3,
-                    isCompleted: false,
-                    workouts: [
-                        {
-                            id: 'workout_1',
-                            name: 'Общая тренировка',
-                            description: 'Комплексная тренировка на все тело',
-                            duration: 40,
-                            type: 'general',
-                            exercises: [
-                                {
-                                    id: 'warmup_1',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 5,
-                                    description: 'Комплексная разминка всего тела',
-                                    sequence: [
-                                        'Вращения головой',
-                                        'Круговые движения руками',
-                                        'Наклоны в стороны',
-                                        'Круговые движения тазом',
-                                        'Разминка коленей и голеностопов'
-                                    ]
-                                },
-                                {
-                                    id: 'ex_1',
-                                    name: 'Приседания с собственным весом',
-                                    type: 'strength',
-                                    sets: 3,
-                                    reps: 15,
-                                    rest: 60,
-                                    description: 'Классические приседания с акцентом на технику',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_2',
-                                    name: 'Отжимания с колен',
-                                    type: 'strength',
-                                    sets: 3,
-                                    reps: 12,
-                                    rest: 60,
-                                    description: 'Отжимания с опорой на колени для контроля нагрузки',
-                                    muscleGroups: ['chest', 'shoulders', 'triceps']
-                                },
-                                {
-                                    id: 'ex_3',
-                                    name: 'Планка с подъемом рук',
-                                    type: 'core',
-                                    sets: 3,
-                                    duration: 30,
-                                    rest: 45,
-                                    description: 'Удержание планки с поочередным подниманием рук',
-                                    muscleGroups: ['core', 'shoulders']
-                                },
-                                {
-                                    id: 'ex_4',
-                                    name: 'Обратные отжимания от стула',
-                                    type: 'strength',
-                                    sets: 3,
-                                    reps: 12,
-                                    rest: 60,
-                                    description: 'Отжимания для трицепса с опорой на стул',
-                                    muscleGroups: ['triceps']
-                                },
-                                {
-                                    id: 'cooldown_1',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 5,
-                                    description: 'Растяжка основных групп мышц',
-                                    sequence: [
-                                        'Растяжка квадрицепсов',
-                                        'Растяжка груди и плеч',
-                                        'Растяжка спины',
-                                        'Растяжка трицепсов'
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            id: 'workout_2',
-                            name: 'Кардио + Сила',
-                            description: 'Сочетание кардио и силовых упражнений',
-                            duration: 35,
-                            type: 'cardio_strength',
-                            exercises: [
-                                {
-                                    id: 'warmup_2',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 5,
-                                    description: 'Кардио разминка',
-                                    sequence: [
-                                        'Ходьба на месте',
-                                        'Легкий бег на месте',
-                                        'Прыжки на месте',
-                                        'Разминка суставов'
-                                    ]
-                                },
-                                {
-                                    id: 'ex_5',
-                                    name: 'Прыжки с высоким подъемом колен',
-                                    type: 'cardio',
-                                    sets: 3,
-                                    duration: 30,
-                                    rest: 45,
-                                    description: 'Прыжки на месте с высоким подъемом колен',
-                                    muscleGroups: ['legs', 'cardio']
-                                },
-                                {
-                                    id: 'ex_6',
-                                    name: 'Выпады на месте',
-                                    type: 'strength',
-                                    sets: 3,
-                                    reps: 12,
-                                    rest: 60,
-                                    description: 'Выпады на месте с чередованием ног',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_7',
-                                    name: 'Скручивания',
-                                    type: 'core',
-                                    sets: 3,
-                                    reps: 20,
-                                    rest: 45,
-                                    description: 'Классические скручивания на пресс',
-                                    muscleGroups: ['core']
-                                },
-                                {
-                                    id: 'ex_8',
-                                    name: 'Бег на месте',
-                                    type: 'cardio',
-                                    sets: 2,
-                                    duration: 60,
-                                    rest: 60,
-                                    description: 'Интенсивный бег на месте',
-                                    muscleGroups: ['legs', 'cardio']
-                                },
-                                {
-                                    id: 'cooldown_2',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 5,
-                                    description: 'Восстановление дыхания и растяжка',
-                                    sequence: [
-                                        'Глубокое дыхание',
-                                        'Растяжка ног',
-                                        'Растяжка корпуса',
-                                        'Расслабление мышц'
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            id: 'workout_3',
-                            name: 'Функциональная тренировка',
-                            description: 'Упражнения на функциональную силу и гибкость',
-                            duration: 45,
-                            type: 'functional',
-                            exercises: [
-                                {
-                                    id: 'warmup_3',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 5,
-                                    description: 'Динамическая разминка',
-                                    sequence: [
-                                        'Круговые движения суставами',
-                                        'Наклоны и повороты',
-                                        'Легкие прыжки',
-                                        'Разогрев мышц'
-                                    ]
-                                },
-                                {
-                                    id: 'ex_9',
-                                    name: 'Берпи без прыжка',
-                                    type: 'functional',
-                                    sets: 3,
-                                    reps: 8,
-                                    rest: 60,
-                                    description: 'Модифицированные берпи для поддержания формы',
-                                    muscleGroups: ['full_body']
-                                },
-                                {
-                                    id: 'ex_10',
-                                    name: 'Мостик на лопатках',
-                                    type: 'flexibility',
-                                    sets: 3,
-                                    duration: 30,
-                                    rest: 45,
-                                    description: 'Удержание мостика с опорой на лопатки',
-                                    muscleGroups: ['back', 'core']
-                                },
-                                {
-                                    id: 'ex_11',
-                                    name: 'Боковая планка',
-                                    type: 'core',
-                                    sets: 3,
-                                    duration: 30,
-                                    rest: 45,
-                                    description: 'Удержание боковой планки на каждую сторону',
-                                    muscleGroups: ['core', 'obliques']
-                                },
-                                {
-                                    id: 'ex_12',
-                                    name: 'Воздушные приседания',
-                                    type: 'functional',
-                                    sets: 3,
-                                    reps: 15,
-                                    rest: 60,
-                                    description: 'Приседания с задержкой в нижней точке',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'cooldown_3',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 5,
-                                    description: 'Глубокая растяжка',
-                                    sequence: [
-                                        'Растяжка позвоночника',
-                                        'Растяжка боковых мышц',
-                                        'Растяжка ног',
-                                        'Расслабление всего тела'
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    id: 'beginner_strength',
-                    name: 'Базовая сила',
-                    description: 'Программа для начинающих, направленная на развитие силы и мышечной массы',
-                    icon: 'fitness_center',
-                    difficulty: 'beginner',
-                    duration: 4,
-                    workoutsPerWeek: 3,
-                    isCompleted: false,
-                    workouts: [
-                        {
-                            id: 'workout_1',
-                            name: 'Тренировка A (Верх)',
-                            description: 'Фокус на верхнюю часть тела',
-                            duration: 45,
-                            type: 'strength',
-                            exercises: [
-                                {
-                                    id: 'warmup_1',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 5,
-                                    description: 'Легкая разминка всего тела'
-                                },
-                                {
-                                    id: 'ex_1',
-                                    name: 'Отжимания',
-                                    type: 'strength',
-                                    sets: 3,
-                                    reps: 10,
-                                    rest: 60,
-                                    description: 'Классические отжимания от пола',
-                                    muscleGroups: ['chest', 'shoulders', 'triceps']
-                                },
-                                {
-                                    id: 'ex_2',
-                                    name: 'Тяга с упором в стену',
-                                    type: 'strength',
-                                    sets: 3,
-                                    reps: 12,
-                                    rest: 60,
-                                    description: 'Тяга для укрепления мышц спины',
-                                    muscleGroups: ['back', 'biceps']
-                                },
-                                {
-                                    id: 'ex_3',
-                                    name: 'Планка',
-                                    type: 'static',
-                                    sets: 3,
-                                    duration: 30,
-                                    rest: 45,
-                                    description: 'Удержание планки',
-                                    muscleGroups: ['core']
-                                },
-                                {
-                                    id: 'cooldown_1',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 5,
-                                    description: 'Растяжка мышц верхней части тела'
-                                }
-                            ]
-                        },
-                        {
-                            id: 'workout_2',
-                            name: 'Тренировка B (Низ)',
-                            description: 'Фокус на нижнюю часть тела',
-                            duration: 45,
-                            exercises: [
-                                {
-                                    id: 'warmup_2',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 5,
-                                    description: 'Разминка с акцентом на ноги'
-                                },
-                                {
-                                    id: 'ex_4',
-                                    name: 'Приседания',
-                                    type: 'strength',
-                                    sets: 3,
-                                    reps: 15,
-                                    rest: 60,
-                                    description: 'Классические приседания',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_5',
-                                    name: 'Выпады',
-                                    type: 'strength',
-                                    sets: 3,
-                                    reps: 10,
-                                    rest: 60,
-                                    description: 'Выпады на каждую ногу',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_6',
-                                    name: 'Подъемы на носки',
-                                    type: 'strength',
-                                    sets: 3,
-                                    reps: 20,
-                                    rest: 45,
-                                    description: 'Подъемы на носки стоя',
-                                    muscleGroups: ['calves']
-                                },
-                                {
-                                    id: 'cooldown_2',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 5,
-                                    description: 'Растяжка мышц ног'
-                                }
-                            ]
-                        },
-                        {
-                            id: 'workout_3',
-                            name: 'Тренировка C (Всё тело)',
-                            description: 'Комплексная тренировка на все тело',
-                            duration: 45,
-                            exercises: [
-                                {
-                                    id: 'warmup_3',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 5,
-                                    description: 'Общая разминка'
-                                },
-                                {
-                                    id: 'ex_7',
-                                    name: 'Берпи',
-                                    type: 'cardio',
-                                    sets: 3,
-                                    reps: 8,
-                                    rest: 60,
-                                    description: 'Комплексное упражнение',
-                                    muscleGroups: ['full_body']
-                                },
-                                {
-                                    id: 'ex_8',
-                                    name: 'Скручивания',
-                                    type: 'strength',
-                                    sets: 3,
-                                    reps: 15,
-                                    rest: 45,
-                                    description: 'Упражнение на пресс',
-                                    muscleGroups: ['core']
-                                },
-                                {
-                                    id: 'ex_9',
-                                    name: 'Обратные отжимания от стула',
-                                    type: 'strength',
-                                    sets: 3,
-                                    reps: 12,
-                                    rest: 60,
-                                    description: 'Отжимания для трицепса',
-                                    muscleGroups: ['triceps', 'shoulders']
-                                },
-                                {
-                                    id: 'cooldown_3',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 5,
-                                    description: 'Общая растяжка'
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    id: 'cardio_endurance',
-                    name: 'Кардио и выносливость',
-                    description: 'Программа для улучшения выносливости и сжигания жира',
-                    icon: 'directions_run',
-                    difficulty: 'intermediate',
-                    duration: 6,
-                    workoutsPerWeek: 4,
-                    isCompleted: false,
-                    workouts: [
-                        {
-                            id: 'workout_1',
-                            name: 'ВИИТ тренировка',
-                            description: 'Высокоинтенсивная интервальная тренировка',
-                            duration: 30,
-                            type: 'hiit',
-                            exercises: [
-                                {
-                                    id: 'warmup_1',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 5,
-                                    description: 'Легкая разминка всего тела'
-                                },
-                                {
-                                    id: 'ex_1',
-                                    name: 'Берпи',
-                                    type: 'hiit',
-                                    sets: 4,
-                                    reps: 10,
-                                    rest: 30,
-                                    description: 'Интенсивное упражнение на все тело',
-                                    muscleGroups: ['full_body']
-                                },
-                                {
-                                    id: 'ex_2',
-                                    name: 'Прыжки с высоким подъемом колен',
-                                    type: 'cardio',
-                                    sets: 4,
-                                    duration: 30,
-                                    rest: 30,
-                                    description: 'Прыжки на месте с высоким подъемом колен',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_3',
-                                    name: 'Скалолаз',
-                                    type: 'hiit',
-                                    sets: 4,
-                                    duration: 45,
-                                    rest: 30,
-                                    description: 'Динамичное упражнение для пресса',
-                                    muscleGroups: ['core']
-                                },
-                                {
-                                    id: 'cooldown_1',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 5,
-                                    description: 'Растяжка и восстановление дыхания'
-                                }
-                            ]
-                        },
-                        {
-                            id: 'workout_2',
-                            name: 'Круговая тренировка',
-                            description: 'Комплексная тренировка на все тело',
-                            duration: 40,
-                            type: 'circuit',
-                            exercises: [
-                                {
-                                    id: 'warmup_2',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 5,
-                                    description: 'Разогрев мышц и суставов'
-                                },
-                                {
-                                    id: 'ex_4',
-                                    name: 'Приседания с выпрыгиванием',
-                                    type: 'cardio',
-                                    sets: 3,
-                                    reps: 12,
-                                    rest: 45,
-                                    description: 'Приседания с прыжком вверх',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_5',
-                                    name: 'Отжимания',
-                                    type: 'strength',
-                                    sets: 3,
-                                    reps: 15,
-                                    rest: 45,
-                                    description: 'Классические отжимания от пола',
-                                    muscleGroups: ['chest', 'shoulders']
-                                },
-                                {
-                                    id: 'ex_6',
-                                    name: 'Планка с переходом в боковую',
-                                    type: 'core',
-                                    sets: 3,
-                                    duration: 45,
-                                    rest: 45,
-                                    description: 'Планка с поворотами',
-                                    muscleGroups: ['core']
-                                },
-                                {
-                                    id: 'cooldown_2',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 5,
-                                    description: 'Растяжка всех групп мышц'
-                                }
-                            ]
-                        },
-                        {
-                            id: 'workout_3',
-                            name: 'Кардио выносливость',
-                            description: 'Тренировка для развития выносливости',
-                            duration: 45,
-                            type: 'cardio',
-                            exercises: [
-                                {
-                                    id: 'warmup_3',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 5,
-                                    description: 'Легкая разминка'
-                                },
-                                {
-                                    id: 'ex_7',
-                                    name: 'Бег на месте с высоким подъемом колен',
-                                    type: 'cardio',
-                                    sets: 4,
-                                    duration: 60,
-                                    rest: 30,
-                                    description: 'Интенсивный бег на месте',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_8',
-                                    name: 'Прыжки со скакалкой',
-                                    type: 'cardio',
-                                    sets: 4,
-                                    duration: 60,
-                                    rest: 30,
-                                    description: 'Прыжки на скакалке',
-                                    muscleGroups: ['legs', 'cardio']
-                                },
-                                {
-                                    id: 'ex_9',
-                                    name: 'Выпады с чередованием ног',
-                                    type: 'cardio',
-                                    sets: 4,
-                                    duration: 60,
-                                    rest: 30,
-                                    description: 'Динамичные выпады',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'cooldown_3',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 5,
-                                    description: 'Растяжка и восстановление'
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    id: 'morning_workout',
-                    name: 'Утренняя зарядка',
-                    description: 'Легкая зарядка для бодрого начала каждого дня',
-                    icon: 'wb_sunny',
-                    difficulty: 'beginner',
-                    duration: 'unlimited',
-                    workoutsPerWeek: 7,
-                    isCompleted: false,
-                    workouts: [
-                        {
-                            id: 'morning_1',
-                            name: 'Утренний комплекс',
-                            description: 'Разминка всего тела, растяжка и легкие упражнения для заряда энергией',
-                            duration: 15,
-                            type: 'morning',
-                            exercises: [
-                                {
-                                    id: 'warmup_1',
-                                    name: 'Разминка суставов',
-                                    type: 'warmup',
-                                    duration: 3,
-                                    description: 'Мягкие круговые движения в суставах сверху вниз',
-                                    sequence: [
-                                        'Шея: наклоны и повороты',
-                                        'Плечи: круговые движения',
-                                        'Локти и запястья',
-                                        'Тазобедренные суставы',
-                                        'Колени и голеностопы'
-                                    ]
-                                },
-                                {
-                                    id: 'ex_1',
-                                    name: 'Потягивания',
-                                    type: 'stretch',
-                                    sets: 2,
-                                    reps: 8,
-                                    rest: 20,
-                                    description: 'Потягивания с глубоким дыханием',
-                                    muscleGroups: ['full_body']
-                                },
-                                {
-                                    id: 'ex_2',
-                                    name: 'Наклоны в стороны',
-                                    type: 'stretch',
-                                    sets: 2,
-                                    reps: 10,
-                                    rest: 20,
-                                    description: 'Плавные наклоны вправо и влево',
-                                    muscleGroups: ['core', 'obliques']
-                                },
-                                {
-                                    id: 'ex_3',
-                                    name: 'Мягкие приседания',
-                                    type: 'cardio',
-                                    sets: 2,
-                                    reps: 12,
-                                    rest: 30,
-                                    description: 'Неглубокие приседания для разогрева ног',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_4',
-                                    name: 'Кошка-корова',
-                                    type: 'stretch',
-                                    sets: 2,
-                                    reps: 8,
-                                    rest: 20,
-                                    description: 'Прогибы и выгибания спины на четвереньках',
-                                    muscleGroups: ['back', 'core']
-                                },
-                                {
-                                    id: 'ex_5',
-                                    name: 'Скручивания лежа',
-                                    type: 'stretch',
-                                    sets: 2,
-                                    reps: 10,
-                                    rest: 20,
-                                    description: 'Мягкие скручивания позвоночника лежа на спине',
-                                    muscleGroups: ['core', 'back']
-                                },
-                                {
-                                    id: 'ex_6',
-                                    name: 'Подъем рук и ног лежа',
-                                    type: 'strength',
-                                    sets: 2,
-                                    reps: 12,
-                                    rest: 30,
-                                    description: 'Поочередный подъем противоположных руки и ноги лежа на животе',
-                                    muscleGroups: ['back', 'core']
-                                },
-                                {
-                                    id: 'ex_7',
-                                    name: 'Ходьба на месте',
-                                    type: 'cardio',
-                                    duration: 60,
-                                    description: 'Активная ходьба на месте для усиления кровообращения',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_8',
-                                    name: 'Дыхательные упражнения',
-                                    type: 'breathing',
-                                    sets: 3,
-                                    reps: 5,
-                                    rest: 15,
-                                    description: 'Глубокое дыхание с задержкой и медленным выдохом',
-                                    technique: [
-                                        'Вдох через нос (4 сек)',
-                                        'Задержка (4 сек)',
-                                        'Медленный выдох через рот (6 сек)'
-                                    ]
-                                },
-                                {
-                                    id: 'cooldown_1',
-                                    name: 'Финальная растяжка',
-                                    type: 'cooldown',
-                                    duration: 2,
-                                    description: 'Легкая растяжка основных мышц',
-                                    sequence: [
-                                        'Растяжка плеч и рук',
-                                        'Наклоны к ногам',
-                                        'Растяжка квадрицепсов',
-                                        'Растяжка икр'
-                                    ]
-                                }
-                            ]
-                        }
-                    ],
-                    features: [
-                        'Мягкая разминка суставов',
-                        'Легкие кардио упражнения',
-                        'Растяжка основных мышц',
-                        'Дыхательные упражнения'
-                    ],
-                    benefits: [
-                        'Улучшение кровообращения',
-                        'Повышение гибкости',
-                        'Заряд энергией на весь день',
-                        'Ускорение метаболизма'
-                    ]
-                },
-                {
-                    id: 'weight_loss_intensive',
-                    name: 'Интенсивное похудение',
-                    description: 'Программа для быстрого и эффективного снижения веса',
-                    icon: 'monitor_weight',
-                    difficulty: 'intermediate',
-                    duration: 6,
-                    workoutsPerWeek: 5,
-                    isCompleted: false,
-                    workouts: [
-                        {
-                            id: 'weight_loss_1',
-                            name: 'Жиросжигающая тренировка',
-                            description: 'Интенсивная тренировка для сжигания жира',
-                            duration: 40,
-                            type: 'hiit',
-                            exercises: [
-                                {
-                                    id: 'warmup_1',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 5,
-                                    description: 'Легкая разминка всего тела'
-                                },
-                                {
-                                    id: 'ex_1',
-                                    name: 'Джампинг джек',
-                                    type: 'cardio',
-                                    sets: 4,
-                                    duration: 45,
-                                    rest: 30,
-                                    description: 'Прыжки с разведением рук и ног',
-                                    muscleGroups: ['full_body']
-                                },
-                                {
-                                    id: 'ex_2',
-                                    name: 'Берпи',
-                                    type: 'hiit',
-                                    sets: 4,
-                                    reps: 10,
-                                    rest: 30,
-                                    description: 'Комплексное упражнение на все тело',
-                                    muscleGroups: ['full_body']
-                                },
-                                {
-                                    id: 'ex_3',
-                                    name: 'Скалолаз',
-                                    type: 'hiit',
-                                    sets: 4,
-                                    duration: 45,
-                                    rest: 30,
-                                    description: 'Динамичное упражнение для пресса',
-                                    muscleGroups: ['core']
-                                },
-                                {
-                                    id: 'ex_4',
-                                    name: 'Приседания с выпрыгиванием',
-                                    type: 'hiit',
-                                    sets: 4,
-                                    reps: 12,
-                                    rest: 30,
-                                    description: 'Приседания с прыжком вверх',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'cooldown_1',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 5,
-                                    description: 'Растяжка и восстановление дыхания'
-                                }
-                            ]
-                        },
-                        {
-                            id: 'weight_loss_2',
-                            name: 'Кардио + Силовая',
-                            description: 'Комбинированная тренировка для ускорения метаболизма',
-                            duration: 45,
-                            type: 'cardio_strength',
-                            exercises: [
-                                {
-                                    id: 'warmup_2',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 5,
-                                    description: 'Разогрев мышц и суставов'
-                                },
-                                {
-                                    id: 'ex_5',
-                                    name: 'Бег на месте с высоким подъемом колен',
-                                    type: 'cardio',
-                                    sets: 3,
-                                    duration: 60,
-                                    rest: 30,
-                                    description: 'Интенсивный бег на месте',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_6',
-                                    name: 'Отжимания',
-                                    type: 'strength',
-                                    sets: 3,
-                                    reps: 15,
-                                    rest: 45,
-                                    description: 'Классические отжимания от пола',
-                                    muscleGroups: ['chest', 'shoulders']
-                                },
-                                {
-                                    id: 'ex_7',
-                                    name: 'Приседания',
-                                    type: 'strength',
-                                    sets: 3,
-                                    reps: 20,
-                                    rest: 45,
-                                    description: 'Классические приседания',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_8',
-                                    name: 'Планка',
-                                    type: 'strength',
-                                    sets: 3,
-                                    duration: 45,
-                                    rest: 45,
-                                    description: 'Статическая планка',
-                                    muscleGroups: ['core']
-                                },
-                                {
-                                    id: 'cooldown_2',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 5,
-                                    description: 'Растяжка всех групп мышц'
-                                }
-                            ]
-                        },
-                        {
-                            id: 'weight_loss_3',
-                            name: 'Табата',
-                            description: 'Высокоинтенсивная интервальная тренировка',
-                            duration: 25,
-                            type: 'tabata',
-                            exercises: [
-                                {
-                                    id: 'warmup_3',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 5,
-                                    description: 'Легкая разминка'
-                                },
-                                {
-                                    id: 'ex_9',
-                                    name: 'Прыжки с высоким подъемом колен',
-                                    type: 'tabata',
-                                    sets: 8,
-                                    duration: 20,
-                                    rest: 10,
-                                    description: 'Интенсивные прыжки',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_10',
-                                    name: 'Выпады с чередованием ног',
-                                    type: 'tabata',
-                                    sets: 8,
-                                    duration: 20,
-                                    rest: 10,
-                                    description: 'Динамичные выпады',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_11',
-                                    name: 'Скручивания',
-                                    type: 'tabata',
-                                    sets: 8,
-                                    duration: 20,
-                                    rest: 10,
-                                    description: 'Упражнение на пресс',
-                                    muscleGroups: ['core']
-                                },
-                                {
-                                    id: 'cooldown_3',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 5,
-                                    description: 'Растяжка и восстановление'
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    id: 'advanced_strength',
-                    name: 'Продвинутая сила',
-                    description: 'Программа для опытных атлетов, нацеленная на максимальную силу',
-                    icon: 'exercise',
-                    difficulty: 'advanced',
-                    duration: 8,
-                    workoutsPerWeek: 5,
-                    isCompleted: false,
-                    workouts: [
-                        {
-                            id: 'strength_1',
-                            name: 'Сила верха тела',
-                            description: 'Интенсивная тренировка верхней части тела',
-                            duration: 60,
-                            type: 'strength',
-                            exercises: [
-                                {
-                                    id: 'warmup_1',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 5,
-                                    description: 'Разогрев мышц и суставов верхней части тела'
-                                },
-                                {
-                                    id: 'ex_1',
-                                    name: 'Отжимания с весом',
-                                    type: 'strength',
-                                    sets: 5,
-                                    reps: 12,
-                                    rest: 90,
-                                    description: 'Отжимания с дополнительным весом или усложненные варианты',
-                                    muscleGroups: ['chest', 'shoulders', 'triceps']
-                                },
-                                {
-                                    id: 'ex_2',
-                                    name: 'Подтягивания с весом',
-                                    type: 'strength',
-                                    sets: 5,
-                                    reps: 8,
-                                    rest: 120,
-                                    description: 'Подтягивания с утяжелением',
-                                    muscleGroups: ['back', 'biceps']
-                                },
-                                {
-                                    id: 'ex_3',
-                                    name: 'Отжимания на брусьях',
-                                    type: 'strength',
-                                    sets: 4,
-                                    reps: 15,
-                                    rest: 90,
-                                    description: 'Отжимания на параллельных брусьях',
-                                    muscleGroups: ['chest', 'triceps']
-                                },
-                                {
-                                    id: 'ex_4',
-                                    name: 'Планка на одной руке',
-                                    type: 'static',
-                                    sets: 3,
-                                    duration: 45,
-                                    rest: 60,
-                                    description: 'Удержание планки с поочередным подниманием рук',
-                                    muscleGroups: ['core', 'shoulders']
-                                },
-                                {
-                                    id: 'cooldown_1',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 5,
-                                    description: 'Растяжка мышц верхней части тела'
-                                }
-                            ]
-                        },
-                        {
-                            id: 'strength_2',
-                            name: 'Сила ног',
-                            description: 'Мощная тренировка нижней части тела',
-                            duration: 65,
-                            type: 'strength',
-                            exercises: [
-                                {
-                                    id: 'warmup_2',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 7,
-                                    description: 'Тщательный разогрев суставов и мышц ног'
-                                },
-                                {
-                                    id: 'ex_5',
-                                    name: 'Приседания с выпрыгиванием',
-                                    type: 'strength',
-                                    sets: 5,
-                                    reps: 10,
-                                    rest: 120,
-                                    description: 'Глубокие приседания с мощным выпрыгиванием вверх',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_6',
-                                    name: 'Болгарские сплит-приседания',
-                                    type: 'strength',
-                                    sets: 4,
-                                    reps: 12,
-                                    rest: 90,
-                                    description: 'Приседания на одной ноге с задней ногой на возвышении',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_7',
-                                    name: 'Прыжки в длину',
-                                    type: 'power',
-                                    sets: 4,
-                                    reps: 8,
-                                    rest: 120,
-                                    description: 'Максимально длинные прыжки с места',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_8',
-                                    name: 'Икроножные подъемы',
-                                    type: 'strength',
-                                    sets: 4,
-                                    reps: 20,
-                                    rest: 60,
-                                    description: 'Подъемы на носки с дополнительным весом',
-                                    muscleGroups: ['calves']
-                                },
-                                {
-                                    id: 'cooldown_2',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 8,
-                                    description: 'Глубокая растяжка мышц ног'
-                                }
-                            ]
-                        },
-                        {
-                            id: 'strength_3',
-                            name: 'Взрывная сила',
-                            description: 'Тренировка на развитие взрывной силы',
-                            duration: 55,
-                            type: 'power',
-                            exercises: [
-                                {
-                                    id: 'warmup_3',
-                                    name: 'Разминка',
-                                    type: 'warmup',
-                                    duration: 8,
-                                    description: 'Динамическая разминка всего тела'
-                                },
-                                {
-                                    id: 'ex_9',
-                                    name: 'Взрывные отжимания',
-                                    type: 'power',
-                                    sets: 4,
-                                    reps: 8,
-                                    rest: 90,
-                                    description: 'Отжимания с отрывом рук от пола',
-                                    muscleGroups: ['chest', 'shoulders', 'triceps']
-                                },
-                                {
-                                    id: 'ex_10',
-                                    name: 'Бурпи с подтягиванием',
-                                    type: 'power',
-                                    sets: 4,
-                                    reps: 6,
-                                    rest: 120,
-                                    description: 'Бурпи с переходом в подтягивание',
-                                    muscleGroups: ['full_body']
-                                },
-                                {
-                                    id: 'ex_11',
-                                    name: 'Выпрыгивания из приседа',
-                                    type: 'power',
-                                    sets: 5,
-                                    reps: 10,
-                                    rest: 90,
-                                    description: 'Максимально высокие выпрыгивания из приседа',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'cooldown_3',
-                                    name: 'Заминка',
-                                    type: 'cooldown',
-                                    duration: 7,
-                                    description: 'Растяжка всех групп мышц'
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ];
-
-            await setStorageItem('programs', JSON.stringify(defaultPrograms));
+            // Используем defaultPrograms из кода выше
             window.programData = defaultPrograms;
+            await setStorageItem('programs', JSON.stringify(defaultPrograms));
             console.log('Программы по умолчанию инициализированы:', defaultPrograms);
         } else {
-            window.programData = JSON.parse(existingPrograms);
-            console.log('Загружены существующие программы:', window.programData);
+            try {
+                window.programData = JSON.parse(existingPrograms);
+                if (!Array.isArray(window.programData)) {
+                    throw new Error('Некорректный формат данных программ');
+                }
+                console.log('Загружены существующие программы:', window.programData);
+            } catch (error) {
+                console.error('Ошибка при парсинге существующих программ:', error);
+                window.programData = defaultPrograms;
+                await setStorageItem('programs', JSON.stringify(defaultPrograms));
+            }
         }
     } catch (error) {
         console.error('Ошибка при инициализации программ:', error);
-        throw error;
-    }
-}
-
-function getDifficultyText(difficulty) {
-    switch (difficulty) {
-        case 'beginner':
-            return 'Начальный';
-        case 'intermediate':
-            return 'Средний';
-        case 'advanced':
-            return 'Продвинутый';
-        default:
-            return 'Начальный';
+        window.programData = defaultPrograms;
     }
 }
 
