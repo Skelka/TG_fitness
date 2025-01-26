@@ -4,53 +4,75 @@
     padding-bottom: calc(var(--spacing-xl) + 60px); /* Учитываем нижнюю навигацию */
 }
 
+/* Шапка профиля */
 .profile-header {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
-    padding: var(--spacing-md);
+    padding: var(--spacing-lg);
     background-color: var(--background-secondary);
     border-radius: var(--radius-lg);
 }
 
 .profile-photo {
-    width: 64px;
-    height: 64px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     object-fit: cover;
+    background-color: var(--background-main);
+    border: 2px solid var(--primary-light);
 }
 
-.profile-info h3 {
-    font-size: 1.2rem;
+.profile-info {
+    flex: 1;
+}
+
+.profile-info h2 {
+    font-size: 1.4rem;
     margin-bottom: var(--spacing-xs);
+    color: var(--text-primary);
 }
 
 .profile-status {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
     padding: var(--spacing-xs) var(--spacing-sm);
     background-color: var(--primary-light);
     color: var(--primary-dark);
     border-radius: var(--radius-sm);
-    font-size: 0.8rem;
+    font-size: 0.9rem;
 }
 
-/* Форма профиля */
+.profile-status span {
+    font-size: 1.2rem;
+}
+
+/* Основная форма */
 .profile-form {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: var(--spacing-lg);
 }
 
 .form-section {
     background-color: var(--background-secondary);
-    padding: var(--spacing-md);
-    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
 }
 
-.form-section h4 {
+.form-section h3 {
+    font-size: 1.2rem;
     margin-bottom: var(--spacing-md);
-    color: var(--text-secondary);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.form-section h3 span {
+    color: var(--primary-color);
 }
 
 /* Поля ввода */
@@ -62,132 +84,87 @@
     display: block;
     margin-bottom: var(--spacing-xs);
     color: var(--text-secondary);
+    font-size: 0.9rem;
 }
 
 .input-group input,
 .input-group select {
     width: 100%;
-    padding: var(--spacing-sm);
-    border: 1px solid var(--background-secondary);
-    border-radius: var(--radius-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 2px solid var(--background-main);
+    border-radius: var(--radius-md);
     background-color: var(--background-main);
     color: var(--text-primary);
+    transition: var(--transition-fast);
 }
 
-/* Радио кнопки для пола */
-.gender-group {
-    display: flex;
+.input-group input:focus,
+.input-group select:focus {
+    border-color: var(--primary-light);
+    outline: none;
+}
+
+/* Сетка для полей */
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
 }
 
-.gender-option {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-}
-
-.gender-option input[type="radio"] {
-    margin: 0;
-}
-
-/* Селект для целей */
-.goal-select {
-    width: 100%;
-    margin-bottom: var(--spacing-md);
-}
-
-/* Уровень подготовки */
-.level-select {
-    width: 100%;
-    margin-bottom: var(--spacing-md);
-}
-
-/* Оборудование */
-.equipment-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-md);
-}
-
-.equipment-item {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    background-color: var(--background-main);
-    border-radius: var(--radius-sm);
-    font-size: 0.9rem;
-}
-
-.equipment-item.selected {
-    background-color: var(--primary-light);
-    color: var(--primary-dark);
-}
-
-/* Место тренировок */
-.workout-place {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-}
-
-.place-option {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm);
-    background-color: var(--background-main);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-}
-
-.place-option.selected {
-    background-color: var(--primary-light);
-    color: var(--primary-dark);
-}
-
-.place-option span {
-    margin-left: var(--spacing-xs);
-}
-
-/* Автоматическое сохранение */
-.autosave-indicator {
-    position: fixed;
-    bottom: 70px; /* Учитываем высоту нижней навигации */
-    left: 50%;
-    transform: translateX(-50%);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    background-color: var(--background-secondary);
-    border-radius: var(--radius-sm);
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    opacity: 0;
-    transition: opacity var(--transition-fast);
-}
-
-.autosave-indicator.visible {
-    opacity: 1;
-}
-
-/* Радио и чекбоксы */
+/* Радио кнопки */
 .radio-group {
     display: flex;
     gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
 }
 
-.radio-label {
+.radio-option {
+    flex: 1;
+    position: relative;
+}
+
+.radio-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.radio-option label {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    justify-content: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--background-main);
+    border-radius: var(--radius-md);
     cursor: pointer;
+    transition: var(--transition-fast);
 }
 
-.goals-grid {
+.radio-option input[type="radio"]:checked + label {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+}
+
+/* Оборудование */
+.equipment-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: var(--spacing-md);
 }
 
-.goal-item {
+.equipment-item {
+    position: relative;
+}
+
+.equipment-item input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.equipment-content {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -197,67 +174,6 @@
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: var(--transition-fast);
-}
-
-.goal-item:hover {
-    background-color: var(--primary-light);
-}
-
-.goal-item input[type="radio"] {
-    display: none;
-}
-
-.goal-item input[type="radio"]:checked + .goal-icon {
-    color: var(--primary-color);
-}
-
-.goal-icon {
-    font-size: 2rem;
-    color: var(--text-secondary);
-}
-
-.goal-label {
-    font-size: 0.9rem;
-    text-align: center;
-}
-
-/* Место тренировок */
-.workout-place-selector {
-    display: flex;
-    gap: var(--spacing-md);
-    flex-wrap: wrap;
-}
-
-.place-btn {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-md);
-    background-color: var(--background-main);
-    border-radius: var(--radius-md);
-    transition: var(--transition-fast);
-}
-
-.place-btn.active {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-/* Оборудование */
-.equipment-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm);
-    background-color: var(--background-main);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: var(--transition-fast);
-}
-
-.equipment-item input[type="checkbox"] {
-    display: none;
 }
 
 .equipment-icon {
@@ -267,57 +183,101 @@
     align-items: center;
     justify-content: center;
     background-color: var(--background-secondary);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     transition: var(--transition-fast);
 }
 
-.equipment-item input[type="checkbox"]:checked + .equipment-icon {
+.equipment-icon span {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.equipment-label {
+    font-size: 0.9rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.equipment-item input[type="checkbox"]:checked + .equipment-content {
+    background-color: var(--primary-light);
+}
+
+.equipment-item input[type="checkbox"]:checked + .equipment-content .equipment-icon {
     background-color: var(--primary-color);
+}
+
+.equipment-item input[type="checkbox"]:checked + .equipment-content .equipment-icon span {
     color: white;
 }
 
-/* Кнопки */
-.save-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md);
-    background-color: var(--primary-color);
-    color: white;
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    margin-top: var(--spacing-lg);
+.equipment-item input[type="checkbox"]:checked + .equipment-content .equipment-label {
+    color: var(--primary-dark);
 }
 
-.danger-btn {
+/* Место тренировок */
+.place-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.place-option {
+    flex: 1;
+    min-width: 120px;
+    position: relative;
+}
+
+.place-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.place-content {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-md);
-    background-color: var(--error-color);
-    color: white;
+    background-color: var(--background-main);
     border-radius: var(--radius-md);
-    font-weight: 500;
-    margin-top: var(--spacing-lg);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.place-icon {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.place-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.place-option input[type="radio"]:checked + .place-content {
+    background-color: var(--primary-light);
+}
+
+.place-option input[type="radio"]:checked + .place-content .place-icon,
+.place-option input[type="radio"]:checked + .place-content .place-label {
+    color: var(--primary-dark);
 }
 
 /* Кнопка удаления данных */
 .delete-data-section {
-    position: fixed;
-    bottom: 60px; /* Высота нижней навигации */
-    left: 0;
-    right: 0;
-    padding: var(--spacing-md);
-    background-color: var(--background-main);
-    border-top: 1px solid var(--error-light);
-    z-index: 900;
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background-color: var(--error-light);
+    border-radius: var(--radius-lg);
 }
 
-.delete-data-section h4 {
+.delete-data-section h3 {
     color: var(--error-color);
     margin-bottom: var(--spacing-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
 }
 
 .delete-data-section p {

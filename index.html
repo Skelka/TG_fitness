@@ -109,15 +109,21 @@
             <div class="profile-header">
                 <img id="profile-photo" src="" alt="Фото профиля" class="profile-photo">
                 <div class="profile-info">
-                    <h3 id="profile-name"></h3>
-                    <span class="profile-status">Новичок</span>
+                    <h2 id="profile-name">Ваш профиль</h2>
+                    <div class="profile-status">
+                        <span class="material-symbols-rounded">fitness_center</span>
+                        <span>Новичок</span>
+                    </div>
                 </div>
             </div>
 
             <form id="profile-form" class="profile-form">
                 <div class="form-section">
-                    <h4>Основная информация</h4>
-                    <div class="input-group-row">
+                    <h3>
+                        <span class="material-symbols-rounded">person</span>
+                        Основная информация
+                    </h3>
+                    <div class="input-grid">
                         <div class="input-group">
                             <label>Возраст</label>
                             <input type="number" name="age" min="14" max="100" required>
@@ -134,148 +140,186 @@
                 </div>
 
                 <div class="form-section">
-                    <h4>Пол</h4>
+                    <h3>
+                        <span class="material-symbols-rounded">wc</span>
+                        Пол
+                    </h3>
                     <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="gender" value="male" required>
-                            <span>Мужской</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="gender" value="female">
-                            <span>Женский</span>
-                        </label>
+                        <div class="radio-option">
+                            <input type="radio" name="gender" id="gender-male" value="male" required>
+                            <label for="gender-male">Мужской</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="gender" id="gender-female" value="female">
+                            <label for="gender-female">Женский</label>
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <h4>Цель тренировок</h4>
-                    <div class="goals-grid">
-                        <label class="goal-item">
-                            <input type="radio" name="goal" value="weight_loss" required>
-                            <div class="goal-icon">
-                                <span class="material-symbols-rounded">monitor_weight</span>
-                            </div>
-                            <span class="goal-label">Снижение веса</span>
-                        </label>
-                        <label class="goal-item">
-                            <input type="radio" name="goal" value="muscle_gain">
-                            <div class="goal-icon">
-                                <span class="material-symbols-rounded">fitness_center</span>
-                            </div>
-                            <span class="goal-label">Набор массы</span>
-                        </label>
-                        <label class="goal-item">
-                            <input type="radio" name="goal" value="endurance">
-                            <div class="goal-icon">
-                                <span class="material-symbols-rounded">directions_run</span>
-                            </div>
-                            <span class="goal-label">Выносливость</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <h4>Уровень подготовки</h4>
+                    <h3>
+                        <span class="material-symbols-rounded">track_changes</span>
+                        Цель тренировок
+                    </h3>
                     <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="level" value="beginner" required>
-                            <span>Начинающий</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="level" value="intermediate">
-                            <span>Средний</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="level" value="advanced">
-                            <span>Продвинутый</span>
-                        </label>
+                        <div class="radio-option">
+                            <input type="radio" name="goal" id="goal-weight-loss" value="weight_loss" required>
+                            <label for="goal-weight-loss">Снижение веса</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="goal" id="goal-muscle-gain" value="muscle_gain">
+                            <label for="goal-muscle-gain">Набор массы</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="goal" id="goal-endurance" value="endurance">
+                            <label for="goal-endurance">Выносливость</label>
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <h4>Место тренировок</h4>
-                    <div class="workout-place-selector">
-                        <button type="button" class="place-btn" data-place="home">
-                            <span class="material-symbols-rounded">home</span>
-                            Дома
-                        </button>
-                        <button type="button" class="place-btn" data-place="gym">
-                            <span class="material-symbols-rounded">fitness_center</span>
-                            В зале
-                        </button>
-                        <button type="button" class="place-btn" data-place="outdoor">
-                            <span class="material-symbols-rounded">park</span>
-                            На улице
-                        </button>
+                    <h3>
+                        <span class="material-symbols-rounded">trending_up</span>
+                        Уровень подготовки
+                    </h3>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="level" id="level-beginner" value="beginner" required>
+                            <label for="level-beginner">Начинающий</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="level" id="level-intermediate" value="intermediate">
+                            <label for="level-intermediate">Средний</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="level" id="level-advanced" value="advanced">
+                            <label for="level-advanced">Продвинутый</label>
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <h4>Доступное оборудование</h4>
-                    <div class="equipment-list">
-                        <label class="equipment-item">
-                            <input type="checkbox" name="equipment" value="dumbbells">
-                            <div class="equipment-icon">
-                                <span class="material-symbols-rounded">exercise</span>
-                            </div>
-                            <span>Гантели</span>
-                        </label>
-                        <label class="equipment-item">
-                            <input type="checkbox" name="equipment" value="barbell">
-                            <div class="equipment-icon">
-                                <span class="material-symbols-rounded">fitness_center</span>
-                            </div>
-                            <span>Штанга</span>
-                        </label>
-                        <label class="equipment-item">
-                            <input type="checkbox" name="equipment" value="pullup_bar">
-                            <div class="equipment-icon">
-                                <span class="material-symbols-rounded">horizontal_rule</span>
-                            </div>
-                            <span>Турник</span>
-                        </label>
-                        <label class="equipment-item">
-                            <input type="checkbox" name="equipment" value="mat">
-                            <div class="equipment-icon">
-                                <span class="material-symbols-rounded">rectangle</span>
-                            </div>
-                            <span>Коврик</span>
-                        </label>
-                        <label class="equipment-item">
-                            <input type="checkbox" name="equipment" value="resistance_bands">
-                            <div class="equipment-icon">
-                                <span class="material-symbols-rounded">straighten</span>
-                            </div>
-                            <span>Резинки</span>
-                        </label>
-                        <label class="equipment-item">
-                            <input type="checkbox" name="equipment" value="bench">
-                            <div class="equipment-icon">
-                                <span class="material-symbols-rounded">chair</span>
-                            </div>
-                            <span>Скамья</span>
-                        </label>
-                        <label class="equipment-item">
-                            <input type="checkbox" name="equipment" value="kettlebell">
-                            <div class="equipment-icon">
-                                <span class="material-symbols-rounded">sports_handball</span>
-                            </div>
-                            <span>Гиря</span>
-                        </label>
-                        <label class="equipment-item">
-                            <input type="checkbox" name="equipment" value="jump_rope">
-                            <div class="equipment-icon">
-                                <span class="material-symbols-rounded">line_curve</span>
-                            </div>
-                            <span>Скакалка</span>
-                        </label>
+                    <h3>
+                        <span class="material-symbols-rounded">home</span>
+                        Место тренировок
+                    </h3>
+                    <div class="place-options">
+                        <div class="place-option">
+                            <input type="radio" name="place" id="place-home" value="home" required>
+                            <label class="place-content" for="place-home">
+                                <span class="material-symbols-rounded place-icon">home</span>
+                                <span class="place-label">Дома</span>
+                            </label>
+                        </div>
+                        <div class="place-option">
+                            <input type="radio" name="place" id="place-gym" value="gym">
+                            <label class="place-content" for="place-gym">
+                                <span class="material-symbols-rounded place-icon">fitness_center</span>
+                                <span class="place-label">В зале</span>
+                            </label>
+                        </div>
+                        <div class="place-option">
+                            <input type="radio" name="place" id="place-outdoor" value="outdoor">
+                            <label class="place-content" for="place-outdoor">
+                                <span class="material-symbols-rounded place-icon">park</span>
+                                <span class="place-label">На улице</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
-                <button type="button" class="danger-btn" onclick="clearAllData()">
-                    <span class="material-symbols-rounded">delete</span>
-                    Очистить все данные
-                </button>
+                <div class="form-section">
+                    <h3>
+                        <span class="material-symbols-rounded">fitness_center</span>
+                        Доступное оборудование
+                    </h3>
+                    <div class="equipment-grid">
+                        <div class="equipment-item">
+                            <input type="checkbox" name="equipment" id="equipment-dumbbells" value="dumbbells">
+                            <label class="equipment-content" for="equipment-dumbbells">
+                                <div class="equipment-icon">
+                                    <span class="material-symbols-rounded">exercise</span>
+                                </div>
+                                <span class="equipment-label">Гантели</span>
+                            </label>
+                        </div>
+                        <div class="equipment-item">
+                            <input type="checkbox" name="equipment" id="equipment-barbell" value="barbell">
+                            <label class="equipment-content" for="equipment-barbell">
+                                <div class="equipment-icon">
+                                    <span class="material-symbols-rounded">fitness_center</span>
+                                </div>
+                                <span class="equipment-label">Штанга</span>
+                            </label>
+                        </div>
+                        <div class="equipment-item">
+                            <input type="checkbox" name="equipment" id="equipment-pullup" value="pullup_bar">
+                            <label class="equipment-content" for="equipment-pullup">
+                                <div class="equipment-icon">
+                                    <span class="material-symbols-rounded">horizontal_rule</span>
+                                </div>
+                                <span class="equipment-label">Турник</span>
+                            </label>
+                        </div>
+                        <div class="equipment-item">
+                            <input type="checkbox" name="equipment" id="equipment-mat" value="mat">
+                            <label class="equipment-content" for="equipment-mat">
+                                <div class="equipment-icon">
+                                    <span class="material-symbols-rounded">rectangle</span>
+                                </div>
+                                <span class="equipment-label">Коврик</span>
+                            </label>
+                        </div>
+                        <div class="equipment-item">
+                            <input type="checkbox" name="equipment" id="equipment-bands" value="resistance_bands">
+                            <label class="equipment-content" for="equipment-bands">
+                                <div class="equipment-icon">
+                                    <span class="material-symbols-rounded">straighten</span>
+                                </div>
+                                <span class="equipment-label">Резинки</span>
+                            </label>
+                        </div>
+                        <div class="equipment-item">
+                            <input type="checkbox" name="equipment" id="equipment-bench" value="bench">
+                            <label class="equipment-content" for="equipment-bench">
+                                <div class="equipment-icon">
+                                    <span class="material-symbols-rounded">chair</span>
+                                </div>
+                                <span class="equipment-label">Скамья</span>
+                            </label>
+                        </div>
+                        <div class="equipment-item">
+                            <input type="checkbox" name="equipment" id="equipment-kettlebell" value="kettlebell">
+                            <label class="equipment-content" for="equipment-kettlebell">
+                                <div class="equipment-icon">
+                                    <span class="material-symbols-rounded">sports_handball</span>
+                                </div>
+                                <span class="equipment-label">Гиря</span>
+                            </label>
+                        </div>
+                        <div class="equipment-item">
+                            <input type="checkbox" name="equipment" id="equipment-rope" value="jump_rope">
+                            <label class="equipment-content" for="equipment-rope">
+                                <div class="equipment-icon">
+                                    <span class="material-symbols-rounded">line_curve</span>
+                                </div>
+                                <span class="equipment-label">Скакалка</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="delete-data-section">
+                    <h3>
+                        <span class="material-symbols-rounded">warning</span>
+                        Удаление данных
+                    </h3>
+                    <p>Это действие удалит все ваши данные, включая прогресс тренировок и настройки. Это действие нельзя отменить.</p>
+                    <button type="button" class="delete-data-btn" onclick="clearAllData()">
+                        <span class="material-symbols-rounded">delete_forever</span>
+                        Удалить все данные
+                    </button>
+                </div>
             </form>
         </div>
 
