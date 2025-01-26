@@ -1,5 +1,7 @@
 import { getStorageItem, setStorageItem, showPopupSafe, showError, formatTime } from './utils.js';
 import calendarModule from './calendar.js';
+import profileModule from './profile.js';
+import statisticsModule from './statistics.js';
 
 // Глобальные переменные
 let tg = window.Telegram.WebApp;
@@ -24,6 +26,36 @@ let restTimer = null;
 let exerciseTimer = null;
 
 let isTimerPaused = false;
+
+// Функция для показа уведомления
+function showNotification(message, isError = false) {
+    // Удаляем предыдущее уведомление, если оно есть
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+
+    // Создаем новое уведомление
+    const notification = document.createElement('div');
+    notification.className = `notification${isError ? ' error' : ''}`;
+    notification.textContent = message;
+
+    // Добавляем уведомление на страницу
+    document.body.appendChild(notification);
+
+    // Показываем уведомление
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+
+    // Скрываем и удаляем уведомление через 3 секунды
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 3000);
+}
 
 // Упрощаем обработчик закрытия попапа
 tg.onEvent('popupClosed', async (event) => {

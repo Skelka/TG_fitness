@@ -1,4 +1,6 @@
-// Глобальная переменная для графика веса
+import { getStorageItem, setStorageItem, formatTime } from './utils.js';
+
+// Глобальные переменные
 let currentPeriod = 'week';
 
 // Функция для обновления графика веса
@@ -116,7 +118,7 @@ async function updateWeightChart(period = 'week') {
 }
 
 // Функция для рендеринга статистики
-function renderStatistics() {
+async function renderStatistics() {
     try {
         // Получаем элементы статистики
         const totalWorkouts = document.getElementById('total-workouts');
@@ -125,20 +127,19 @@ function renderStatistics() {
         const completionRate = document.getElementById('completion-rate');
 
         // Загружаем данные статистики
-        getStorageItem('statistics').then(data => {
-            const stats = data ? JSON.parse(data) : {
+        const stats = await getStorageItem('statistics')
+            .then(data => data ? JSON.parse(data) : {
                 workouts: 0,
                 time: 0,
                 calories: 0,
                 completion: 0
-            };
+            });
 
-            // Обновляем значения
-            if (totalWorkouts) totalWorkouts.textContent = stats.workouts || 0;
-            if (totalTime) totalTime.textContent = formatTime(stats.time || 0);
-            if (totalCalories) totalCalories.textContent = stats.calories || 0;
-            if (completionRate) completionRate.textContent = `${stats.completion || 0}%`;
-        });
+        // Обновляем значения
+        if (totalWorkouts) totalWorkouts.textContent = stats.workouts || 0;
+        if (totalTime) totalTime.textContent = formatTime(stats.time || 0);
+        if (totalCalories) totalCalories.textContent = stats.calories || 0;
+        if (completionRate) completionRate.textContent = `${stats.completion || 0}%`;
 
         // Настраиваем обработчики для кнопок периода
         const periodButtons = document.querySelectorAll('.period-btn');
@@ -153,23 +154,15 @@ function renderStatistics() {
         });
 
         // Обновляем график веса
-        updateWeightChart(currentPeriod);
+        await updateWeightChart(currentPeriod);
 
     } catch (error) {
         console.error('Ошибка при рендеринге статистики:', error);
     }
 }
 
-// Вспомогательная функция для форматирования времени
-function formatTime(minutes) {
-    if (minutes < 60) return `${minutes}м`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}ч ${mins}м` : `${hours}ч`;
-}
-
 // Функция для обновления статистики
-async function updateStatistics(workoutData) {
+async function updateStatistics(data) {
     try {
         const stats = await getStorageItem('statistics')
             .then(data => data ? JSON.parse(data) : {
@@ -181,31 +174,26 @@ async function updateStatistics(workoutData) {
 
         // Обновляем статистику
         stats.workouts = (stats.workouts || 0) + 1;
-        stats.time = (stats.time || 0) + (workoutData.duration || 0);
-        stats.calories = (stats.calories || 0) + (workoutData.calories || 0);
-        
-        // Рассчитываем процент выполнения цели
-        const profile = await getStorageItem('profile')
-            .then(data => data ? JSON.parse(data) : null);
-            
-        if (profile && profile.goal) {
-            // Здесь можно добавить логику расчета прогресса в зависимости от цели
-            stats.completion = Math.min(Math.round((stats.workouts / 20) * 100), 100);
-        }
+        stats.time = (stats.time || 0) + (data.duration || 0);
+        stats.calories = (stats.calories || 0) + (data.calories || 0);
 
+        // Сохраняем обновленную статистику
         await setStorageItem('statistics', JSON.stringify(stats));
+
+        // Обновляем отображение
         renderStatistics();
+
     } catch (error) {
         console.error('Ошибка при обновлении статистики:', error);
     }
 }
 
-// Экспортируем функции
-window.statisticsModule = {
+// Экспортируем функции для использования в других модулях
+const statisticsModule = {
     updateWeightChart,
     renderStatistics,
     updateStatistics,
-    formatTime,
-    get currentPeriod() { return currentPeriod; },
-    get weightChart() { return window.weightChart; }
+    currentPeriod
 };
+
+export default statisticsModule;
