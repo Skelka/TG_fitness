@@ -1368,7 +1368,7 @@ async function clearAllData() {
 }
 
 // Функция для обновления графика веса
-async function statisticsModule.updateWeightChart(period = 'week') {
+async function updateWeightChart(period = 'week') {
     const ctx = document.getElementById('weight-chart');
     if (!ctx) return;
 

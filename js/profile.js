@@ -198,7 +198,7 @@ async function saveWeight(weight) {
         });
 
         await setStorageItem('weightHistory', JSON.stringify(weightHistory));
-        await updateWeightChart();
+        await statisticsModule.updateWeightChart();
     } catch (error) {
         console.error('Ошибка при сохранении веса:', error);
     }
