@@ -1707,40 +1707,58 @@ async function renderTips() {
 
 async function generateWorkoutPlan(program, profileData) {
     try {
-        if (!program || !profileData) return null;
+        if (!program || !profileData) {
+            console.error('Отсутствуют необходимые данные:', { program, profileData });
+            return null;
+        }
+
+        // Проверяем наличие базы упражнений
+        if (!window.exercisesDB || !window.exercisesDB.exercises) {
+            console.error('База упражнений не загружена');
+            return null;
+        }
 
         const exercises = window.exercisesDB.exercises;
         const workouts = [];
 
         // Определяем базовые параметры на основе уровня подготовки
+        const level = profileData.level || 'beginner';
         const setsPerExercise = {
             'beginner': { min: 2, max: 3 },
             'intermediate': { min: 3, max: 4 },
             'advanced': { min: 4, max: 5 }
-        }[profileData.level] || { min: 2, max: 3 };
+        }[level] || { min: 2, max: 3 };
 
         const repsPerSet = {
             'beginner': { min: 8, max: 12 },
             'intermediate': { min: 10, max: 15 },
             'advanced': { min: 12, max: 20 }
-        }[profileData.level] || { min: 8, max: 12 };
+        }[level] || { min: 8, max: 12 };
 
         // Подбираем упражнения в зависимости от цели
+        const goal = profileData.goal || 'general';
         const targetMuscleGroups = {
-            'weight_loss': ['legs', 'back', 'chest', 'core'], // Большие мышечные группы для сжигания калорий
+            'weight_loss': ['legs', 'back', 'chest', 'core'],
             'muscle_gain': ['chest', 'back', 'legs', 'shoulders', 'arms'],
-            'endurance': ['legs', 'core', 'back', 'cardio']
-        }[profileData.goal] || ['legs', 'back', 'chest', 'core'];
+            'endurance': ['legs', 'core', 'back', 'cardio'],
+            'general': ['legs', 'back', 'chest', 'core', 'arms']
+        }[goal] || ['legs', 'back', 'chest', 'core'];
 
         // Фильтруем упражнения по доступному оборудованию
-        const availableEquipment = profileData.equipment || [];
-        const workoutPlaces = profileData.workoutPlaces || [];
+        const availableEquipment = Array.isArray(profileData.equipment) ? profileData.equipment : [];
+        const workoutPlaces = Array.isArray(profileData.workoutPlaces) ? profileData.workoutPlaces : ['home'];
 
-        program.workouts.forEach((workout, index) => {
+        // Проверяем наличие тренировок в программе
+        if (!Array.isArray(program.workouts)) {
+            console.error('В программе отсутствуют тренировки');
+            return null;
+        }
+
+        for (const workout of program.workouts) {
             const workoutExercises = [];
             const usedMuscleGroups = new Set();
-            const exercisesPerWorkout = profileData.level === 'beginner' ? 5 : 
-                                      profileData.level === 'intermediate' ? 7 : 9;
+            const exercisesPerWorkout = level === 'beginner' ? 5 : 
+                                      level === 'intermediate' ? 7 : 9;
 
             // Подбираем упражнения для тренировки
             for (let i = 0; i < exercisesPerWorkout; i++) {
@@ -1748,16 +1766,21 @@ async function generateWorkoutPlan(program, profileData) {
                 const availableMuscleGroups = targetMuscleGroups.filter(group => 
                     !usedMuscleGroups.has(group) || usedMuscleGroups.size >= targetMuscleGroups.length
                 );
+                
+                if (availableMuscleGroups.length === 0) continue;
+                
                 const muscleGroup = availableMuscleGroups[Math.floor(Math.random() * availableMuscleGroups.length)];
 
                 // Фильтруем подходящие упражнения
                 const suitableExercises = Object.values(exercises).filter(exercise => {
+                    if (!exercise || !Array.isArray(exercise.muscleGroups)) return false;
+
                     const hasRequiredEquipment = !exercise.equipment || 
                         exercise.equipment.every(eq => availableEquipment.includes(eq));
                     const suitablePlace = !exercise.place || workoutPlaces.includes(exercise.place);
-                    const matchesDifficulty = exercise.difficulty <= 
-                        (profileData.level === 'beginner' ? 1 : 
-                         profileData.level === 'intermediate' ? 2 : 3);
+                    const matchesDifficulty = (exercise.difficulty || 1) <= 
+                        (level === 'beginner' ? 1 : 
+                         level === 'intermediate' ? 2 : 3);
                     const matchesMuscleGroup = exercise.muscleGroups.includes(muscleGroup);
 
                     return hasRequiredEquipment && suitablePlace && matchesDifficulty && matchesMuscleGroup;
@@ -1769,16 +1792,16 @@ async function generateWorkoutPlan(program, profileData) {
                     const reps = Math.floor(Math.random() * (repsPerSet.max - repsPerSet.min + 1)) + repsPerSet.min;
 
                     workoutExercises.push({
-                        id: exercise.id,
-                        name: exercise.name,
+                        id: exercise.id || `exercise_${i}`,
+                        name: exercise.name || 'Упражнение',
                         sets: sets,
                         reps: reps,
-                        rest: profileData.goal === 'endurance' ? 30 : 
-                              profileData.goal === 'weight_loss' ? 45 : 60,
-                        type: exercise.type,
-                        equipment: exercise.equipment,
-                        description: exercise.description,
-                        image: exercise.image
+                        rest: goal === 'endurance' ? 30 : 
+                              goal === 'weight_loss' ? 45 : 60,
+                        type: exercise.type || 'strength',
+                        equipment: exercise.equipment || [],
+                        description: exercise.description || '',
+                        image: exercise.image || ''
                     });
 
                     usedMuscleGroups.add(muscleGroup);
@@ -1802,9 +1825,17 @@ async function generateWorkoutPlan(program, profileData) {
                 description: 'Растяжка и восстановление после тренировки'
             };
 
-            workout.exercises = [warmup, ...workoutExercises, cooldown];
-            workouts.push(workout);
-        });
+            const updatedWorkout = {
+                ...workout,
+                exercises: [warmup, ...workoutExercises, cooldown]
+            };
+            workouts.push(updatedWorkout);
+        }
+
+        if (workouts.length === 0) {
+            console.error('Не удалось сгенерировать тренировки');
+            return null;
+        }
 
         return workouts;
     } catch (error) {
