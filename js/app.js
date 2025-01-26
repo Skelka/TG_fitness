@@ -476,11 +476,7 @@ function setupCheckboxHandlers() {
 
 // Добавляем функцию для сохранения настроек профиля
 async function saveProfileSettings() {
-    const profileData = await profileModule.saveProfile();
-    if (profileData) {
-        // Генерируем план тренировок на основе профиля
-        await generateWorkoutPlan(window.programData, profileData);
-    }
+    await profileModule.debouncedSaveProfile();
 }
 
 // Добавляем константы для типов программ

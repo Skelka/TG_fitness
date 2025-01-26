@@ -87,12 +87,62 @@ function updateProfileStatus(profile) {
     statusElement.textContent = statusMap[level] || 'Новичок';
 }
 
+// Добавляем функцию дебаунса
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Создаем дебаунсированную версию saveProfile
+const debouncedSaveProfile = debounce(async () => {
+    const profileData = await saveProfile();
+    if (profileData) {
+        // Генерируем план тренировок на основе профиля
+        await generateWorkoutPlan(window.programData, profileData);
+    }
+}, 2000); // Задержка в 2 секунды
+
 function setupProfileEquipmentHandlers() {
     const placeButtons = document.querySelectorAll('.place-btn');
+    
+    // Сначала удаляем старые обработчики
     placeButtons.forEach(button => {
+        button.replaceWith(button.cloneNode(true));
+    });
+
+    // Добавляем новые обработчики
+    document.querySelectorAll('.place-btn').forEach(button => {
         button.addEventListener('click', () => {
-            placeButtons.forEach(btn => btn.classList.remove('active'));
+            // Удаляем класс active у всех кнопок
+            document.querySelectorAll('.place-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Добавляем класс active нажатой кнопке
             button.classList.add('active');
+            // Вызываем дебаунсированное сохранение
+            debouncedSaveProfile();
+            // Добавляем тактильный отклик
+            if (window.tg) {
+                window.tg.HapticFeedback.impactOccurred('light');
+            }
+        });
+    });
+
+    // Обработчики для чекбоксов оборудования
+    const equipmentCheckboxes = document.querySelectorAll('.equipment-item input[type="checkbox"]');
+    equipmentCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            debouncedSaveProfile();
+            if (window.tg) {
+                window.tg.HapticFeedback.impactOccurred('light');
+            }
         });
     });
 }
@@ -166,11 +216,12 @@ async function saveWeight(weight) {
     }
 }
 
-// Экспортируем функции
+// Обновляем экспорт
 window.profileModule = {
     loadProfile,
     updateProfileStatus,
     setupProfileEquipmentHandlers,
     saveProfile,
-    saveWeight
+    saveWeight,
+    debouncedSaveProfile
 }; 
