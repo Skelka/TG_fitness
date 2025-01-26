@@ -1306,6 +1306,9 @@ function renderStatistics() {
 
             // Обновляем график веса
             updateWeightChart('week');
+            
+            // Добавляем вызов renderTips
+            renderTips();
         })
         .catch(error => {
             console.error('Ошибка при загрузке статистики:', error);
@@ -1419,5 +1422,110 @@ function getDifficultyText(difficulty) {
             return 'Продвинутый';
         default:
             return 'Начальный';
+    }
+}
+
+async function renderTips() {
+    const tipsContainer = document.querySelector('.tips-list');
+    if (!tipsContainer) return;
+
+    try {
+        // Получаем данные профиля и статистику
+        const profileData = await getStorageItem('profile')
+            .then(data => data ? JSON.parse(data) : null);
+        
+        const stats = await getStorageItem('workoutStats')
+            .then(data => data ? JSON.parse(data) : null);
+
+        const tips = [];
+
+        // Базовые советы (всегда показываются)
+        tips.push({
+            icon: 'water_drop',
+            title: 'Пейте больше воды',
+            text: 'Поддерживайте водный баланс. Рекомендуется выпивать 30мл воды на кг веса тела.'
+        });
+
+        tips.push({
+            icon: 'schedule',
+            title: 'Регулярность важна',
+            text: 'Тренируйтесь регулярно, даже если это будут короткие тренировки. Регулярность важнее интенсивности.'
+        });
+
+        // Советы на основе профиля
+        if (profileData) {
+            if (profileData.level === 'beginner') {
+                tips.push({
+                    icon: 'trending_up',
+                    title: 'Начните с малого',
+                    text: 'Не перегружайте себя в начале. Постепенно увеличивайте нагрузку и длительность тренировок.'
+                });
+            }
+
+            if (profileData.goal === 'weight_loss') {
+                tips.push({
+                    icon: 'nutrition',
+                    title: 'Следите за питанием',
+                    text: 'Для снижения веса важно создать дефицит калорий. Комбинируйте тренировки с правильным питанием.'
+                });
+            }
+
+            if (profileData.goal === 'muscle_gain') {
+                tips.push({
+                    icon: 'restaurant',
+                    title: 'Белок важен',
+                    text: 'Для набора мышечной массы употребляйте достаточно белка - 1.6-2.2г на кг веса тела.'
+                });
+            }
+        }
+
+        // Советы на основе статистики
+        if (stats) {
+            if (stats.totalWorkouts === 0) {
+                tips.push({
+                    icon: 'fitness_center',
+                    title: 'Начните свой путь',
+                    text: 'Выберите программу тренировок, соответствующую вашему уровню и целям.'
+                });
+            } else if (stats.totalWorkouts > 0 && stats.totalWorkouts < 5) {
+                tips.push({
+                    icon: 'emoji_events',
+                    title: 'Отличное начало!',
+                    text: 'Вы уже сделали первый шаг. Продолжайте в том же духе!'
+                });
+            }
+        }
+
+        // Ограничиваем количество советов до 5
+        const finalTips = tips.slice(0, 5);
+
+        // Очищаем контейнер
+        tipsContainer.innerHTML = '';
+
+        // Добавляем советы с анимацией
+        finalTips.forEach((tip, index) => {
+            const tipElement = document.createElement('div');
+            tipElement.className = 'tip-card';
+            tipElement.innerHTML = `
+                <div class="tip-icon">
+                    <span class="material-symbols-rounded">${tip.icon}</span>
+                </div>
+                <div class="tip-content">
+                    <h3>${tip.title}</h3>
+                    <p>${tip.text}</p>
+                </div>
+            `;
+
+            tipsContainer.appendChild(tipElement);
+
+            // Добавляем анимацию появления с задержкой
+            setTimeout(() => {
+                tipElement.classList.add('visible');
+            }, index * 100);
+        });
+
+    } catch (error) {
+        console.error('Ошибка при отображении советов:', error);
+        tipsContainer.innerHTML = '<div class="no-data">Не удалось загрузить советы</div>';
     }
 }
