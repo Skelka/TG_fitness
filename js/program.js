@@ -2,7 +2,6 @@
 import { getStorageItem, setStorageItem } from './storage.js';
 import { showNotification, showError, showPopupSafe } from './ui.js';
 import { programs } from './data/programs.js';
-import { getDifficultyText } from './utils.js';
 
 export async function initializeProgram(programId) {
     try {

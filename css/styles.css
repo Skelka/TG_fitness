@@ -1390,55 +1390,44 @@ body {
 
 /* Стили для советов */
 .tips-list {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    display: grid;
+    gap: 12px;
+    margin-top: 16px;
 }
 
 .tip-card {
     background: var(--tg-theme-bg-color);
     border-radius: 12px;
     padding: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr;
     gap: 16px;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.3s ease-out;
-}
-
-.tip-card.visible {
-    opacity: 1;
-    transform: translateY(0);
+    box-shadow: var(--card-shadow);
+    border: var(--card-border);
 }
 
 .tip-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     background: var(--tg-theme-button-color);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.tip-icon span {
+.tip-icon .material-symbols-rounded {
+    font-size: 20px;
     color: var(--tg-theme-button-text-color);
-    font-size: 24px;
 }
 
-.tip-content {
-    flex: 1;
-}
-
-.tip-card h3 {
-    margin: 0 0 8px 0;
+.tip-content h4 {
+    margin: 0 0 4px 0;
     font-size: 16px;
     color: var(--tg-theme-text-color);
 }
 
-.tip-card p {
+.tip-content p {
     margin: 0;
     font-size: 14px;
     color: var(--tg-theme-hint-color);

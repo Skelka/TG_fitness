@@ -1,5 +1,6 @@
 // Функции для работы со статистикой
 import { getStorageItem } from './storage.js';
+import { tips } from './data/tips-db.js';
 
 export async function renderStatistics() {
     try {
@@ -36,8 +37,8 @@ export async function renderStatistics() {
         // Обновляем график веса
         await updateWeightChart();
 
-        // Обновляем советы
-        await renderTips();
+        // Отображаем советы
+        renderTips();
 
     } catch (error) {
         console.error('Ошибка при обновлении статистики:', error);
@@ -153,49 +154,31 @@ export async function updateWeightChart(period = 'week') {
     }
 }
 
-async function renderTips() {
-    try {
-        const tipsContainer = document.querySelector('.tips-list');
-        if (!tipsContainer) return;
+function renderTips() {
+    const tipsContainer = document.querySelector('.tips-list');
+    if (!tipsContainer) return;
 
-        const tips = [
-            {
-                icon: 'water_drop',
-                title: 'Пейте больше воды',
-                text: 'Для поддержания здоровья и эффективных тренировок необходимо пить 2-3 литра воды в день'
-            },
-            {
-                icon: 'timer',
-                title: 'Регулярность важнее интенсивности',
-                text: 'Лучше тренироваться понемногу, но регулярно, чем редко и много'
-            },
-            {
-                icon: 'restaurant',
-                title: 'Следите за питанием',
-                text: 'Правильное питание составляет 70% успеха в достижении фитнес-целей'
-            }
-        ];
+    // Выбираем 3 случайных совета
+    const randomTips = shuffleArray(tips).slice(0, 3);
 
-        tipsContainer.innerHTML = tips.map(tip => `
-            <div class="tip-card">
-                <div class="tip-icon">
-                    <span class="material-symbols-rounded">${tip.icon}</span>
-                </div>
-                <div class="tip-content">
-                    <h3>${tip.title}</h3>
-                    <p>${tip.text}</p>
-                </div>
+    tipsContainer.innerHTML = randomTips.map(tip => `
+        <div class="tip-card">
+            <div class="tip-icon">
+                <span class="material-symbols-rounded">${tip.icon}</span>
             </div>
-        `).join('');
+            <div class="tip-content">
+                <h4>${tip.title}</h4>
+                <p>${tip.text}</p>
+            </div>
+        </div>
+    `).join('');
+}
 
-        // Анимируем появление советов
-        setTimeout(() => {
-            document.querySelectorAll('.tip-card').forEach((card, index) => {
-                setTimeout(() => card.classList.add('visible'), index * 100);
-            });
-        }, 100);
-
-    } catch (error) {
-        console.error('Ошибка при отображении советов:', error);
+function shuffleArray(array) {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
     }
+    return newArray;
 } 

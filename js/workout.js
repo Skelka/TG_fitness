@@ -1,7 +1,7 @@
 // Функции для работы с тренировками
 import { showNotification, showError, showPopupSafe } from './ui.js';
-import { clearTimers } from './utils.js';
-import { getExerciseTypeText, getMuscleGroupsText, formatTime } from './utils.js';
+import { clearTimers, formatTime } from './utils.js';
+import { getExerciseTypeText, getMuscleGroupsText, getExerciseIcon } from './utils.js';
 import { updateProgramProgress } from './program.js';
 import { getStorageItem } from './storage.js';
 import { programs } from './data/programs.js';
@@ -312,22 +312,6 @@ function updateTimerDisplay(seconds) {
     if (timerElement) {
         timerElement.textContent = formatTime(seconds);
     }
-}
-
-function getExerciseIcon(type) {
-    const icons = {
-        'cardio': 'directions_run',
-        'strength': 'fitness_center',
-        'hiit': 'timer',
-        'yoga': 'self_improvement',
-        'stretching': 'sports_martial_arts',
-        'warmup': 'accessibility_new',
-        'cooldown': 'accessibility',
-        'circuit': 'loop',
-        'cardio_strength': 'sprint',
-        'general': 'sports_score'
-    };
-    return icons[type] || 'fitness_center';
 }
 
 export async function renderWorkouts() {
