@@ -102,14 +102,17 @@ async function saveProfile() {
         const form = document.getElementById('profile-form');
         if (!form) return;
 
+        // Получаем активную кнопку места тренировки
+        const activePlace = form.querySelector('.place-btn.active');
+        
         const profileData = {
             age: parseInt(form.querySelector('input[name="age"]').value),
             height: parseInt(form.querySelector('input[name="height"]').value),
             weight: parseFloat(form.querySelector('input[name="weight"]').value),
-            gender: form.querySelector('input[name="gender"]:checked').value,
-            goal: form.querySelector('input[name="goal"]:checked').value,
-            level: form.querySelector('input[name="level"]:checked').value,
-            workoutPlace: form.querySelector('.place-btn.active').dataset.place,
+            gender: form.querySelector('input[name="gender"]:checked')?.value,
+            goal: form.querySelector('input[name="goal"]:checked')?.value,
+            level: form.querySelector('input[name="level"]:checked')?.value,
+            workoutPlace: activePlace ? activePlace.dataset.place : 'home', // Значение по умолчанию
             equipment: Array.from(form.querySelectorAll('input[name="equipment"]:checked'))
                 .map(input => input.value)
         };
@@ -117,6 +120,12 @@ async function saveProfile() {
         // Проверяем обязательные поля
         if (!profileData.age || !profileData.height || !profileData.weight) {
             showError('Пожалуйста, заполните все обязательные поля');
+            return;
+        }
+
+        // Проверяем обязательные радио-кнопки
+        if (!profileData.gender || !profileData.goal || !profileData.level) {
+            showError('Пожалуйста, выберите все необходимые параметры');
             return;
         }
 
