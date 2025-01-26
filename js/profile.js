@@ -110,28 +110,26 @@ const debouncedSaveProfile = debounce(async () => {
 }, 2000); // Задержка в 2 секунды
 
 function setupProfileEquipmentHandlers() {
+    // Обработчики для кнопок места тренировки
     const placeButtons = document.querySelectorAll('.place-btn');
     
-    // Сначала удаляем старые обработчики
     placeButtons.forEach(button => {
-        button.replaceWith(button.cloneNode(true));
-    });
-
-    // Добавляем новые обработчики
-    document.querySelectorAll('.place-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            // Удаляем класс active у всех кнопок
-            document.querySelectorAll('.place-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            // Добавляем класс active нажатой кнопке
+        button.addEventListener('click', (e) => {
+            e.preventDefault(); // Предотвращаем стандартное поведение
+            
+            // Сначала снимаем выделение со всех кнопок
+            placeButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Затем добавляем класс active текущей кнопке
             button.classList.add('active');
-            // Вызываем дебаунсированное сохранение
-            debouncedSaveProfile();
+
             // Добавляем тактильный отклик
             if (window.tg) {
                 window.tg.HapticFeedback.impactOccurred('light');
             }
+
+            // Сохраняем изменения
+            debouncedSaveProfile();
         });
     });
 
@@ -139,10 +137,12 @@ function setupProfileEquipmentHandlers() {
     const equipmentCheckboxes = document.querySelectorAll('.equipment-item input[type="checkbox"]');
     equipmentCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', () => {
-            debouncedSaveProfile();
+            // Добавляем тактильный отклик
             if (window.tg) {
                 window.tg.HapticFeedback.impactOccurred('light');
             }
+            // Сохраняем изменения
+            debouncedSaveProfile();
         });
     });
 }
