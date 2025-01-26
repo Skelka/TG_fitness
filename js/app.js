@@ -536,8 +536,8 @@ async function startWorkout(workout, programId) {
     console.log('Начинаем тренировку:', workout, 'ID программы:', programId);
     
     try {
-        if (!workout || !workout.exercises || workout.exercises.length === 0) {
-            throw new Error('Некорректные данные тренировки');
+        if (!workout) {
+            throw new Error('Данные тренировки не переданы');
         }
 
         // Сохраняем данные текущей тренировки
@@ -560,7 +560,7 @@ async function startWorkout(workout, programId) {
         
         if (activeProgram && activeProgram.workouts) {
             const workoutIndex = activeProgram.workouts.findIndex(w => 
-                w.day === workout.day && w.title === workout.title);
+                w.id === workout.id && w.name === workout.name);
             
             if (workoutIndex !== -1) {
                 activeProgram.workouts[workoutIndex].started = true;
@@ -576,7 +576,7 @@ async function startWorkout(workout, programId) {
 
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
-        await showError('Не удалось начать тренировку');
+        showError('Не удалось начать тренировку');
     }
 }
 
@@ -793,7 +793,7 @@ async function showProgramWorkouts(program) {
                             </div>
                         </div>
                     </div>
-                    <button class="start-workout-btn" onclick="startWorkout('${program.id}', '${workout.id}')">
+                    <button class="start-workout-btn" onclick="startWorkout(${JSON.stringify(workout)}, '${program.id}')">
                         <span class="material-symbols-rounded">play_arrow</span>
                         Начать тренировку
                     </button>
