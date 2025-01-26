@@ -173,7 +173,10 @@ async function initApp() {
             console.log('Анализ базы упражнений завершен');
         }
 
-        // Инициализируем программы при первом запуске
+        // Очищаем старые программы
+        await setStorageItem('programs', '');
+        
+        // Инициализируем программы заново
         await initializeDefaultPrograms();
         
         // Инициализируем все обработчики
@@ -206,9 +209,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    initApp().catch(error => {
-        console.error('Ошибка при инициализации приложения:', error);
-        showError('Не удалось загрузить приложение');
+    // Очищаем данные и перезагружаем приложение
+    clearAllData().then(() => {
+        initApp().catch(error => {
+            console.error('Ошибка при инициализации приложения:', error);
+            showError('Не удалось загрузить приложение');
+        });
     });
 });
 
@@ -1073,7 +1079,7 @@ function switchTab(tabName) {
     tg.HapticFeedback.impactOccurred('light');
 }
 
-// Функция для очистки всех данных
+// Обновляем функцию clearAllData
 async function clearAllData() {
     try {
         // Список ключей для очистки
@@ -1081,7 +1087,8 @@ async function clearAllData() {
             'profile',
             'activeProgram',
             'workoutStats',
-            'weightHistory'
+            'weightHistory',
+            'programs'  // Добавляем programs в список очистки
         ];
 
         // Очищаем данные в CloudStorage и localStorage
@@ -1091,17 +1098,13 @@ async function clearAllData() {
         }
 
         // Показываем уведомление об успешной очистке
-        await showPopupSafe({
-            title: 'Готово',
-            message: 'Все данные успешно очищены',
-            buttons: [{type: 'ok'}]
-        });
+        showNotification('Данные очищены');
 
         // Перезагружаем страницу
         location.reload();
     } catch (error) {
         console.error('Ошибка при очистке данных:', error);
-        await showError('Не удалось очистить данные');
+        showError('Не удалось очистить данные');
     }
 }
 
@@ -1857,8 +1860,8 @@ async function generateWorkoutPlan(program, profileData) {
 
                 if (suitableExercises.length > 0) {
                     const exercise = suitableExercises[Math.floor(Math.random() * suitableExercises.length)];
-                    const sets = Math.floor(Math.random() * (setsPerExercise.max - setsPerExercise.min + 1)) + setsPerExercise.min;
-                    const reps = Math.floor(Math.random() * (repsPerSet.max - repsPerSet.min + 1)) + repsPerSet.min;
+                    const sets = Math.floor((Math.random() * (setsPerExercise.max - setsPerExercise.min + 1)) + setsPerExercise.min);
+                    const reps = Math.floor((Math.random() * (repsPerSet.max - repsPerSet.min + 1)) + repsPerSet.min);
 
                     workoutExercises.push({
                         id: exercise.id || `exercise_${i}`,
