@@ -1507,7 +1507,7 @@ async function saveWeight(weight) {
         // Обновляем график, если мы на странице статистики
         const statsTab = document.getElementById('stats');
         if (statsTab && statsTab.classList.contains('active')) {
-            updateWeightChart(currentPeriod || 'week');
+            statisticsModule.updateWeightChart(statisticsModule.currentPeriod || 'week');
         }
 
         // Добавляем тактильный отклик
