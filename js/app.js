@@ -2136,6 +2136,197 @@ async function initializeDefaultPrograms() {
                             ]
                         }
                     ]
+                },
+                {
+                    id: 'advanced_strength',
+                    name: 'Продвинутая сила',
+                    description: 'Программа для опытных атлетов, нацеленная на максимальную силу',
+                    icon: 'exercise',
+                    difficulty: 'advanced',
+                    duration: 8,
+                    workoutsPerWeek: 5,
+                    isCompleted: false,
+                    workouts: [
+                        {
+                            id: 'strength_1',
+                            name: 'Сила верха тела',
+                            description: 'Интенсивная тренировка верхней части тела',
+                            duration: 60,
+                            type: 'strength',
+                            exercises: [
+                                {
+                                    id: 'warmup_1',
+                                    name: 'Разминка',
+                                    type: 'warmup',
+                                    duration: 5,
+                                    description: 'Разогрев мышц и суставов верхней части тела'
+                                },
+                                {
+                                    id: 'ex_1',
+                                    name: 'Отжимания с весом',
+                                    type: 'strength',
+                                    sets: 5,
+                                    reps: 12,
+                                    rest: 90,
+                                    description: 'Отжимания с дополнительным весом или усложненные варианты',
+                                    muscleGroups: ['chest', 'shoulders', 'triceps']
+                                },
+                                {
+                                    id: 'ex_2',
+                                    name: 'Подтягивания с весом',
+                                    type: 'strength',
+                                    sets: 5,
+                                    reps: 8,
+                                    rest: 120,
+                                    description: 'Подтягивания с утяжелением',
+                                    muscleGroups: ['back', 'biceps']
+                                },
+                                {
+                                    id: 'ex_3',
+                                    name: 'Отжимания на брусьях',
+                                    type: 'strength',
+                                    sets: 4,
+                                    reps: 15,
+                                    rest: 90,
+                                    description: 'Отжимания на параллельных брусьях',
+                                    muscleGroups: ['chest', 'triceps']
+                                },
+                                {
+                                    id: 'ex_4',
+                                    name: 'Планка на одной руке',
+                                    type: 'static',
+                                    sets: 3,
+                                    duration: 45,
+                                    rest: 60,
+                                    description: 'Удержание планки с поочередным подниманием рук',
+                                    muscleGroups: ['core', 'shoulders']
+                                },
+                                {
+                                    id: 'cooldown_1',
+                                    name: 'Заминка',
+                                    type: 'cooldown',
+                                    duration: 5,
+                                    description: 'Растяжка мышц верхней части тела'
+                                }
+                            ]
+                        },
+                        {
+                            id: 'strength_2',
+                            name: 'Сила ног',
+                            description: 'Мощная тренировка нижней части тела',
+                            duration: 65,
+                            type: 'strength',
+                            exercises: [
+                                {
+                                    id: 'warmup_2',
+                                    name: 'Разминка',
+                                    type: 'warmup',
+                                    duration: 7,
+                                    description: 'Тщательный разогрев суставов и мышц ног'
+                                },
+                                {
+                                    id: 'ex_5',
+                                    name: 'Приседания с выпрыгиванием',
+                                    type: 'strength',
+                                    sets: 5,
+                                    reps: 10,
+                                    rest: 120,
+                                    description: 'Глубокие приседания с мощным выпрыгиванием вверх',
+                                    muscleGroups: ['legs']
+                                },
+                                {
+                                    id: 'ex_6',
+                                    name: 'Болгарские сплит-приседания',
+                                    type: 'strength',
+                                    sets: 4,
+                                    reps: 12,
+                                    rest: 90,
+                                    description: 'Приседания на одной ноге с задней ногой на возвышении',
+                                    muscleGroups: ['legs']
+                                },
+                                {
+                                    id: 'ex_7',
+                                    name: 'Прыжки в длину',
+                                    type: 'power',
+                                    sets: 4,
+                                    reps: 8,
+                                    rest: 120,
+                                    description: 'Максимально длинные прыжки с места',
+                                    muscleGroups: ['legs']
+                                },
+                                {
+                                    id: 'ex_8',
+                                    name: 'Икроножные подъемы',
+                                    type: 'strength',
+                                    sets: 4,
+                                    reps: 20,
+                                    rest: 60,
+                                    description: 'Подъемы на носки с дополнительным весом',
+                                    muscleGroups: ['calves']
+                                },
+                                {
+                                    id: 'cooldown_2',
+                                    name: 'Заминка',
+                                    type: 'cooldown',
+                                    duration: 8,
+                                    description: 'Глубокая растяжка мышц ног'
+                                }
+                            ]
+                        },
+                        {
+                            id: 'strength_3',
+                            name: 'Взрывная сила',
+                            description: 'Тренировка на развитие взрывной силы',
+                            duration: 55,
+                            type: 'power',
+                            exercises: [
+                                {
+                                    id: 'warmup_3',
+                                    name: 'Разминка',
+                                    type: 'warmup',
+                                    duration: 8,
+                                    description: 'Динамическая разминка всего тела'
+                                },
+                                {
+                                    id: 'ex_9',
+                                    name: 'Взрывные отжимания',
+                                    type: 'power',
+                                    sets: 4,
+                                    reps: 8,
+                                    rest: 90,
+                                    description: 'Отжимания с отрывом рук от пола',
+                                    muscleGroups: ['chest', 'shoulders', 'triceps']
+                                },
+                                {
+                                    id: 'ex_10',
+                                    name: 'Бурпи с подтягиванием',
+                                    type: 'power',
+                                    sets: 4,
+                                    reps: 6,
+                                    rest: 120,
+                                    description: 'Бурпи с переходом в подтягивание',
+                                    muscleGroups: ['full_body']
+                                },
+                                {
+                                    id: 'ex_11',
+                                    name: 'Выпрыгивания из приседа',
+                                    type: 'power',
+                                    sets: 5,
+                                    reps: 10,
+                                    rest: 90,
+                                    description: 'Максимально высокие выпрыгивания из приседа',
+                                    muscleGroups: ['legs']
+                                },
+                                {
+                                    id: 'cooldown_3',
+                                    name: 'Заминка',
+                                    type: 'cooldown',
+                                    duration: 7,
+                                    description: 'Растяжка всех групп мышц'
+                                }
+                            ]
+                        }
+                    ]
                 }
             ];
 
