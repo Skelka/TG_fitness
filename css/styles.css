@@ -2393,7 +2393,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
 }
 
 .program-icon span {
@@ -2743,19 +2742,25 @@ body {
 
 .programs-grid {
     display: grid;
-    gap: 16px;
+    gap: 12px;
     padding: 16px;
 }
 
 .program-card {
     background: var(--tg-theme-bg-color);
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 16px;
     box-shadow: var(--card-shadow);
     border: var(--card-border);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.program-card:active {
+    transform: scale(0.98);
 }
 
 .program-icon {
@@ -2766,7 +2771,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 8px;
 }
 
 .program-icon .material-symbols-rounded {
@@ -2775,23 +2779,24 @@ body {
 }
 
 .program-content h3 {
-    font-size: 18px;
-    margin: 0 0 8px 0;
+    font-size: 16px;
+    margin: 0 0 4px 0;
     color: var(--tg-theme-text-color);
 }
 
 .program-content p {
     font-size: 14px;
     color: var(--tg-theme-hint-color);
-    margin: 0 0 12px 0;
+    margin: 0;
     line-height: 1.4;
 }
 
 .program-meta {
     display: flex;
-    gap: 16px;
-    font-size: 14px;
+    gap: 12px;
+    font-size: 13px;
     color: var(--tg-theme-hint-color);
+    margin-top: 8px;
 }
 
 .program-meta span {
@@ -2802,6 +2807,7 @@ body {
 
 .program-meta .material-symbols-rounded {
     font-size: 16px;
+    opacity: 0.7;
 }
 
 .program-actions {

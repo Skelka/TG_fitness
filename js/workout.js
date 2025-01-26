@@ -346,7 +346,7 @@ export async function renderWorkouts() {
                     <h2>${activeProgram.title}</h2>
                     <div class="workouts-list">
                         ${activeProgram.workouts.map((workout, index) => `
-                            <div class="workout-card ${workout.completed ? 'completed' : ''}">
+                            <div class="workout-card ${workout.completed ? 'completed' : ''}" onclick="startWorkout('${activeProgram.id}', '${workout.id}')">
                                 <div class="workout-header">
                                     <span class="workout-day">День ${index + 1}</span>
                                     ${workout.completed ? '<span class="completed-badge">✓</span>' : ''}
@@ -362,10 +362,6 @@ export async function renderWorkouts() {
                                         ${workout.calories} ккал
                                     </span>
                                 </div>
-                                <button class="start-workout-btn" onclick="startWorkout('${activeProgram.id}', '${workout.id}')">
-                                    <span class="material-symbols-rounded">play_arrow</span>
-                                    Начать
-                                </button>
                             </div>
                         `).join('')}
                     </div>
@@ -376,7 +372,7 @@ export async function renderWorkouts() {
             container.innerHTML = `
                 <div class="programs-grid">
                     ${Object.values(programs).map(program => `
-                        <div class="program-card">
+                        <div class="program-card" onclick="startWorkout('${program.id}', '${program.workouts[0].id}')">
                             <div class="program-icon">
                                 <span class="material-symbols-rounded">${program.icon}</span>
                             </div>
@@ -385,24 +381,14 @@ export async function renderWorkouts() {
                                 <p>${program.description}</p>
                                 <div class="program-meta">
                                     <span>
-                                        <span class="material-symbols-rounded">calendar_month</span>
+                                        <span class="material-symbols-rounded">timer</span>
                                         ${program.duration}
                                     </span>
                                     <span>
-                                        <span class="material-symbols-rounded">exercise</span>
+                                        <span class="material-symbols-rounded">update</span>
                                         ${program.schedule}
                                     </span>
                                 </div>
-                            </div>
-                            <div class="program-actions">
-                                <button class="info-btn" onclick="showProgramDetails('${program.id}')">
-                                    <span class="material-symbols-rounded">info</span>
-                                    Подробнее
-                                </button>
-                                <button class="start-btn" onclick="initializeProgram('${program.id}')">
-                                    <span class="material-symbols-rounded">play_arrow</span>
-                                    Начать
-                                </button>
                             </div>
                         </div>
                     `).join('')}
