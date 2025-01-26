@@ -4,6 +4,7 @@ import { clearTimers } from './utils.js';
 import { getExerciseTypeText, getMuscleGroupsText, formatTime } from './utils.js';
 import { updateProgramProgress } from './program.js';
 import { getStorageItem } from './storage.js';
+import { programs } from './data/programs.js';
 
 let currentWorkout = null;
 let currentExerciseIndex = 0;
@@ -12,7 +13,7 @@ let restTimer = null;
 
 export async function startWorkout(programId, workoutId) {
     try {
-        const program = window.programData.find(p => p.id === programId);
+        const program = programs[programId];
         if (!program) throw new Error('Программа не найдена');
         
         const workout = program.workouts.find(w => w.id === workoutId);
@@ -372,36 +373,9 @@ export async function renderWorkouts() {
             `;
         } else {
             // Если нет активной программы, показываем список доступных программ
-            const programs = [
-                {
-                    id: 'weight_loss',
-                    title: 'Снижение веса',
-                    description: 'Программа для снижения веса и улучшения формы тела',
-                    duration: '8 недель',
-                    workoutsPerWeek: '3-4',
-                    icon: 'monitor_weight'
-                },
-                {
-                    id: 'muscle_gain',
-                    title: 'Набор мышечной массы',
-                    description: 'Программа для увеличения мышечной массы и силы',
-                    duration: '12 недель',
-                    workoutsPerWeek: '4-5',
-                    icon: 'fitness_center'
-                },
-                {
-                    id: 'endurance',
-                    title: 'Выносливость',
-                    description: 'Программа для развития общей выносливости',
-                    duration: '6 недель',
-                    workoutsPerWeek: '3',
-                    icon: 'directions_run'
-                }
-            ];
-
             container.innerHTML = `
                 <div class="programs-grid">
-                    ${programs.map(program => `
+                    ${Object.values(programs).map(program => `
                         <div class="program-card">
                             <div class="program-icon">
                                 <span class="material-symbols-rounded">${program.icon}</span>
@@ -416,7 +390,7 @@ export async function renderWorkouts() {
                                     </span>
                                     <span>
                                         <span class="material-symbols-rounded">exercise</span>
-                                        ${program.workoutsPerWeek} тр/нед
+                                        ${program.schedule}
                                     </span>
                                 </div>
                             </div>

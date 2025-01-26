@@ -1,44 +1,32 @@
 // Функции для работы с программами тренировок
 import { getStorageItem, setStorageItem } from './storage.js';
 import { showNotification, showError, showPopupSafe } from './ui.js';
+import { programs } from './data/programs.js';
 import { getDifficultyText } from './utils.js';
 
-export async function initializeProgram(program) {
+export async function initializeProgram(programId) {
     try {
-        // Получаем данные профиля
-        const profileData = await getStorageItem('profile')
-            .then(data => data ? JSON.parse(data) : null);
-
-        if (!profileData) {
-            throw new Error('Необходимо заполнить профиль перед началом программы');
+        const program = programs[programId];
+        if (!program) {
+            throw new Error('Программа не найдена');
         }
 
-        // Генерируем план тренировок
-        const workouts = await generateWorkoutPlan(program, profileData);
-        if (!workouts) {
-            throw new Error('Не удалось сгенерировать план тренировок');
-        }
-
-        // Создаем новую структуру активной программы
-        const activeProgram = {
-            ...program,
-            startDate: Date.now(),
-            workouts: workouts.map(w => ({
+        // Сохраняем программу как активную
+        await setStorageItem('activeProgram', JSON.stringify({
+            id: program.id,
+            title: program.title,
+            workouts: program.workouts.map(w => ({
                 ...w,
-                completed: false,
-                started: false
+                completed: false
             }))
-        };
+        }));
 
-        // Сохраняем программу
-        await setStorageItem('activeProgram', JSON.stringify(activeProgram));
-        
-        console.log('Инициализирована программа:', activeProgram);
-        
-        return activeProgram;
+        showNotification('Программа успешно запущена!');
+        return true;
     } catch (error) {
         console.error('Ошибка при инициализации программы:', error);
-        throw error;
+        showError('Не удалось запустить программу');
+        return false;
     }
 }
 
@@ -106,66 +94,80 @@ export async function updateProgramProgress(workout, isCompleted) {
     }
 }
 
-export async function showProgramDetails(program) {
-    const resultsInfo = program.results
-        .map(result => `✅ ${result}`)
-        .join('\n');
+export async function showProgramDetails(programId) {
+    try {
+        const program = programs[programId];
+        if (!program) throw new Error('Программа не найдена');
 
-    await showPopupSafe({
-        title: program.name,
-        message: `${program.description}\n\n${program.workoutsPerWeek} тр/нед • ${getDifficultyText(program.difficulty)}\n\nДлительность: ${program.duration} недель`,
-        buttons: [
-            {
-                id: `start_program_${program.id}`,
-                type: 'default',
-                text: 'Начать программу'
-            },
-            {
-                id: `schedule_${program.id}`,
-                type: 'default',
-                text: 'Расписание'
-            }
-        ]
-    });
+        await showPopupSafe({
+            title: program.title,
+            message: `
+                ${program.description}
+                
+                📅 Длительность: ${program.duration}
+                🏋️‍♂️ График: ${program.schedule}
+                💪 Сложность: ${getDifficultyText(program.difficulty)}
+                
+                Программа включает:
+                ${program.workouts.slice(0, 3).map(w => `• ${w.title}`).join('\n')}
+                ${program.workouts.length > 3 ? '\n... и другие тренировки' : ''}
+            `,
+            buttons: [
+                {
+                    id: `start_program_${program.id}`,
+                    type: 'default',
+                    text: 'Начать программу'
+                },
+                {
+                    id: `schedule_${program.id}`,
+                    type: 'default',
+                    text: 'График тренировок'
+                }
+            ]
+        });
+    } catch (error) {
+        console.error('Ошибка при показе деталей программы:', error);
+        showError('Не удалось загрузить детали программы');
+    }
 }
 
 export async function showProgramSchedule(programId) {
-    const program = window.programData[programId];
-    if (!program) return;
+    try {
+        const program = programs[programId];
+        if (!program) throw new Error('Программа не найдена');
 
-    // Форматируем расписание в более читаемый вид
-    const scheduleMessage = formatScheduleMessage(program);
-
-    await showPopupSafe({
-        title: 'Расписание тренировок',
-        message: scheduleMessage,
-        buttons: [
-            {
-                type: 'default',
-                text: '⬅️ Назад',
-                id: `back_to_main_${programId}`
-            },
-            {
-                type: 'default',
-                text: 'Начать программу',
-                id: `start_program_${programId}`
-            }
-        ]
-    });
+        await showPopupSafe({
+            title: 'График тренировок',
+            message: formatScheduleMessage(program),
+            buttons: [
+                {
+                    id: `back_${program.id}`,
+                    type: 'default',
+                    text: 'Назад'
+                }
+            ]
+        });
+    } catch (error) {
+        console.error('Ошибка при показе графика:', error);
+        showError('Не удалось загрузить график');
+    }
 }
 
 function formatScheduleMessage(program) {
     return `📅 График тренировок:\n\n` +
-           `• ${program.workoutsPerWeek} тренировок в неделю\n` +
-           `• Длительность программы: ${program.duration} недель\n\n` +
+           `• ${program.schedule} тренировок в неделю\n` +
+           `• Длительность программы: ${program.duration}\n\n` +
            `🎯 Рекомендуемые дни:\n` +
            program.workouts.map((workout, index) => 
-               `День ${index + 1}: ${workout.name} (${workout.duration} мин)`
+               `День ${index + 1}: ${workout.title} (${workout.duration} мин)`
            ).join('\n');
 }
 
-async function generateWorkoutPlan(program, profile) {
-    // Здесь должна быть логика генерации плана тренировок
-    // на основе программы и профиля пользователя
-    return program.workouts;
+function getDifficultyText(difficulty) {
+    switch(difficulty) {
+        case 'low': return 'Начальный';
+        case 'medium': return 'Средний';
+        case 'high': return 'Продвинутый';
+        default: return 'Не указано';
+    }
 } 
