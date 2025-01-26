@@ -53,257 +53,176 @@
 .profile-form {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
+    padding: 0 var(--spacing-md);
+    padding-bottom: calc(var(--spacing-xl) + 60px);
 }
 
-.form-section {
-    background-color: var(--background-secondary);
-    padding: var(--spacing-lg);
+.form-group {
+    background: var(--background-secondary);
+    padding: var(--spacing-md);
     border-radius: var(--radius-lg);
 }
 
-.form-section h3 {
-    font-size: 1.2rem;
-    margin-bottom: var(--spacing-md);
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.form-section h3 span {
-    color: var(--primary-color);
-}
-
-/* Поля ввода */
-.input-group {
-    margin-bottom: var(--spacing-md);
-}
-
-.input-group label {
+.form-group label {
     display: block;
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
     color: var(--text-secondary);
     font-size: 0.9rem;
 }
 
-.input-group input,
-.input-group select {
+.form-group input[type="number"],
+.form-group select {
     width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 2px solid var(--background-main);
+    padding: var(--spacing-sm);
+    background: var(--background-main);
+    border: 2px solid transparent;
     border-radius: var(--radius-md);
-    background-color: var(--background-main);
     color: var(--text-primary);
     transition: var(--transition-fast);
 }
 
-.input-group input:focus,
-.input-group select:focus {
+.form-group input[type="number"]:focus,
+.form-group select:focus {
     border-color: var(--primary-light);
     outline: none;
 }
 
-/* Сетка для полей */
-.input-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-md);
-}
-
-/* Радио кнопки */
 .radio-group {
     display: flex;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
-}
-
-.radio-option {
-    flex: 1;
-    position: relative;
-}
-
-.radio-option input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.radio-option label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-sm) var(--spacing-md);
-    background-color: var(--background-main);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: var(--transition-fast);
-}
-
-.radio-option input[type="radio"]:checked + label {
-    background-color: var(--primary-light);
-    color: var(--primary-dark);
-}
-
-/* Оборудование */
-.equipment-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: var(--spacing-md);
-}
-
-.equipment-item {
-    position: relative;
-}
-
-.equipment-item input[type="checkbox"] {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.equipment-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     gap: var(--spacing-sm);
-    padding: var(--spacing-md);
-    background-color: var(--background-main);
+}
+
+.radio-group label {
+    flex: 1;
+    margin: 0;
+    padding: var(--spacing-sm);
+    background: var(--background-main);
     border-radius: var(--radius-md);
+    text-align: center;
     cursor: pointer;
     transition: var(--transition-fast);
 }
 
-.equipment-icon {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--background-secondary);
-    border-radius: var(--radius-md);
-    transition: var(--transition-fast);
+.radio-group input[type="radio"] {
+    display: none;
 }
 
-.equipment-icon span {
-    font-size: 1.5rem;
-    color: var(--text-secondary);
-}
-
-.equipment-label {
-    font-size: 0.9rem;
-    text-align: center;
-    color: var(--text-secondary);
-}
-
-.equipment-item input[type="checkbox"]:checked + .equipment-content {
-    background-color: var(--primary-light);
-}
-
-.equipment-item input[type="checkbox"]:checked + .equipment-content .equipment-icon {
-    background-color: var(--primary-color);
-}
-
-.equipment-item input[type="checkbox"]:checked + .equipment-content .equipment-icon span {
-    color: white;
-}
-
-.equipment-item input[type="checkbox"]:checked + .equipment-content .equipment-label {
+.radio-group input[type="radio"]:checked + span {
     color: var(--primary-dark);
 }
 
-/* Место тренировок */
-.place-options {
+.radio-group label:has(input[type="radio"]:checked) {
+    background: var(--primary-light);
+}
+
+.equipment-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--spacing-sm);
+}
+
+.equipment-list label {
+    margin: 0;
+    padding: var(--spacing-sm);
+    background: var(--background-main);
+    border-radius: var(--radius-md);
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.equipment-list input[type="checkbox"] {
+    display: none;
+}
+
+.equipment-list input[type="checkbox"]:checked + span {
+    color: var(--primary-dark);
+}
+
+.equipment-list label:has(input[type="checkbox"]:checked) {
+    background: var(--primary-light);
+}
+
+.place-list {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
 }
 
-.place-option {
+.place-list label {
     flex: 1;
-    min-width: 120px;
-    position: relative;
-}
-
-.place-option input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.place-content {
+    min-width: 100px;
+    margin: 0;
+    padding: var(--spacing-sm);
+    background: var(--background-main);
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md);
-    background-color: var(--background-main);
-    border-radius: var(--radius-md);
+    justify-content: center;
+    gap: var(--spacing-xs);
     cursor: pointer;
     transition: var(--transition-fast);
 }
 
-.place-icon {
-    font-size: 1.5rem;
-    color: var(--text-secondary);
+.place-list input[type="radio"] {
+    display: none;
 }
 
-.place-label {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
+.place-list label:has(input[type="radio"]:checked) {
+    background: var(--primary-light);
 }
 
-.place-option input[type="radio"]:checked + .place-content {
-    background-color: var(--primary-light);
-}
-
-.place-option input[type="radio"]:checked + .place-content .place-icon,
-.place-option input[type="radio"]:checked + .place-content .place-label {
+.place-list label:has(input[type="radio"]:checked) span {
     color: var(--primary-dark);
 }
 
-/* Кнопка удаления данных */
-.delete-data-section {
-    margin-top: var(--spacing-lg);
-    padding: var(--spacing-lg);
-    background-color: var(--error-light);
+.danger-zone {
+    margin-top: var(--spacing-md);
+}
+
+.danger-btn {
+    width: 100%;
+    padding: var(--spacing-md);
+    background: var(--error-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.danger-btn:hover {
+    background: var(--error-dark);
+}
+
+.danger-btn span {
+    font-size: 1.2rem;
+}
+
+.profile-section {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    background: var(--background-secondary);
     border-radius: var(--radius-lg);
 }
 
-.delete-data-section h3 {
-    color: var(--error-color);
-    margin-bottom: var(--spacing-sm);
+.profile-section h2 {
+    font-size: 1.4rem;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
 }
 
-.delete-data-section p {
-    color: var(--text-secondary);
+.profile-badge {
     font-size: 0.9rem;
-    margin-bottom: var(--spacing-md);
-}
-
-.delete-data-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-sm);
-    width: 100%;
-    padding: var(--spacing-md);
-    background-color: var(--error-color);
-    color: white;
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    transition: var(--transition-fast);
-}
-
-.delete-data-btn:hover {
-    background-color: var(--error-dark);
-}
-
-.delete-data-btn span {
-    font-size: 1.2rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-radius: var(--radius-sm);
 } 
