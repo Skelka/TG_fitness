@@ -1,8 +1,124 @@
 /* Контейнер статистики */
 .statistics-container {
+    padding: var(--spacing-md);
+}
+
+/* Основные показатели */
+.stats-overview {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background-color: var(--background-secondary);
+    border-radius: var(--radius-lg);
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.stat-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* График активности */
+.activity-chart {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background-color: var(--background-secondary);
+    border-radius: var(--radius-lg);
+}
+
+.chart-container {
+    width: 100%;
+    height: 200px;
+    margin-top: var(--spacing-md);
+}
+
+/* Последние тренировки */
+.recent-workouts {
+    margin-top: var(--spacing-lg);
+}
+
+.workout-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background-color: var(--background-secondary);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-sm);
+}
+
+.workout-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.workout-date {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.workout-stats {
+    display: flex;
+    gap: var(--spacing-md);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.workout-stat {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.workout-stat span {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+/* Нет данных */
+.no-data {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-secondary);
+}
+
+.no-data-icon {
+    font-size: 3rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stats-overview,
+.activity-chart,
+.recent-workouts {
+    animation: fadeIn var(--transition-normal);
 }
 
 /* Обзор статистики */
@@ -122,27 +238,4 @@
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
     margin: var(--spacing-lg) 0;
-}
-
-/* Последние тренировки */
-.recent-workouts {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-}
-
-.workout-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-md);
-    background-color: var(--background-secondary);
-    border-radius: var(--radius-md);
-}
-
-.workout-meta {
-    display: flex;
-    gap: var(--spacing-md);
-    color: var(--text-secondary);
-    font-size: 0.9rem;
 } 
