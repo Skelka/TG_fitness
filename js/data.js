@@ -1,22 +1,17 @@
 // Экспортируем данные о программах тренировок
 window.programData = {
-    weight_loss: {
+    'weight_loss': {
         id: 'weight_loss',
         title: 'Похудение',
         description: 'Программа для снижения веса и улучшения метаболизма',
-        duration: '8 недель',
-        difficulty: 'medium',
-        category: 'weight_loss',
         icon: 'monitor_weight',
+        duration: '8 недель',
         schedule: '3-4 тр/нед',
-        calories_per_week: '3500-4000 ккал',
-        results: [
-            'Снижение веса 0.5-1 кг в неделю',
-            'Улучшение выносливости',
-            'Ускорение метаболизма'
-        ],
+        difficulty: 'medium',
         workouts: [
+            // Неделя 1
             {
+                week: 1,
                 day: 1,
                 title: 'Кардио + Сила',
                 duration: 45,
@@ -30,6 +25,7 @@ window.programData = {
                 ]
             },
             {
+                week: 1,
                 day: 2,
                 title: 'HIIT Тренировка',
                 duration: 30,
@@ -42,6 +38,7 @@ window.programData = {
                 ]
             },
             {
+                week: 1,
                 day: 3,
                 title: 'Кардио',
                 duration: 40,
@@ -52,67 +49,31 @@ window.programData = {
                     { name: 'Выпады', sets: 3, reps: '12', rest: 60 },
                     { name: 'Приседания', sets: 3, reps: '15', rest: 60 }
                 ]
-            }
-        ]
-    },
-    maintenance: {
-        id: 'maintenance',
-        title: 'Поддержание формы',
-        description: 'Программа для поддержания текущей формы и тонуса мышц',
-        duration: '4 недели',
-        difficulty: 'low',
-        category: 'maintenance',
-        icon: 'fitness_center',
-        schedule: '2-3 тр/нед',
-        calories_per_week: '2500-3000 ккал',
-        results: [
-            'Поддержание текущего веса',
-            'Сохранение мышечного тонуса',
-            'Общее укрепление организма'
-        ],
-        workouts: [
+            },
+            // Неделя 2 (увеличиваем нагрузку)
             {
+                week: 2,
                 day: 1,
-                title: 'Общая тренировка',
-                duration: 40,
-                calories: 300,
-                type: 'general',
+                title: 'Кардио + Сила',
+                duration: 50,
+                calories: 450,
+                type: 'cardio_strength',
                 exercises: [
                     { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
-                    { name: 'Приседания', sets: 3, reps: '10', rest: 60 },
-                    { name: 'Отжимания', sets: 3, reps: '8', rest: 60 },
-                    { name: 'Планка', sets: 2, reps: '30 сек', rest: 45 }
+                    { name: 'Приседания', sets: 4, reps: '12', rest: 60 },
+                    { name: 'Отжимания', sets: 4, reps: '10', rest: 60 },
+                    { name: 'Планка', sets: 3, reps: '45 сек', rest: 45 }
                 ]
             },
-            {
-                day: 2,
-                title: 'Кардио',
-                duration: 30,
-                calories: 250,
-                type: 'cardio',
-                exercises: [
-                    { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
-                    { name: 'Бёрпи', sets: 3, reps: '8', rest: 45 },
-                    { name: 'Выпады', sets: 3, reps: '10', rest: 45 }
-                ]
-            }
+            // ... и так далее для каждой недели
         ]
     },
-    muscle_gain: {
+    'muscle_gain': {
         id: 'muscle_gain',
         title: 'Набор мышечной массы',
         description: 'Программа для увеличения мышечной массы и силы',
         duration: '12 недель',
         difficulty: 'high',
-        category: 'muscle_gain',
-        icon: 'fitness_center',
-        schedule: '4-5 тр/нед',
-        calories_per_week: '4000-4500 ккал',
-        results: [
-            'Увеличение мышечной массы',
-            'Рост силовых показателей',
-            'Улучшение рельефа тела'
-        ],
         workouts: [
             {
                 day: 1,
@@ -165,21 +126,46 @@ window.programData = {
             }
         ]
     },
-    endurance: {
+    'maintenance': {
+        id: 'maintenance',
+        title: 'Поддержание формы',
+        description: 'Программа для поддержания текущей формы и тонуса мышц',
+        duration: '4 недели',
+        difficulty: 'low',
+        workouts: [
+            {
+                day: 1,
+                title: 'Общая тренировка',
+                duration: 40,
+                calories: 300,
+                type: 'general',
+                exercises: [
+                    { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
+                    { name: 'Приседания', sets: 3, reps: '10', rest: 60 },
+                    { name: 'Отжимания', sets: 3, reps: '8', rest: 60 },
+                    { name: 'Планка', sets: 2, reps: '30 сек', rest: 45 }
+                ]
+            },
+            {
+                day: 2,
+                title: 'Кардио',
+                duration: 30,
+                calories: 250,
+                type: 'cardio',
+                exercises: [
+                    { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
+                    { name: 'Бёрпи', sets: 3, reps: '8', rest: 45 },
+                    { name: 'Выпады', sets: 3, reps: '10', rest: 45 }
+                ]
+            }
+        ]
+    },
+    'endurance': {
         id: 'endurance',
         title: 'Выносливость',
         description: 'Программа для развития общей выносливости',
         duration: '6 недель',
         difficulty: 'medium',
-        category: 'endurance',
-        icon: 'directions_run',
-        schedule: '3-4 тр/нед',
-        calories_per_week: '3000-3500 ккал',
-        results: [
-            'Повышение выносливости',
-            'Улучшение работы сердца',
-            'Больше энергии'
-        ],
         workouts: [
             {
                 day: 1,

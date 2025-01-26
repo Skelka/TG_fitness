@@ -1939,4 +1939,22 @@ input[type="number"]::-webkit-inner-spin-button {
 /* Обновляем стили для нижней навигации */
 .bottom-nav {
     z-index: 99; /* Чуть ниже, чем у кнопки */
+}
+
+.workout-week {
+    margin-bottom: 24px;
+}
+
+.week-header {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color);
+    margin: 16px 0;
+    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 12px;
+}
+
+.workout-day {
+    margin-bottom: 12px;
 } 

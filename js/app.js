@@ -59,13 +59,21 @@ tg.onEvent('popupClosed', async (event) => {
     } else if (event.button_id.startsWith('start_program_')) {
         // Получаем ID программы из button_id
         const programId = event.button_id.replace('start_program_', '');
-        const program = window.programData[programId];
         
-        if (program) {
+        try {
             // Инициализируем программу
+            const program = window.programData[programId];
+            if (!program) {
+                throw new Error(`Программа с ID ${programId} не найдена`);
+            }
+            
             await initializeProgram(program);
             // Показываем список тренировок программы
             showProgramWorkouts(program);
+            
+        } catch (error) {
+            console.error('Ошибка при запуске программы:', error);
+            await showError('Не удалось начать программу. Попробуйте позже.');
         }
     }
 });
@@ -86,7 +94,8 @@ async function initializeProgram(program) {
 
         // Создаем новую структуру активной программы
         const activeProgram = {
-            id: program.id,
+            id: program.id, // Убеждаемся, что id берется из программы
+            title: program.title,
             startDate: Date.now(),
             workouts: program.workouts.map(w => ({
                 ...w,
@@ -97,6 +106,10 @@ async function initializeProgram(program) {
 
         // Сохраняем программу
         await setStorageItem('activeProgram', JSON.stringify(activeProgram));
+        
+        // Для отладки
+        console.log('Инициализирована программа:', activeProgram);
+        
         return activeProgram;
     } catch (error) {
         console.error('Ошибка при инициализации программы:', error);
@@ -1211,24 +1224,29 @@ function updateProgramProgress(progress) {
     }
 }
 
-// Добавим функцию для старта программы
+// Обновляем функцию startProgram
 async function startProgram(programId) {
     try {
+        console.log('Starting program with ID:', programId);
+        console.log('Available programs:', window.programData);
+        
+        // Убеждаемся, что программа существует
         const program = window.programData[programId];
         if (!program) {
-            throw new Error('Программа не найдена');
+            console.error('Программа не найдена. ID:', programId);
+            console.error('Доступные программы:', Object.keys(window.programData));
+            throw new Error(`Программа с ID ${programId} не найдена`);
         }
 
+        // Инициализируем программу
+        await initializeProgram(program);
+        
         // Показываем список тренировок программы
         showProgramWorkouts(program);
 
     } catch (error) {
         console.error('Ошибка при запуске программы:', error);
-        await showPopupSafe({
-            title: 'Ошибка',
-            message: 'Не удалось начать программу. Попробуйте позже.',
-            buttons: [{type: 'ok'}]
-        });
+        await showError('Не удалось начать программу. Попробуйте позже.');
     }
 }
 
@@ -2298,6 +2316,14 @@ function showProgramWorkouts(program) {
             const activeProgram = data ? JSON.parse(data) : null;
             const workouts = activeProgram?.workouts || [];
 
+            // Группируем тренировки по неделям
+            const workoutsByWeek = program.workouts.reduce((acc, workout) => {
+                const week = workout.week || 1;
+                if (!acc[week]) acc[week] = [];
+                acc[week].push(workout);
+                return acc;
+            }, {});
+
             container.innerHTML = `
                 <div class="workout-list">
                     <div class="workout-list-header">
@@ -2307,37 +2333,50 @@ function showProgramWorkouts(program) {
                         <h2>${program.title}</h2>
                     </div>
                     
-                    ${program.workouts.map((workout, index) => {
-                        const activeWorkout = workouts.find(w => w.day === workout.day);
-                        const isCompleted = activeWorkout?.completed || false;
-                        const isPrevCompleted = index === 0 || workouts[index - 1]?.completed;
-                        const isDisabled = !isPrevCompleted && !isCompleted;
+                    ${Object.entries(workoutsByWeek).map(([week, weekWorkouts]) => `
+                        <div class="workout-week">
+                            <div class="week-header">Неделя ${week}</div>
+                            ${weekWorkouts.map((workout, index) => {
+                                const activeWorkout = workouts.find(w => 
+                                    w.week === workout.week && w.day === workout.day);
+                                const isCompleted = activeWorkout?.completed || false;
+                                const prevWorkout = weekWorkouts[index - 1];
+                                const isPrevCompleted = index === 0 || 
+                                    workouts.find(w => 
+                                        w.week === prevWorkout.week && 
+                                        w.day === prevWorkout.day)?.completed;
+                                const isDisabled = !isPrevCompleted && !isCompleted;
 
-                        return `
-                            <div class="workout-day ${isCompleted ? 'completed' : ''} ${isDisabled ? 'disabled' : ''}">
-                                <div class="workout-day-header">День ${workout.day}</div>
-                                <div class="workout-title">${workout.title}</div>
-                                <div class="workout-meta">
-                                    <span>
-                                        <span class="material-symbols-rounded">timer</span>
-                                        ${workout.duration} мин
-                                    </span>
-                                    <span>
-                                        <span class="material-symbols-rounded">local_fire_department</span>
-                                        ${workout.calories} ккал
-                                    </span>
-                                </div>
-                                <button class="start-workout-btn" data-workout-index="${index}" ${isDisabled ? 'disabled' : ''}>
-                                    ${isCompleted ? 'Повторить' : 'Начать'}
-                                </button>
-                                ${isDisabled ? `
-                                    <div class="workout-disabled-message">
-                                        Сначала завершите предыдущую тренировку
+                                return `
+                                    <div class="workout-day ${isCompleted ? 'completed' : ''} 
+                                                           ${isDisabled ? 'disabled' : ''}">
+                                        <div class="workout-day-header">День ${workout.day}</div>
+                                        <div class="workout-title">${workout.title}</div>
+                                        <div class="workout-meta">
+                                            <span>
+                                                <span class="material-symbols-rounded">timer</span>
+                                                ${workout.duration} мин
+                                            </span>
+                                            <span>
+                                                <span class="material-symbols-rounded">local_fire_department</span>
+                                                ${workout.calories} ккал
+                                            </span>
+                                        </div>
+                                        <button class="start-workout-btn" 
+                                                data-workout-index="${index}" 
+                                                ${isDisabled ? 'disabled' : ''}>
+                                            ${isCompleted ? 'Повторить' : 'Начать'}
+                                        </button>
+                                        ${isDisabled ? `
+                                            <div class="workout-disabled-message">
+                                                Сначала завершите предыдущую тренировку
+                                            </div>
+                                        ` : ''}
                                     </div>
-                                ` : ''}
-                            </div>
-                        `;
-                    }).join('')}
+                                `;
+                            }).join('')}
+                        </div>
+                    `).join('')}
                 </div>
             `;
 
