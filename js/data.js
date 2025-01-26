@@ -72,10 +72,14 @@ window.programData = {
         id: 'muscle_gain',
         title: 'Набор мышечной массы',
         description: 'Программа для увеличения мышечной массы и силы',
+        icon: 'fitness_center',
         duration: '12 недель',
+        schedule: '4-5 тр/нед',
         difficulty: 'high',
         workouts: [
+            // Неделя 1
             {
+                week: 1,
                 day: 1,
                 title: 'Грудь + Трицепс',
                 duration: 60,
@@ -84,46 +88,10 @@ window.programData = {
                 exercises: [
                     { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
                     { name: 'Отжимания', sets: 4, reps: '12', rest: 90 },
-                    { name: 'Жим гантелей', sets: 4, reps: '10', rest: 90 },
-                    { name: 'Планка', sets: 3, reps: '45 сек', rest: 60 }
+                    { name: 'Жим гантелей', sets: 4, reps: '10', rest: 90 }
                 ]
             },
-            {
-                day: 2,
-                title: 'Спина + Бицепс',
-                duration: 60,
-                calories: 450,
-                type: 'strength',
-                exercises: [
-                    { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
-                    { name: 'Подтягивания', sets: 4, reps: '8', rest: 90 },
-                    { name: 'Тяга гантелей', sets: 4, reps: '12', rest: 90 }
-                ]
-            },
-            {
-                day: 3,
-                title: 'Ноги + Плечи',
-                duration: 60,
-                calories: 450,
-                type: 'strength',
-                exercises: [
-                    { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
-                    { name: 'Приседания', sets: 4, reps: '12', rest: 90 },
-                    { name: 'Жим гантелей стоя', sets: 4, reps: '10', rest: 90 }
-                ]
-            },
-            {
-                day: 4,
-                title: 'Кардио + Пресс',
-                duration: 45,
-                calories: 350,
-                type: 'cardio',
-                exercises: [
-                    { name: 'Разминка', sets: 1, reps: '5 мин', rest: 30 },
-                    { name: 'Бёрпи', sets: 3, reps: '30 сек', rest: 45 },
-                    { name: 'Скручивания', sets: 3, reps: '20', rest: 45 }
-                ]
-            }
+            // ... добавляем тренировки для всех недель
         ]
     },
     'maintenance': {

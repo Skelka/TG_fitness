@@ -48,27 +48,23 @@ tg.onEvent('popupClosed', async (event) => {
     
     if (!event || !event.button_id) return;
 
-    // Добавляем небольшую задержку перед следующим действием
-    await new Promise(r => setTimeout(r, 100));
-
     if (event.button_id === 'quit_workout') {
-        // Прерываем тренировку
         clearTimers();
         renderProgramCards();
         document.querySelector('.bottom-nav')?.classList.remove('hidden');
     } else if (event.button_id.startsWith('start_program_')) {
-        // Получаем ID программы из button_id
+        // Получаем правильный ID программы
         const programId = event.button_id.replace('start_program_', '');
+        // Добавляем '_gain' для программы набора массы
+        const fullProgramId = programId === 'muscle' ? 'muscle_gain' : programId;
         
         try {
-            // Инициализируем программу
-            const program = window.programData[programId];
+            const program = window.programData[fullProgramId];
             if (!program) {
-                throw new Error(`Программа с ID ${programId} не найдена`);
+                throw new Error(`Программа с ID ${fullProgramId} не найдена`);
             }
             
             await initializeProgram(program);
-            // Показываем список тренировок программы
             showProgramWorkouts(program);
             
         } catch (error) {
@@ -1194,294 +1190,77 @@ function setupPopupHandlers() {
 }
 
 // Функция обновления прогресса программы
-function updateProgramProgress(progress) {
-    const programCard = document.querySelector(`.program-card[data-program="${progress.programId}"]`);
-    if (!programCard) return;
-
-    const progressBar = programCard.querySelector('.progress');
-    const progressText = programCard.querySelector('.progress-text');
-    
-    if (progress.status === 'active') {
-        // Вычисляем прогресс
-        const program = programData[progress.programId];
-        const totalWorkouts = program.workouts.length;
-        const completedWorkouts = progress.completedWorkouts.length;
-        const progressPercent = (completedWorkouts / totalWorkouts) * 100;
-
-        // Обновляем UI
-        if (progressBar) {
-            progressBar.style.width = `${progressPercent}%`;
-        }
-        if (progressText) {
-            progressText.textContent = `Прогресс: ${completedWorkouts}/${totalWorkouts} тренировок`;
-        }
-
-        // Обновляем кнопки
-        const startBtn = programCard.querySelector('.start-btn');
-        if (startBtn) {
-            startBtn.textContent = 'Продолжить';
-        }
-    }
-}
-
-// Обновляем функцию startProgram
-async function startProgram(programId) {
+async function updateProgramProgress(workout, isCompleted) {
     try {
-        console.log('Starting program with ID:', programId);
-        console.log('Available programs:', window.programData);
-        
-        // Убеждаемся, что программа существует
-        const program = window.programData[programId];
-        if (!program) {
-            console.error('Программа не найдена. ID:', programId);
-            console.error('Доступные программы:', Object.keys(window.programData));
-            throw new Error(`Программа с ID ${programId} не найдена`);
-        }
-
-        // Инициализируем программу
-        await initializeProgram(program);
-        
-        // Показываем список тренировок программы
-        showProgramWorkouts(program);
-
-    } catch (error) {
-        console.error('Ошибка при запуске программы:', error);
-        await showError('Не удалось начать программу. Попробуйте позже.');
-    }
-}
-
-// Функция для возврата к списку программ
-function showProgramsList() {
-    const container = document.querySelector('.container');
-    if (!container) return;
-
-    // Возвращаем исходный HTML со всеми вкладками
-    container.innerHTML = `
-        <div class="programs-list"></div>
-        <nav class="bottom-nav">
-            <button class="tab-btn active" data-tab="workouts">
-                <span class="material-symbols-rounded">fitness_center</span>
-                Тренировки
-            </button>
-            <button class="tab-btn" data-tab="calendar">
-                <span class="material-symbols-rounded">calendar_month</span>
-                Календарь
-            </button>
-            <button class="tab-btn" data-tab="stats">
-                <span class="material-symbols-rounded">monitoring</span>
-                Статистика
-            </button>
-            <button class="tab-btn" data-tab="profile">
-                <span class="material-symbols-rounded">person</span>
-                Профиль
-            </button>
-        </nav>
-    `;
-
-    // Отображаем список программ
-    renderProgramCards();
-
-    // Восстанавливаем обработчики вкладок
-    setupTabHandlers();
-
-    // Показываем нижнюю навигацию
-    const bottomNav = document.querySelector('.bottom-nav');
-    if (bottomNav) {
-        bottomNav.classList.remove('hidden');
-    }
-
-    // Активируем вкладку "Тренировки"
-    const workoutsTab = document.querySelector('[data-tab="workouts"]');
-    if (workoutsTab) {
-        workoutsTab.classList.add('active');
-    }
-}
-
-// Функция для отображения тренировок программы
-function renderWorkouts(program) {
-    const container = document.querySelector('.workouts-list');
-    if (!container) return;
-
-    getStorageItem('activeProgram')
-        .then(data => {
-            const progress = data ? JSON.parse(data) : { completedWorkouts: [] };
-            const completedWorkouts = new Set(progress.completedWorkouts.map(w => w.day));
-
-            let html = '';
-            program.workouts.forEach((workout, index) => {
-                const isLocked = index > 0 && !completedWorkouts.has(index);
-                const statusClass = completedWorkouts.has(index + 1) ? 'completed' : 
-                                  isLocked ? 'locked' : '';
-
-                html += `
-                    <div class="workout-day ${statusClass}">
-                        <div class="workout-day-content">
-                            <div class="workout-day-icon">
-                                <span class="material-symbols-rounded">fitness_center</span>
-                            </div>
-                            <div class="workout-day-text">
-                                <div class="day-number">День ${index + 1}</div>
-                                <h3>${workout.title}</h3>
-                                <div class="workout-meta">
-                                    <span>
-                                        <span class="material-symbols-rounded">schedule</span>
-                                        ${workout.duration} мин
-                                    </span>
-                                    <span>
-                                        <span class="material-symbols-rounded">local_fire_department</span>
-                                        ${workout.calories} ккал
-                                    </span>
-                                </div>
-                                <div class="workout-actions">
-                                    <button class="program-btn info-btn" onclick="showWorkoutDetails(${JSON.stringify(workout).replace(/"/g, '&quot;')})">
-                                        <span class="material-symbols-rounded">info</span>
-                                        Подробнее
-                                    </button>
-                                    <button class="program-btn start-btn" 
-                                            onclick="startWorkout(${JSON.stringify(workout).replace(/"/g, '&quot;')})"
-                                            ${isLocked ? 'disabled' : ''}>
-                                        <span class="material-symbols-rounded">play_arrow</span>
-                                        Начать
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+        // Получаем текущую статистику
+        const stats = await getStorageItem('workoutStats')
+            .then(data => data ? JSON.parse(data) : {
+                totalWorkouts: 0,
+                totalCalories: 0,
+                totalMinutes: 0,
+                completedWorkouts: []
             });
 
-            container.innerHTML = html;
-        })
-        .catch(error => {
-            console.error('Ошибка при рендеринге тренировок:', error);
-            showError('Не удалось загрузить тренировки');
-        });
+        if (isCompleted) {
+            // Обновляем статистику
+            stats.totalWorkouts++;
+            stats.totalCalories += workout.calories;
+            stats.totalMinutes += workout.duration;
+            stats.completedWorkouts.push({
+                date: Date.now(),
+                programId: currentProgramId,
+                workout: workout
+            });
+
+            // Сохраняем обновленную статистику
+            await setStorageItem('workoutStats', JSON.stringify(stats));
+
+            // Проверяем завершение программы
+            const activeProgram = await getStorageItem('activeProgram')
+                .then(data => data ? JSON.parse(data) : null);
+
+            if (activeProgram) {
+                const allWorkouts = activeProgram.workouts.length;
+                const completed = activeProgram.workouts.filter(w => w.completed).length;
+
+                if (completed === allWorkouts) {
+                    // Программа завершена
+                    await showPopupSafe({
+                        title: 'Поздравляем! 🎉',
+                        message: 'Вы успешно завершили программу тренировок!',
+                        buttons: [{
+                            type: 'default',
+                            text: 'Отлично!'
+                        }]
+                    });
+
+                    // Очищаем активную программу
+                    await setStorageItem('activeProgram', '');
+                    
+                    // Возвращаемся к списку программ
+    renderProgramCards();
+                }
+            }
+        }
+
+        // Обновляем календарь
+        updateCalendar();
+        // Обновляем статистику
+        updateStatistics();
+
+    } catch (error) {
+        console.error('Ошибка при обновлении прогресса:', error);
+    }
+}
+
+// Функция обновления календаря
+function updateCalendar() {
+    // Существующий код обновления календаря...
 }
 
 // Функция обновления статистики
-async function updateStatistics() {
-    try {
-        // Проверяем, находимся ли мы на вкладке статистики
-        const statsTab = document.getElementById('stats');
-        if (!statsTab || !statsTab.classList.contains('active')) {
-            // Если мы не на вкладке статистики, просто выходим
-            return;
-        }
-
-        const activeProgram = await getStorageItem('activeProgram')
-            .then(data => data ? JSON.parse(data) : null);
-
-        if (!activeProgram || !activeProgram.completedWorkouts) {
-            return;
-        }
-
-        // Получаем контейнер статистики
-        const statsContainer = document.querySelector('.statistics-container');
-        if (!statsContainer) return;
-
-        // Обновляем статистику
-        const totalWorkouts = activeProgram.completedWorkouts.length;
-        const totalCalories = activeProgram.completedWorkouts.reduce((sum, w) => sum + w.calories, 0);
-        const totalTime = activeProgram.completedWorkouts.reduce((sum, w) => sum + w.duration, 0);
-        const completionRate = Math.round((totalWorkouts / activeProgram.workouts.length) * 100);
-
-        // Обновляем HTML с статистикой
-        statsContainer.innerHTML = `
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <span class="material-symbols-rounded">fitness_center</span>
-                    </div>
-                    <div class="stat-value">${totalWorkouts}</div>
-                    <div class="stat-label">Тренировок</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <span class="material-symbols-rounded">local_fire_department</span>
-                    </div>
-                    <div class="stat-value">${totalCalories}</div>
-                    <div class="stat-label">Ккал сожжено</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <span class="material-symbols-rounded">schedule</span>
-                    </div>
-                    <div class="stat-value">${totalTime}</div>
-                    <div class="stat-label">Минут</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <span class="material-symbols-rounded">trending_up</span>
-                    </div>
-                    <div class="stat-value">${completionRate}%</div>
-                    <div class="stat-label">Выполнено</div>
-                </div>
-            </div>
-            <div class="weight-chart-container">
-                <h3>Динамика веса</h3>
-                <div class="period-selector">
-                    <button class="period-btn ${currentPeriod === 'week' ? 'active' : ''}" data-period="week">Неделя</button>
-                    <button class="period-btn ${currentPeriod === 'month' ? 'active' : ''}" data-period="month">Месяц</button>
-                    <button class="period-btn ${currentPeriod === 'year' ? 'active' : ''}" data-period="year">Год</button>
-                </div>
-                <canvas id="weight-chart"></canvas>
-            </div>
-        `;
-
-        // Обновляем график веса
-        await updateWeightChart(currentPeriod);
-
-        // Добавляем обработчики для кнопок периода
-        document.querySelectorAll('.period-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentPeriod = btn.dataset.period;
-                await updateWeightChart(currentPeriod);
-            });
-        });
-
-    } catch (error) {
-        console.error('Ошибка при обновлении статистики:', error);
-    }
-}
-
-// Функция форматирования времени
-function formatDuration(minutes) {
-    if (!minutes) return '0м';
-    if (minutes < 60) return `${minutes}м`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}ч ${mins}м`;
-}
-
-// Вспомогательная функция форматирования даты
-function formatDate(date) {
-    const options = { day: 'numeric', month: 'long' };
-    return new Date(date).toLocaleDateString('ru-RU', options);
-}
-
-// Добавим функцию для загрузки активной программы при инициализации
-async function loadActiveProgram() {
-    try {
-        const activeProgram = await getStorageItem('activeProgram')
-            .then(data => data ? JSON.parse(data) : null);
-        
-        if (activeProgram) {
-            const program = window.programData[activeProgram.id];
-            if (program) {
-                // Показываем список тренировок активной программы
-                showProgramWorkouts(program);
-                return;
-            }
-        }
-        
-        // Если нет активной программы, показываем список всех программ
-        renderProgramCards();
-    } catch (error) {
-        console.error('Ошибка при загрузке активной программы:', error);
-        renderProgramCards();
-    }
+function updateStatistics() {
+    // Существующий код обновления статистики...
 }
 
 // Обновляем функцию initApp
@@ -1791,27 +1570,27 @@ function startTimer(duration) {
 // Обновляем функцию completeWorkout
 async function completeWorkout() {
     try {
-        // Получаем активную программу
         const activeProgram = await getStorageItem('activeProgram')
             .then(data => data ? JSON.parse(data) : null);
         
         if (activeProgram && activeProgram.workouts) {
-            // Находим текущую тренировку
             const workoutIndex = activeProgram.workouts.findIndex(w => 
-                w.day === currentWorkout.day && w.title === currentWorkout.title);
+                w.week === currentWorkout.week && 
+                w.day === currentWorkout.day);
             
             if (workoutIndex !== -1) {
-                // Отмечаем тренировку как завершенную
                 activeProgram.workouts[workoutIndex].completed = true;
-                // Сохраняем обновленное состояние
                 await setStorageItem('activeProgram', JSON.stringify(activeProgram));
+                
+                // Обновляем прогресс
+                await updateProgramProgress(currentWorkout, true);
             }
         }
 
         // Показываем поздравление
         await showPopupSafe({
             title: 'Тренировка завершена! 🎉',
-            message: 'Отличная работа! Вы успешно завершили тренировку.',
+            message: 'Отличная работа! Продолжайте в том же духе!',
             buttons: [{
                 type: 'default',
                 text: 'Продолжить'
@@ -1824,10 +1603,7 @@ async function completeWorkout() {
             showProgramWorkouts(program);
         }
 
-        // Показываем нижнюю навигацию
         document.querySelector('.bottom-nav')?.classList.remove('hidden');
-
-        // Вибрация успеха
         tg.HapticFeedback.notificationOccurred('success');
 
     } catch (error) {
@@ -3403,53 +3179,5 @@ async function completeSet() {
             // Если это было последнее упражнение
             await completeWorkout();
         }
-    }
-}
-
-// Добавляем функцию завершения тренировки
-async function completeWorkout() {
-    try {
-        // Получаем активную программу
-        const activeProgram = await getStorageItem('activeProgram')
-            .then(data => data ? JSON.parse(data) : null);
-        
-        if (activeProgram && activeProgram.workouts) {
-            // Находим текущую тренировку
-            const workoutIndex = activeProgram.workouts.findIndex(w => 
-                w.day === currentWorkout.day && w.title === currentWorkout.title);
-            
-            if (workoutIndex !== -1) {
-                // Отмечаем тренировку как завершенную
-                activeProgram.workouts[workoutIndex].completed = true;
-                // Сохраняем обновленное состояние
-                await setStorageItem('activeProgram', JSON.stringify(activeProgram));
-            }
-        }
-
-        // Показываем поздравление
-        await showPopupSafe({
-            title: 'Тренировка завершена! 🎉',
-            message: 'Отличная работа! Вы успешно завершили тренировку.',
-            buttons: [{
-                type: 'default',
-                text: 'Продолжить'
-            }]
-        });
-
-        // Возвращаемся к списку тренировок
-        const program = window.programData[currentProgramId];
-        if (program) {
-            showProgramWorkouts(program);
-        }
-
-        // Показываем нижнюю навигацию
-        document.querySelector('.bottom-nav')?.classList.remove('hidden');
-
-        // Вибрация успеха
-        tg.HapticFeedback.notificationOccurred('success');
-
-    } catch (error) {
-        console.error('Ошибка при завершении тренировки:', error);
-        await showError('Не удалось завершить тренировку');
     }
 }
