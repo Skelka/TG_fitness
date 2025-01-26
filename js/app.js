@@ -3,7 +3,7 @@ let tg = window.Telegram.WebApp;
 let mainButton = tg.MainButton;
 let backButton = tg.BackButton;
 let currentWorkout = null;
-let currentPeriod, weightChart;
+let weightChart;
 
 // Переменные для тренировки
 let isTimerMode = false;
@@ -400,8 +400,8 @@ function setupEventListeners() {
         button.addEventListener('click', async () => {
             periodButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
-            currentPeriod = button.dataset.period;
-            await updateWeightChart(currentPeriod);
+            statisticsModule.currentPeriod = button.dataset.period;
+            await updateWeightChart(statisticsModule.currentPeriod);
             tg.HapticFeedback.impactOccurred('light');
         });
     });
