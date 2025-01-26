@@ -2187,13 +2187,12 @@ async function renderProgramCards() {
 
     let html = '';
     Object.entries(window.programData).forEach(([programId, program]) => {
+        const isActive = activeProgram && activeProgram.id === programId;
         const isDisabled = activeProgram && activeProgram.id !== programId;
         
-        // Добавляем id в сами данные программы
-        program.id = programId;
-        
         html += `
-            <div class="program-card ${isDisabled ? 'disabled' : ''}" data-program-id="${programId}">
+            <div class="program-card ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}" 
+                 data-program-id="${programId}">
                 <div class="program-content">
                     <div class="program-icon">
                         <span class="material-symbols-rounded">${program.icon}</span>
@@ -2213,6 +2212,13 @@ async function renderProgramCards() {
                         </div>
                     </div>
                 </div>
+                ${isActive ? `
+                    <div class="program-progress">
+                        <div class="progress-text">
+                            Текущая программа
+                        </div>
+                    </div>
+                ` : ''}
             </div>
         `;
     });
@@ -2228,6 +2234,14 @@ async function renderProgramCards() {
             if (!card.classList.contains('disabled')) {
                 showProgramDetails(programId);
                 tg.HapticFeedback.impactOccurred('light');
+            } else {
+                // Показываем сообщение о недоступности
+                tg.HapticFeedback.notificationOccurred('error');
+                showPopupSafe({
+                    title: 'Программа недоступна',
+                    message: 'Сначала завершите текущую программу',
+                    buttons: [{type: 'ok'}]
+                });
             }
         });
     });
