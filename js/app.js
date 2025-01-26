@@ -309,20 +309,32 @@ function updateProfileStatus(profile) {
 }
 
 // Функция для показа уведомления
-function showNotification(message, type = 'success') {
+function showNotification(message, isError = false) {
+    // Удаляем предыдущее уведомление, если оно есть
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+
+    // Создаем новое уведомление
     const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
+    notification.className = `notification${isError ? ' error' : ''}`;
     notification.textContent = message;
-    
+
+    // Добавляем уведомление на страницу
     document.body.appendChild(notification);
-    
-    // Добавляем класс для анимации появления
-    setTimeout(() => notification.classList.add('show'), 100);
-    
-    // Удаляем уведомление через 3 секунды
-        setTimeout(() => {
+
+    // Показываем уведомление
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+
+    // Скрываем и удаляем уведомление через 3 секунды
+    setTimeout(() => {
         notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
     }, 3000);
 }
 
@@ -716,65 +728,43 @@ async function showProgramDetails(programId) {
 
 // Функция для отображения тренировок программы
 async function showProgramWorkouts(program) {
-    if (!program || !program.workouts) return;
+    const programsList = document.querySelector('.programs-list');
+    if (!programsList) return;
 
-    const container = document.querySelector('.programs-list');
-    if (!container) return;
-
-    try {
-        // Получаем активную программу для проверки прогресса
-        const activeProgram = await getStorageItem('activeProgram')
-            .then(data => data ? JSON.parse(data) : null);
-
-        let html = `
-            <div class="program-header">
-                <button class="back-btn">
-                    <span class="material-symbols-rounded">arrow_back</span>
-                </button>
-                <h2>${program.title}</h2>
-            </div>
-            <div class="workouts-list">
-        `;
-
-        program.workouts.forEach((workout, index) => {
-            const isCompleted = activeProgram?.workouts[index]?.completed;
-            const isStarted = activeProgram?.workouts[index]?.started;
-
-            html += `
-                <div class="workout-day ${isCompleted ? 'completed' : ''} ${isStarted ? 'started' : ''}">
-                    <div class="workout-info">
-                        <h3>День ${index + 1}</h3>
-                        <h4>${workout.title}</h4>
-                        <div class="workout-meta">
-                            <span>
-                                <span class="material-symbols-rounded">timer</span>
-                                ${workout.duration} мин
-                            </span>
-                            <span>
-                                <span class="material-symbols-rounded">local_fire_department</span>
-                                ${workout.calories} ккал
-                            </span>
+    programsList.innerHTML = `
+        <div class="program-header">
+            <button class="back-btn" onclick="renderProgramCards()">
+                <span class="material-symbols-rounded">arrow_back</span>
+            </button>
+            <h2>${program.name}</h2>
+        </div>
+        <div class="program-days">
+            ${program.workouts.map((workout, index) => `
+                <div class="workout-day">
+                    <div class="workout-day-content">
+                        <div class="workout-day-icon">
+                            <span class="material-symbols-rounded">exercise</span>
+                        </div>
+                        <div class="workout-day-text">
+                            <span class="day-number">День ${index + 1}</span>
+                            <h3>${workout.name}</h3>
+                            <p>${workout.description}</p>
+                            <div class="workout-meta">
+                                <span>
+                                    <span class="material-symbols-rounded">timer</span>
+                                    ${workout.duration} мин
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    <button class="start-workout-btn" data-workout-index="${index}">
-                        ${isCompleted ? 
-                            '<span class="material-symbols-rounded">check_circle</span>Повторить' : 
-                            '<span class="material-symbols-rounded">play_arrow</span>Начать'}
+                    <button class="start-workout-btn" onclick="startWorkout('${program.id}', '${workout.id}')">
+                        <span class="material-symbols-rounded">play_arrow</span>
+                        Начать тренировку
                     </button>
                 </div>
-            `;
-        });
-
-        html += '</div>';
-        container.innerHTML = html;
-
-        // Добавляем обработчики
-        setupWorkoutHandlers(program);
-
-    } catch (error) {
-        console.error('Ошибка при отображении тренировок:', error);
-        container.innerHTML = '<div class="no-data">Ошибка при загрузке тренировок</div>';
-    }
+            `).join('')}
+        </div>
+    `;
 }
 
 // Функция показа результатов программы
@@ -1323,98 +1313,111 @@ function renderStatistics() {
         });
 }
 
-async function initializeDefaultPrograms() {
-    try {
-        // Проверяем, были ли уже инициализированы программы
-        const programsInitialized = await getStorageItem('programsInitialized');
-        if (programsInitialized) return;
-
-        // Базовые программы
-        const defaultPrograms = {
-            weight_loss: {
-                id: 'weight_loss',
-                title: 'Снижение веса',
-                description: 'Программа для безопасного снижения веса с комбинацией кардио и силовых тренировок',
-                duration: '8 недель',
-                schedule: '3-4 тренировки в неделю',
+function initializeDefaultPrograms() {
+    const existingPrograms = getStorageItem('programs');
+    if (!existingPrograms) {
+        const defaultPrograms = [
+            {
+                id: 'beginner_strength',
+                name: 'Базовая сила',
+                description: 'Программа для начинающих, направленная на развитие силы и мышечной массы',
+                icon: 'fitness_center',
                 difficulty: 'beginner',
-                icon: 'monitor_weight',
+                duration: 4,
+                workoutsPerWeek: 3,
+                isCompleted: false,
                 workouts: [
                     {
-                        day: 1,
-                        title: 'Кардио + Пресс',
+                        id: 'workout_1',
+                        name: 'Тренировка A',
+                        description: 'Фокус на верхнюю часть тела',
                         duration: 45,
-                        calories: 350,
-                        type: 'cardio',
-                        exercises: [
-                            { name: 'Разминка', duration: 5 },
-                            { name: 'Бег/Ходьба', duration: 20 },
-                            { name: 'Скручивания', sets: 3, reps: 15 },
-                            { name: 'Планка', duration: 3 },
-                            { name: 'Растяжка', duration: 5 }
-                        ]
+                        exercises: []
                     },
                     {
-                        day: 2,
-                        title: 'Силовая тренировка',
-                        duration: 50,
-                        calories: 400,
-                        type: 'strength',
-                        exercises: [
-                            { name: 'Приседания', sets: 3, reps: 15 },
-                            { name: 'Отжимания', sets: 3, reps: 10 },
-                            { name: 'Выпады', sets: 3, reps: 12 },
-                            { name: 'Планка', duration: 1 }
-                        ]
+                        id: 'workout_2',
+                        name: 'Тренировка B',
+                        description: 'Фокус на нижнюю часть тела',
+                        duration: 45,
+                        exercises: []
+                    },
+                    {
+                        id: 'workout_3',
+                        name: 'Тренировка C',
+                        description: 'Общая тренировка',
+                        duration: 45,
+                        exercises: []
                     }
                 ]
             },
-            muscle_gain: {
-                id: 'muscle_gain',
-                title: 'Набор мышечной массы',
-                description: 'Программа для эффективного набора мышечной массы с акцентом на силовые упражнения',
-                duration: '12 недель',
-                schedule: '4 тренировки в неделю',
+            {
+                id: 'cardio_endurance',
+                name: 'Кардио и выносливость',
+                description: 'Программа для улучшения выносливости и сжигания жира',
+                icon: 'directions_run',
                 difficulty: 'intermediate',
-                icon: 'fitness_center',
+                duration: 6,
+                workoutsPerWeek: 4,
+                isCompleted: false,
                 workouts: [
                     {
-                        day: 1,
-                        title: 'Грудь + Трицепс',
-                        duration: 60,
-                        calories: 450,
-                        type: 'strength',
-                        exercises: [
-                            { name: 'Жим лежа', sets: 4, reps: 12 },
-                            { name: 'Отжимания', sets: 3, reps: 15 },
-                            { name: 'Разгибания трицепса', sets: 3, reps: 12 }
-                        ]
+                        id: 'workout_1',
+                        name: 'ВИИТ',
+                        description: 'Высокоинтенсивная интервальная тренировка',
+                        duration: 30,
+                        exercises: []
                     },
                     {
-                        day: 2,
-                        title: 'Спина + Бицепс',
+                        id: 'workout_2',
+                        name: 'Круговая тренировка',
+                        description: 'Комплексная тренировка на все тело',
+                        duration: 40,
+                        exercises: []
+                    }
+                ]
+            },
+            {
+                id: 'advanced_strength',
+                name: 'Продвинутая сила',
+                description: 'Программа для опытных атлетов, нацеленная на максимальную силу',
+                icon: 'exercise',
+                difficulty: 'advanced',
+                duration: 8,
+                workoutsPerWeek: 5,
+                isCompleted: false,
+                workouts: [
+                    {
+                        id: 'workout_1',
+                        name: 'Силовая тренировка',
+                        description: 'Тяжелые базовые упражнения',
                         duration: 60,
-                        calories: 450,
-                        type: 'strength',
-                        exercises: [
-                            { name: 'Подтягивания', sets: 4, reps: '8-10' },
-                            { name: 'Тяга в наклоне', sets: 3, reps: 12 },
-                            { name: 'Сгибания на бицепс', sets: 3, reps: 12 }
-                        ]
+                        exercises: []
+                    },
+                    {
+                        id: 'workout_2',
+                        name: 'Гипертрофия',
+                        description: 'Тренировка на рост мышечной массы',
+                        duration: 55,
+                        exercises: []
                     }
                 ]
             }
-        };
+        ];
 
-        // Сохраняем программы
-        await setStorageItem('programData', JSON.stringify(defaultPrograms));
-        await setStorageItem('programsInitialized', 'true');
+        setStorageItem('programs', defaultPrograms);
+        console.log('Программы по умолчанию инициализированы');
+    }
+}
 
-        // Обновляем глобальную переменную
-        window.programData = defaultPrograms;
-
-        console.log('Программы успешно инициализированы');
-    } catch (error) {
-        console.error('Ошибка при инициализации программ:', error);
+function getDifficultyText(difficulty) {
+    switch (difficulty) {
+        case 'beginner':
+            return 'Начальный';
+        case 'intermediate':
+            return 'Средний';
+        case 'advanced':
+            return 'Продвинутый';
+        default:
+            return 'Начальный';
     }
 }
