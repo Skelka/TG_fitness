@@ -1,3 +1,5 @@
+import { getStorageItem } from './utils.js';
+
 // Глобальные переменные для календаря
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();

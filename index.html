@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fitness Tracker</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
-    <script src="js/exercises-animations.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
 <body>
     <div class="container">
@@ -289,12 +286,21 @@
             </form>
         </div>
     </div>
-    <script src="js/exercise-images.js"></script>
+
+    <!-- Сначала загружаем внешние библиотеки -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Затем загружаем данные и утилиты -->
     <script src="js/data.js"></script>
     <script src="js/exercises-db.js"></script>
-    <script src="js/profile.js"></script>
-    <script src="js/statistics.js"></script>
+    <script src="js/exercises-animations.js"></script>
+    <script src="js/exercise-images.js"></script>
+
+    <!-- Загружаем модули -->
     <script type="module" src="js/utils.js"></script>
+    <script type="module" src="js/profile.js"></script>
+    <script type="module" src="js/statistics.js"></script>
     <script type="module" src="js/calendar.js"></script>
     <script type="module" src="js/app.js"></script>
 </body>
