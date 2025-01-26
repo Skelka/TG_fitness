@@ -16,6 +16,11 @@ let timerInterval = null;
 let restInterval = null;
 let workoutStartTime = null; // Добавляем переменную для отслеживания времени тренировки
 
+// Добавляем переменные для таймеров
+let workoutTimer = null;
+let restTimer = null;
+let exerciseTimer = null;
+
 // Функция для безопасного показа попапа
 async function showPopupSafe(params) {
     const maxAttempts = 3;
@@ -593,6 +598,70 @@ async function startWorkout(programId, workoutId) {
         console.error('Ошибка при запуске тренировки:', error);
         showError('Не удалось начать тренировку');
     }
+}
+
+// Функция для отображения текущего упражнения
+async function renderExercise() {
+    if (!currentWorkout || !currentWorkout.exercises) {
+        showError('Ошибка: данные тренировки не загружены');
+        return;
+    }
+
+    const exercise = currentWorkout.exercises[currentExerciseIndex];
+    if (!exercise) {
+        showError('Ошибка: упражнение не найдено');
+        return;
+    }
+
+    const container = document.querySelector('.container');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="workout-header">
+            <h2>${currentWorkout.name}</h2>
+            <button class="close-btn" onclick="confirmQuitWorkout()">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+        <div class="exercise-container">
+            <div class="exercise-header">
+                <h3>${exercise.name}</h3>
+                <p>${exercise.description || ''}</p>
+            </div>
+            ${exercise.image ? `<img src="${exercise.image}" alt="${exercise.name}" class="exercise-image">` : ''}
+            <div class="exercise-info">
+                ${exercise.sets ? `
+                    <div class="sets-info">
+                        <span class="material-symbols-rounded">repeat</span>
+                        <span>Подход ${currentSet} из ${exercise.sets}</span>
+                    </div>
+                ` : ''}
+                ${exercise.reps ? `
+                    <div class="reps-info">
+                        <span class="material-symbols-rounded">fitness_center</span>
+                        <span>${exercise.reps} повторений</span>
+                    </div>
+                ` : ''}
+                ${exercise.duration ? `
+                    <div class="duration-info">
+                        <span class="material-symbols-rounded">timer</span>
+                        <span>${exercise.duration} сек</span>
+                    </div>
+                ` : ''}
+            </div>
+            <div class="exercise-controls">
+                <button class="control-btn prev" onclick="prevExercise()" ${currentExerciseIndex === 0 ? 'disabled' : ''}>
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                <button class="control-btn complete" onclick="completeExercise()">
+                    <span class="material-symbols-rounded">check</span>
+                </button>
+                <button class="control-btn next" onclick="nextExercise()" ${currentExerciseIndex === currentWorkout.exercises.length - 1 ? 'disabled' : ''}>
+                    <span class="material-symbols-rounded">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+    `;
 }
 
 // Основная логика выполнения тренировки переносится в отдельную функцию
@@ -1518,24 +1587,159 @@ async function initializeDefaultPrograms() {
                     workouts: [
                         {
                             id: 'workout_1',
-                            name: 'Тренировка A',
+                            name: 'Тренировка A (Верх)',
                             description: 'Фокус на верхнюю часть тела',
                             duration: 45,
-                            exercises: []
+                            exercises: [
+                                {
+                                    id: 'warmup_1',
+                                    name: 'Разминка',
+                                    type: 'warmup',
+                                    duration: 5,
+                                    description: 'Легкая разминка всего тела'
+                                },
+                                {
+                                    id: 'ex_1',
+                                    name: 'Отжимания',
+                                    type: 'strength',
+                                    sets: 3,
+                                    reps: 10,
+                                    rest: 60,
+                                    description: 'Классические отжимания от пола',
+                                    muscleGroups: ['chest', 'shoulders', 'triceps']
+                                },
+                                {
+                                    id: 'ex_2',
+                                    name: 'Тяга с упором в стену',
+                                    type: 'strength',
+                                    sets: 3,
+                                    reps: 12,
+                                    rest: 60,
+                                    description: 'Тяга для укрепления мышц спины',
+                                    muscleGroups: ['back', 'biceps']
+                                },
+                                {
+                                    id: 'ex_3',
+                                    name: 'Планка',
+                                    type: 'static',
+                                    sets: 3,
+                                    duration: 30,
+                                    rest: 45,
+                                    description: 'Удержание планки',
+                                    muscleGroups: ['core']
+                                },
+                                {
+                                    id: 'cooldown_1',
+                                    name: 'Заминка',
+                                    type: 'cooldown',
+                                    duration: 5,
+                                    description: 'Растяжка мышц верхней части тела'
+                                }
+                            ]
                         },
                         {
                             id: 'workout_2',
-                            name: 'Тренировка B',
+                            name: 'Тренировка B (Низ)',
                             description: 'Фокус на нижнюю часть тела',
                             duration: 45,
-                            exercises: []
+                            exercises: [
+                                {
+                                    id: 'warmup_2',
+                                    name: 'Разминка',
+                                    type: 'warmup',
+                                    duration: 5,
+                                    description: 'Разминка с акцентом на ноги'
+                                },
+                                {
+                                    id: 'ex_4',
+                                    name: 'Приседания',
+                                    type: 'strength',
+                                    sets: 3,
+                                    reps: 15,
+                                    rest: 60,
+                                    description: 'Классические приседания',
+                                    muscleGroups: ['legs']
+                                },
+                                {
+                                    id: 'ex_5',
+                                    name: 'Выпады',
+                                    type: 'strength',
+                                    sets: 3,
+                                    reps: 10,
+                                    rest: 60,
+                                    description: 'Выпады на каждую ногу',
+                                    muscleGroups: ['legs']
+                                },
+                                {
+                                    id: 'ex_6',
+                                    name: 'Подъемы на носки',
+                                    type: 'strength',
+                                    sets: 3,
+                                    reps: 20,
+                                    rest: 45,
+                                    description: 'Подъемы на носки стоя',
+                                    muscleGroups: ['calves']
+                                },
+                                {
+                                    id: 'cooldown_2',
+                                    name: 'Заминка',
+                                    type: 'cooldown',
+                                    duration: 5,
+                                    description: 'Растяжка мышц ног'
+                                }
+                            ]
                         },
                         {
                             id: 'workout_3',
-                            name: 'Тренировка C',
-                            description: 'Общая тренировка',
+                            name: 'Тренировка C (Всё тело)',
+                            description: 'Комплексная тренировка на все тело',
                             duration: 45,
-                            exercises: []
+                            exercises: [
+                                {
+                                    id: 'warmup_3',
+                                    name: 'Разминка',
+                                    type: 'warmup',
+                                    duration: 5,
+                                    description: 'Общая разминка'
+                                },
+                                {
+                                    id: 'ex_7',
+                                    name: 'Берпи',
+                                    type: 'cardio',
+                                    sets: 3,
+                                    reps: 8,
+                                    rest: 60,
+                                    description: 'Комплексное упражнение',
+                                    muscleGroups: ['full_body']
+                                },
+                                {
+                                    id: 'ex_8',
+                                    name: 'Скручивания',
+                                    type: 'strength',
+                                    sets: 3,
+                                    reps: 15,
+                                    rest: 45,
+                                    description: 'Упражнение на пресс',
+                                    muscleGroups: ['core']
+                                },
+                                {
+                                    id: 'ex_9',
+                                    name: 'Обратные отжимания от стула',
+                                    type: 'strength',
+                                    sets: 3,
+                                    reps: 12,
+                                    rest: 60,
+                                    description: 'Отжимания для трицепса',
+                                    muscleGroups: ['triceps', 'shoulders']
+                                },
+                                {
+                                    id: 'cooldown_3',
+                                    name: 'Заминка',
+                                    type: 'cooldown',
+                                    duration: 5,
+                                    description: 'Общая растяжка'
+                                }
+                            ]
                         }
                     ]
                 },
@@ -2013,4 +2217,14 @@ function analyzeExercisesDatabase() {
         console.error('Ошибка при анализе базы упражнений:', error);
         return null;
     }
+}
+
+// Функция очистки таймеров
+function clearTimers() {
+    if (workoutTimer) clearInterval(workoutTimer);
+    if (restTimer) clearInterval(restTimer);
+    if (exerciseTimer) clearInterval(exerciseTimer);
+    workoutTimer = null;
+    restTimer = null;
+    exerciseTimer = null;
 }
