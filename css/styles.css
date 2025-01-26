@@ -1260,6 +1260,7 @@ input:focus, select:focus {
     position: relative;
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* Запрещаем прокрутку */
 }
 
 .workout-content {
@@ -1268,11 +1269,11 @@ input:focus, select:focus {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 0; /* Важно для корректной работы flex */
+    overflow: hidden; /* Запрещаем прокрутку */
 }
 
 .exercise-background {
-    position: absolute;
+    position: fixed; /* Фиксируем фон */
     top: 0;
     left: 0;
     width: 100%;
@@ -1365,12 +1366,12 @@ input:focus, select:focus {
 }
 
 .exercise-controls {
-    position: relative; /* Изменено с sticky */
+    position: relative;
     padding: 16px;
     background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(10px);
-    margin-top: auto; /* Прижимаем к низу */
-    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
+    z-index: 3; /* Поднимаем выше остального контента */
+    padding-bottom: max(16px, env(safe-area-inset-bottom)); /* Учитываем отступ для iPhone */
 }
 
 .complete-set-btn {
@@ -1771,4 +1772,111 @@ input[type="number"]::-webkit-inner-spin-button {
     opacity: 0.1;
     pointer-events: none;
     border-radius: inherit;
+}
+
+/* Стили для списка тренировок */
+.workout-list {
+    padding: 16px;
+}
+
+.workout-list-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+}
+
+.workout-list-header h2 {
+    margin: 0;
+    font-size: 24px;
+    color: var(--tg-theme-text-color);
+}
+
+.workout-day {
+    background: var(--tg-theme-bg-color);
+    border-radius: 16px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    border: 1px solid var(--tg-theme-secondary-bg-color);
+    padding: 16px;
+}
+
+.workout-day.completed {
+    opacity: 0.7;
+}
+
+.workout-day-header {
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 8px;
+}
+
+.workout-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color);
+    margin-bottom: 12px;
+}
+
+.workout-meta {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+}
+
+.workout-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.workout-meta .material-symbols-rounded {
+    font-size: 16px;
+    opacity: 0.8;
+}
+
+.start-workout-btn {
+    width: 100%;
+    height: 48px;
+    border-radius: 12px;
+    border: none;
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    font-size: 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.start-workout-btn:active {
+    opacity: 0.8;
+}
+
+.workout-day.completed .start-workout-btn {
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-hint-color);
+}
+
+.workout-day.completed::after {
+    content: '✓';
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 20px;
+    color: #4CAF50;
+}
+
+/* Обновляем стили для нижней навигации */
+.bottom-nav {
+    z-index: 4; /* Поднимаем навигацию выше всего */
 } 

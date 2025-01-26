@@ -2256,54 +2256,41 @@ async function showProgramDetails(programId) {
 }
 
 // Обновляем функцию showProgramWorkouts
-async function showProgramWorkouts(program) {
-    console.log('Показываем программу:', program);
-    
-    const programsList = document.querySelector('.programs-list');
-    if (!program || !program.workouts) {
-        console.error('Программа или тренировки не определены:', program);
-        return;
-    }
+function showProgramWorkouts(program) {
+    const container = document.querySelector('.programs-list');
+    if (!container) return;
 
-    // Убираем скрытие нижней навигации отсюда
-    programsList.innerHTML = `
-        <div class="program-workouts">
-            <div class="program-header">
+    container.innerHTML = `
+        <div class="workout-list">
+            <div class="workout-list-header">
                 <button class="back-btn">
                     <span class="material-symbols-rounded">arrow_back</span>
                 </button>
                 <h2>${program.title}</h2>
             </div>
-            <div class="program-days">
-                ${program.workouts.map((workout, index) => `
-                    <div class="workout-day">
-                        <div class="day-header">
-                            <span class="day-number">День ${workout.day}</span>
-                        </div>
-                        <div class="day-info">
-                            <h3>${workout.title}</h3>
-                            <div class="workout-meta">
-                                <span>
-                                    <span class="material-symbols-rounded">timer</span>
-                                    ${workout.duration} мин
-                                </span>
-                                <span>
-                                    <span class="material-symbols-rounded">local_fire_department</span>
-                                    ${workout.calories} ккал
-                                </span>
-                            </div>
-                        </div>
-                        <button class="start-workout-btn" data-workout-index="${index}">
-                            <span class="material-symbols-rounded">play_arrow</span>
-                            Начать
-                        </button>
+            
+            ${program.workouts.map((workout, index) => `
+                <div class="workout-day ${workout.completed ? 'completed' : ''}">
+                    <div class="workout-day-header">День ${workout.day}</div>
+                    <div class="workout-title">${workout.title}</div>
+                    <div class="workout-meta">
+                        <span>
+                            <span class="material-symbols-rounded">timer</span>
+                            ${workout.duration} мин
+                        </span>
+                        <span>
+                            <span class="material-symbols-rounded">local_fire_department</span>
+                            ${workout.calories} ккал
+                        </span>
                     </div>
-                `).join('')}
-            </div>
+                    <button class="start-workout-btn" data-workout-index="${index}">
+                        ${workout.completed ? 'Повторить' : 'Начать'}
+                    </button>
+                </div>
+            `).join('')}
         </div>
     `;
 
-    // Добавляем обработчики
     setupWorkoutHandlers(program);
 }
 
