@@ -158,7 +158,11 @@ async function initApp() {
 
         // Анализируем базу упражнений
         const exercisesAnalysis = analyzeExercisesDatabase();
-        console.log('Анализ базы упражнений завершен');
+        if (!exercisesAnalysis) {
+            console.warn('Анализ базы упражнений не выполнен, продолжаем инициализацию...');
+        } else {
+            console.log('Анализ базы упражнений завершен');
+        }
 
         // Инициализируем программы при первом запуске
         await initializeDefaultPrograms();
@@ -1752,55 +1756,85 @@ async function generateWorkoutPlan(program, profileData) {
 }
 
 function analyzeExercisesDatabase() {
-    const exercises = window.exercisesDB.exercises;
-    if (!exercises) {
-        console.error('База упражнений не загружена');
-        return;
-    }
-
-    const analysis = {
-        total: Object.keys(exercises).length,
-        byEquipment: {},
-        byMuscleGroup: {},
-        byDifficulty: {
-            1: 0, // beginner
-            2: 0, // intermediate
-            3: 0  // advanced
-        },
-        byPlace: {
-            home: 0,
-            gym: 0,
-            outdoor: 0,
-            any: 0
-        }
-    };
-
-    Object.values(exercises).forEach(exercise => {
-        // Подсчет по оборудованию
-        if (exercise.equipment && exercise.equipment.length) {
-            exercise.equipment.forEach(eq => {
-                analysis.byEquipment[eq] = (analysis.byEquipment[eq] || 0) + 1;
-            });
-        } else {
-            analysis.byEquipment['bodyweight'] = (analysis.byEquipment['bodyweight'] || 0) + 1;
+    try {
+        if (!window.exercisesDB || !window.exercisesDB.exercises) {
+            console.warn('База упражнений не загружена или имеет неверный формат');
+            return {
+                total: 0,
+                byEquipment: {},
+                byMuscleGroup: {},
+                byDifficulty: {
+                    1: 0,
+                    2: 0,
+                    3: 0
+                },
+                byPlace: {
+                    home: 0,
+                    gym: 0,
+                    outdoor: 0,
+                    any: 0
+                }
+            };
         }
 
-        // Подсчет по мышечным группам
-        exercise.muscleGroups.forEach(group => {
-            analysis.byMuscleGroup[group] = (analysis.byMuscleGroup[group] || 0) + 1;
+        const exercises = window.exercisesDB.exercises;
+        const analysis = {
+            total: Object.keys(exercises).length,
+            byEquipment: {},
+            byMuscleGroup: {},
+            byDifficulty: {
+                1: 0,
+                2: 0,
+                3: 0
+            },
+            byPlace: {
+                home: 0,
+                gym: 0,
+                outdoor: 0,
+                any: 0
+            }
+        };
+
+        Object.values(exercises).forEach(exercise => {
+            if (!exercise) return;
+
+            // Подсчет по оборудованию
+            if (Array.isArray(exercise.equipment) && exercise.equipment.length) {
+                exercise.equipment.forEach(eq => {
+                    if (eq) {
+                        analysis.byEquipment[eq] = (analysis.byEquipment[eq] || 0) + 1;
+                    }
+                });
+            } else {
+                analysis.byEquipment['bodyweight'] = (analysis.byEquipment['bodyweight'] || 0) + 1;
+            }
+
+            // Подсчет по мышечным группам
+            if (Array.isArray(exercise.muscleGroups)) {
+                exercise.muscleGroups.forEach(group => {
+                    if (group) {
+                        analysis.byMuscleGroup[group] = (analysis.byMuscleGroup[group] || 0) + 1;
+                    }
+                });
+            }
+
+            // Подсчет по сложности
+            if (exercise.difficulty) {
+                analysis.byDifficulty[exercise.difficulty] = (analysis.byDifficulty[exercise.difficulty] || 0) + 1;
+            }
+
+            // Подсчет по месту выполнения
+            if (exercise.place) {
+                analysis.byPlace[exercise.place]++;
+            } else {
+                analysis.byPlace.any++;
+            }
         });
 
-        // Подсчет по сложности
-        analysis.byDifficulty[exercise.difficulty] = (analysis.byDifficulty[exercise.difficulty] || 0) + 1;
-
-        // Подсчет по месту выполнения
-        if (exercise.place) {
-            analysis.byPlace[exercise.place]++;
-        } else {
-            analysis.byPlace.any++;
-        }
-    });
-
-    console.log('Анализ базы упражнений:', analysis);
-    return analysis;
+        console.log('Анализ базы упражнений:', analysis);
+        return analysis;
+    } catch (error) {
+        console.error('Ошибка при анализе базы упражнений:', error);
+        return null;
+    }
 }
