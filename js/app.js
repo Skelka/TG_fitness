@@ -21,6 +21,8 @@ let workoutTimer = null;
 let restTimer = null;
 let exerciseTimer = null;
 
+let isTimerPaused = false;
+
 // Функция для безопасного показа попапа
 async function showPopupSafe(params) {
     const maxAttempts = 3;
@@ -547,56 +549,142 @@ const PROGRAM_TYPES = {
 
 // Обновляем функцию startWorkout
 async function startWorkout(programId, workoutId) {
-    console.log('Начинаем тренировку:', 'ID программы:', programId, 'ID тренировки:', workoutId);
-    
     try {
-        // Получаем программу и тренировку по ID
         const program = window.programData.find(p => p.id === programId);
-        if (!program) {
-            throw new Error('Программа не найдена');
-        }
-
-        const workout = program.workouts.find(w => w.id === workoutId);
-        if (!workout) {
-            throw new Error('Тренировка не найдена');
-        }
-
-        // Сохраняем данные текущей тренировки
-        currentWorkout = workout;
-        currentProgramId = programId;
-        currentExerciseIndex = 0;
-        currentSet = 1;
-        workoutStartTime = Date.now();
-
-        // Очищаем все таймеры
-        clearTimers();
-
-        // Скрываем нижнюю навигацию
-        const bottomNav = document.querySelector('.bottom-nav');
-        if (bottomNav) bottomNav.classList.add('hidden');
-
-        // Получаем активную программу
-        const activeProgram = await getStorageItem('activeProgram')
-            .then(data => data ? JSON.parse(data) : null);
+        if (!program) throw new Error('Программа не найдена');
         
-        if (activeProgram && activeProgram.workouts) {
-            const workoutIndex = activeProgram.workouts.findIndex(w => w.id === workoutId);
-            
-            if (workoutIndex !== -1) {
-                activeProgram.workouts[workoutIndex].started = true;
-                await setStorageItem('activeProgram', JSON.stringify(activeProgram));
-            }
-        }
-
-        // Показываем первое упражнение
-        await renderExercise();
-
-        // Вибрация при начале тренировки
-        tg.HapticFeedback.impactOccurred('medium');
-
+        const workout = program.workouts.find(w => w.id === workoutId);
+        if (!workout) throw new Error('Тренировка не найдена');
+        
+        currentWorkout = workout;
+        currentExerciseIndex = 0;
+        
+        document.querySelector('.container').innerHTML = '<div class="workout-session"><div class="workout-content"></div></div>';
+        renderExercise(workout.exercises[0], 0, workout.exercises.length);
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
-        showError('Не удалось начать тренировку');
+        showNotification(error.message, true);
+    }
+}
+
+function previousExercise() {
+    if (!currentWorkout || currentExerciseIndex <= 0) return;
+    currentExerciseIndex--;
+    renderExercise(currentWorkout.exercises[currentExerciseIndex], currentExerciseIndex, currentWorkout.exercises.length);
+    tg.HapticFeedback.notificationOccurred('medium');
+}
+
+function nextExercise() {
+    if (!currentWorkout || currentExerciseIndex >= currentWorkout.exercises.length - 1) return;
+    currentExerciseIndex++;
+    renderExercise(currentWorkout.exercises[currentExerciseIndex], currentExerciseIndex, currentWorkout.exercises.length);
+    tg.HapticFeedback.notificationOccurred('medium');
+}
+
+async function confirmQuitWorkout() {
+    const result = await showPopupSafe({
+        title: 'Завершить тренировку?',
+        message: 'Вы уверены, что хотите завершить тренировку? Прогресс будет потерян.',
+        buttons: [
+            {
+                id: 'quit_workout',
+                type: 'destructive',
+                text: 'Завершить'
+            },
+            {
+                type: 'cancel',
+                text: 'Продолжить тренировку'
+            }
+        ]
+    });
+
+    if (result && result.button_id === 'quit_workout') {
+        clearTimers();
+        renderProgramCards();
+        document.querySelector('.bottom-nav')?.classList.remove('hidden');
+        tg.HapticFeedback.notificationOccurred('warning');
+    }
+}
+
+async function completeExercise() {
+    if (!currentWorkout || !currentWorkout.exercises) return;
+
+    const exercise = currentWorkout.exercises[currentExerciseIndex];
+    if (!exercise) return;
+
+    // Очищаем таймеры текущего упражнения
+    if (exerciseTimer) clearInterval(exerciseTimer);
+
+    // Если это последнее упражнение
+    if (currentExerciseIndex === currentWorkout.exercises.length - 1) {
+        await completeWorkout();
+    } else {
+        // Показываем уведомление
+        showNotification('Упражнение завершено!');
+        tg.HapticFeedback.notificationOccurred('success');
+
+        // Запускаем таймер отдыха
+        const restTime = exercise.rest || 60;
+        startRestTimer(restTime);
+
+        // Автоматически переходим к следующему упражнению после отдыха
+        setTimeout(() => {
+            nextExercise();
+        }, restTime * 1000);
+    }
+}
+
+function completeWorkout() {
+    const container = document.querySelector('.workout-content');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="workout-complete">
+            <div class="complete-icon">
+                <span class="material-symbols-rounded">task_alt</span>
+            </div>
+            <h2>Тренировка завершена!</h2>
+            <div class="workout-stats">
+                <div class="stat-item">
+                    <div class="stat-value">${currentWorkout.exercises.length}</div>
+                    <div class="stat-label">Упражнений</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${Math.floor(currentWorkout.duration / 60)}</div>
+                    <div class="stat-label">Минут</div>
+                </div>
+            </div>
+            <button class="finish-btn" onclick="closeWorkout()">
+                <span class="material-symbols-rounded">home</span>
+                Вернуться
+            </button>
+        </div>
+    `;
+    
+    saveWorkoutProgress(currentWorkout.id);
+    showNotification('Отличная работа! Тренировка завершена!');
+}
+
+function closeWorkout() {
+    if (exerciseTimer) clearInterval(exerciseTimer);
+    if (restTimer) clearInterval(restTimer);
+    currentWorkout = null;
+    currentExerciseIndex = 0;
+    showTab('programs');
+    tg.HapticFeedback.notificationOccurred('medium');
+}
+
+function saveWorkoutProgress(workoutId) {
+    try {
+        let progress = JSON.parse(localStorage.getItem('workoutProgress') || '{}');
+        progress[workoutId] = {
+            completed: true,
+            completedAt: new Date().toISOString()
+        };
+        localStorage.setItem('workoutProgress', JSON.stringify(progress));
+        tg.CloudStorage.setItem('workoutProgress', JSON.stringify(progress));
+    } catch (error) {
+        console.error('Ошибка при сохранении прогресса:', error);
     }
 }
 
@@ -3115,4 +3203,224 @@ function clearTimers() {
     workoutTimer = null;
     restTimer = null;
     exerciseTimer = null;
+}
+
+function startExerciseTimer(duration) {
+    let timeLeft = duration;
+    updateTimerDisplay(timeLeft);
+    
+    exerciseTimer = setInterval(() => {
+        if (!isTimerPaused) {
+            timeLeft--;
+            updateTimerDisplay(timeLeft);
+            
+            if (timeLeft <= 0) {
+                clearInterval(exerciseTimer);
+                showNotification('Упражнение завершено!');
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        }
+    }, 1000);
+}
+
+function toggleTimer() {
+    isTimerPaused = !isTimerPaused;
+    const pauseBtn = document.querySelector('.pause-btn');
+    
+    if (isTimerPaused) {
+        pauseBtn.textContent = 'play_arrow';
+        showNotification('Таймер на паузе');
+    } else {
+        pauseBtn.textContent = 'pause';
+        showNotification('Таймер запущен');
+    }
+}
+
+function updateTimerDisplay(seconds) {
+    const timerElement = document.querySelector('.timer');
+    if (timerElement) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        timerElement.textContent = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+}
+
+function startRestTimer(duration) {
+    let timeLeft = duration;
+    const restTimerElement = document.createElement('div');
+    restTimerElement.className = 'rest-timer';
+    restTimerElement.innerHTML = `
+        <h3>Отдых</h3>
+        <div class="timer">${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}</div>
+        <button class="skip-rest-btn" onclick="skipRest()">
+            <span class="material-symbols-rounded">skip_next</span>
+            Пропустить
+        </button>
+    `;
+    
+    document.body.appendChild(restTimerElement);
+    
+    restTimer = setInterval(() => {
+        timeLeft--;
+        const timerDisplay = restTimerElement.querySelector('.timer');
+        if (timerDisplay) {
+            timerDisplay.textContent = `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}`;
+        }
+        
+        if (timeLeft <= 0) {
+            clearInterval(restTimer);
+            restTimerElement.remove();
+            showNotification('Отдых завершен!');
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+    }, 1000);
+}
+
+function skipRest() {
+    clearInterval(restTimer);
+    const restTimerElement = document.querySelector('.rest-timer');
+    if (restTimerElement) {
+        restTimerElement.remove();
+    }
+    showNotification('Отдых пропущен');
+    tg.HapticFeedback.notificationOccurred('warning');
+}
+
+function renderExercise(exercise, index, total) {
+    const container = document.querySelector('.workout-content');
+    if (!container) return;
+
+    // Очищаем предыдущие таймеры
+    if (exerciseTimer) clearInterval(exerciseTimer);
+    if (restTimer) clearInterval(restTimer);
+    
+    container.innerHTML = `
+        <div class="workout-header">
+            <div class="workout-title">
+                <h2>${exercise.name}</h2>
+                <div class="workout-progress">Упражнение ${index + 1} из ${total}</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: ${((index + 1) / total) * 100}%"></div>
+            </div>
+            <button class="close-btn" onclick="confirmQuitWorkout()">
+                <span class="material-symbols-rounded">close</span>
+            </button>
+        </div>
+        
+        <div class="exercise-container">
+            <div class="exercise-header">
+                <div class="exercise-type">
+                    <span class="material-symbols-rounded">${getExerciseIcon(exercise.type)}</span>
+                    ${getExerciseTypeText(exercise.type)}
+                </div>
+                <p class="exercise-description">${exercise.description}</p>
+            </div>
+            
+            ${exercise.image ? `<img src="${exercise.image}" class="exercise-image" alt="${exercise.name}">` : ''}
+            
+            <div class="exercise-info">
+                ${exercise.sets ? `
+                    <div class="sets-info">
+                        <span class="material-symbols-rounded">repeat</span>
+                        ${exercise.sets} подхода
+                    </div>
+                ` : ''}
+                
+                ${exercise.reps ? `
+                    <div class="reps-info">
+                        <span class="material-symbols-rounded">fitness_center</span>
+                        ${exercise.reps} повторений
+                    </div>
+                ` : ''}
+                
+                ${exercise.duration ? `
+                    <div class="duration-info">
+                        <span class="material-symbols-rounded">timer</span>
+                        <div class="timer">${Math.floor(exercise.duration / 60)}:${(exercise.duration % 60).toString().padStart(2, '0')}</div>
+                    </div>
+                ` : ''}
+                
+                <div class="muscle-groups">
+                    <span class="material-symbols-rounded">sports_martial_arts</span>
+                    ${getMuscleGroupsText(exercise.muscleGroups)}
+                </div>
+            </div>
+            
+            <div class="exercise-sequence">
+                <h4>Последовательность выполнения:</h4>
+                <ol>
+                    ${exercise.sequence.map(step => `<li>${step}</li>`).join('')}
+                </ol>
+            </div>
+            
+            <div class="exercise-technique">
+                <h4>Техника выполнения:</h4>
+                <ol>
+                    ${exercise.technique.map(point => `<li>${point}</li>`).join('')}
+                </ol>
+            </div>
+            
+            <div class="exercise-controls">
+                <button class="control-btn prev-btn" onclick="previousExercise()" ${index === 0 ? 'disabled' : ''}>
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                
+                <button class="control-btn pause-btn" onclick="toggleTimer()">
+                    <span class="material-symbols-rounded">pause</span>
+                </button>
+                
+                <button class="control-btn complete-btn" onclick="completeExercise()">
+                    <span class="material-symbols-rounded">done</span>
+                </button>
+                
+                <button class="control-btn next-btn" onclick="nextExercise()" ${index === total - 1 ? 'disabled' : ''}>
+                    <span class="material-symbols-rounded">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Запускаем таймер для упражнений с длительностью
+    if (exercise.duration) {
+        startExerciseTimer(exercise.duration);
+    }
+}
+
+// Вспомогательные функции
+function getExerciseIcon(type) {
+    const icons = {
+        'cardio': 'directions_run',
+        'strength': 'fitness_center',
+        'flexibility': 'self_improvement',
+        'balance': 'sports_martial_arts',
+        'warmup': 'accessibility_new',
+        'cooldown': 'cooling'
+    };
+    return icons[type] || 'fitness_center';
+}
+
+function getExerciseTypeText(type) {
+    const types = {
+        'cardio': 'Кардио',
+        'strength': 'Силовое',
+        'flexibility': 'Растяжка',
+        'balance': 'Баланс',
+        'warmup': 'Разминка',
+        'cooldown': 'Заминка'
+    };
+    return types[type] || type;
+}
+
+function getMuscleGroupsText(groups) {
+    if (!groups || !Array.isArray(groups)) return 'Все тело';
+    const translations = {
+        'legs': 'Ноги',
+        'arms': 'Руки',
+        'chest': 'Грудь',
+        'back': 'Спина',
+        'core': 'Пресс',
+        'shoulders': 'Плечи'
+    };
+    return groups.map(group => translations[group] || group).join(', ');
 }
