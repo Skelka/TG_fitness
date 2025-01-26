@@ -49,61 +49,128 @@ body {
 }
 
 .profile-form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    padding: 16px;
 }
 
-.input-group {
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--tg-theme-text-color);
+    font-size: 14px;
+}
+
+.form-group input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--tg-theme-hint-color);
+    border-radius: 8px;
+    background: var(--tg-theme-bg-color);
+    color: var(--tg-theme-text-color);
+    font-size: 16px;
+}
+
+.radio-group {
     display: flex;
     flex-direction: column;
+    gap: 12px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+}
+
+.radio-label span {
+    color: var(--tg-theme-text-color);
+    font-size: 14px;
+}
+
+.settings-section {
+    margin-bottom: 24px;
+}
+
+.settings-section h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    color: var(--tg-theme-text-color);
+}
+
+.workout-place-selector {
+    display: flex;
     gap: 8px;
 }
 
-label {
-    font-weight: 500;
-    color: var(--tg-theme-hint-color, #999);
+.place-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-input, select {
+.place-btn.active {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+}
+
+.equipment-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.equipment-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.equipment-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+}
+
+.danger-btn {
     width: 100%;
     padding: 12px;
-    border: 1px solid var(--tg-theme-hint-color, #ddd);
-    border-radius: 8px;
-    font-size: 16px;
-    background-color: var(--tg-theme-bg-color, #fff);
-    color: var(--tg-theme-text-color, #000);
-    text-align: center;
-    -webkit-user-select: text;
-    -khtml-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
-}
-
-input:focus, select:focus {
-    outline: none;
-    border-color: var(--tg-theme-button-color, #2481cc);
-}
-
-.save-btn {
-    background-color: var(--tg-theme-button-color, #2481cc);
-    color: var(--tg-theme-button-text-color, #fff);
+    margin-top: 24px;
     border: none;
-    padding: 12px;
     border-radius: 8px;
-    font-size: 16px;
-    font-weight: 500;
+    background: #ff3b30;
+    color: white;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     cursor: pointer;
-    margin-top: 16px;
+    transition: opacity 0.2s ease;
 }
 
-.save-btn:hover {
-    opacity: 0.9;
-}
-
-.save-btn:active {
+.danger-btn:active {
     opacity: 0.8;
+}
+
+.danger-btn .material-symbols-rounded {
+    font-size: 20px;
 }
 
 .tabs {
@@ -2119,4 +2186,28 @@ input[type="number"]::-webkit-inner-spin-button {
     padding: 32px;
     color: var(--tg-theme-hint-color);
     font-size: 16px;
+}
+
+/* Стили для уведомлений */
+.notification {
+    position: fixed;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    border-radius: 12px;
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    font-size: 14px;
+    z-index: 1000;
+    transition: top 0.3s ease-out;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.notification.show {
+    top: 16px;
+}
+
+.notification.error {
+    background: #ff3b30;
 } 
