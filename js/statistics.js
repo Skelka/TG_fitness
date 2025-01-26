@@ -1,5 +1,4 @@
 // Глобальная переменная для графика веса
-let weightChart = null;
 let currentPeriod = 'week';
 
 // Функция для обновления графика веса
@@ -51,50 +50,49 @@ async function updateWeightChart(period = 'week') {
         const weights = filteredHistory.map(record => record.weight);
 
         // Если график уже существует, обновляем его данные
-        if (weightChart) {
-            weightChart.data.labels = labels;
-            weightChart.data.datasets[0].data = weights;
-            weightChart.update();
-        } else {
-            // Создаем новый график
-            const ctx = document.getElementById('weight-chart').getContext('2d');
-            weightChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Вес (кг)',
-                        data: weights,
-                        borderColor: '#40a7e3',
-                        backgroundColor: 'rgba(64, 167, 227, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
+        if (window.weightChart) {
+            window.weightChart.destroy();
+            window.weightChart = null;
+        }
+
+        // Создаем новый график
+        const ctx = document.getElementById('weight-chart').getContext('2d');
+        window.weightChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Вес (кг)',
+                    data: weights,
+                    borderColor: '#40a7e3',
+                    backgroundColor: 'rgba(64, 167, 227, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
                         }
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
+                    x: {
+                        grid: {
+                            display: false
                         }
                     }
                 }
-            });
-        }
+            }
+        });
 
         // Обновляем кнопки периода
         document.querySelectorAll('.period-btn').forEach(btn => {
@@ -198,5 +196,5 @@ window.statisticsModule = {
     updateStatistics,
     formatTime,
     get currentPeriod() { return currentPeriod; },
-    get weightChart() { return weightChart; }
+    get weightChart() { return window.weightChart; }
 };

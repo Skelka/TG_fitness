@@ -188,8 +188,7 @@ async function initApp() {
         // Рендерим карточки программ
         await renderProgramCards();
 
-        // Обновляем график веса и статистику
-        await statisticsModule.updateWeightChart();
+        // Обновляем статистику
         statisticsModule.renderStatistics();
 
         // Рендерим советы
