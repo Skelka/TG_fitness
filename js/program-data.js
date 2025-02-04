@@ -162,5 +162,78 @@ export const programDataManager = {
 
         const currentIndex = program.workouts.findIndex(w => w.id === currentWorkoutId);
         return currentIndex < program.workouts.length - 1 ? program.workouts[currentIndex + 1] : null;
+    },
+
+    // Установка активной программы
+    async setActiveProgram(programId) {
+        const program = this.getProgramById(programId);
+        if (!program) return false;
+
+        const activeProgram = {
+            id: programId,
+            startDate: new Date().toISOString(),
+            completedWorkouts: [],
+            lastWorkoutDate: null
+        };
+
+        await setStorageItem('activeProgram', JSON.stringify(activeProgram));
+        return true;
+    },
+
+    // Получение активной программы
+    async getActiveProgram() {
+        const data = await getStorageItem('activeProgram');
+        return data ? JSON.parse(data) : null;
+    },
+
+    // Проверка доступности программы
+    async isProgramAvailable(programId) {
+        // Зарядка всегда доступна
+        if (programId === 'morning_workout') return true;
+
+        const activeProgram = await this.getActiveProgram();
+        
+        // Если нет активной программы, все программы доступны
+        if (!activeProgram) return true;
+
+        // Если это текущая активная программа
+        if (activeProgram.id === programId) return true;
+
+        // Иначе программа недоступна
+        return false;
+    },
+
+    // Обновление прогресса программы
+    async updateProgramProgress(workoutId) {
+        const activeProgram = await this.getActiveProgram();
+        if (!activeProgram) return;
+
+        // Добавляем тренировку в список выполненных
+        if (!activeProgram.completedWorkouts.includes(workoutId)) {
+            activeProgram.completedWorkouts.push(workoutId);
+        }
+        activeProgram.lastWorkoutDate = new Date().toISOString();
+
+        // Проверяем, завершена ли программа
+        const program = this.getProgramById(activeProgram.id);
+        if (program && activeProgram.completedWorkouts.length === program.workouts.length) {
+            // Программа завершена
+            await setStorageItem('activeProgram', ''); // Очищаем активную программу
+            
+            // Добавляем в историю завершенных программ
+            const completedPrograms = await getStorageItem('completedPrograms')
+                .then(data => data ? JSON.parse(data) : []);
+            
+            completedPrograms.push({
+                id: activeProgram.id,
+                startDate: activeProgram.startDate,
+                endDate: new Date().toISOString()
+            });
+
+            await setStorageItem('completedPrograms', JSON.stringify(completedPrograms));
+        } else {
+            // Сохраняем прогресс
+            await setStorageItem('activeProgram', JSON.stringify(activeProgram));
+        }
     }
 }; 

@@ -6,6 +6,7 @@ import {
     initState as initExerciseState 
 } from './exercise-renderer.js';
 import { programDataManager } from './program-data.js';
+import { programsModule } from './programs.js';
 
 // Состояние тренировки
 const workoutState = {
@@ -156,6 +157,9 @@ const workoutsModule = {
             // Сохраняем обновленную статистику
             await setStorageItem('workoutStats', JSON.stringify(currentStats));
 
+            // Обновляем прогресс программы
+            await programDataManager.updateProgramProgress(workoutState.currentWorkout.id);
+
             // Показываем поздравление
             await window.tg.showPopup({
                 title: 'Поздравляем! 🎉',
@@ -169,8 +173,13 @@ const workoutsModule = {
             // Сбрасываем состояние
             this.resetWorkout();
 
-            // Возвращаемся к списку тренировок
-            window.renderProgramCards();
+            // Возвращаемся к списку тренировок программы
+            const program = programDataManager.getProgramById(stats.programId);
+            if (program) {
+                programsModule.renderProgramWorkouts(program);
+            } else {
+                window.renderProgramCards();
+            }
         } catch (error) {
             console.error('Ошибка при завершении тренировки:', error);
             showError('Не удалось сохранить результаты тренировки');

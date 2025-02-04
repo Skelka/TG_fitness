@@ -61,6 +61,16 @@ const programsModule = {
             return;
         }
 
+        // Проверяем доступность программы
+        const isAvailable = await programDataManager.isProgramAvailable(programId);
+        if (!isAvailable) {
+            showError('Сначала завершите текущую программу');
+            return;
+        }
+
+        const activeProgram = await programDataManager.getActiveProgram();
+        const isActive = activeProgram?.id === programId;
+
         await showPopupSafe({
             title: program.name,
             message: `${program.description}\n\n${program.workoutsPerWeek} тр/нед • ${this.getDifficultyText(program.difficulty)}\n\nДлительность: ${program.duration === 'unlimited' ? 'Бессрочная' : `${program.duration} недель`}`,
@@ -68,7 +78,7 @@ const programsModule = {
                 {
                     id: `start_program_${program.id}`,
                     type: 'default',
-                    text: 'Начать программу'
+                    text: isActive ? 'Продолжить программу' : 'Начать программу'
                 },
                 {
                     type: 'cancel',
@@ -79,9 +89,12 @@ const programsModule = {
     },
 
     // Отображение списка тренировок программы
-    renderProgramWorkouts(program) {
+    async renderProgramWorkouts(program) {
         const mainContainer = document.querySelector('#mainContainer');
         if (!mainContainer) return;
+
+        const activeProgram = await programDataManager.getActiveProgram();
+        const completedWorkouts = activeProgram?.completedWorkouts || [];
 
         mainContainer.innerHTML = `
             <div class="workout-list">
@@ -93,10 +106,20 @@ const programsModule = {
                     <div class="program-meta">
                         ${program.workoutsPerWeek} тр/нед • ${this.getDifficultyText(program.difficulty)}
                     </div>
+                    ${activeProgram?.id === program.id ? `
+                        <div class="program-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(completedWorkouts.length / program.workouts.length) * 100}%"></div>
+                            </div>
+                            <div class="progress-text">
+                                Прогресс: ${completedWorkouts.length}/${program.workouts.length}
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
                 <div class="workouts-container">
                     ${program.workouts.map((workout, index) => `
-                        <div class="workout-card">
+                        <div class="workout-card ${completedWorkouts.includes(workout.id) ? 'completed' : ''}">
                             <div class="workout-day">День ${index + 1}</div>
                             <div class="workout-info">
                                 <div class="workout-title">${workout.name}</div>
@@ -113,14 +136,38 @@ const programsModule = {
                                 </div>
                             </div>
                             <button class="start-workout-btn" onclick="window.startWorkout('${program.id}', '${workout.id}')">
-                                <span class="material-symbols-rounded">play_arrow</span>
-                                Начать
+                                <span class="material-symbols-rounded">
+                                    ${completedWorkouts.includes(workout.id) ? 'replay' : 'play_arrow'}
+                                </span>
+                                ${completedWorkouts.includes(workout.id) ? 'Повторить' : 'Начать'}
                             </button>
                         </div>
                     `).join('')}
                 </div>
             </div>
         `;
+    },
+
+    // Начало программы
+    async startProgram(programId) {
+        try {
+            const isAvailable = await programDataManager.isProgramAvailable(programId);
+            if (!isAvailable) {
+                showError('Сначала завершите текущую программу');
+                return;
+            }
+
+            const activeProgram = await programDataManager.getActiveProgram();
+            if (!activeProgram || activeProgram.id !== programId) {
+                await programDataManager.setActiveProgram(programId);
+            }
+
+            const program = programDataManager.getProgramById(programId);
+            this.renderProgramWorkouts(program);
+        } catch (error) {
+            console.error('Ошибка при запуске программы:', error);
+            showError('Не удалось запустить программу');
+        }
     },
 
     // Вспомогательные функции
