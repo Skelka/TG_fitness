@@ -119,46 +119,75 @@ async function updateWeightChart(period = 'week') {
 
 // Функция для рендеринга статистики
 async function renderStatistics() {
-    try {
-        // Получаем элементы статистики
-        const totalWorkouts = document.getElementById('total-workouts');
-        const totalTime = document.getElementById('total-time');
-        const totalCalories = document.getElementById('total-calories');
-        const completionRate = document.getElementById('completion-rate');
+    const mainContainer = document.querySelector('#mainContainer');
+    if (!mainContainer) return;
 
-        // Загружаем данные статистики
-        const stats = await getStorageItem('statistics')
-            .then(data => data ? JSON.parse(data) : {
-                workouts: 0,
-                time: 0,
-                calories: 0,
-                completion: 0
-            });
+    // Получаем статистику тренировок
+    const workoutStats = await getStorageItem('workoutStats')
+        .then(data => data ? JSON.parse(data) : { workouts: [] });
 
-        // Обновляем значения
-        if (totalWorkouts) totalWorkouts.textContent = stats.workouts || 0;
-        if (totalTime) totalTime.textContent = formatTime(stats.time || 0);
-        if (totalCalories) totalCalories.textContent = stats.calories || 0;
-        if (completionRate) completionRate.textContent = `${stats.completion || 0}%`;
+    // Рассчитываем общую статистику
+    const totalWorkouts = workoutStats.workouts.length;
+    const totalTime = workoutStats.workouts.reduce((sum, workout) => sum + (workout.duration || 0), 0);
+    const totalCalories = workoutStats.workouts.reduce((sum, workout) => sum + (workout.calories || 0), 0);
+    const completionRate = Math.round((totalWorkouts / (totalWorkouts + workoutStats.workouts.filter(w => !w.completed).length)) * 100) || 0;
 
-        // Настраиваем обработчики для кнопок периода
-        const periodButtons = document.querySelectorAll('.period-btn');
-        periodButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                updateWeightChart(button.dataset.period);
-                // Добавляем тактильный отклик
-                if (window.tg) {
-                    window.tg.HapticFeedback.impactOccurred('light');
-                }
-            });
+    mainContainer.innerHTML = `
+        <div class="statistics-container">
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <span class="material-symbols-rounded">exercise</span>
+                    <h3 id="total-workouts">${totalWorkouts}</h3>
+                    <p>Тренировок</p>
+                </div>
+                <div class="stat-card">
+                    <span class="material-symbols-rounded">timer</span>
+                    <h3 id="total-time">${Math.round(totalTime)}м</h3>
+                    <p>Общее время</p>
+                </div>
+                <div class="stat-card">
+                    <span class="material-symbols-rounded">local_fire_department</span>
+                    <h3 id="total-calories">${totalCalories}</h3>
+                    <p>Ккал сожжено</p>
+                </div>
+                <div class="stat-card">
+                    <span class="material-symbols-rounded">trending_up</span>
+                    <h3 id="completion-rate">${completionRate}%</h3>
+                    <p>Достижение цели</p>
+                </div>
+            </div>
+
+            <div class="weight-chart-section">
+                <div class="chart-header">
+                    <h3>Динамика веса</h3>
+                    <div class="period-selector">
+                        <button class="period-btn active" data-period="week">Неделя</button>
+                        <button class="period-btn" data-period="month">Месяц</button>
+                        <button class="period-btn" data-period="year">Год</button>
+                    </div>
+                </div>
+                <div class="chart-placeholder">
+                    <p>Начните записывать свой вес в профиле, чтобы увидеть график прогресса</p>
+                </div>
+            </div>
+
+            <div class="tips-section">
+                <h3>Советы</h3>
+                <div class="tips-list">
+                    ${getRandomTips()}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Настраиваем обработчики для периода
+    document.querySelectorAll('.period-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            // TODO: Обновление графика при смене периода
         });
-
-        // Обновляем график веса
-        await updateWeightChart(currentPeriod);
-
-    } catch (error) {
-        console.error('Ошибка при рендеринге статистики:', error);
-    }
+    });
 }
 
 // Функция для обновления статистики
@@ -193,7 +222,8 @@ const statisticsModule = {
     updateWeightChart,
     renderStatistics,
     updateStatistics,
-    currentPeriod
+    currentPeriod,
+    getRandomTips
 };
 
 export default statisticsModule;

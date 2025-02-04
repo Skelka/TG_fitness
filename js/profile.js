@@ -15,6 +15,163 @@ async function getProfile() {
 // Функция для загрузки профиля
 async function loadProfile() {
     try {
+        // Добавляем HTML разметку профиля
+        const mainContainer = document.querySelector('#mainContainer');
+        if (!mainContainer) return;
+
+        mainContainer.innerHTML = `
+            <div class="profile-header">
+                <img id="profile-photo" src="" alt="Фото профиля" class="profile-photo">
+                <div class="profile-info">
+                    <h3 id="profile-name"></h3>
+                    <span class="profile-status">Новичок</span>
+                </div>
+            </div>
+
+            <form id="profile-form" class="profile-form">
+                <div class="form-section">
+                    <h4>Основная информация</h4>
+                    <div class="input-group-row">
+                        <div class="input-group">
+                            <label>Возраст</label>
+                            <input type="number" name="age" min="14" max="100" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Рост (см)</label>
+                            <input type="number" name="height" min="100" max="250" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Вес (кг)</label>
+                        <input type="number" name="weight" min="30" max="200" step="0.1" required>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>Пол</h4>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="gender" value="male" required>
+                            <span>Мужской</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="gender" value="female">
+                            <span>Женский</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>Цель тренировок</h4>
+                    <div class="goals-grid">
+                        <label class="goal-item">
+                            <input type="radio" name="goal" value="weight_loss" required>
+                            <div class="goal-icon">
+                                <span class="material-symbols-rounded">monitor_weight</span>
+                            </div>
+                            <span class="goal-label">Снижение веса</span>
+                        </label>
+                        <label class="goal-item">
+                            <input type="radio" name="goal" value="muscle_gain">
+                            <div class="goal-icon">
+                                <span class="material-symbols-rounded">fitness_center</span>
+                            </div>
+                            <span class="goal-label">Набор массы</span>
+                        </label>
+                        <label class="goal-item">
+                            <input type="radio" name="goal" value="endurance">
+                            <div class="goal-icon">
+                                <span class="material-symbols-rounded">directions_run</span>
+                            </div>
+                            <span class="goal-label">Выносливость</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>Уровень подготовки</h4>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="level" value="beginner" required>
+                            <span>Начинающий</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="level" value="intermediate">
+                            <span>Средний</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="level" value="advanced">
+                            <span>Продвинутый</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>Место тренировок</h4>
+                    <div class="workout-place-selector">
+                        <button type="button" class="place-btn" data-place="home">
+                            <span class="material-symbols-rounded">home</span>
+                            Дома
+                        </button>
+                        <button type="button" class="place-btn" data-place="gym">
+                            <span class="material-symbols-rounded">fitness_center</span>
+                            В зале
+                        </button>
+                        <button type="button" class="place-btn" data-place="outdoor">
+                            <span class="material-symbols-rounded">park</span>
+                            На улице
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>Доступное оборудование</h4>
+                    <div class="equipment-list">
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="dumbbells">
+                            <div class="equipment-icon">
+                                <span class="material-symbols-rounded">exercise</span>
+                            </div>
+                            <span>Гантели</span>
+                        </label>
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="barbell">
+                            <div class="equipment-icon">
+                                <span class="material-symbols-rounded">fitness_center</span>
+                            </div>
+                            <span>Штанга</span>
+                        </label>
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="pullup_bar">
+                            <div class="equipment-icon">
+                                <span class="material-symbols-rounded">horizontal_rule</span>
+                            </div>
+                            <span>Турник</span>
+                        </label>
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="resistance_bands">
+                            <div class="equipment-icon">
+                                <span class="material-symbols-rounded">straighten</span>
+                            </div>
+                            <span>Резинки</span>
+                        </label>
+                        <label class="equipment-item">
+                            <input type="checkbox" name="equipment" value="mat">
+                            <div class="equipment-icon">
+                                <span class="material-symbols-rounded">rectangle</span>
+                            </div>
+                            <span>Коврик</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="button" class="danger-btn" onclick="window.uiManager.confirmClearData()">
+                    <span class="material-symbols-rounded">delete</span>
+                    Очистить все данные
+                </button>
+            </form>
+        `;
+
         // Загружаем фото профиля из Telegram
         const profilePhoto = document.getElementById('profile-photo');
         if (profilePhoto && window.tg.initDataUnsafe.user?.photo_url) {
