@@ -1,6 +1,6 @@
 import { getStorageItem, setStorageItem, showError, showNotification, formatTime } from './utils.js';
 import { renderExercise, clearTimers } from './exercise-renderer.js';
-import { programDataManager } from './program-data-manager.js';
+import { programDataManager } from './program-data.js';
 
 const workoutsModule = {
     // Запуск тренировки
