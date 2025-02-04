@@ -370,4 +370,61 @@ export function previousSet() {
         clearTimers();
         renderExercise();
     }
+}
+
+// Функция завершения упражнения
+export function completeExercise() {
+    if (!currentWorkout || !currentWorkout.exercises) return;
+    
+    const exercise = currentWorkout.exercises[currentExerciseIndex];
+    clearTimers();
+
+    // Если это последний подход
+    if (currentSet >= exercise.sets) {
+        currentSet = 1;
+        currentExerciseIndex++;
+        
+        // Если есть следующее упражнение
+        if (currentExerciseIndex < currentWorkout.exercises.length) {
+            const nextExercise = currentWorkout.exercises[currentExerciseIndex];
+            if (nextExercise.restBeforeStart) {
+                startRestTimer(nextExercise.restBeforeStart);
+            }
+            renderExercise();
+        } else {
+            // Тренировка завершена
+            finishWorkout();
+        }
+    } else {
+        // Переходим к следующему подходу
+        currentSet++;
+        if (exercise.restBetweenSets) {
+            startRestTimer(exercise.restBetweenSets);
+        }
+        renderExercise();
+    }
+    
+    tg.HapticFeedback.impactOccurred('medium');
+}
+
+// Функция перехода к предыдущему упражнению
+export function prevExercise() {
+    if (currentExerciseIndex > 0) {
+        currentExerciseIndex--;
+        currentSet = 1;
+        clearTimers();
+        renderExercise();
+        tg.HapticFeedback.impactOccurred('light');
+    }
+}
+
+// Функция перехода к следующему упражнению
+export function nextExercise() {
+    if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
+        currentExerciseIndex++;
+        currentSet = 1;
+        clearTimers();
+        renderExercise();
+        tg.HapticFeedback.impactOccurred('light');
+    }
 } 

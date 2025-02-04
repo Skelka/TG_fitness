@@ -12,7 +12,10 @@ import {
     updateTimerDisplay,
     startRestTimer,
     skipRest,
-    clearTimers
+    clearTimers,
+    completeExercise,
+    prevExercise,
+    nextExercise
 } from './exercise-renderer.js';
 
 // Глобальные переменные
@@ -28,15 +31,7 @@ let currentExerciseIndex = 0;
 let currentSet = 1;
 let isResting = false;
 let restTimeLeft = 0;
-let timerInterval = null;
-let restInterval = null;
 let workoutStartTime = null;
-
-// Добавляем переменные для таймеров
-let workoutTimer = null;
-let restTimer = null;
-let exerciseTimer = null;
-
 let isTimerPaused = false;
 
 // Делаем переменные доступными для других модулей
