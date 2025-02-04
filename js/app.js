@@ -100,7 +100,6 @@ async function initializeApp() {
         setupPopupHandler();
 
         // Загружаем программы
-        await programDataManager.loadPrograms();
         await programsModule.initializeDefaultPrograms();
         
         // Настраиваем обработчики событий
