@@ -197,40 +197,32 @@ async function renderProgramCards() {
     if (!container) return;
 
     try {
-        if (!window.programData || !Array.isArray(window.programData) || window.programData.length === 0) {
-            console.error('Программы не загружены или пусты');
-            container.innerHTML = '<div class="no-data">Нет доступных программ</div>';
-            return;
-        }
-
         // Получаем активную программу
         const activeProgram = await getStorageItem('activeProgram')
-            .then(data => data ? JSON.parse(data) : null)
-            .catch(error => {
-                console.error('Ошибка при получении активной программы:', error);
-                return null;
-            });
+            .then(data => data ? JSON.parse(data) : null);
 
         let html = '';
         
-        // Сортируем программы
+        // Сначала сортируем программы, чтобы утренняя зарядка и активная программа были первыми
         const sortedPrograms = [...window.programData].sort((a, b) => {
+            // Утренняя зарядка всегда первая
             if (a.id === 'morning_workout') return -1;
             if (b.id === 'morning_workout') return 1;
             
+            // Активная программа вторая
             const isActiveA = activeProgram?.id === a.id;
             const isActiveB = activeProgram?.id === b.id;
             if (isActiveA && !isActiveB) return -1;
             if (!isActiveA && isActiveB) return 1;
             
+            // Остальные программы без изменения порядка
             return 0;
         });
 
-        // Рендерим программы
+        // Теперь перебираем отсортированный массив программ
         sortedPrograms.forEach((program) => {
-            if (!program || !program.id) return; // Пропускаем невалидные программы
-            
             const isActive = activeProgram?.id === program.id;
+            // Утренняя зарядка не блокируется и не блокирует другие программы
             const isDisabled = program.id !== 'morning_workout' && activeProgram && !isActive && activeProgram.id !== 'morning_workout';
             const durationText = program.duration === 'unlimited' ? 'Бессрочная' : `${program.duration} недель`;
 
@@ -262,7 +254,7 @@ async function renderProgramCards() {
 
         container.innerHTML = html;
 
-        // Добавляем обработчики
+        // Добавляем обработчики для карточек
         document.querySelectorAll('.program-card').forEach(card => {
             card.addEventListener('click', async () => {
                 const programId = card.dataset.programId;
@@ -286,31 +278,11 @@ async function renderProgramCards() {
 
 // Обновляем функцию showProgramDetails
 async function showProgramDetails(program) {
-    if (!program) {
-        console.error('Программа не найдена');
-        return;
-    }
-
-    const workoutsCount = program.workouts?.length || 0;
-    const exercisesCount = program.workouts?.reduce((total, workout) => 
-        total + (workout.exercises?.length || 0), 0) || 0;
-
-    const message = `
-${program.description}
-
-📅 ${program.workoutsPerWeek} тренировок в неделю
-💪 ${getDifficultyText(program.difficulty)}
-⏱ Длительность: ${program.duration === 'unlimited' ? 'Бессрочная' : `${program.duration} недель`}
-🏋️ ${workoutsCount} тренировок
-⚡️ ${exercisesCount} упражнений
-
-${program.features ? `\nОсобенности программы:\n${program.features.map(f => `• ${f}`).join('\n')}` : ''}
-${program.benefits ? `\nПреимущества:\n${program.benefits.map(b => `• ${b}`).join('\n')}` : ''}
-    `.trim();
+    if (!program) return;
 
     await showPopupSafe({
         title: program.name,
-        message: message,
+        message: `${program.description}\n\n${program.workoutsPerWeek} тр/нед • ${getDifficultyText(program.difficulty)}\n\nДлительность: ${program.duration} недель`,
         buttons: [
             {
                 id: `start_program_${program.id}`,
@@ -323,16 +295,6 @@ ${program.benefits ? `\nПреимущества:\n${program.benefits.map(b => `
             }
         ]
     });
-}
-
-// Вспомогательная функция для получения текста сложности
-function getDifficultyText(difficulty) {
-    const difficulties = {
-        'beginner': 'Начальный уровень',
-        'intermediate': 'Средний уровень',
-        'advanced': 'Продвинутый уровень'
-    };
-    return difficulties[difficulty] || difficulty;
 }
 
 // Функция для отображения тренировок программы
@@ -509,15 +471,6 @@ tg.onEvent('popupClosed', async (event) => {
             // Очищаем таймеры
             clearTimers();
 
-            // Скрываем все контейнеры
-            document.querySelectorAll('#programsContainer, #profileContainer, #statsContainer').forEach(container => {
-                container.classList.add('hidden');
-            });
-
-            // Показываем mainContainer
-            const mainContainer = document.querySelector('#mainContainer');
-            mainContainer.classList.remove('hidden');
-
             // Скрываем нижнюю навигацию
             document.querySelector('.bottom-nav')?.classList.add('hidden');
 
@@ -535,9 +488,9 @@ tg.onEvent('popupClosed', async (event) => {
             console.error('Ошибка при запуске программы:', error);
             showError(error.message);
             window.tg.HapticFeedback.notificationOccurred('error');
+            }
         }
-    }
-});
+    });
 
 // Добавляем функцию инициализации программы
 async function initializeProgram(program) {
@@ -747,36 +700,50 @@ function navigateCalendar(direction) {
     tg.HapticFeedback.impactOccurred('light');
 }
 
-// Функция переключения вкладок
+// Обновляем функцию switchTab
 function switchTab(tabName) {
-    // Обновляем активную кнопку
+    // Скрываем все вкладки
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Убираем активный класс у всех кнопок
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.tab === tabName);
+        btn.classList.remove('active');
     });
 
-    // Скрываем все контейнеры
-    document.querySelectorAll('#mainContainer, #programsContainer, #profileContainer, #statsContainer').forEach(container => {
-        container.classList.add('hidden');
-    });
+    // Показываем нужную вкладку
+    const selectedTab = document.getElementById(tabName);
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+    }
 
-    // Показываем нужный контейнер
-    switch (tabName) {
-        case 'programs':
-            document.querySelector('#programsContainer').classList.remove('hidden');
-            renderProgramCards();
+    // Активируем соответствующую кнопку
+    const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+
+    // Дополнительные действия при переключении вкладок
+    switch(tabName) {
+        case 'stats':
+            renderStatistics();
             break;
         case 'profile':
-            document.querySelector('#profileContainer').classList.remove('hidden');
-            renderProfile();
+            loadProfile();
             break;
-        case 'stats':
-            document.querySelector('#statsContainer').classList.remove('hidden');
-            renderStatistics();
+        case 'workouts':
+            loadActiveProgram();
+            break;
+        case 'calendar':
+            calendarModule.renderCalendar();
             break;
     }
 
-    // Добавляем тактильный отклик
-    window.tg.HapticFeedback.impactOccurred('light');
+    // Вибрация при переключении
+    if (window.tg) {
+        window.tg.HapticFeedback.impactOccurred('light');
+    }
 }
 
 // Функция для очистки всех данных
@@ -2279,6 +2246,19 @@ async function initializeDefaultPrograms() {
     } catch (error) {
         console.error('Ошибка при инициализации программ:', error);
         showError('Не удалось загрузить программы тренировок');
+    }
+}
+
+function getDifficultyText(difficulty) {
+    switch (difficulty) {
+        case 'beginner':
+            return 'Начальный';
+        case 'intermediate':
+            return 'Средний';
+        case 'advanced':
+            return 'Продвинутый';
+        default:
+            return 'Начальный';
     }
 }
 
