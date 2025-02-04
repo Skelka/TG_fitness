@@ -446,15 +446,47 @@ tg.onEvent('popupClosed', async (event) => {
 
             console.log('Starting first workout:', firstWorkout);
 
-            // Сохраняем программу как активную
-            await setStorageItem('activeProgram', JSON.stringify(program));
-            console.log('Program saved as active');
+            // Сохраняем программу как активную и дожидаемся завершения операции
+            const saveResult = await setStorageItem('activeProgram', JSON.stringify(program));
+            console.log('Program saved as active:', saveResult);
 
-            // Запускаем первую тренировку
-            await startWorkout(programId, firstWorkout.id);
+            if (!saveResult) {
+                throw new Error('Не удалось сохранить программу');
+            }
+
+            // Обновляем глобальные данные
+            window.currentWorkout = {
+                ...firstWorkout,
+                programId: programId
+            };
+
+            // Инициализируем переменные тренировки
+            window.currentExerciseIndex = 0;
+            window.currentSet = 1;
+            window.isResting = false;
+            window.restTimeLeft = 0;
+            window.workoutStartTime = Date.now();
+
+            // Очищаем таймеры
+            clearTimers();
+
+            // Скрываем нижнюю навигацию
+            document.querySelector('.bottom-nav')?.classList.add('hidden');
+
+            // Инициализируем обработчик выхода
+            initExitHandler();
+
+            console.log('Workout initialized, rendering exercise...');
+
+            // Отображаем первое упражнение
+            renderExercise();
+
+            // Добавляем тактильный отклик
+            window.tg.HapticFeedback.impactOccurred('medium');
         } catch (error) {
             console.error('Ошибка при запуске программы:', error);
             showError(error.message);
+            window.tg.HapticFeedback.notificationOccurred('error');
         }
     }
 });

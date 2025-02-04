@@ -156,14 +156,31 @@ export function clearTimers() {
 
 export function renderExercise() {
     const state = getState();
-    if (!state.currentWorkout || !state.currentWorkout.exercises || state.currentExerciseIndex >= state.currentWorkout.exercises.length) {
+    console.log('Rendering exercise with state:', state);
+    
+    if (!state.currentWorkout || !state.currentWorkout.exercises) {
+        console.error('No workout or exercises found:', state.currentWorkout);
+        showError('Нет доступных упражнений');
+        return;
+    }
+
+    if (state.currentExerciseIndex >= state.currentWorkout.exercises.length) {
+        console.error('Exercise index out of bounds:', {
+            currentIndex: state.currentExerciseIndex,
+            totalExercises: state.currentWorkout.exercises.length
+        });
         showError('Нет доступных упражнений');
         return;
     }
 
     const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
+    console.log('Current exercise:', exercise);
+    
     const mainContainer = document.querySelector('#mainContainer');
-    if (!mainContainer) return;
+    if (!mainContainer) {
+        console.error('Main container not found');
+        return;
+    }
 
     mainContainer.innerHTML = `
         <div class="exercise-card">
@@ -178,17 +195,17 @@ export function renderExercise() {
             <div class="timer-container" ${!exercise.duration ? 'style="display: none;"' : ''}>
                 <div id="timerDisplay">${exercise.duration ? formatTime(exercise.duration) : '00:00'}</div>
                 <div class="timer-controls">
-                    <button id="startTimer" onclick="startExerciseTimer(${exercise.duration})">Старт</button>
-                    <button id="pauseTimer" onclick="toggleTimer()">Пауза</button>
+                    <button id="startTimer" onclick="window.startExerciseTimer(${exercise.duration})">Старт</button>
+                    <button id="pauseTimer" onclick="window.toggleTimer()">Пауза</button>
                 </div>
             </div>
 
             <div class="exercise-controls">
-                <button class="primary-button" onclick="completeExercise()">
+                <button class="primary-button" onclick="window.completeExercise()">
                     Завершить подход
                 </button>
                 ${state.currentSet > 1 ? `
-                    <button class="secondary-button" onclick="previousSet()">
+                    <button class="secondary-button" onclick="window.previousSet()">
                         Предыдущий подход
                     </button>
                 ` : ''}
@@ -196,8 +213,10 @@ export function renderExercise() {
         </div>
     `;
 
+    console.log('Exercise rendered successfully');
+
     if (exercise.duration && state.isTimerMode) {
-        startExerciseTimer(exercise.duration);
+        window.startExerciseTimer(exercise.duration);
     }
 }
 
