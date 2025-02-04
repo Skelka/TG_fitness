@@ -12,7 +12,6 @@ import {
     updateTimerDisplay,
     startRestTimer,
     skipRest,
-    clearTimers,
     completeExercise,
     prevExercise,
     nextExercise
@@ -2441,97 +2440,6 @@ function analyzeExercisesDatabase() {
     }
 }
 
-// Функция очистки таймеров
-function clearTimers() {
-    if (workoutTimer) clearInterval(workoutTimer);
-    if (restTimer) clearInterval(restTimer);
-    if (exerciseTimer) clearInterval(exerciseTimer);
-    workoutTimer = null;
-    restTimer = null;
-    exerciseTimer = null;
-}
-
-function startExerciseTimer(duration) {
-    let timeLeft = duration;
-    updateTimerDisplay(timeLeft);
-    
-    exerciseTimer = setInterval(() => {
-        if (!isTimerPaused) {
-            timeLeft--;
-            updateTimerDisplay(timeLeft);
-            
-            if (timeLeft <= 0) {
-                clearInterval(exerciseTimer);
-                showNotification('Упражнение завершено!');
-                tg.HapticFeedback.notificationOccurred('success');
-            }
-        }
-    }, 1000);
-}
-
-function toggleTimer() {
-    isTimerPaused = !isTimerPaused;
-    const pauseBtn = document.querySelector('.pause-btn');
-    
-    if (isTimerPaused) {
-        pauseBtn.textContent = 'play_arrow';
-        showNotification('Таймер на паузе');
-    } else {
-        pauseBtn.textContent = 'pause';
-        showNotification('Таймер запущен');
-    }
-}
-
-function updateTimerDisplay(seconds) {
-    const timerElement = document.querySelector('.timer');
-    if (timerElement) {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        timerElement.textContent = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-    }
-}
-
-function startRestTimer(duration) {
-    let timeLeft = duration;
-    const restTimerElement = document.createElement('div');
-    restTimerElement.className = 'rest-timer';
-    restTimerElement.innerHTML = `
-        <h3>Отдых</h3>
-        <div class="timer">${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}</div>
-        <button class="skip-rest-btn" onclick="skipRest()">
-            <span class="material-symbols-rounded">skip_next</span>
-            Пропустить
-        </button>
-    `;
-    
-    document.body.appendChild(restTimerElement);
-    
-    restTimer = setInterval(() => {
-        timeLeft--;
-        const timerDisplay = restTimerElement.querySelector('.timer');
-        if (timerDisplay) {
-            timerDisplay.textContent = `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}`;
-        }
-        
-        if (timeLeft <= 0) {
-            clearInterval(restTimer);
-            restTimerElement.remove();
-            showNotification('Отдых завершен!');
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-    }, 1000);
-}
-
-function skipRest() {
-    clearInterval(restTimer);
-    const restTimerElement = document.querySelector('.rest-timer');
-    if (restTimerElement) {
-        restTimerElement.remove();
-    }
-    showNotification('Отдых пропущен');
-    tg.HapticFeedback.notificationOccurred('warning');
-}
-
 // Основная логика выполнения тренировки
 function startWorkoutExecution(workout) {
     currentWorkout = workout;
@@ -2565,63 +2473,6 @@ function startWorkoutExecution(workout) {
 
     // Отображаем первое упражнение
     renderExercise();
-}
-
-// Функция завершения упражнения
-function completeExercise() {
-    if (!currentWorkout || !currentWorkout.exercises) return;
-    
-    const exercise = currentWorkout.exercises[currentExerciseIndex];
-    clearTimers();
-
-    // Если это последний подход
-    if (currentSet >= exercise.sets) {
-        currentSet = 1;
-        currentExerciseIndex++;
-        
-        // Если есть следующее упражнение
-        if (currentExerciseIndex < currentWorkout.exercises.length) {
-            const nextExercise = currentWorkout.exercises[currentExerciseIndex];
-            if (nextExercise.restBeforeStart) {
-                startRestTimer(nextExercise.restBeforeStart);
-            }
-            renderExercise();
-        } else {
-            // Тренировка завершена
-            finishWorkout();
-        }
-    } else {
-        // Переходим к следующему подходу
-        currentSet++;
-        if (exercise.restBetweenSets) {
-            startRestTimer(exercise.restBetweenSets);
-        }
-        renderExercise();
-    }
-    
-    tg.HapticFeedback.impactOccurred('medium');
-}
-
-// Функция перехода к предыдущему упражнению
-function prevExercise() {
-    if (currentExerciseIndex > 0) {
-        currentExerciseIndex--;
-        currentSet = 1;
-        clearTimers();
-        renderExercise();
-        tg.HapticFeedback.impactOccurred('light');
-    }
-}
-
-// Функция перехода к следующему упражнению
-function nextExercise() {
-    if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
-        currentExerciseIndex++;
-        currentSet = 1;
-        clearTimers();
-        renderExercise();
-        tg.HapticFeedback.impactOccurred('light');
-    }
 }
 
 // Функция подтверждения выхода из тренировки
