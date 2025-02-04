@@ -2110,12 +2110,30 @@ async function initializeDefaultPrograms() {
                 }
             ];
 
-            // Разделяем программы на части для сохранения
+            // Разделяем программы на более мелкие части
             const chunks = [];
-            const chunkSize = 3; // Сохраняем по 3 программы в чанке
+            const chunkSize = 1; // Сохраняем по 1 программе в чанке
             
             for (let i = 0; i < defaultPrograms.length; i += chunkSize) {
-                chunks.push(defaultPrograms.slice(i, i + chunkSize));
+                const chunk = defaultPrograms.slice(i, i + chunkSize);
+                // Удаляем лишние данные из программ для уменьшения размера
+                const simplifiedChunk = chunk.map(program => ({
+                    id: program.id,
+                    name: program.name,
+                    description: program.description,
+                    icon: program.icon,
+                    difficulty: program.difficulty,
+                    duration: program.duration,
+                    workoutsPerWeek: program.workoutsPerWeek,
+                    workouts: program.workouts.map(workout => ({
+                        id: workout.id,
+                        name: workout.name,
+                        description: workout.description,
+                        duration: workout.duration,
+                        type: workout.type
+                    }))
+                }));
+                chunks.push(simplifiedChunk);
             }
 
             // Сохраняем каждый чанк отдельно
@@ -2714,4 +2732,19 @@ function setupEventListeners() {
             }
         });
     }
+}
+
+// Функция настройки обработчиков чекбоксов
+function setupCheckboxHandlers() {
+    // Обработчики для чекбоксов оборудования
+    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            tg.HapticFeedback.impactOccurred('light');
+            
+            // Если чекбокс находится в профиле
+            if (checkbox.closest('#profile')) {
+                saveProfileSettings();
+            }
+        });
+    });
 }
