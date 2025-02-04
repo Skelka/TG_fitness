@@ -60,7 +60,6 @@ async function initApp() {
         await profileModule.loadProfile();
 
         // Настраиваем обработчики событий
-        setupEventListeners();
         setupCheckboxHandlers();
         profileModule.setupProfileEquipmentHandlers();
 
