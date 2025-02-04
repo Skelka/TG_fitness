@@ -17,11 +17,17 @@ import {
     nextExercise
 } from './exercise-renderer.js';
 
+// Импортируем функции из profile.js
+const { loadProfile, saveProfile: saveProfileSettings } = profileModule;
+
 // Глобальные переменные
 let tg = window.Telegram.WebApp;
 let mainButton = tg.MainButton;
 let backButton = tg.BackButton;
 let currentWorkout = null;
+
+// Делаем clearAllData глобальной
+window.clearAllData = clearAllData;
 
 // Переменные для тренировки
 let isTimerMode = false;
