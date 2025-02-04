@@ -126,6 +126,30 @@ async function renderStatistics() {
     const workoutStats = await getStorageItem('workoutStats')
         .then(data => data ? JSON.parse(data) : { workouts: [] });
 
+    // Получаем данные профиля для веса
+    const profileData = await getStorageItem('profile')
+        .then(data => data ? JSON.parse(data) : null);
+
+    // Если есть вес в профиле, добавляем запись в историю
+    if (profileData && profileData.weight) {
+        const weightHistory = await getStorageItem('weightHistory')
+            .then(data => data ? JSON.parse(data) : []);
+        
+        // Проверяем, нет ли уже записи за сегодня
+        const today = new Date().toISOString().split('T')[0];
+        const hasToday = weightHistory.some(record => record.date.startsWith(today));
+        
+        if (!hasToday) {
+            weightHistory.push({
+                date: new Date().toISOString(),
+                weight: parseFloat(profileData.weight)
+            });
+            
+            // Сохраняем обновленную историю
+            await setStorageItem('weightHistory', JSON.stringify(weightHistory));
+        }
+    }
+
     // Рассчитываем общую статистику
     const totalWorkouts = workoutStats.workouts.length;
     const totalTime = workoutStats.workouts.reduce((sum, workout) => sum + (workout.duration || 0), 0);
@@ -166,9 +190,7 @@ async function renderStatistics() {
                         <button class="period-btn" data-period="year">Год</button>
                     </div>
                 </div>
-                <div class="chart-placeholder">
-                    <p>Начните записывать свой вес в профиле, чтобы увидеть график прогресса</p>
-                </div>
+                <canvas id="weight-chart"></canvas>
             </div>
 
             <div class="tips-section">
@@ -183,11 +205,13 @@ async function renderStatistics() {
     // Настраиваем обработчики для периода
     document.querySelectorAll('.period-btn').forEach(button => {
         button.addEventListener('click', () => {
-            document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            // TODO: Обновление графика при смене периода
+            const period = button.dataset.period;
+            updateWeightChart(period);
         });
     });
+
+    // Инициализируем график веса
+    updateWeightChart('week');
 }
 
 // Функция для обновления статистики
