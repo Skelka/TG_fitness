@@ -964,7 +964,62 @@ async function initializeDefaultPrograms() {
                             description: 'Сочетание кардио и силовых упражнений',
                             duration: 45,
                             type: 'cardio_strength',
-                            exercises: []
+                            exercises: [
+                                {
+                                    id: 'warmup_1',
+                                    name: 'Разминка',
+                                    type: 'warmup',
+                                    description: 'Легкая разминка для подготовки к тренировке',
+                                    duration: 300,
+                                    sets: 1,
+                                    restBetweenSets: 0
+                                },
+                                {
+                                    id: 'jumping_jacks',
+                                    name: 'Прыжки Jumping Jack',
+                                    type: 'cardio',
+                                    description: 'Прыжки с разведением рук и ног',
+                                    duration: 60,
+                                    sets: 3,
+                                    restBetweenSets: 30
+                                },
+                                {
+                                    id: 'squats',
+                                    name: 'Приседания',
+                                    type: 'strength',
+                                    description: 'Классические приседания',
+                                    reps: 15,
+                                    sets: 3,
+                                    restBetweenSets: 60
+                                },
+                                {
+                                    id: 'pushups',
+                                    name: 'Отжимания',
+                                    type: 'strength',
+                                    description: 'Классические отжимания от пола',
+                                    reps: 10,
+                                    sets: 3,
+                                    restBetweenSets: 60
+                                },
+                                {
+                                    id: 'plank',
+                                    name: 'Планка',
+                                    type: 'static',
+                                    description: 'Удержание планки',
+                                    duration: 30,
+                                    sets: 3,
+                                    restBetweenSets: 30
+                                },
+                                {
+                                    id: 'cooldown_1',
+                                    name: 'Заминка',
+                                    type: 'cooldown',
+                                    description: 'Легкая растяжка для завершения тренировки',
+                                    duration: 300,
+                                    sets: 1,
+                                    restBetweenSets: 0
+                                }
+                            ]
                         },
                         {
                             id: 'workout_2',
@@ -1623,110 +1678,60 @@ async function initializeDefaultPrograms() {
                                     id: 'warmup_1',
                                     name: 'Разминка суставов',
                                     type: 'warmup',
-                                    duration: 3,
-                                    description: 'Мягкие круговые движения в суставах сверху вниз',
-                                    sequence: [
-                                        'Шея: наклоны и повороты',
-                                        'Плечи: круговые движения',
-                                        'Локти и запястья',
-                                        'Тазобедренные суставы',
-                                        'Колени и голеностопы'
-                                    ]
+                                    description: 'Мягкие круговые движения в суставах сверху вниз:\n- Шея: наклоны и повороты\n- Плечи: круговые движения\n- Локти и запястья\n- Тазобедренные суставы\n- Колени и голеностопы',
+                                    duration: 180,
+                                    sets: 1,
+                                    restBetweenSets: 0
                                 },
                                 {
                                     id: 'ex_1',
                                     name: 'Потягивания',
                                     type: 'stretch',
+                                    description: 'Потягивания с глубоким дыханием',
                                     sets: 2,
                                     reps: 8,
-                                    rest: 20,
-                                    description: 'Потягивания с глубоким дыханием',
+                                    restBetweenSets: 20,
                                     muscleGroups: ['full_body']
                                 },
                                 {
                                     id: 'ex_2',
                                     name: 'Наклоны в стороны',
                                     type: 'stretch',
+                                    description: 'Наклоны корпуса влево и вправо с поднятой рукой',
                                     sets: 2,
                                     reps: 10,
-                                    rest: 20,
-                                    description: 'Плавные наклоны вправо и влево',
-                                    muscleGroups: ['core', 'obliques']
+                                    restBetweenSets: 20,
+                                    muscleGroups: ['core']
                                 },
                                 {
                                     id: 'ex_3',
-                                    name: 'Мягкие приседания',
-                                    type: 'cardio',
+                                    name: 'Круговые вращения руками',
+                                    type: 'warmup',
+                                    description: 'Вращения руками вперед и назад',
                                     sets: 2,
-                                    reps: 12,
-                                    rest: 30,
-                                    description: 'Неглубокие приседания для разогрева ног',
-                                    muscleGroups: ['legs']
+                                    reps: 10,
+                                    restBetweenSets: 20,
+                                    muscleGroups: ['shoulders', 'arms']
                                 },
                                 {
                                     id: 'ex_4',
-                                    name: 'Кошка-корова',
+                                    name: 'Наклоны к ногам',
                                     type: 'stretch',
+                                    description: 'Наклоны к прямым ногам из положения стоя',
                                     sets: 2,
-                                    reps: 8,
-                                    rest: 20,
-                                    description: 'Прогибы и выгибания спины на четвереньках',
-                                    muscleGroups: ['back', 'core']
+                                    reps: 10,
+                                    restBetweenSets: 20,
+                                    muscleGroups: ['legs', 'back']
                                 },
                                 {
                                     id: 'ex_5',
-                                    name: 'Скручивания лежа',
-                                    type: 'stretch',
-                                    sets: 2,
-                                    reps: 10,
-                                    rest: 20,
-                                    description: 'Мягкие скручивания позвоночника лежа на спине',
-                                    muscleGroups: ['core', 'back']
-                                },
-                                {
-                                    id: 'ex_6',
-                                    name: 'Подъем рук и ног лежа',
+                                    name: 'Планка с подъемом рук',
                                     type: 'strength',
+                                    description: 'Планка на предплечьях с поочередным подъемом рук',
+                                    duration: 30,
                                     sets: 2,
-                                    reps: 12,
-                                    rest: 30,
-                                    description: 'Поочередный подъем противоположных руки и ноги лежа на животе',
-                                    muscleGroups: ['back', 'core']
-                                },
-                                {
-                                    id: 'ex_7',
-                                    name: 'Ходьба на месте',
-                                    type: 'cardio',
-                                    duration: 60,
-                                    description: 'Активная ходьба на месте для усиления кровообращения',
-                                    muscleGroups: ['legs']
-                                },
-                                {
-                                    id: 'ex_8',
-                                    name: 'Дыхательные упражнения',
-                                    type: 'breathing',
-                                    sets: 3,
-                                    reps: 5,
-                                    rest: 15,
-                                    description: 'Глубокое дыхание с задержкой и медленным выдохом',
-                                    technique: [
-                                        'Вдох через нос (4 сек)',
-                                        'Задержка (4 сек)',
-                                        'Медленный выдох через рот (6 сек)'
-                                    ]
-                                },
-                                {
-                                    id: 'cooldown_1',
-                                    name: 'Финальная растяжка',
-                                    type: 'cooldown',
-                                    duration: 2,
-                                    description: 'Легкая растяжка основных мышц',
-                                    sequence: [
-                                        'Растяжка плеч и рук',
-                                        'Наклоны к ногам',
-                                        'Растяжка квадрицепсов',
-                                        'Растяжка икр'
-                                    ]
+                                    restBetweenSets: 30,
+                                    muscleGroups: ['core', 'shoulders']
                                 }
                             ]
                         }
@@ -2670,18 +2675,23 @@ async function startWorkout(programId, workoutId) {
             throw new Error('Тренировка не найдена');
         }
 
+        // Проверяем наличие упражнений
+        if (!workout.exercises || workout.exercises.length === 0) {
+            throw new Error('В тренировке нет упражнений');
+        }
+
         // Добавляем дополнительные данные к тренировке
-        currentWorkout = {
+        window.currentWorkout = {
             ...workout,
             programId: programId
         };
 
         // Инициализируем переменные тренировки
-        currentExerciseIndex = 0;
-        currentSet = 1;
-        isResting = false;
-        restTimeLeft = 0;
-        workoutStartTime = Date.now();
+        window.currentExerciseIndex = 0;
+        window.currentSet = 1;
+        window.isResting = false;
+        window.restTimeLeft = 0;
+        window.workoutStartTime = Date.now();
 
         // Очищаем таймеры
         clearTimers();
@@ -2692,15 +2702,17 @@ async function startWorkout(programId, workoutId) {
         // Инициализируем обработчик выхода
         initExitHandler();
 
+        console.log('Начинаем тренировку:', window.currentWorkout);
+
         // Отображаем первое упражнение
         renderExercise();
 
         // Добавляем тактильный отклик
-        tg.HapticFeedback.impactOccurred('medium');
-
+        window.tg.HapticFeedback.impactOccurred('medium');
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
-        showError('Не удалось начать тренировку');
+        showError(error.message);
+        window.tg.HapticFeedback.notificationOccurred('error');
     }
 }
 
