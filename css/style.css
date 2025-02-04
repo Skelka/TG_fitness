@@ -1,0 +1,145 @@
+#app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--tg-theme-bg-color, #fff);
+    color: var(--tg-theme-text-color, #000);
+}
+
+#mainContainer,
+#programsContainer,
+#profileContainer,
+#statsContainer {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: var(--tg-theme-bg-color, #fff);
+    border-top: 1px solid var(--tg-theme-hint-color, #ccc);
+    padding: 8px 0;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+}
+
+.tab-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px;
+    border: none;
+    background: none;
+    color: var(--tg-theme-hint-color, #999);
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.tab-btn.active {
+    color: var(--tg-theme-button-color, #2481cc);
+}
+
+.tab-btn span {
+    font-size: 24px;
+}
+
+.tab-btn span:last-child {
+    font-size: 12px;
+}
+
+/* Стили для карточки упражнения */
+.exercise-card {
+    background-color: var(--tg-theme-bg-color, #fff);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.exercise-card h2 {
+    margin: 0 0 12px;
+    color: var(--tg-theme-text-color, #000);
+    font-size: 20px;
+}
+
+.exercise-details {
+    margin-bottom: 16px;
+}
+
+.exercise-details p {
+    margin: 4px 0;
+    color: var(--tg-theme-hint-color, #999);
+}
+
+.exercise-description {
+    margin: 12px 0;
+    color: var(--tg-theme-text-color, #000);
+    line-height: 1.4;
+}
+
+.timer-container {
+    text-align: center;
+    margin: 16px 0;
+}
+
+#timerDisplay {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: var(--tg-theme-text-color, #000);
+}
+
+.timer-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.timer-controls button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--tg-theme-button-color, #2481cc);
+    color: var(--tg-theme-button-text-color, #fff);
+    cursor: pointer;
+}
+
+.exercise-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.primary-button,
+.secondary-button {
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.primary-button {
+    background-color: var(--tg-theme-button-color, #2481cc);
+    color: var(--tg-theme-button-text-color, #fff);
+}
+
+.secondary-button {
+    background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+    color: var(--tg-theme-text-color, #000);
+}
+
+.primary-button:active,
+.secondary-button:active {
+    opacity: 0.7;
+} 

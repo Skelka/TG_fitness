@@ -471,6 +471,15 @@ tg.onEvent('popupClosed', async (event) => {
             // Очищаем таймеры
             clearTimers();
 
+            // Скрываем все контейнеры
+            document.querySelectorAll('#programsContainer, #profileContainer, #statsContainer').forEach(container => {
+                container.classList.add('hidden');
+            });
+
+            // Показываем mainContainer
+            const mainContainer = document.querySelector('#mainContainer');
+            mainContainer.classList.remove('hidden');
+
             // Скрываем нижнюю навигацию
             document.querySelector('.bottom-nav')?.classList.add('hidden');
 
@@ -700,50 +709,36 @@ function navigateCalendar(direction) {
     tg.HapticFeedback.impactOccurred('light');
 }
 
-// Обновляем функцию switchTab
+// Функция переключения вкладок
 function switchTab(tabName) {
-    // Скрываем все вкладки
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-    });
-
-    // Убираем активный класс у всех кнопок
+    // Обновляем активную кнопку
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
 
-    // Показываем нужную вкладку
-    const selectedTab = document.getElementById(tabName);
-    if (selectedTab) {
-        selectedTab.classList.add('active');
-    }
+    // Скрываем все контейнеры
+    document.querySelectorAll('#mainContainer, #programsContainer, #profileContainer, #statsContainer').forEach(container => {
+        container.classList.add('hidden');
+    });
 
-    // Активируем соответствующую кнопку
-    const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
-    if (activeBtn) {
-        activeBtn.classList.add('active');
-    }
-
-    // Дополнительные действия при переключении вкладок
-    switch(tabName) {
-        case 'stats':
-            renderStatistics();
+    // Показываем нужный контейнер
+    switch (tabName) {
+        case 'programs':
+            document.querySelector('#programsContainer').classList.remove('hidden');
+            renderProgramCards();
             break;
         case 'profile':
-            loadProfile();
+            document.querySelector('#profileContainer').classList.remove('hidden');
+            renderProfile();
             break;
-        case 'workouts':
-            loadActiveProgram();
-            break;
-        case 'calendar':
-            calendarModule.renderCalendar();
+        case 'stats':
+            document.querySelector('#statsContainer').classList.remove('hidden');
+            renderStatistics();
             break;
     }
 
-    // Вибрация при переключении
-    if (window.tg) {
-        window.tg.HapticFeedback.impactOccurred('light');
-    }
+    // Добавляем тактильный отклик
+    window.tg.HapticFeedback.impactOccurred('light');
 }
 
 // Функция для очистки всех данных
