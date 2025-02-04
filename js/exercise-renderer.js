@@ -223,46 +223,90 @@ export function renderExercise() {
     const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
     if (!exercise) return;
 
+    const totalExercises = state.currentWorkout.exercises.length;
+    const isLastSet = state.currentSet === (exercise.sets || 1);
+    const isLastExercise = state.currentExerciseIndex === totalExercises - 1;
+
     mainContainer.innerHTML = `
         <div class="exercise-screen">
+            <div class="exercise-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${(state.currentExerciseIndex / totalExercises) * 100}%"></div>
+                </div>
+                <div class="progress-text">
+                    Упражнение ${state.currentExerciseIndex + 1} из ${totalExercises}
+                </div>
+            </div>
+
             <div class="exercise-header">
                 <h1 class="exercise-title">${exercise.name}</h1>
-                <p class="exercise-subtitle">Подход ${state.currentSet} из ${exercise.sets || 1}</p>
+                <div class="exercise-sets">
+                    <span class="material-symbols-rounded">repeat</span>
+                    Подход ${state.currentSet} из ${exercise.sets || 1}
+                </div>
             </div>
             
             <div class="exercise-content">
+                <div class="exercise-animation">
+                    <img src="${getExerciseAnimation(exercise.name)}" alt="${exercise.name}" class="exercise-gif">
+                </div>
+
                 <div class="exercise-info">
                     ${exercise.type === 'cardio' || exercise.type === 'static' ? `
                         <div class="info-card">
                             <span class="material-symbols-rounded">timer</span>
                             <strong>${exercise.duration} сек</strong>
+                            <span>Время</span>
                         </div>
                     ` : `
                         <div class="info-card">
                             <span class="material-symbols-rounded">repeat</span>
                             <strong>${exercise.reps} повт.</strong>
+                            <span>Повторений</span>
                         </div>
                     `}
                     <div class="info-card">
                         <span class="material-symbols-rounded">fitness_center</span>
                         <strong>${getExerciseTypeText(exercise.type)}</strong>
+                        <span>Тип</span>
+                    </div>
+                    <div class="info-card">
+                        <span class="material-symbols-rounded">sports_martial_arts</span>
+                        <strong>${getMuscleGroupsText(exercise.muscleGroups)}</strong>
+                        <span>Группы мышц</span>
                     </div>
                 </div>
 
                 <div class="exercise-description">
-                    ${exercise.description || 'Описание отсутствует'}
+                    <h3>Как выполнять</h3>
+                    <p>${exercise.description || 'Описание отсутствует'}</p>
                 </div>
 
                 ${exercise.type === 'cardio' || exercise.type === 'static' ? `
                     <div class="exercise-timer">
-                        <div class="timer-value" id="exercise-timer">
+                        <div class="timer-display" id="timerDisplay">
                             ${formatTime(exercise.duration)}
                         </div>
-                        <div class="timer-label">
-                            Осталось времени
-                        </div>
+                        <button class="timer-btn" id="pauseTimer" onclick="window.toggleTimer()">
+                            <span class="material-symbols-rounded">pause</span>
+                            Пауза
+                        </button>
                     </div>
                 ` : ''}
+
+                <div class="exercise-controls">
+                    ${!isLastSet ? `
+                        <button class="control-btn next-set" onclick="window.startRestTimer(${exercise.restBetweenSets || 30})">
+                            <span class="material-symbols-rounded">timer</span>
+                            Следующий подход
+                        </button>
+                    ` : `
+                        <button class="control-btn next-exercise" onclick="window.nextExercise()">
+                            <span class="material-symbols-rounded">skip_next</span>
+                            ${isLastExercise ? 'Завершить тренировку' : 'Следующее упражнение'}
+                        </button>
+                    `}
+                </div>
             </div>
         </div>
     `;
@@ -273,10 +317,35 @@ export function renderExercise() {
     }
 }
 
-// Делаем функции доступными глобально
+// Функция для перехода к следующему упражнению
+export function nextExercise() {
+    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
+    const isLastSet = state.currentSet === (exercise.sets || 1);
+    const isLastExercise = state.currentExerciseIndex === state.currentWorkout.exercises.length - 1;
+
+    if (!isLastSet) {
+        // Если это не последний подход, увеличиваем счетчик подходов
+        state.currentSet++;
+        window.currentSet = state.currentSet;
+        startRestTimer(exercise.restBetweenSets || 30);
+    } else if (!isLastExercise) {
+        // Если это последний подход, но не последнее упражнение
+        state.currentExerciseIndex++;
+        state.currentSet = 1;
+        window.currentExerciseIndex = state.currentExerciseIndex;
+        window.currentSet = state.currentSet;
+        renderExercise();
+    } else {
+        // Если это последнее упражнение и последний подход
+        window.workoutsModule.finishWorkout();
+    }
+}
+
+// Добавляем функцию в глобальные
 export function initGlobalFunctions() {
     window.skipRest = skipRest;
     window.toggleTimer = toggleTimer;
+    window.nextExercise = nextExercise;
     window.exerciseState = state;
 }
 
