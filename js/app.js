@@ -45,6 +45,27 @@ export {
     tg
 };
 
+// Функция для предзагрузки шрифтов
+async function preloadFonts() {
+    try {
+        const font = new FontFace(
+            'Material Symbols Rounded',
+            'url(../fonts/MaterialSymbolsRounded.woff2) format("woff2")',
+            { style: 'normal', weight: '400' }
+        );
+        
+        // Ждем загрузки шрифта
+        await font.load();
+        
+        // Добавляем шрифт в document.fonts
+        document.fonts.add(font);
+        
+        console.log('Шрифты успешно загружены');
+    } catch (error) {
+        console.error('Ошибка при загрузке шрифтов:', error);
+    }
+}
+
 // Обновляем функцию initApp
 async function initApp() {
     try {
@@ -53,6 +74,9 @@ async function initApp() {
         tg.expand();
         tg.enableClosingConfirmation();
 
+        // Предзагружаем шрифты
+        await preloadFonts();
+
         // Инициализируем программы по умолчанию
         await initializeDefaultPrograms();
 
@@ -60,6 +84,7 @@ async function initApp() {
         await profileModule.loadProfile();
 
         // Настраиваем обработчики событий
+        setupEventListeners();
         setupCheckboxHandlers();
         profileModule.setupProfileEquipmentHandlers();
 
@@ -2085,11 +2110,46 @@ async function initializeDefaultPrograms() {
                 }
             ];
 
-            await setStorageItem('programs', JSON.stringify(defaultPrograms));
+            // Разделяем программы на части для сохранения
+            const chunks = [];
+            const chunkSize = 3; // Сохраняем по 3 программы в чанке
+            
+            for (let i = 0; i < defaultPrograms.length; i += chunkSize) {
+                chunks.push(defaultPrograms.slice(i, i + chunkSize));
+            }
+
+            // Сохраняем каждый чанк отдельно
+            for (let i = 0; i < chunks.length; i++) {
+                await setStorageItem(`programs_chunk_${i}`, JSON.stringify(chunks[i]));
+            }
+            
+            // Сохраняем метаданные о количестве чанков
+            await setStorageItem('programs_meta', JSON.stringify({
+                totalChunks: chunks.length,
+                totalPrograms: defaultPrograms.length
+            }));
+
             window.programData = defaultPrograms;
             console.log('Программы по умолчанию инициализированы:', defaultPrograms);
         } else {
-            window.programData = JSON.parse(existingPrograms);
+            try {
+                // Пробуем загрузить как единый объект (для обратной совместимости)
+                window.programData = JSON.parse(existingPrograms);
+            } catch {
+                // Если не получилось, загружаем по частям
+                const meta = await getStorageItem('programs_meta')
+                    .then(data => data ? JSON.parse(data) : null);
+                
+                if (meta && meta.totalChunks) {
+                    const programs = [];
+                    for (let i = 0; i < meta.totalChunks; i++) {
+                        const chunk = await getStorageItem(`programs_chunk_${i}`)
+                            .then(data => data ? JSON.parse(data) : []);
+                        programs.push(...chunk);
+                    }
+                    window.programData = programs;
+                }
+            }
             console.log('Загружены существующие программы:', window.programData);
         }
     } catch (error) {
@@ -2605,5 +2665,53 @@ async function startWorkout(programId, workoutId) {
     } catch (error) {
         console.error('Ошибка при запуске тренировки:', error);
         showError('Не удалось начать тренировку');
+    }
+}
+
+// Функция настройки обработчиков событий
+function setupEventListeners() {
+    // Обработчики для нижней навигации
+    document.querySelectorAll('.tab-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const tabName = button.dataset.tab;
+            if (tabName) {
+                switchTab(tabName);
+            }
+        });
+    });
+
+    // Обработчики для кнопок очистки данных
+    const clearDataBtn = document.querySelector('#clearDataBtn');
+    if (clearDataBtn) {
+        clearDataBtn.addEventListener('click', () => {
+            clearAllData();
+        });
+    }
+
+    // Обработчики для кнопок периода в статистике
+    document.querySelectorAll('.period-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const period = button.dataset.period;
+            if (period) {
+                document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                updateWeightChart(period);
+            }
+            tg.HapticFeedback.impactOccurred('light');
+        });
+    });
+
+    // Обработчик для формы ввода веса
+    const weightForm = document.querySelector('#weightForm');
+    if (weightForm) {
+        weightForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const weightInput = weightForm.querySelector('input[type="number"]');
+            if (weightInput && weightInput.value) {
+                await saveWeight(parseFloat(weightInput.value));
+                weightInput.value = '';
+                showNotification('Вес успешно сохранен', 'success');
+            }
+        });
     }
 }
