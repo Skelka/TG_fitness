@@ -1,4 +1,5 @@
 import { formatTime, showError, showNotification } from './utils.js';
+import { programDataManager } from './program-data.js';
 
 // Получаем доступ к глобальным переменным через window
 const getState = () => ({
