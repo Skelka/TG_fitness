@@ -1093,7 +1093,6 @@ function setupProfileEquipmentHandlers() {
             tg.HapticFeedback.impactOccurred('light');
         });
     });
-
     // Обработчики для чекбоксов оборудования
     const equipmentCheckboxes = document.querySelectorAll('.equipment-item input[type="checkbox"]');
     equipmentCheckboxes.forEach(checkbox => {
@@ -1102,12 +1101,6 @@ function setupProfileEquipmentHandlers() {
             tg.HapticFeedback.impactOccurred('light');
         });
     });
-}
-
-// Функция для отображения ошибок
-function showError(message) {
-    showNotification(message, 'error');
-    tg.HapticFeedback.notificationOccurred('error');
 }
 
 // Функция для отображения статистики

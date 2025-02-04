@@ -79,6 +79,12 @@ export async function showPopupSafe(params) {
 
 // Функция для показа ошибки
 export async function showError(message) {
+    if (window.showNotification) {
+        window.showNotification(message, 'error');
+    }
+    if (window.tg?.HapticFeedback) {
+        window.tg.HapticFeedback.notificationOccurred('error');
+    }
     return showPopupSafe({
         title: 'Ошибка',
         message: message,
