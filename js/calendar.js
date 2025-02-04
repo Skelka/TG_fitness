@@ -6,6 +6,44 @@ let currentYear = new Date().getFullYear();
 
 // Функция для отображения календаря
 function renderCalendar() {
+    const mainContainer = document.querySelector('#mainContainer');
+    if (!mainContainer) return;
+
+    // Создаем разметку календаря
+    mainContainer.innerHTML = `
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button class="calendar-nav-btn" onclick="calendarModule.navigateCalendar('prev')">
+                    <span class="material-symbols-rounded">chevron_left</span>
+                </button>
+                <h2></h2>
+                <button class="calendar-nav-btn" onclick="calendarModule.navigateCalendar('next')">
+                    <span class="material-symbols-rounded">chevron_right</span>
+                </button>
+            </div>
+            <div class="calendar-weekdays">
+                <div>Пн</div>
+                <div>Вт</div>
+                <div>Ср</div>
+                <div>Чт</div>
+                <div>Пт</div>
+                <div>Сб</div>
+                <div>Вс</div>
+            </div>
+            <div class="calendar-days"></div>
+            <div class="calendar-legend">
+                <div class="legend-item">
+                    <div class="legend-color planned"></div>
+                    <span>Запланировано</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color completed"></div>
+                    <span>Выполнено</span>
+                </div>
+            </div>
+        </div>
+    `;
+
     const calendarHeader = document.querySelector('.calendar-header h2');
     const calendarDays = document.querySelector('.calendar-days');
     if (!calendarHeader || !calendarDays) return;
@@ -115,6 +153,13 @@ function initCalendar() {
 
 // Экспортируем функции для использования в других модулях
 const calendarModule = {
+    renderCalendar,
+    initCalendar,
+    navigateCalendar
+};
+
+// Делаем функции доступными глобально
+window.calendarModule = {
     renderCalendar,
     initCalendar,
     navigateCalendar
