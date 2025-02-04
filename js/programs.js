@@ -202,4 +202,4 @@ const programsModule = {
     }
 };
 
-export default programsModule; 
+export { programsModule }; 
