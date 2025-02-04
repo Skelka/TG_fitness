@@ -6,6 +6,17 @@ let currentPeriod = 'week';
 // Функция для обновления графика веса
 async function updateWeightChart(period = 'week') {
     try {
+        // Проверяем доступность Chart.js
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js не загружен');
+            const chartCanvas = document.getElementById('weight-chart');
+            if (chartCanvas) {
+                chartCanvas.style.display = 'none';
+                chartCanvas.parentElement.innerHTML = '<div class="no-data">Ошибка загрузки графика</div>';
+            }
+            return;
+        }
+
         currentPeriod = period;
         const weightHistory = await getStorageItem('weightHistory')
             .then(data => data ? JSON.parse(data) : []);

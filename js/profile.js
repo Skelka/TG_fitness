@@ -275,7 +275,8 @@ async function loadProfile() {
             clearDataBtn.addEventListener('click', async () => {
                 try {
                     const result = await window.tg.showConfirm('Вы уверены, что хотите очистить все данные?');
-                    if (result === true || result.button_id === 'ok') {
+                    // Проверяем результат подтверждения
+                    if (result === true || (typeof result === 'object' && result?.button_id === 'ok')) {
                         await clearAllData();
                     }
                 } catch (error) {
