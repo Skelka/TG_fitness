@@ -30,22 +30,28 @@ async function clearAllData() {
             'user_settings'
         ];
 
-        // Очищаем все данные через WebStorage API
-        for (const key of keysToDelete) {
-            await setStorageItem(key, '');
-            localStorage.removeItem(key);
-        }
+        // Очищаем все данные через Telegram WebApp Storage
+        const clearPromises = keysToDelete.map(key => 
+            window.tg.CloudStorage.removeItem(key)
+                .catch(err => console.warn(`Ошибка при удалении ${key}:`, err))
+        );
 
         // Очищаем чанки программ
         const meta = await getStorageItem('programs_meta');
         if (meta) {
             const { totalChunks } = JSON.parse(meta);
             for (let i = 0; i < totalChunks; i++) {
-                await setStorageItem(`programs_chunk_${i}`, '');
+                clearPromises.push(
+                    window.tg.CloudStorage.removeItem(`programs_chunk_${i}`)
+                        .catch(err => console.warn(`Ошибка при удалении programs_chunk_${i}:`, err))
+                );
             }
         }
 
-        // Очищаем localStorage полностью
+        // Ждем завершения всех операций очистки
+        await Promise.all(clearPromises);
+
+        // Очищаем localStorage
         localStorage.clear();
 
         // Очищаем sessionStorage
@@ -54,7 +60,7 @@ async function clearAllData() {
         console.log('Данные успешно очищены');
         
         // Показываем уведомление об успехе
-        window.tg.showAlert('Все данные успешно очищены');
+        await window.tg.showAlert('Все данные успешно очищены');
         
         // Перезагружаем страницу после небольшой задержки
         setTimeout(() => {
@@ -62,7 +68,7 @@ async function clearAllData() {
         }, 1000);
     } catch (error) {
         console.error('Ошибка при очистке данных:', error);
-        window.tg.showAlert('Не удалось очистить данные');
+        window.tg.showAlert('Не удалось очистить данные: ' + error.message);
     }
 }
 

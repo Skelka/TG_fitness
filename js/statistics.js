@@ -3,28 +3,27 @@ import { getStorageItem, setStorageItem, formatTime } from './utils.js';
 // Глобальные переменные
 let currentPeriod = 'week';
 
+// Функция для загрузки Chart.js
+async function loadChartJS() {
+    if (typeof Chart !== 'undefined') {
+        return Promise.resolve();
+    }
+
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Не удалось загрузить Chart.js'));
+        document.head.appendChild(script);
+    });
+}
+
 // Функция для обновления графика веса
 async function updateWeightChart(period = 'week') {
     try {
-        // Проверяем доступность Chart.js с повторными попытками
-        let attempts = 0;
-        const maxAttempts = 5;
+        // Загружаем Chart.js
+        await loadChartJS();
         
-        while (typeof Chart === 'undefined' && attempts < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, 200)); // Ждем 200мс между попытками
-            attempts++;
-        }
-        
-        if (typeof Chart === 'undefined') {
-            console.error('Chart.js не загружен после', maxAttempts, 'попыток');
-            const chartCanvas = document.getElementById('weight-chart');
-            if (chartCanvas) {
-                chartCanvas.style.display = 'none';
-                chartCanvas.parentElement.innerHTML = '<div class="no-data">Ошибка загрузки графика. Попробуйте обновить страницу.</div>';
-            }
-            return;
-        }
-
         currentPeriod = period;
         const weightHistory = await getStorageItem('weightHistory')
             .then(data => data ? JSON.parse(data) : []);
