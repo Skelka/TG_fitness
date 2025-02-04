@@ -12,6 +12,47 @@ async function getProfile() {
     }
 }
 
+// Функция для очистки всех данных
+async function clearAllData() {
+    try {
+        // Список всех ключей для очистки
+        const keysToDelete = [
+            'profile',
+            'workoutStats',
+            'weightHistory',
+            'programs_meta',
+            'activeProgram',
+            'currentWorkout',
+            'workoutHistory',
+            'statistics',
+            'calendar_events',
+            'exercise_progress',
+            'user_settings'
+        ];
+
+        // Очищаем все данные через WebStorage API
+        for (const key of keysToDelete) {
+            await setStorageItem(key, '');
+        }
+
+        // Очищаем localStorage
+        localStorage.clear();
+
+        // Очищаем sessionStorage
+        sessionStorage.clear();
+
+        console.log('Данные успешно очищены');
+        
+        // Перезагружаем страницу после небольшой задержки
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
+    } catch (error) {
+        console.error('Ошибка при очистке данных:', error);
+        showError('Не удалось очистить данные');
+    }
+}
+
 // Функция для загрузки профиля
 async function loadProfile() {
     try {
@@ -235,25 +276,7 @@ async function loadProfile() {
             clearDataBtn.addEventListener('click', async () => {
                 const confirmed = await window.tg.showConfirm('Вы уверены, что хотите очистить все данные?');
                 if (confirmed) {
-                    try {
-                        // Очищаем все данные из localStorage
-                        localStorage.clear();
-                        
-                        // Очищаем все данные из WebStorage
-                        await Promise.all([
-                            setStorageItem('profile', ''),
-                            setStorageItem('workoutStats', ''),
-                            setStorageItem('weightHistory', ''),
-                            setStorageItem('programs_meta', ''),
-                            setStorageItem('activeProgram', '')
-                        ]);
-                        
-                        window.tg.showAlert('Все данные успешно очищены');
-                        window.location.reload(); // Перезагружаем страницу
-                    } catch (error) {
-                        console.error('Ошибка при очистке данных:', error);
-                        showError('Не удалось очистить данные');
-                    }
+                    await clearAllData();
                 }
             });
         }
@@ -315,8 +338,6 @@ async function saveProfile() {
         
         // Обновляем статус
         updateProfileStatus(profileData);
-        
-        window.tg.showAlert('Профиль успешно сохранен');
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
         showError('Не удалось сохранить профиль');
@@ -353,20 +374,22 @@ function setupProfileHandlers() {
     }
 }
 
-// Экспортируем функции
+// Обновляем экспорт
 export default {
     loadProfile,
     saveProfile,
     getProfile,
     updateProfileStatus,
-    setupProfileHandlers
+    setupProfileHandlers,
+    clearAllData
 };
 
-// Делаем функции доступными глобально
+// Обновляем глобальные функции
 window.profileModule = {
     loadProfile,
     saveProfile,
     getProfile,
     updateProfileStatus,
-    setupProfileHandlers
+    setupProfileHandlers,
+    clearAllData
 }; 
