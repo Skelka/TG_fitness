@@ -6,13 +6,21 @@ let currentPeriod = 'week';
 // Функция для обновления графика веса
 async function updateWeightChart(period = 'week') {
     try {
-        // Проверяем доступность Chart.js
+        // Проверяем доступность Chart.js с повторными попытками
+        let attempts = 0;
+        const maxAttempts = 5;
+        
+        while (typeof Chart === 'undefined' && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 200)); // Ждем 200мс между попытками
+            attempts++;
+        }
+        
         if (typeof Chart === 'undefined') {
-            console.error('Chart.js не загружен');
+            console.error('Chart.js не загружен после', maxAttempts, 'попыток');
             const chartCanvas = document.getElementById('weight-chart');
             if (chartCanvas) {
                 chartCanvas.style.display = 'none';
-                chartCanvas.parentElement.innerHTML = '<div class="no-data">Ошибка загрузки графика</div>';
+                chartCanvas.parentElement.innerHTML = '<div class="no-data">Ошибка загрузки графика. Попробуйте обновить страницу.</div>';
             }
             return;
         }
@@ -207,7 +215,7 @@ async function renderStatistics() {
             <div class="tips-section">
                 <h3>Советы</h3>
                 <div class="tips-list">
-                    ${getRandomTips()}
+                    ${statisticsModule.getRandomTips()}
                 </div>
             </div>
         </div>
@@ -308,5 +316,8 @@ const statisticsModule = {
     currentPeriod,
     getRandomTips
 };
+
+// Делаем функции доступными глобально
+window.statisticsModule = statisticsModule;
 
 export default statisticsModule;

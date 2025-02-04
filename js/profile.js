@@ -31,10 +31,21 @@ async function clearAllData() {
         ];
 
         // Очищаем все данные через WebStorage API
-        const clearPromises = keysToDelete.map(key => setStorageItem(key, ''));
-        await Promise.all(clearPromises);
+        for (const key of keysToDelete) {
+            await setStorageItem(key, '');
+            localStorage.removeItem(key);
+        }
 
-        // Очищаем localStorage
+        // Очищаем чанки программ
+        const meta = await getStorageItem('programs_meta');
+        if (meta) {
+            const { totalChunks } = JSON.parse(meta);
+            for (let i = 0; i < totalChunks; i++) {
+                await setStorageItem(`programs_chunk_${i}`, '');
+            }
+        }
+
+        // Очищаем localStorage полностью
         localStorage.clear();
 
         // Очищаем sessionStorage
@@ -42,13 +53,16 @@ async function clearAllData() {
 
         console.log('Данные успешно очищены');
         
+        // Показываем уведомление об успехе
+        window.tg.showAlert('Все данные успешно очищены');
+        
         // Перезагружаем страницу после небольшой задержки
         setTimeout(() => {
             window.location.reload();
-        }, 500);
+        }, 1000);
     } catch (error) {
         console.error('Ошибка при очистке данных:', error);
-        showError('Не удалось очистить данные');
+        window.tg.showAlert('Не удалось очистить данные');
     }
 }
 
