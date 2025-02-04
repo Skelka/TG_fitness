@@ -192,6 +192,13 @@ export function clearTimers() {
     window.restTimeLeft = 0;
 }
 
+// Функция для проверки, является ли текущее упражнение последним
+export function isLastExercise() {
+    const state = getState();
+    return state.currentExerciseIndex === state.currentWorkout.exercises.length - 1;
+}
+
+// Функция для отображения текущего упражнения
 export function renderExercise() {
     const mainContainer = document.querySelector('#mainContainer');
     if (!mainContainer || !window.currentWorkout) return;
@@ -243,12 +250,12 @@ export function renderExercise() {
 
             <div class="exercise-controls">
                 ${window.currentExerciseIndex > 0 ? `
-                    <button class="control-btn secondary" onclick="previousExercise()">
+                    <button class="control-btn secondary" onclick="prevExercise()">
                         <span class="material-symbols-rounded">arrow_back</span>
                         Назад
                     </button>
                 ` : ''}
-                <button class="control-btn" onclick="nextExercise()">
+                <button class="control-btn" onclick="completeExercise()">
                     ${isLastExercise() ? 'Завершить' : 'Далее'}
                     <span class="material-symbols-rounded">
                         ${isLastExercise() ? 'done' : 'arrow_forward'}

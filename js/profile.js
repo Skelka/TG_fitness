@@ -227,7 +227,7 @@ async function loadProfile() {
         }
 
         // Устанавливаем обработчики после загрузки данных
-        setupProfileEquipmentHandlers();
+        setupProfileHandlers();
 
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
@@ -250,97 +250,94 @@ function updateProfileStatus(profile) {
     statusElement.textContent = status;
 }
 
-// Функция для сохранения профиля
+// Функция для сохранения данных профиля
 async function saveProfile() {
     try {
         const form = document.getElementById('profile-form');
         if (!form) return;
 
+        // Собираем данные формы
         const formData = new FormData(form);
         const profileData = {};
 
-        // Собираем данные из формы
+        // Обрабатываем обычные поля
         for (let [key, value] of formData.entries()) {
-            if (key === 'equipment') {
-                if (!profileData[key]) profileData[key] = [];
-                profileData[key].push(value);
-            } else {
+            if (key !== 'equipment') { // Оборудование обработаем отдельно
                 profileData[key] = value;
             }
         }
 
-        // Добавляем места тренировок
-        const selectedPlaces = [];
-        document.querySelectorAll('.place-btn.active').forEach(btn => {
-            selectedPlaces.push(btn.dataset.place);
+        // Собираем выбранное оборудование
+        const equipment = [];
+        document.querySelectorAll('input[name="equipment"]:checked').forEach(checkbox => {
+            equipment.push(checkbox.value);
         });
-        profileData.workoutPlaces = selectedPlaces;
+        profileData.equipment = equipment;
+
+        // Собираем места тренировок
+        const workoutPlaces = [];
+        document.querySelectorAll('.place-btn.active').forEach(button => {
+            workoutPlaces.push(button.dataset.place);
+        });
+        profileData.workoutPlaces = workoutPlaces;
 
         // Сохраняем данные
         await setStorageItem('profile', JSON.stringify(profileData));
         
         // Обновляем статус
         updateProfileStatus(profileData);
-
-        // Показываем уведомление об успешном сохранении
-        if (window.showNotification) {
-            window.showNotification('Профиль сохранен');
-        }
-
+        
+        window.tg.showAlert('Профиль успешно сохранен');
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
         showError('Не удалось сохранить профиль');
     }
 }
 
-// Создаем отложенную версию функции сохранения
-const debouncedSaveProfile = debounce(saveProfile, 500);
-
-// Функция для настройки обработчиков оборудования
-function setupProfileEquipmentHandlers() {
-    // Обработчики для кнопок места тренировок
+// Функция настройки обработчиков событий
+function setupProfileHandlers() {
+    // Обработчики для мест тренировок
     document.querySelectorAll('.place-btn').forEach(button => {
         button.addEventListener('click', () => {
             button.classList.toggle('active');
-            if (window.tg) {
-                window.tg.HapticFeedback.impactOccurred('light');
-            }
-            debouncedSaveProfile();
+            saveProfile();
         });
     });
 
-    // Обработчики для чекбоксов оборудования
+    // Обработчики для оборудования
     document.querySelectorAll('input[name="equipment"]').forEach(checkbox => {
-        checkbox.addEventListener('change', () => {
-            if (window.tg) {
-                window.tg.HapticFeedback.impactOccurred('light');
-            }
-            debouncedSaveProfile();
-        });
+        checkbox.addEventListener('change', saveProfile);
     });
+
+    // Обработчики для остальных полей формы
+    const form = document.getElementById('profile-form');
+    if (form) {
+        const inputs = form.querySelectorAll('input:not([type="checkbox"]):not([type="radio"])');
+        inputs.forEach(input => {
+            input.addEventListener('change', saveProfile);
+        });
+
+        const radioInputs = form.querySelectorAll('input[type="radio"]');
+        radioInputs.forEach(radio => {
+            radio.addEventListener('change', saveProfile);
+        });
+    }
 }
 
-// Вспомогательная функция debounce
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Экспортируем функции для использования в других модулях
-const profileModule = {
+// Экспортируем функции
+export default {
     loadProfile,
     saveProfile,
-    debouncedSaveProfile,
-    setupProfileEquipmentHandlers,
+    getProfile,
     updateProfileStatus,
-    getProfile
+    setupProfileHandlers
 };
 
-export default profileModule; 
+// Делаем функции доступными глобально
+window.profileModule = {
+    loadProfile,
+    saveProfile,
+    getProfile,
+    updateProfileStatus,
+    setupProfileHandlers
+}; 
