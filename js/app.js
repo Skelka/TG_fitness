@@ -943,7 +943,7 @@ function renderStatistics() {
 
 async function initializeDefaultPrograms() {
     try {
-        const existingPrograms = await getStorageItem('programs');
+        const existingPrograms = await getStorageItem('programs_meta');
         if (!existingPrograms) {
             const defaultPrograms = [
                 {
@@ -2133,69 +2133,48 @@ async function initializeDefaultPrograms() {
                 }
             ];
 
-            // Разделяем программы на более мелкие части
+            // Сохраняем программы чанками
+            const chunkSize = 1; // Размер чанка
             const chunks = [];
-            const chunkSize = 1; // Сохраняем по 1 программе в чанке
             
+            // Разбиваем на чанки
             for (let i = 0; i < defaultPrograms.length; i += chunkSize) {
                 const chunk = defaultPrograms.slice(i, i + chunkSize);
-                // Удаляем лишние данные из программ для уменьшения размера
-                const simplifiedChunk = chunk.map(program => ({
-                    id: program.id,
-                    name: program.name,
-                    description: program.description,
-                    icon: program.icon,
-                    difficulty: program.difficulty,
-                    duration: program.duration,
-                    workoutsPerWeek: program.workoutsPerWeek,
-                    workouts: program.workouts.map(workout => ({
-                        id: workout.id,
-                        name: workout.name,
-                        description: workout.description,
-                        duration: workout.duration,
-                        type: workout.type
-                    }))
-                }));
-                chunks.push(simplifiedChunk);
+                chunks.push(chunk);
             }
-
-            // Сохраняем каждый чанк отдельно
+            
+            // Сохраняем каждый чанк
             for (let i = 0; i < chunks.length; i++) {
                 await setStorageItem(`programs_chunk_${i}`, JSON.stringify(chunks[i]));
             }
             
-            // Сохраняем метаданные о количестве чанков
+            // Сохраняем метаданные
             await setStorageItem('programs_meta', JSON.stringify({
                 totalChunks: chunks.length,
                 totalPrograms: defaultPrograms.length
             }));
 
+            // Сохраняем программы в глобальной переменной
             window.programData = defaultPrograms;
             console.log('Программы по умолчанию инициализированы:', defaultPrograms);
         } else {
-            try {
-                // Пробуем загрузить как единый объект (для обратной совместимости)
-            window.programData = JSON.parse(existingPrograms);
-            } catch {
-                // Если не получилось, загружаем по частям
-                const meta = await getStorageItem('programs_meta')
-                    .then(data => data ? JSON.parse(data) : null);
-                
-                if (meta && meta.totalChunks) {
-                    const programs = [];
-                    for (let i = 0; i < meta.totalChunks; i++) {
-                        const chunk = await getStorageItem(`programs_chunk_${i}`)
-                            .then(data => data ? JSON.parse(data) : []);
-                        programs.push(...chunk);
-                    }
-                    window.programData = programs;
+            // Загружаем существующие программы из чанков
+            const meta = JSON.parse(existingPrograms);
+            const programs = [];
+            
+            for (let i = 0; i < meta.totalChunks; i++) {
+                const chunk = await getStorageItem(`programs_chunk_${i}`);
+                if (chunk) {
+                    programs.push(...JSON.parse(chunk));
                 }
             }
-            console.log('Загружены существующие программы:', window.programData);
+            
+            window.programData = programs;
+            console.log('Загружены существующие программы:', programs);
         }
     } catch (error) {
         console.error('Ошибка при инициализации программ:', error);
-        throw error;
+        showError('Не удалось загрузить программы тренировок');
     }
 }
 
@@ -2778,3 +2757,25 @@ function setupCheckboxHandlers() {
         });
     });
 }
+
+// Функция очистки хранилища программ
+async function clearProgramStorage() {
+    try {
+        const meta = await getStorageItem('programs_meta');
+        if (meta) {
+            const { totalChunks } = JSON.parse(meta);
+            // Удаляем все чанки
+            for (let i = 0; i < totalChunks; i++) {
+                await setStorageItem(`programs_chunk_${i}`, '');
+            }
+        }
+        // Удаляем метаданные
+        await setStorageItem('programs_meta', '');
+        console.log('Хранилище программ очищено');
+    } catch (error) {
+        console.error('Ошибка при очистке хранилища программ:', error);
+    }
+}
+
+// Добавляем функцию в глобальную область
+window.clearProgramStorage = clearProgramStorage;
