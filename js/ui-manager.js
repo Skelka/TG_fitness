@@ -46,7 +46,14 @@ const uiManager = {
         const mainContainer = document.querySelector('#mainContainer');
         if (!mainContainer || !window.programData) return;
 
-        const programCards = window.programData.map(program => `
+        // Сортируем программы так, чтобы утренняя зарядка была первой
+        const sortedPrograms = [...window.programData].sort((a, b) => {
+            if (a.id === 'morning_workout') return -1;
+            if (b.id === 'morning_workout') return 1;
+            return 0;
+        });
+
+        const programCards = sortedPrograms.map(program => `
             <div class="program-card" onclick="window.showProgramDetails('${program.id}')">
                 <div class="program-icon">
                     <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
