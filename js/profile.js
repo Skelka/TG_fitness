@@ -31,9 +31,8 @@ async function clearAllData() {
         ];
 
         // Очищаем все данные через WebStorage API
-        for (const key of keysToDelete) {
-            await setStorageItem(key, '');
-        }
+        const clearPromises = keysToDelete.map(key => setStorageItem(key, ''));
+        await Promise.all(clearPromises);
 
         // Очищаем localStorage
         localStorage.clear();
@@ -274,9 +273,14 @@ async function loadProfile() {
         const clearDataBtn = document.getElementById('clearDataBtn');
         if (clearDataBtn) {
             clearDataBtn.addEventListener('click', async () => {
-                const confirmed = await window.tg.showConfirm('Вы уверены, что хотите очистить все данные?');
-                if (confirmed) {
-                    await clearAllData();
+                try {
+                    const result = await window.tg.showConfirm('Вы уверены, что хотите очистить все данные?');
+                    if (result === true || result.button_id === 'ok') {
+                        await clearAllData();
+                    }
+                } catch (error) {
+                    console.error('Ошибка при очистке данных:', error);
+                    showError('Не удалось очистить данные');
                 }
             });
         }
