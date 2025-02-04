@@ -446,11 +446,12 @@ tg.onEvent('popupClosed', async (event) => {
 
             console.log('Starting first workout:', firstWorkout);
 
-            // Сохраняем программу как активную и дожидаемся завершения операции
+            // Сохраняем программу как активную
             const saveResult = await setStorageItem('activeProgram', JSON.stringify(program));
-            console.log('Program saved as active:', saveResult);
+            console.log('Program saved as active, result:', saveResult);
 
-            if (!saveResult) {
+            // Если сохранение не удалось, но есть localStorage - продолжаем
+            if (!saveResult && !localStorage.getItem('activeProgram')) {
                 throw new Error('Не удалось сохранить программу');
             }
 

@@ -25,19 +25,25 @@ export async function getStorageItem(key) {
 export async function setStorageItem(key, value) {
     return new Promise((resolve) => {
         // Сохраняем в localStorage в любом случае
-        localStorage.setItem(key, value);
+        try {
+            localStorage.setItem(key, value);
+        } catch (error) {
+            console.warn('Ошибка при сохранении в localStorage:', error);
+        }
 
         if (!window.tg?.CloudStorage) {
             console.warn('CloudStorage не доступен, сохранено только в localStorage');
-            resolve();
+            resolve(true);
             return;
         }
 
         window.tg.CloudStorage.setItem(key, value, (error) => {
             if (error) {
                 console.warn(`Ошибка CloudStorage при сохранении ${key}:`, error);
+                resolve(false);
+            } else {
+                resolve(true);
             }
-            resolve();
         });
     });
 }
