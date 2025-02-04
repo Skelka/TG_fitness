@@ -217,6 +217,54 @@ async function updateStatistics(data) {
     }
 }
 
+// Функция для получения случайных советов
+function getRandomTips() {
+    const tips = [
+        {
+            icon: 'water_drop',
+            text: 'Пейте достаточно воды - минимум 2 литра в день для поддержания водного баланса'
+        },
+        {
+            icon: 'timer',
+            text: 'Тренируйтесь регулярно - лучше 3 раза в неделю по 30 минут, чем раз в неделю 2 часа'
+        },
+        {
+            icon: 'restaurant',
+            text: 'Следите за питанием - 80% успеха зависит от правильного питания'
+        },
+        {
+            icon: 'hotel',
+            text: 'Высыпайтесь - качественный сон важен для восстановления и результатов'
+        },
+        {
+            icon: 'monitoring',
+            text: 'Ведите дневник тренировок - это поможет отслеживать прогресс'
+        },
+        {
+            icon: 'speed',
+            text: 'Не торопитесь - постепенное увеличение нагрузки снижает риск травм'
+        },
+        {
+            icon: 'self_improvement',
+            text: 'Разминка перед тренировкой снижает риск травм и улучшает результаты'
+        },
+        {
+            icon: 'psychology',
+            text: 'Ставьте реальные цели - это поможет сохранить мотивацию'
+        }
+    ];
+
+    // Выбираем 3 случайных совета
+    const randomTips = tips.sort(() => 0.5 - Math.random()).slice(0, 3);
+
+    return randomTips.map(tip => `
+        <div class="tip-card">
+            <span class="material-symbols-rounded">${tip.icon}</span>
+            <p>${tip.text}</p>
+        </div>
+    `).join('');
+}
+
 // Экспортируем функции для использования в других модулях
 const statisticsModule = {
     updateWeightChart,

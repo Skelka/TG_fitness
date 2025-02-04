@@ -3107,4 +3107,196 @@ body {
 
 .hidden {
     display: none !important;
-} 
+}
+
+/* Экран тренировки */
+.exercise-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--tg-theme-bg-color);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.exercise-header {
+    padding: var(--spacing-md);
+    background: var(--tg-theme-secondary-bg-color);
+    border-bottom: var(--card-border);
+}
+
+.exercise-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.exercise-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: var(--spacing-xs) 0 0;
+}
+
+.exercise-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.exercise-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+}
+
+.info-card {
+    background: var(--tg-theme-secondary-bg-color);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.info-card span {
+    color: var(--text-secondary);
+}
+
+.info-card strong {
+    color: var(--primary-color);
+}
+
+.exercise-description {
+    background: var(--tg-theme-secondary-bg-color);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.exercise-timer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: var(--border-radius-md);
+}
+
+.timer-value {
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--primary-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.timer-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.exercise-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--spacing-md);
+    background: var(--tg-theme-bg-color);
+    border-top: var(--card-border);
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.control-btn {
+    flex: 1;
+    padding: var(--spacing-md);
+    border: none;
+    border-radius: var(--border-radius-md);
+    background: var(--primary-color);
+    color: white;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.control-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.control-btn.secondary {
+    background: var(--tg-theme-secondary-bg-color);
+    color: var(--text-color);
+}
+
+/* Анимации для таймера */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.timer-value.ending {
+    color: var(--error-color);
+    animation: pulse 0.5s infinite;
+}
+
+/* Стили для секции советов */
+.tips-section {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: var(--tg-theme-bg-color);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--card-shadow);
+}
+
+.tips-section h3 {
+    margin-bottom: var(--spacing-md);
+    font-size: 18px;
+    color: var(--tg-theme-text-color);
+}
+
+.tips-list {
+    display: grid;
+    gap: var(--spacing-md);
+}
+
+.tip-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: var(--border-radius-md);
+    transition: transform 0.2s ease;
+}
+
+.tip-card:hover {
+    transform: translateY(-2px);
+}
+
+.tip-card .material-symbols-rounded {
+    color: var(--tg-theme-button-color);
+    font-size: 24px;
+}
+
+.tip-card p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--tg-theme-text-color);
+}
+
+/* ... existing code ... */ 

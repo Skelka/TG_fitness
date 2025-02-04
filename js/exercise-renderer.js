@@ -193,108 +193,74 @@ export function clearTimers() {
 }
 
 export function renderExercise() {
-    const state = getState();
-    console.log('Rendering exercise with state:', state);
-    
-    if (!state.currentWorkout || !state.currentWorkout.exercises) {
-        console.error('No workout or exercises found:', state.currentWorkout);
-        showError('Нет доступных упражнений');
-        return;
-    }
+    const mainContainer = document.querySelector('#mainContainer');
+    if (!mainContainer || !window.currentWorkout) return;
 
-    if (state.currentExerciseIndex >= state.currentWorkout.exercises.length) {
-        console.error('Exercise index out of bounds:', {
-            currentIndex: state.currentExerciseIndex,
-            totalExercises: state.currentWorkout.exercises.length
-        });
-        showError('Нет доступных упражнений');
-        return;
-    }
-
-    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
-    console.log('Current exercise:', exercise);
-    
-    // Создаем основной контейнер, если его нет
-    let mainContainer = document.querySelector('.workout-session');
-    if (!mainContainer) {
-        mainContainer = document.createElement('div');
-        mainContainer.className = 'workout-session';
-        document.body.appendChild(mainContainer);
-    }
-
-    // Получаем анимацию для упражнения
-    const exerciseAnimation = window.getExerciseAnimation ? 
-        window.getExerciseAnimation(exercise.name) : 
-        'https://media.giphy.com/media/3oKIPc9VZj4ylzjcys/giphy.gif';
+    const exercise = window.currentWorkout.exercises[window.currentExerciseIndex];
+    if (!exercise) return;
 
     mainContainer.innerHTML = `
-        <div class="exercise-background">
-            <img src="${exerciseAnimation}" alt="${exercise.name}">
-            <div class="overlay"></div>
-        </div>
-        
-        <div class="workout-content">
-            <div class="workout-header">
-                <div class="workout-title">
-                    <h2 class="exercise-title">${exercise.name}</h2>
-                    <div class="workout-progress">
-                        Упражнение ${state.currentExerciseIndex + 1} из ${state.currentWorkout.exercises.length}
-                    </div>
-                </div>
+        <div class="exercise-screen">
+            <div class="exercise-header">
+                <h1 class="exercise-title">${exercise.name}</h1>
+                <p class="exercise-subtitle">Подход ${window.currentSet} из ${exercise.sets || 1}</p>
             </div>
-
-            <div class="exercise-info">
-                <div class="exercise-stats">
-                    <div class="stat-item">
-                        <div class="stat-value">Подход ${state.currentSet}</div>
-                        <div class="stat-label">из ${exercise.sets}</div>
+            
+            <div class="exercise-content">
+                <div class="exercise-info">
+                    ${exercise.type === 'cardio' || exercise.type === 'static' ? `
+                        <div class="info-card">
+                            <span class="material-symbols-rounded">timer</span>
+                            <strong>${exercise.duration} сек</strong>
+                        </div>
+                    ` : `
+                        <div class="info-card">
+                            <span class="material-symbols-rounded">repeat</span>
+                            <strong>${exercise.reps} повт.</strong>
+                        </div>
+                    `}
+                    <div class="info-card">
+                        <span class="material-symbols-rounded">fitness_center</span>
+                        <strong>${getExerciseTypeText(exercise.type)}</strong>
                     </div>
-                    ${exercise.reps ? `
-                        <div class="stat-item">
-                            <div class="stat-value">${exercise.reps}</div>
-                            <div class="stat-label">повторений</div>
-                        </div>
-                    ` : ''}
-                    ${exercise.duration ? `
-                        <div class="stat-item">
-                            <div id="timerDisplay" class="stat-value">${formatTime(exercise.duration)}</div>
-                            <div class="stat-label">время</div>
-                        </div>
-                    ` : ''}
                 </div>
 
-                ${exercise.description ? `
-                    <div class="exercise-description">
-                        ${exercise.description}
+                <div class="exercise-description">
+                    ${exercise.description || 'Описание отсутствует'}
+                </div>
+
+                ${exercise.type === 'cardio' || exercise.type === 'static' ? `
+                    <div class="exercise-timer">
+                        <div class="timer-value" id="exercise-timer">
+                            ${formatTime(exercise.duration)}
+                        </div>
+                        <div class="timer-label">
+                            Осталось времени
+                        </div>
                     </div>
                 ` : ''}
             </div>
 
             <div class="exercise-controls">
-                ${exercise.duration ? `
-                    <button id="startTimer" class="complete-set-btn" onclick="window.startExerciseTimer(${exercise.duration})">
-                        Начать упражнение
+                ${window.currentExerciseIndex > 0 ? `
+                    <button class="control-btn secondary" onclick="previousExercise()">
+                        <span class="material-symbols-rounded">arrow_back</span>
+                        Назад
                     </button>
-                ` : `
-                    <button class="complete-set-btn" onclick="window.completeExercise()">
-                        Завершить подход
-                    </button>
-                `}
+                ` : ''}
+                <button class="control-btn" onclick="nextExercise()">
+                    ${isLastExercise() ? 'Завершить' : 'Далее'}
+                    <span class="material-symbols-rounded">
+                        ${isLastExercise() ? 'done' : 'arrow_forward'}
+                    </span>
+                </button>
             </div>
         </div>
     `;
 
-    // Скрываем нижнюю навигацию
-    const bottomNav = document.querySelector('.bottom-nav');
-    if (bottomNav) {
-        bottomNav.classList.add('hidden');
-    }
-
-    console.log('Exercise rendered successfully');
-
-    // Если есть таймер и режим таймера включен, запускаем его
-    if (exercise.duration && state.isTimerMode) {
-        window.startExerciseTimer(exercise.duration);
+    // Запускаем таймер для кардио или статических упражнений
+    if (exercise.type === 'cardio' || exercise.type === 'static') {
+        startExerciseTimer(exercise.duration);
     }
 }
 
