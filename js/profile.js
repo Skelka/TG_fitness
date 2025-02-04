@@ -165,7 +165,7 @@ async function loadProfile() {
                     </div>
                 </div>
 
-                <button type="button" class="danger-btn" onclick="window.uiManager.confirmClearData()">
+                <button type="button" class="danger-btn" id="clearDataBtn">
                     <span class="material-symbols-rounded">delete</span>
                     Очистить все данные
                 </button>
@@ -228,6 +228,35 @@ async function loadProfile() {
 
         // Устанавливаем обработчики после загрузки данных
         setupProfileHandlers();
+
+        // Добавляем обработчик для кнопки очистки данных
+        const clearDataBtn = document.getElementById('clearDataBtn');
+        if (clearDataBtn) {
+            clearDataBtn.addEventListener('click', async () => {
+                const confirmed = await window.tg.showConfirm('Вы уверены, что хотите очистить все данные?');
+                if (confirmed) {
+                    try {
+                        // Очищаем все данные из localStorage
+                        localStorage.clear();
+                        
+                        // Очищаем все данные из WebStorage
+                        await Promise.all([
+                            setStorageItem('profile', ''),
+                            setStorageItem('workoutStats', ''),
+                            setStorageItem('weightHistory', ''),
+                            setStorageItem('programs_meta', ''),
+                            setStorageItem('activeProgram', '')
+                        ]);
+                        
+                        window.tg.showAlert('Все данные успешно очищены');
+                        window.location.reload(); // Перезагружаем страницу
+                    } catch (error) {
+                        console.error('Ошибка при очистке данных:', error);
+                        showError('Не удалось очистить данные');
+                    }
+                }
+            });
+        }
 
     } catch (error) {
         console.error('Ошибка при загрузке профиля:', error);
