@@ -107,141 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Функция для отображения текущего упражнения
-async function renderExercise(exercise = null, index = null, total = null) {
-    // Если параметры не переданы, используем глобальные переменные
-    if (!exercise) {
-        if (!currentWorkout || !currentWorkout.exercises) {
-            showError('Ошибка: данные тренировки не загружены');
-            return;
-        }
-        exercise = currentWorkout.exercises[currentExerciseIndex];
-        if (!exercise) {
-            showError('Ошибка: упражнение не найдено');
-            return;
-        }
-        index = currentExerciseIndex;
-        total = currentWorkout.exercises.length;
-    }
-
-    // Очищаем предыдущие таймеры
-    if (exerciseTimer) clearInterval(exerciseTimer);
-    if (restTimer) clearInterval(restTimer);
-
-    const container = document.querySelector('.workout-content') || document.querySelector('.container');
-    if (!container) return;
-
-    // Вычисляем прогресс тренировки
-    const progress = Math.round((index / (total - 1)) * 100);
-
-    container.innerHTML = `
-        <div class="workout-header">
-            <div class="workout-title">
-                <h2>${exercise.name}</h2>
-                <div class="workout-progress">Упражнение ${index + 1} из ${total}</div>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: ${progress}%"></div>
-            </div>
-            <button class="close-btn" onclick="confirmQuitWorkout()">
-                <span class="material-symbols-rounded">close</span>
-            </button>
-        </div>
-        
-        <div class="exercise-container">
-            <div class="exercise-header">
-                <div class="exercise-type">
-                    <span class="material-symbols-rounded">${getExerciseIcon(exercise.type)}</span>
-                    <span>${getExerciseTypeText(exercise.type)}</span>
-                </div>
-                <p class="exercise-description">${exercise.description || ''}</p>
-            </div>
-            
-            ${exercise.image ? `<img src="${exercise.image}" class="exercise-image" alt="${exercise.name}">` : ''}
-            
-            <div class="exercise-info">
-                ${exercise.sets ? `
-                    <div class="sets-info">
-                        <span class="material-symbols-rounded">repeat</span>
-                        <span>Подход ${currentSet} из ${exercise.sets}</span>
-                    </div>
-                ` : ''}
-                
-                ${exercise.reps ? `
-                    <div class="reps-info">
-                        <span class="material-symbols-rounded">fitness_center</span>
-                        <span>${exercise.reps} повторений</span>
-                    </div>
-                ` : ''}
-                
-                ${exercise.duration ? `
-                    <div class="duration-info">
-                        <span class="material-symbols-rounded">timer</span>
-                        <div class="timer">${formatTime(exercise.duration)}</div>
-                    </div>
-                ` : ''}
-                
-                ${exercise.muscleGroups ? `
-                    <div class="muscle-groups">
-                        <span class="material-symbols-rounded">sports_martial_arts</span>
-                        <span>${getMuscleGroupsText(exercise.muscleGroups)}</span>
-                    </div>
-                ` : ''}
-            </div>
-            
-            ${exercise.sequence ? `
-                <div class="exercise-sequence">
-                    <h4>Последовательность выполнения:</h4>
-                    <ol>
-                        ${exercise.sequence.map(step => `<li>${step}</li>`).join('')}
-                    </ol>
-                </div>
-            ` : ''}
-            
-            ${exercise.technique ? `
-                <div class="exercise-technique">
-                    <h4>Техника выполнения:</h4>
-                    <ol>
-                        ${exercise.technique.map(step => `<li>${step}</li>`).join('')}
-                    </ol>
-                </div>
-            ` : ''}
-            
-            <div class="exercise-controls">
-                <button class="control-btn prev" onclick="prevExercise()" ${index === 0 ? 'disabled' : ''}>
-                    <span class="material-symbols-rounded">arrow_back</span>
-                </button>
-                
-                <button class="control-btn ${isTimerMode ? 'pause' : 'play'}" onclick="toggleTimer()">
-                    <span class="material-symbols-rounded">${isTimerMode ? 'pause' : 'play_arrow'}</span>
-                </button>
-                
-                <button class="control-btn complete" onclick="completeExercise()">
-                    <span class="material-symbols-rounded">check</span>
-                </button>
-                
-                <button class="control-btn next" onclick="nextExercise()" ${index === total - 1 ? 'disabled' : ''}>
-                    <span class="material-symbols-rounded">arrow_forward</span>
-                </button>
-            </div>
-        </div>
-        ${isResting ? `
-            <div class="rest-timer">
-                <h3>Отдых</h3>
-                <div class="timer" id="rest-timer">${formatTime(restTimeLeft)}</div>
-            </div>
-        ` : ''}
-    `;
-    
-    // Если упражнение с таймером, запускаем его
-    if (exercise.duration && !isResting) {
-        startExerciseTimer(exercise.duration);
-    }
-
-    // Добавляем тактильный отклик
-    tg.HapticFeedback.impactOccurred('light');
-}
-
 // Функция показа деталей тренировки
 function showWorkoutDetails(workout) {
     // Функция для получения типа тренировки на русском
@@ -493,7 +358,7 @@ async function showProgramSchedule(programId) {
 
 // Упрощаем обработчик закрытия попапа
 tg.onEvent('popupClosed', async (event) => {
-    console.log('Popup closed with event:', event);
+        console.log('Popup closed with event:', event);
     
     if (!event || !event.button_id) return;
 
@@ -528,9 +393,9 @@ tg.onEvent('popupClosed', async (event) => {
         } catch (error) {
             console.error('Ошибка при запуске программы:', error);
             showError('Не удалось начать программу. Попробуйте позже.');
+            }
         }
-    }
-});
+    });
 
 // Добавляем функцию инициализации программы
 async function initializeProgram(program) {
