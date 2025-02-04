@@ -2,7 +2,28 @@ import { getStorageItem, setStorageItem, showError, showNotification, formatTime
 import { renderExercise, clearTimers } from './exercise-renderer.js';
 import { programDataManager } from './program-data.js';
 
+// Состояние тренировки
+const workoutState = {
+    currentWorkout: null,
+    currentExerciseIndex: 0,
+    currentSet: 1,
+    workoutStartTime: null,
+    isActive: false
+};
+
 const workoutsModule = {
+    // Инициализация модуля
+    init() {
+        // Делаем состояние доступным глобально
+        window.workoutState = workoutState;
+        
+        // Добавляем глобальные функции для обратной совместимости
+        window.startWorkout = this.startWorkout.bind(this);
+        window.currentWorkout = null;
+        window.currentExerciseIndex = 0;
+        window.currentSet = 1;
+    },
+
     // Запуск тренировки
     async startWorkout(programId, workoutId) {
         try {
@@ -19,18 +40,20 @@ const workoutsModule = {
                 throw new Error('В тренировке нет упражнений');
             }
 
-            // Добавляем дополнительные данные к тренировке
-            window.currentWorkout = {
+            // Обновляем состояние
+            workoutState.currentWorkout = {
                 ...workout,
                 programId: programId
             };
+            workoutState.currentExerciseIndex = 0;
+            workoutState.currentSet = 1;
+            workoutState.workoutStartTime = Date.now();
+            workoutState.isActive = true;
 
-            // Инициализируем переменные тренировки
-            window.currentExerciseIndex = 0;
-            window.currentSet = 1;
-            window.isResting = false;
-            window.restTimeLeft = 0;
-            window.workoutStartTime = Date.now();
+            // Обновляем глобальные переменные для обратной совместимости
+            window.currentWorkout = workoutState.currentWorkout;
+            window.currentExerciseIndex = workoutState.currentExerciseIndex;
+            window.currentSet = workoutState.currentSet;
 
             // Очищаем таймеры
             clearTimers();
@@ -41,7 +64,7 @@ const workoutsModule = {
             // Инициализируем обработчик выхода
             this.initExitHandler();
 
-            console.log('Starting workout with:', window.currentWorkout);
+            console.log('Starting workout with:', workoutState.currentWorkout);
 
             // Отображаем первое упражнение
             renderExercise();
@@ -67,7 +90,7 @@ const workoutsModule = {
         
         // Обработчик закрытия приложения
         window.tg.onEvent('viewportChanged', ({ isStateStable }) => {
-            if (!isStateStable) {
+            if (!isStateStable && workoutState.isActive) {
                 this.confirmQuitWorkout();
             }
         });
@@ -77,54 +100,79 @@ const workoutsModule = {
     async confirmQuitWorkout() {
         const result = await window.tg.showConfirm('Вы уверены, что хотите прервать тренировку?');
         if (result) {
-            clearTimers();
-            document.querySelector('.bottom-nav')?.classList.remove('hidden');
-            window.tg.BackButton.hide();
-            window.currentWorkout = null;
-            window.currentExerciseIndex = 0;
-            window.currentSet = 1;
+            this.resetWorkout();
         }
+    },
+
+    // Сброс состояния тренировки
+    resetWorkout() {
+        clearTimers();
+        document.querySelector('.bottom-nav')?.classList.remove('hidden');
+        window.tg.BackButton.hide();
+        
+        // Сбрасываем состояние
+        workoutState.currentWorkout = null;
+        workoutState.currentExerciseIndex = 0;
+        workoutState.currentSet = 1;
+        workoutState.isActive = false;
+        
+        // Обновляем глобальные переменные
+        window.currentWorkout = null;
+        window.currentExerciseIndex = 0;
+        window.currentSet = 1;
     },
 
     // Завершение тренировки
     async finishWorkout() {
+        if (!workoutState.isActive) return;
+        
         clearTimers();
         
         // Обновляем статистику
-        const workoutDuration = Math.floor((Date.now() - window.workoutStartTime) / 60000); // в минутах
+        const workoutDuration = Math.floor((Date.now() - workoutState.workoutStartTime) / 60000); // в минутах
         const stats = {
             date: new Date().toISOString(),
-            programId: window.currentWorkout.programId,
-            workoutId: window.currentWorkout.id,
+            programId: workoutState.currentWorkout.programId,
+            workoutId: workoutState.currentWorkout.id,
             duration: workoutDuration,
-            exercises: window.currentWorkout.exercises.length,
+            exercises: workoutState.currentWorkout.exercises.length,
             completed: true
         };
 
-        // Получаем текущую статистику
-        const currentStats = await getStorageItem('workoutStats')
-            .then(data => data ? JSON.parse(data) : { workouts: [] });
-        
-        currentStats.workouts = currentStats.workouts || [];
-        currentStats.workouts.push(stats);
-        
-        // Сохраняем обновленную статистику
-        await setStorageItem('workoutStats', JSON.stringify(currentStats));
+        try {
+            // Получаем текущую статистику
+            const currentStats = await getStorageItem('workoutStats')
+                .then(data => data ? JSON.parse(data) : { workouts: [] });
+            
+            currentStats.workouts = currentStats.workouts || [];
+            currentStats.workouts.push(stats);
+            
+            // Сохраняем обновленную статистику
+            await setStorageItem('workoutStats', JSON.stringify(currentStats));
 
-        // Показываем поздравление
-        await window.tg.showPopup({
-            title: 'Поздравляем! 🎉',
-            message: `Тренировка завершена!\n\nДлительность: ${formatTime(workoutDuration)}\nУпражнений: ${window.currentWorkout.exercises.length}`,
-            buttons: [{
-                type: 'default',
-                text: 'Отлично!'
-            }]
-        });
+            // Показываем поздравление
+            await window.tg.showPopup({
+                title: 'Поздравляем! 🎉',
+                message: `Тренировка завершена!\n\nДлительность: ${formatTime(workoutDuration)}\nУпражнений: ${workoutState.currentWorkout.exercises.length}`,
+                buttons: [{
+                    type: 'default',
+                    text: 'Отлично!'
+                }]
+            });
 
-        // Возвращаемся к списку тренировок
-        document.querySelector('.bottom-nav')?.classList.remove('hidden');
-        window.renderProgramCards();
+            // Сбрасываем состояние
+            this.resetWorkout();
+
+            // Возвращаемся к списку тренировок
+            window.renderProgramCards();
+        } catch (error) {
+            console.error('Ошибка при завершении тренировки:', error);
+            showError('Не удалось сохранить результаты тренировки');
+        }
     }
 };
+
+// Инициализируем модуль
+workoutsModule.init();
 
 export default workoutsModule; 

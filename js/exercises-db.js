@@ -54,8 +54,7 @@ window.exercisesDB = {
                     description: "Жим гантелей лежа на скамье"
                 }
             }
-        },
-        // ... остальные упражнения
+        }
     },
 
     // Метаданные
@@ -68,7 +67,11 @@ window.exercisesDB = {
             shoulders: "Плечи",
             arms: "Руки",
             core: "Кор",
-            cardio: "Кардио"
+            cardio: "Кардио",
+            biceps: "Бицепс",
+            triceps: "Трицепс",
+            abs: "Пресс",
+            warmup: "Разминка"
         },
         difficulty: {
             easy: "Легкий",
@@ -91,97 +94,51 @@ window.exercisesDB = {
         return this.exercises[name] || null;
     },
 
-    findAlternatives(exercise, availableEquipment = [], userLevel = 'medium') {
+    findAlternatives(exercise, availableEquipment = [], userLevel = 'medium', preferredMuscle = null) {
         const exerciseData = this.getExercise(exercise);
-        if (!exerciseData) return null;
+        if (!exerciseData) return [];
 
+        // Проверяем возможность выполнения оригинального упражнения
+        const canDoOriginal = !exerciseData.equipment.length || 
+            exerciseData.equipment.every(eq => availableEquipment.includes(eq));
+        if (canDoOriginal) return [];
+
+        const difficultyLevels = { easy: 0, medium: 1, hard: 2 };
+        const userLevelNum = difficultyLevels[userLevel];
+
+        // Получаем все альтернативы с подсчетом их оценки
         return Object.entries(exerciseData.alternatives)
-            .filter(([_, data]) => {
-                const hasEquipment = data.equipment.every(eq => 
-                    availableEquipment.includes(eq));
-                const matchesDifficulty = this.matchesDifficulty(data.difficulty, userLevel);
-                return hasEquipment && matchesDifficulty;
+            .map(([name, data]) => {
+                // Подсчет оценки для альтернативы
+                let score = 0;
+                
+                // Проверяем доступность оборудования
+                const hasEquipment = !data.equipment.length || 
+                    data.equipment.every(eq => availableEquipment.includes(eq));
+                if (!hasEquipment) return null;
+
+                // Оценка сложности
+                const diffScore = 1 - Math.abs(difficultyLevels[data.difficulty] - userLevelNum);
+                score += diffScore * 2;
+
+                // Бонус за соответствие целевой мышечной группе
+                if (exerciseData.muscle === preferredMuscle) {
+                    score += 1;
+                }
+
+                // Бонус за минимальное количество оборудования
+                score += (1 / (data.equipment.length + 1));
+
+                return {
+                    name,
+                    ...data,
+                    score
+                };
             })
-            .map(([name, data]) => ({
-                name,
-                ...data
-            }));
-    },
-
-    matchesDifficulty(exerciseDifficulty, userLevel) {
-        const levels = { easy: 0, medium: 1, hard: 2 };
-        const diff = Math.abs(levels[exerciseDifficulty] - levels[userLevel]);
-        return diff <= 1;
+            .filter(alt => alt !== null)
+            .sort((a, b) => b.score - a.score);
     }
 };
 
-// Добавляем метаданные для каждого упражнения
-const exerciseMetadata = {
-    difficulty: {
-        easy: "Легкий",
-        medium: "Средний",
-        hard: "Сложный"
-    },
-    muscles: {
-        chest: "Грудь",
-        back: "Спина",
-        legs: "Ноги",
-        shoulders: "Плечи",
-        biceps: "Бицепс",
-        triceps: "Трицепс",
-        abs: "Пресс",
-        cardio: "Кардио",
-        warmup: "Разминка"
-    }
-};
-
-// Улучшаем функцию поиска альтернатив
-function findBestExerciseAlternative(exercise, availableEquipment, userLevel = 'medium', preferredMuscle = null) {
-    const exerciseData = exercisesDB.exercises[exercise];
-    if (!exerciseData) return exercise;
-
-    // Проверяем возможность выполнения оригинального упражнения
-    const canDoOriginal = exerciseData.equipment.every(eq => availableEquipment.includes(eq));
-    if (canDoOriginal) return exercise;
-
-    // Получаем все возможные альтернативы
-    const alternatives = Object.entries(exerciseData.alternatives)
-        .filter(([_, data]) => data.equipment.every(eq => availableEquipment.includes(eq)));
-
-    if (alternatives.length === 0) {
-        // Ищем упражнение без оборудования
-        const bodyweightAlternative = Object.entries(exerciseData.alternatives)
-            .find(([_, data]) => data.equipment.length === 0);
-        return bodyweightAlternative ? bodyweightAlternative[0] : exercise;
-    }
-
-    // Оценка каждой альтернативы
-    const difficultyLevels = { easy: 0, medium: 1, hard: 2 };
-    const userLevelNum = difficultyLevels[userLevel];
-
-    return alternatives.reduce((best, current) => {
-        const bestScore = scoreAlternative(best[1], userLevelNum, exerciseData.muscle, preferredMuscle);
-        const currentScore = scoreAlternative(current[1], userLevelNum, exerciseData.muscle, preferredMuscle);
-        return currentScore > bestScore ? current : best;
-    })[0];
-}
-
-// Функция подсчета очков для альтернативы
-function scoreAlternative(alternative, userLevel, targetMuscle, preferredMuscle) {
-    let score = 0;
-    
-    // Соответствие уровню сложности
-    const difficultyLevels = { easy: 0, medium: 1, hard: 2 };
-    const diffScore = 1 - Math.abs(difficultyLevels[alternative.difficulty] - userLevel);
-    score += diffScore * 2;
-
-    // Бонус за соответствие целевой мышечной группе
-    if (targetMuscle === preferredMuscle) {
-        score += 1;
-    }
-
-    // Бонус за минимальное количество оборудования
-    score += (1 / (alternative.equipment.length + 1));
-
-    return score;
-} 
+// Делаем базу данных доступной глобально
+window.exercisesDB = exercisesDB; 

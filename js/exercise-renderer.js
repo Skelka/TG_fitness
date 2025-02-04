@@ -1,24 +1,29 @@
 import { formatTime, showError, showNotification } from './utils.js';
 import { programDataManager } from './program-data.js';
 
-// Получаем доступ к глобальным переменным через window
-const getState = () => ({
-    currentWorkout: window.currentWorkout,
-    currentExerciseIndex: window.currentExerciseIndex,
-    currentSet: window.currentSet,
-    isResting: window.isResting,
-    restTimeLeft: window.restTimeLeft,
-    isTimerMode: window.isTimerMode,
-    isTimerPaused: window.isTimerPaused,
-    tg: window.tg
-});
+// Состояние приложения
+const state = {
+    currentWorkout: null,
+    currentExerciseIndex: 0,
+    currentSet: 1,
+    isResting: false,
+    restTimeLeft: 0,
+    isTimerMode: false,
+    isTimerPaused: false,
+    exerciseTimer: null,
+    restTimer: null
+};
 
-// Локальные переменные для таймеров
-let exerciseTimer = null;
-let restTimer = null;
-
-// Функция для отображения текущего упражнения
-// export async function renderExercise(exercise = null, index = null, total = null) { ... }
+// Инициализация состояния из глобальных переменных
+function initState() {
+    state.currentWorkout = window.currentWorkout;
+    state.currentExerciseIndex = window.currentExerciseIndex;
+    state.currentSet = window.currentSet;
+    state.isResting = window.isResting;
+    state.restTimeLeft = window.restTimeLeft;
+    state.isTimerMode = window.isTimerMode;
+    state.isTimerPaused = window.isTimerPaused;
+}
 
 // Вспомогательные функции
 export function getExerciseIcon(type) {
@@ -73,35 +78,51 @@ export function getMuscleGroupsText(groups) {
 }
 
 // Функции для работы с таймерами
+function clearTimers() {
+    if (state.exerciseTimer) {
+        clearInterval(state.exerciseTimer);
+        state.exerciseTimer = null;
+    }
+    if (state.restTimer) {
+        clearInterval(state.restTimer);
+        state.restTimer = null;
+    }
+    state.isTimerMode = false;
+    state.isTimerPaused = false;
+    state.isResting = false;
+    state.restTimeLeft = 0;
+}
+
 export function startExerciseTimer(duration) {
     clearTimers();
-    window.isTimerMode = true;
-    window.isTimerPaused = false;
+    state.isTimerMode = true;
+    state.isTimerPaused = false;
     
     let timeLeft = duration;
     updateTimerDisplay(timeLeft);
     
-    exerciseTimer = setInterval(() => {
-        if (!window.isTimerPaused) {
+    state.exerciseTimer = setInterval(() => {
+        if (!state.isTimerPaused) {
             timeLeft--;
             updateTimerDisplay(timeLeft);
             
             if (timeLeft <= 0) {
-                clearInterval(exerciseTimer);
+                clearInterval(state.exerciseTimer);
                 showNotification('Время вышло!', 'success');
-                // Здесь можно добавить логику для перехода к следующему упражнению
+                window.tg.HapticFeedback.notificationOccurred('success');
+                renderExercise();
             }
         }
     }, 1000);
 }
 
 export function toggleTimer() {
-    window.isTimerPaused = !window.isTimerPaused;
+    state.isTimerPaused = !state.isTimerPaused;
     const pauseButton = document.querySelector('#pauseTimer');
     if (pauseButton) {
-        pauseButton.textContent = window.isTimerPaused ? 'Продолжить' : 'Пауза';
+        pauseButton.textContent = state.isTimerPaused ? 'Продолжить' : 'Пауза';
     }
-    showNotification(window.isTimerPaused ? 'Таймер на паузе' : 'Таймер запущен');
+    showNotification(state.isTimerPaused ? 'Таймер на паузе' : 'Таймер запущен');
 }
 
 export function updateTimerDisplay(seconds) {
@@ -113,10 +134,27 @@ export function updateTimerDisplay(seconds) {
 
 export function startRestTimer(duration) {
     clearTimers();
-    window.isResting = true;
-    window.restTimeLeft = duration;
+    state.isResting = true;
+    state.restTimeLeft = duration;
     
-    // Создаем экран отдыха
+    const restScreen = createRestScreen(duration);
+    document.body.appendChild(restScreen);
+    
+    const progressBar = restScreen.querySelector('.rest-progress-bar');
+    const timer = restScreen.querySelector('.rest-timer');
+    const startTime = duration;
+    
+    state.restTimer = setInterval(() => {
+        state.restTimeLeft--;
+        updateRestTimerUI(progressBar, timer, startTime);
+        
+        if (state.restTimeLeft <= 0) {
+            finishRest(restScreen);
+        }
+    }, 1000);
+}
+
+function createRestScreen(duration) {
     const restScreen = document.createElement('div');
     restScreen.className = 'rest-screen';
     restScreen.innerHTML = `
@@ -134,39 +172,32 @@ export function startRestTimer(duration) {
             Пропустить
         </button>
     `;
-    document.body.appendChild(restScreen);
+    return restScreen;
+}
+
+function updateRestTimerUI(progressBar, timer, startTime) {
+    const progress = (state.restTimeLeft / startTime) * 100;
+    progressBar.style.width = `${progress}%`;
+    timer.textContent = formatTime(state.restTimeLeft);
     
-    // Обновляем прогресс-бар
-    const progressBar = restScreen.querySelector('.rest-progress-bar');
-    const timer = restScreen.querySelector('.rest-timer');
-    const startTime = duration;
-    
-    restTimer = setInterval(() => {
-        window.restTimeLeft--;
-        const progress = (window.restTimeLeft / startTime) * 100;
-        progressBar.style.width = `${progress}%`;
-        timer.textContent = formatTime(window.restTimeLeft);
-        
-        // Добавляем эффект мигания в конце отдыха
-        if (window.restTimeLeft <= 3) {
-            timer.classList.add('ending');
-        }
-        
-        if (window.restTimeLeft <= 0) {
-            clearInterval(restTimer);
-            window.isResting = false;
-            restScreen.remove();
-            showNotification('Отдых завершен!', 'success');
-            window.tg.HapticFeedback.notificationOccurred('success');
-            renderExercise();
-        }
-    }, 1000);
+    if (state.restTimeLeft <= 3) {
+        timer.classList.add('ending');
+    }
+}
+
+function finishRest(restScreen) {
+    clearInterval(state.restTimer);
+    state.isResting = false;
+    restScreen.remove();
+    showNotification('Отдых завершен!', 'success');
+    window.tg.HapticFeedback.notificationOccurred('success');
+    renderExercise();
 }
 
 export function skipRest() {
-    if (window.isResting) {
-        clearInterval(restTimer);
-        window.isResting = false;
+    if (state.isResting) {
+        clearInterval(state.restTimer);
+        state.isResting = false;
         const restScreen = document.querySelector('.rest-screen');
         if (restScreen) {
             restScreen.remove();
@@ -177,40 +208,26 @@ export function skipRest() {
     }
 }
 
-export function clearTimers() {
-    if (exerciseTimer) {
-        clearInterval(exerciseTimer);
-        exerciseTimer = null;
-    }
-    if (restTimer) {
-        clearInterval(restTimer);
-        restTimer = null;
-    }
-    window.isTimerMode = false;
-    window.isTimerPaused = false;
-    window.isResting = false;
-    window.restTimeLeft = 0;
-}
-
 // Функция для проверки, является ли текущее упражнение последним
 export function isLastExercise() {
-    const state = getState();
+    initState();
     return state.currentExerciseIndex === state.currentWorkout.exercises.length - 1;
 }
 
 // Функция для отображения текущего упражнения
 export function renderExercise() {
+    initState();
     const mainContainer = document.querySelector('#mainContainer');
-    if (!mainContainer || !window.currentWorkout) return;
+    if (!mainContainer || !state.currentWorkout) return;
 
-    const exercise = window.currentWorkout.exercises[window.currentExerciseIndex];
+    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
     if (!exercise) return;
 
     mainContainer.innerHTML = `
         <div class="exercise-screen">
             <div class="exercise-header">
                 <h1 class="exercise-title">${exercise.name}</h1>
-                <p class="exercise-subtitle">Подход ${window.currentSet} из ${exercise.sets || 1}</p>
+                <p class="exercise-subtitle">Подход ${state.currentSet} из ${exercise.sets || 1}</p>
             </div>
             
             <div class="exercise-content">
@@ -247,187 +264,14 @@ export function renderExercise() {
                     </div>
                 ` : ''}
             </div>
-
-            <div class="exercise-controls">
-                ${window.currentExerciseIndex > 0 ? `
-                    <button class="control-btn secondary" onclick="prevExercise()">
-                        <span class="material-symbols-rounded">arrow_back</span>
-                        Назад
-                    </button>
-                ` : ''}
-                <button class="control-btn" onclick="completeExercise()">
-                    ${isLastExercise() ? 'Завершить' : 'Далее'}
-                    <span class="material-symbols-rounded">
-                        ${isLastExercise() ? 'done' : 'arrow_forward'}
-                    </span>
-                </button>
-            </div>
         </div>
     `;
 
-    // Запускаем таймер для кардио или статических упражнений
+    // Запускаем таймер для упражнений с временным интервалом
     if (exercise.type === 'cardio' || exercise.type === 'static') {
         startExerciseTimer(exercise.duration);
     }
 }
 
-export function completeSet() {
-    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
-    clearTimers();
-
-    if (state.currentSet < exercise.sets) {
-        state.currentSet++;
-        if (exercise.restBetweenSets) {
-            startRestTimer(exercise.restBetweenSets);
-        }
-    } else {
-        state.currentSet = 1;
-        state.currentExerciseIndex++;
-        
-        if (state.currentExerciseIndex < state.currentWorkout.exercises.length) {
-            const nextExercise = state.currentWorkout.exercises[state.currentExerciseIndex];
-            if (nextExercise.restBeforeStart) {
-                startRestTimer(nextExercise.restBeforeStart);
-            }
-        } else {
-            showNotification('Тренировка завершена!', 'success');
-            // Здесь можно добавить логику завершения тренировки
-            return;
-        }
-    }
-    
-    renderExercise();
-}
-
-export function previousSet() {
-    if (state.currentSet > 1) {
-        state.currentSet--;
-        clearTimers();
-        renderExercise();
-    } else if (state.currentExerciseIndex > 0) {
-        state.currentExerciseIndex--;
-        const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
-        state.currentSet = exercise.sets;
-        clearTimers();
-        renderExercise();
-    }
-}
-
-// Функция завершения упражнения
-export function completeExercise() {
-    const state = getState();
-    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
-    clearTimers();
-
-    // Если это последний подход
-    if (state.currentSet >= exercise.sets) {
-        state.currentSet = 1;
-        state.currentExerciseIndex++;
-        
-        // Если есть следующее упражнение
-        if (state.currentExerciseIndex < state.currentWorkout.exercises.length) {
-            const nextExercise = state.currentWorkout.exercises[state.currentExerciseIndex];
-            if (nextExercise.restBeforeStart) {
-                startRestTimer(nextExercise.restBeforeStart);
-            } else {
-                renderExercise();
-            }
-        } else {
-            // Тренировка завершена
-            finishWorkout();
-        }
-    } else {
-        // Переходим к следующему подходу
-        state.currentSet++;
-        if (exercise.restBetweenSets) {
-            startRestTimer(exercise.restBetweenSets);
-        } else {
-            renderExercise();
-        }
-    }
-    
-    state.tg.HapticFeedback.impactOccurred('medium');
-}
-
-// Функция перехода к предыдущему упражнению
-export function prevExercise() {
-    if (state.currentExerciseIndex > 0) {
-        state.currentExerciseIndex--;
-        state.currentSet = 1;
-        clearTimers();
-        renderExercise();
-        state.tg.HapticFeedback.impactOccurred('light');
-    }
-}
-
-// Функция перехода к следующему упражнению
-export function nextExercise() {
-    if (state.currentExerciseIndex < state.currentWorkout.exercises.length - 1) {
-        state.currentExerciseIndex++;
-        state.currentSet = 1;
-        clearTimers();
-        renderExercise();
-        state.tg.HapticFeedback.impactOccurred('light');
-    }
-}
-
-// Функция завершения тренировки
-export function finishWorkout() {
-    clearTimers();
-    
-    // Создаем экран завершения
-    const mainContainer = document.querySelector('.workout-session');
-    if (!mainContainer) return;
-
-    const state = getState();
-    const workout = state.currentWorkout;
-    const workoutDuration = Math.floor((Date.now() - window.workoutStartTime) / 60000); // в минутах
-    
-    mainContainer.innerHTML = `
-        <div class="workout-complete">
-            <div class="complete-icon">
-                <span class="material-symbols-rounded">check_circle</span>
-            </div>
-            <h2>Тренировка завершена!</h2>
-            <div class="workout-stats">
-                <div class="stat-item">
-                    <div class="stat-value">${workout.exercises.length}</div>
-                    <div class="stat-label">упражнений</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">${workoutDuration}</div>
-                    <div class="stat-label">минут</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">${workout.exercises.reduce((total, ex) => total + (ex.sets || 1), 0)}</div>
-                    <div class="stat-label">подходов</div>
-                </div>
-            </div>
-            <button class="finish-btn" onclick="window.finishAndReturn()">
-                <span class="material-symbols-rounded">home</span>
-                Вернуться к программе
-            </button>
-        </div>
-    `;
-
-    // Показываем нижнюю навигацию
-    document.querySelector('.bottom-nav')?.classList.remove('hidden');
-
-    // Добавляем тактильный отклик
-    state.tg.HapticFeedback.notificationOccurred('success');
-}
-
-// Функция возврата к программе
-export function finishAndReturn() {
-    const state = getState();
-    const program = window.programData.find(p => p.id === state.currentWorkout.programId);
-    if (program) {
-        renderProgramWorkouts(program);
-    } else {
-        renderProgramCards();
-    }
-}
-
-// Делаем функцию глобальной
-window.finishAndReturn = finishAndReturn;
-window.completeExercise = completeExercise; 
+// Экспортируем состояние для глобального доступа
+window.exerciseState = state; 
