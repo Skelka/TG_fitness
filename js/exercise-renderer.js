@@ -1,14 +1,16 @@
 import { formatTime, showError, showNotification } from './utils.js';
-import {
-    currentWorkout,
-    currentExerciseIndex,
-    currentSet,
-    isResting,
-    restTimeLeft,
-    isTimerMode,
-    isTimerPaused,
-    tg
-} from './app.js';
+
+// Получаем доступ к глобальным переменным через window
+const getState = () => ({
+    currentWorkout: window.currentWorkout,
+    currentExerciseIndex: window.currentExerciseIndex,
+    currentSet: window.currentSet,
+    isResting: window.isResting,
+    restTimeLeft: window.restTimeLeft,
+    isTimerMode: window.isTimerMode,
+    isTimerPaused: window.isTimerPaused,
+    tg: window.tg
+});
 
 // Локальные переменные для таймеров
 let exerciseTimer = null;
@@ -72,14 +74,14 @@ export function getMuscleGroupsText(groups) {
 // Функции для работы с таймерами
 export function startExerciseTimer(duration) {
     clearTimers();
-    isTimerMode = true;
-    isTimerPaused = false;
+    window.isTimerMode = true;
+    window.isTimerPaused = false;
     
     let timeLeft = duration;
     updateTimerDisplay(timeLeft);
     
     exerciseTimer = setInterval(() => {
-        if (!isTimerPaused) {
+        if (!window.isTimerPaused) {
             timeLeft--;
             updateTimerDisplay(timeLeft);
             
@@ -93,12 +95,12 @@ export function startExerciseTimer(duration) {
 }
 
 export function toggleTimer() {
-    isTimerPaused = !isTimerPaused;
+    window.isTimerPaused = !window.isTimerPaused;
     const pauseButton = document.querySelector('#pauseTimer');
     if (pauseButton) {
-        pauseButton.textContent = isTimerPaused ? 'Продолжить' : 'Пауза';
+        pauseButton.textContent = window.isTimerPaused ? 'Продолжить' : 'Пауза';
     }
-    showNotification(isTimerPaused ? 'Таймер на паузе' : 'Таймер запущен');
+    showNotification(window.isTimerPaused ? 'Таймер на паузе' : 'Таймер запущен');
 }
 
 export function updateTimerDisplay(seconds) {
@@ -110,18 +112,18 @@ export function updateTimerDisplay(seconds) {
 
 export function startRestTimer(duration) {
     clearTimers();
-    isResting = true;
-    restTimeLeft = duration;
+    window.isResting = true;
+    window.restTimeLeft = duration;
     
-    updateTimerDisplay(restTimeLeft);
+    updateTimerDisplay(window.restTimeLeft);
     
     restTimer = setInterval(() => {
-        restTimeLeft--;
-        updateTimerDisplay(restTimeLeft);
+        window.restTimeLeft--;
+        updateTimerDisplay(window.restTimeLeft);
         
-        if (restTimeLeft <= 0) {
+        if (window.restTimeLeft <= 0) {
             clearInterval(restTimer);
-            isResting = false;
+            window.isResting = false;
             showNotification('Отдых завершен!', 'success');
             // Здесь можно добавить логику для перехода к следующему упражнению
         }
@@ -129,9 +131,9 @@ export function startRestTimer(duration) {
 }
 
 export function skipRest() {
-    if (isResting && restTimer) {
+    if (window.isResting && restTimer) {
         clearInterval(restTimer);
-        isResting = false;
+        window.isResting = false;
         showNotification('Отдых пропущен');
         // Здесь можно добавить логику для перехода к следующему упражнению
     }
@@ -146,19 +148,20 @@ export function clearTimers() {
         clearInterval(restTimer);
         restTimer = null;
     }
-    isTimerMode = false;
-    isTimerPaused = false;
-    isResting = false;
-    restTimeLeft = 0;
+    window.isTimerMode = false;
+    window.isTimerPaused = false;
+    window.isResting = false;
+    window.restTimeLeft = 0;
 }
 
 export function renderExercise() {
-    if (!currentWorkout || !currentWorkout.exercises || currentExerciseIndex >= currentWorkout.exercises.length) {
+    const state = getState();
+    if (!state.currentWorkout || !state.currentWorkout.exercises || state.currentExerciseIndex >= state.currentWorkout.exercises.length) {
         showError('Нет доступных упражнений');
         return;
     }
 
-    const exercise = currentWorkout.exercises[currentExerciseIndex];
+    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
     const mainContainer = document.querySelector('#mainContainer');
     if (!mainContainer) return;
 
@@ -166,7 +169,7 @@ export function renderExercise() {
         <div class="exercise-card">
             <h2>${exercise.name}</h2>
             <div class="exercise-details">
-                <p>Подход ${currentSet} из ${exercise.sets}</p>
+                <p>Подход ${state.currentSet} из ${exercise.sets}</p>
                 ${exercise.reps ? `<p>Повторений: ${exercise.reps}</p>` : ''}
                 ${exercise.duration ? `<p>Длительность: ${formatTime(exercise.duration)}</p>` : ''}
             </div>
@@ -181,10 +184,10 @@ export function renderExercise() {
             </div>
 
             <div class="exercise-controls">
-                <button class="primary-button" onclick="completeSet()">
+                <button class="primary-button" onclick="completeExercise()">
                     Завершить подход
                 </button>
-                ${currentSet > 1 ? `
+                ${state.currentSet > 1 ? `
                     <button class="secondary-button" onclick="previousSet()">
                         Предыдущий подход
                     </button>
@@ -193,26 +196,26 @@ export function renderExercise() {
         </div>
     `;
 
-    if (exercise.duration && isTimerMode) {
+    if (exercise.duration && state.isTimerMode) {
         startExerciseTimer(exercise.duration);
     }
 }
 
 export function completeSet() {
-    const exercise = currentWorkout.exercises[currentExerciseIndex];
+    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
     clearTimers();
 
-    if (currentSet < exercise.sets) {
-        currentSet++;
+    if (state.currentSet < exercise.sets) {
+        state.currentSet++;
         if (exercise.restBetweenSets) {
             startRestTimer(exercise.restBetweenSets);
         }
     } else {
-        currentSet = 1;
-        currentExerciseIndex++;
+        state.currentSet = 1;
+        state.currentExerciseIndex++;
         
-        if (currentExerciseIndex < currentWorkout.exercises.length) {
-            const nextExercise = currentWorkout.exercises[currentExerciseIndex];
+        if (state.currentExerciseIndex < state.currentWorkout.exercises.length) {
+            const nextExercise = state.currentWorkout.exercises[state.currentExerciseIndex];
             if (nextExercise.restBeforeStart) {
                 startRestTimer(nextExercise.restBeforeStart);
             }
@@ -227,14 +230,14 @@ export function completeSet() {
 }
 
 export function previousSet() {
-    if (currentSet > 1) {
-        currentSet--;
+    if (state.currentSet > 1) {
+        state.currentSet--;
         clearTimers();
         renderExercise();
-    } else if (currentExerciseIndex > 0) {
-        currentExerciseIndex--;
-        const exercise = currentWorkout.exercises[currentExerciseIndex];
-        currentSet = exercise.sets;
+    } else if (state.currentExerciseIndex > 0) {
+        state.currentExerciseIndex--;
+        const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
+        state.currentSet = exercise.sets;
         clearTimers();
         renderExercise();
     }
@@ -242,19 +245,17 @@ export function previousSet() {
 
 // Функция завершения упражнения
 export function completeExercise() {
-    if (!currentWorkout || !currentWorkout.exercises) return;
-    
-    const exercise = currentWorkout.exercises[currentExerciseIndex];
+    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
     clearTimers();
 
     // Если это последний подход
-    if (currentSet >= exercise.sets) {
-        currentSet = 1;
-        currentExerciseIndex++;
+    if (state.currentSet >= exercise.sets) {
+        state.currentSet = 1;
+        state.currentExerciseIndex++;
         
         // Если есть следующее упражнение
-        if (currentExerciseIndex < currentWorkout.exercises.length) {
-            const nextExercise = currentWorkout.exercises[currentExerciseIndex];
+        if (state.currentExerciseIndex < state.currentWorkout.exercises.length) {
+            const nextExercise = state.currentWorkout.exercises[state.currentExerciseIndex];
             if (nextExercise.restBeforeStart) {
                 startRestTimer(nextExercise.restBeforeStart);
             }
@@ -265,34 +266,34 @@ export function completeExercise() {
         }
     } else {
         // Переходим к следующему подходу
-        currentSet++;
+        state.currentSet++;
         if (exercise.restBetweenSets) {
             startRestTimer(exercise.restBetweenSets);
         }
         renderExercise();
     }
     
-    tg.HapticFeedback.impactOccurred('medium');
+    state.tg.HapticFeedback.impactOccurred('medium');
 }
 
 // Функция перехода к предыдущему упражнению
 export function prevExercise() {
-    if (currentExerciseIndex > 0) {
-        currentExerciseIndex--;
-        currentSet = 1;
+    if (state.currentExerciseIndex > 0) {
+        state.currentExerciseIndex--;
+        state.currentSet = 1;
         clearTimers();
         renderExercise();
-        tg.HapticFeedback.impactOccurred('light');
+        state.tg.HapticFeedback.impactOccurred('light');
     }
 }
 
 // Функция перехода к следующему упражнению
 export function nextExercise() {
-    if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
-        currentExerciseIndex++;
-        currentSet = 1;
+    if (state.currentExerciseIndex < state.currentWorkout.exercises.length - 1) {
+        state.currentExerciseIndex++;
+        state.currentSet = 1;
         clearTimers();
         renderExercise();
-        tg.HapticFeedback.impactOccurred('light');
+        state.tg.HapticFeedback.impactOccurred('light');
     }
 } 

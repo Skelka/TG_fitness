@@ -22,10 +22,17 @@ import {
 const { loadProfile, saveProfile: saveProfileSettings } = profileModule;
 
 // Глобальные переменные
-let tg = window.Telegram.WebApp;
-let mainButton = tg.MainButton;
-let backButton = tg.BackButton;
-let currentWorkout = null;
+window.tg = window.Telegram.WebApp;
+window.mainButton = tg.MainButton;
+window.backButton = tg.BackButton;
+window.currentWorkout = null;
+window.currentExerciseIndex = 0;
+window.currentSet = 1;
+window.isResting = false;
+window.restTimeLeft = 0;
+window.isTimerMode = false;
+window.isTimerPaused = false;
+window.workoutStartTime = null;
 
 // Делаем функции глобальными
 window.clearAllData = clearAllData;
@@ -37,28 +44,6 @@ window.completeExercise = completeExercise;
 window.prevExercise = prevExercise;
 window.nextExercise = nextExercise;
 window.skipRest = skipRest;
-
-// Переменные для тренировки
-let isTimerMode = false;
-let timerValue = 0;
-let currentExerciseIndex = 0;
-let currentSet = 1;
-let isResting = false;
-let restTimeLeft = 0;
-let workoutStartTime = null;
-let isTimerPaused = false;
-
-// Делаем переменные доступными для других модулей
-export {
-    currentWorkout,
-    currentExerciseIndex,
-    currentSet,
-    isResting,
-    restTimeLeft,
-    isTimerMode,
-    isTimerPaused,
-    tg
-};
 
 // Функция для предзагрузки шрифтов
 async function preloadFonts() {
