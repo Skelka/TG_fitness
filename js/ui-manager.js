@@ -33,7 +33,7 @@ const uiManager = {
                 statisticsModule.renderStatistics();
                 break;
             case 'profile':
-                profileModule.renderProfile();
+                profileModule.loadProfile();
                 break;
         }
 

@@ -1,5 +1,17 @@
 import { getStorageItem, setStorageItem, showError } from './utils.js';
 
+// Функция для получения данных профиля
+async function getProfile() {
+    try {
+        const profileData = await getStorageItem('profile')
+            .then(data => data ? JSON.parse(data) : null);
+        return profileData;
+    } catch (error) {
+        console.error('Ошибка при получении данных профиля:', error);
+        return null;
+    }
+}
+
 // Функция для загрузки профиля
 async function loadProfile() {
     try {
@@ -170,7 +182,8 @@ const profileModule = {
     saveProfile,
     debouncedSaveProfile,
     setupProfileEquipmentHandlers,
-    updateProfileStatus
+    updateProfileStatus,
+    getProfile
 };
 
 export default profileModule; 
