@@ -864,6 +864,9 @@ body {
 
 .programs-list {
     padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 /* Анимация появления карточек */
@@ -2362,18 +2365,19 @@ body {
 /* Стили для программ */
 .programs-list {
     padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .program-card {
-    background: var(--tg-theme-bg-color);
-    border-radius: 16px;
+    background: var(--tg-theme-bg-color, #fff);
+    border-radius: 12px;
     padding: 16px;
-    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     display: flex;
     gap: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s;
 }
 
 .program-card:active {
@@ -2388,16 +2392,15 @@ body {
 .program-icon {
     width: 48px;
     height: 48px;
+    background: var(--tg-theme-button-color, #40a7e3);
     border-radius: 12px;
-    background: var(--tg-theme-button-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
 }
 
 .program-icon span {
-    color: var(--tg-theme-button-text-color);
+    color: var(--tg-theme-button-text-color, #fff);
     font-size: 24px;
 }
 
@@ -2406,41 +2409,70 @@ body {
 }
 
 .program-info h3 {
-    margin: 0 0 8px 0;
+    margin: 0 0 8px;
     font-size: 18px;
-    color: var(--tg-theme-text-color);
+    color: var(--tg-theme-text-color, #000);
 }
 
 .program-info p {
-    margin: 0 0 12px 0;
+    margin: 0 0 12px;
     font-size: 14px;
-    color: var(--tg-theme-hint-color);
-    line-height: 1.4;
+    color: var(--tg-theme-hint-color, #999);
 }
 
 .program-meta {
     display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    font-size: 13px;
-    color: var(--tg-theme-hint-color);
+    gap: 16px;
+    margin-bottom: 12px;
 }
 
 .program-meta span {
     display: flex;
     align-items: center;
     gap: 4px;
+    font-size: 14px;
+    color: var(--tg-theme-hint-color, #999);
 }
 
 .program-meta .material-symbols-rounded {
     font-size: 16px;
 }
 
-.difficulty-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    background: var(--tg-theme-secondary-bg-color);
-    font-size: 12px;
+.program-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.info-btn, .start-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.info-btn {
+    background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+    color: var(--tg-theme-text-color, #000);
+}
+
+.start-btn {
+    background: var(--tg-theme-button-color, #40a7e3);
+    color: var(--tg-theme-button-text-color, #fff);
+}
+
+.info-btn:active, .start-btn:active {
+    opacity: 0.7;
+}
+
+.error-message {
+    text-align: center;
+    padding: 20px;
+    color: var(--tg-theme-hint-color, #999);
 }
 
 /* Стили для списка тренировок */

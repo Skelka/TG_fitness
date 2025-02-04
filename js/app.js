@@ -51,6 +51,9 @@ export {
     tg
 };
 
+// Делаем функции глобальными
+window.startWorkout = startWorkout;
+
 // Функция для предзагрузки шрифтов
 async function preloadFonts() {
     try {
@@ -136,68 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Функция показа деталей тренировки
-function showWorkoutDetails(workout) {
-    // Функция для получения типа тренировки на русском
-    function getWorkoutType(type) {
-        const types = {
-            'cardio': 'Кардио',
-            'strength': 'Силовая',
-            'hiit': 'HIIT',
-            'cardio_strength': 'Кардио + Сила',
-            'circuit': 'Круговая'
-        };
-        return types[type] || type;
-    }
-
-    tg.showPopup({
-        title: workout.title,
-        message: `
-${workout.type ? `📋 Тип: ${getWorkoutType(workout.type)}` : ''}
-🕒 Длительность: ${workout.duration} мин
-🔥 Калории: ${workout.calories} ккал
-
-Упражнения:
-${workout.exercises.map(ex => `• ${ex.name}
-  ${ex.sets}×${ex.reps}${ex.rest ? ` (отдых ${ex.rest} сек)` : ''}`).join('\n')}
-        `,
-        buttons: [
-            {
-                type: 'default',
-                text: 'Закрыть'
-            }
-        ]
-    });
-}
-
-// Обновим обработчики событий
-function setupWorkoutHandlers(program) {
-    document.querySelectorAll('.workout-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            const workoutCard = button.closest('.workout-card');
-            const workoutTitle = workoutCard.querySelector('h3').textContent;
-            const workoutId = getWorkoutIdByTitle(workoutTitle);
-            
-            if (button.classList.contains('info-btn')) {
-                tg.HapticFeedback.impactOccurred('medium');
-                showWorkoutDetails(workoutId);
-            } else if (button.classList.contains('start-btn')) {
-                tg.HapticFeedback.impactOccurred('medium');
-                startWorkout(program.id, workoutId);
-            }
-        });
-    });
-}
-
-// Вспомогательная функция для получения ID тренировки по заголовку
-function getWorkoutIdByTitle(title) {
-    return Object.keys(workoutData).find(key => 
-        workoutData[key].title === title
-    );
-}
-
-// Обновляем функцию renderProgramCards
+// Обновляем функцию renderProgramCards для нового дизайна
 async function renderProgramCards() {
     const container = document.querySelector('.programs-list');
     if (!container) return;
@@ -209,31 +151,17 @@ async function renderProgramCards() {
 
         let html = '';
         
-        // Сначала сортируем программы, чтобы утренняя зарядка и активная программа были первыми
+        // Сортируем программы
         const sortedPrograms = [...window.programData].sort((a, b) => {
-            // Утренняя зарядка всегда первая
             if (a.id === 'morning_workout') return -1;
             if (b.id === 'morning_workout') return 1;
-            
-            // Активная программа вторая
-            const isActiveA = activeProgram?.id === a.id;
-            const isActiveB = activeProgram?.id === b.id;
-            if (isActiveA && !isActiveB) return -1;
-            if (!isActiveA && isActiveB) return 1;
-            
-            // Остальные программы без изменения порядка
             return 0;
         });
 
-        // Теперь перебираем отсортированный массив программ
+        // Рендерим программы в новом дизайне
         sortedPrograms.forEach((program) => {
-            const isActive = activeProgram?.id === program.id;
-            // Утренняя зарядка не блокируется и не блокирует другие программы
-            const isDisabled = program.id !== 'morning_workout' && activeProgram && !isActive && activeProgram.id !== 'morning_workout';
-            const durationText = program.duration === 'unlimited' ? 'Бессрочная' : `${program.duration} недель`;
-
             html += `
-                <div class="program-card ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}" data-program-id="${program.id}">
+                <div class="program-card" data-program-id="${program.id}">
                     <div class="program-icon">
                         <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
                     </div>
@@ -243,15 +171,22 @@ async function renderProgramCards() {
                         <div class="program-meta">
                             <span>
                                 <span class="material-symbols-rounded">timer</span>
-                                ${durationText}
-                            </span>
-                            <span>
-                                <span class="material-symbols-rounded">calendar_month</span>
                                 ${program.workoutsPerWeek} тр/нед
                             </span>
-                            <span class="difficulty-badge">
+                            <span>
+                                <span class="material-symbols-rounded">fitness_center</span>
                                 ${getDifficultyText(program.difficulty)}
                             </span>
+                        </div>
+                        <div class="program-actions">
+                            <button class="info-btn" onclick="showProgramDetails('${program.id}')">
+                                <span class="material-symbols-rounded">info</span>
+                                Подробнее
+                            </button>
+                            <button class="start-btn" onclick="startWorkout('${program.id}', '${program.workouts[0].id}')">
+                                <span class="material-symbols-rounded">play_arrow</span>
+                                Старт
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -260,38 +195,25 @@ async function renderProgramCards() {
 
         container.innerHTML = html;
 
-        // Добавляем обработчики для карточек
-        document.querySelectorAll('.program-card').forEach(card => {
-            card.addEventListener('click', async () => {
-                const programId = card.dataset.programId;
-                const program = window.programData.find(p => p.id === programId);
-                
-                if (!card.classList.contains('disabled') && program) {
-                    await showProgramDetails(program);
-                    tg.HapticFeedback.impactOccurred('light');
-                } else if (card.classList.contains('disabled')) {
-                    tg.HapticFeedback.notificationOccurred('error');
-                    showNotification('Сначала завершите текущую программу', true);
-                }
-            });
-        });
-
     } catch (error) {
         console.error('Ошибка при отображении программ:', error);
-        container.innerHTML = '<div class="no-data">Ошибка при загрузке программ</div>';
+        container.innerHTML = '<div class="error-message">Ошибка при загрузке программ</div>';
     }
 }
 
-// Обновляем функцию showProgramDetails
-async function showProgramDetails(program) {
+// Делаем функцию showProgramDetails глобальной
+window.showProgramDetails = async function(programId) {
+    const program = window.programData.find(p => p.id === programId);
     if (!program) return;
 
+    tg.HapticFeedback.impactOccurred('medium');
+    
     await showPopupSafe({
         title: program.name,
-        message: `${program.description}\n\n${program.workoutsPerWeek} тр/нед • ${getDifficultyText(program.difficulty)}\n\nДлительность: ${program.duration} недель`,
+        message: `${program.description}\n\n🏋️ ${program.workoutsPerWeek} тр/нед\n💪 ${getDifficultyText(program.difficulty)}`,
         buttons: [
             {
-                id: `start_program_${program.id}`,
+                id: 'start_program',
                 type: 'default',
                 text: 'Начать программу'
             },
