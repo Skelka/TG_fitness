@@ -90,4 +90,34 @@ export async function showError(message) {
         message: message,
         buttons: [{type: 'ok'}]
     });
+}
+
+// Функция для показа уведомлений
+export function showNotification(message, type = '') {
+    // Удаляем предыдущее уведомление, если оно есть
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+
+    // Создаем новое уведомление
+    const notification = document.createElement('div');
+    notification.className = `notification${type ? ' ' + type : ''}`;
+    notification.textContent = message;
+
+    // Добавляем уведомление на страницу
+    document.body.appendChild(notification);
+
+    // Показываем уведомление
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+
+    // Скрываем и удаляем уведомление через 3 секунды
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 3000);
 } 
