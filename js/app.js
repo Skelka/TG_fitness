@@ -12,6 +12,7 @@ import {
     updateTimerDisplay,
     startRestTimer,
     skipRest,
+    clearTimers,
     completeExercise,
     prevExercise,
     nextExercise
@@ -29,6 +30,13 @@ let currentWorkout = null;
 // Делаем функции глобальными
 window.clearAllData = clearAllData;
 window.startWorkout = startWorkout;
+window.clearTimers = clearTimers;
+window.startExerciseTimer = startExerciseTimer;
+window.toggleTimer = toggleTimer;
+window.completeExercise = completeExercise;
+window.prevExercise = prevExercise;
+window.nextExercise = nextExercise;
+window.skipRest = skipRest;
 
 // Переменные для тренировки
 let isTimerMode = false;
@@ -311,7 +319,7 @@ async function showProgramWorkouts(program) {
 
     programsList.innerHTML = `
         <div class="program-header">
-            <button class="back-btn" onclick="renderProgramCards()">
+            <button class="back-btn">
                 <span class="material-symbols-rounded">arrow_back</span>
             </button>
             <h2>${program.name || program.title}</h2>
@@ -335,7 +343,7 @@ async function showProgramWorkouts(program) {
                             </div>
                         </div>
                     </div>
-                    <button class="start-workout-btn" onclick="startWorkout('${program.id}', '${workout.id}')">
+                    <button class="start-workout-btn" data-program-id="${program.id}" data-workout-id="${workout.id}">
                         <span class="material-symbols-rounded">play_arrow</span>
                         Начать тренировку
                     </button>
@@ -343,6 +351,24 @@ async function showProgramWorkouts(program) {
             `).join('')}
         </div>
     `;
+
+    // Добавляем обработчики событий
+    const backBtn = programsList.querySelector('.back-btn');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            renderProgramCards();
+        });
+    }
+
+    // Добавляем обработчики для кнопок начала тренировки
+    const startButtons = programsList.querySelectorAll('.start-workout-btn');
+    startButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const programId = button.dataset.programId;
+            const workoutId = button.dataset.workoutId;
+            startWorkout(programId, workoutId);
+        });
+    });
 }
 
 // Функция показа результатов программы
