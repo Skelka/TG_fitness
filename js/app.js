@@ -409,6 +409,7 @@ tg.onEvent('popupClosed', async (event) => {
         document.querySelector('.bottom-nav')?.classList.remove('hidden');
     } else if (event.button_id.startsWith('start_program_')) {
         const programId = event.button_id.replace('start_program_', '');
+        console.log('Starting program:', programId);
         const program = window.programData.find(p => p.id === programId);
         
         if (!program) {
@@ -428,15 +429,35 @@ tg.onEvent('popupClosed', async (event) => {
                 return;
             }
 
-            await initializeProgram(program);
-            showProgramWorkouts(program);
+            // Проверяем наличие тренировок
+            if (!program.workouts || program.workouts.length === 0) {
+                showError('В программе нет тренировок');
+                return;
+            }
+
+            // Находим первую тренировку
+            const firstWorkout = program.workouts[0];
             
+            // Проверяем наличие упражнений
+            if (!firstWorkout.exercises || firstWorkout.exercises.length === 0) {
+                showError('В тренировке нет упражнений');
+                return;
+            }
+
+            console.log('Starting first workout:', firstWorkout);
+
+            // Сохраняем программу как активную
+            await setStorageItem('activeProgram', JSON.stringify(program));
+            console.log('Program saved as active');
+
+            // Запускаем первую тренировку
+            await startWorkout(programId, firstWorkout.id);
         } catch (error) {
             console.error('Ошибка при запуске программы:', error);
-            showError('Не удалось начать программу. Попробуйте позже.');
-            }
+            showError(error.message);
         }
-    });
+    }
+});
 
 // Добавляем функцию инициализации программы
 async function initializeProgram(program) {
@@ -943,8 +964,12 @@ function renderStatistics() {
 
 async function initializeDefaultPrograms() {
     try {
+        console.log('Starting program initialization...');
         const existingPrograms = await getStorageItem('programs_meta');
+        console.log('Existing programs meta:', existingPrograms);
+        
         if (!existingPrograms) {
+            console.log('No existing programs found, initializing defaults...');
             const defaultPrograms = [
                 {
                     id: 'weight_loss',
@@ -2133,6 +2158,8 @@ async function initializeDefaultPrograms() {
                 }
             ];
 
+            console.log('Default programs before chunking:', defaultPrograms);
+
             // Сохраняем программы чанками
             const chunkSize = 1; // Размер чанка
             const chunks = [];
@@ -2143,34 +2170,45 @@ async function initializeDefaultPrograms() {
                 chunks.push(chunk);
             }
             
+            console.log('Created chunks:', chunks);
+
             // Сохраняем каждый чанк
             for (let i = 0; i < chunks.length; i++) {
+                console.log(`Saving chunk ${i}:`, chunks[i]);
                 await setStorageItem(`programs_chunk_${i}`, JSON.stringify(chunks[i]));
             }
             
             // Сохраняем метаданные
-            await setStorageItem('programs_meta', JSON.stringify({
+            const meta = {
                 totalChunks: chunks.length,
                 totalPrograms: defaultPrograms.length
-            }));
+            };
+            console.log('Saving meta:', meta);
+            await setStorageItem('programs_meta', JSON.stringify(meta));
 
             // Сохраняем программы в глобальной переменной
             window.programData = defaultPrograms;
-            console.log('Программы по умолчанию инициализированы:', defaultPrograms);
+            console.log('Programs initialized:', window.programData);
         } else {
-            // Загружаем существующие программы из чанков
+            console.log('Loading existing programs from chunks...');
             const meta = JSON.parse(existingPrograms);
+            console.log('Parsed meta:', meta);
+            
             const programs = [];
             
             for (let i = 0; i < meta.totalChunks; i++) {
+                console.log(`Loading chunk ${i}...`);
                 const chunk = await getStorageItem(`programs_chunk_${i}`);
+                console.log(`Loaded chunk ${i}:`, chunk);
                 if (chunk) {
-                    programs.push(...JSON.parse(chunk));
+                    const parsedChunk = JSON.parse(chunk);
+                    console.log(`Parsed chunk ${i}:`, parsedChunk);
+                    programs.push(...parsedChunk);
                 }
             }
             
             window.programData = programs;
-            console.log('Загружены существующие программы:', programs);
+            console.log('Loaded all programs:', window.programData);
         }
     } catch (error) {
         console.error('Ошибка при инициализации программ:', error);
@@ -2642,19 +2680,27 @@ function initExitHandler() {
 // Функция запуска тренировки
 async function startWorkout(programId, workoutId) {
     try {
+        console.log('Starting workout with programId:', programId, 'workoutId:', workoutId);
+        console.log('Available programs:', window.programData);
+
         // Получаем данные программы
         const program = window.programData.find(p => p.id === programId);
+        console.log('Found program:', program);
+        
         if (!program) {
             throw new Error('Программа не найдена');
         }
 
         // Находим тренировку
         const workout = program.workouts.find(w => w.id === workoutId);
+        console.log('Found workout:', workout);
+        
         if (!workout) {
             throw new Error('Тренировка не найдена');
         }
 
         // Проверяем наличие упражнений
+        console.log('Checking exercises:', workout.exercises);
         if (!workout.exercises || workout.exercises.length === 0) {
             throw new Error('В тренировке нет упражнений');
         }
@@ -2681,7 +2727,7 @@ async function startWorkout(programId, workoutId) {
         // Инициализируем обработчик выхода
         initExitHandler();
 
-        console.log('Начинаем тренировку:', window.currentWorkout);
+        console.log('Starting workout with:', window.currentWorkout);
 
         // Отображаем первое упражнение
         renderExercise();
