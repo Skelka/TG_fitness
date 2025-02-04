@@ -1,5 +1,10 @@
 import { getStorageItem, setStorageItem, showError, showNotification, formatTime } from './utils.js';
-import { renderExercise, clearTimers } from './exercise-renderer.js';
+import { 
+    renderExercise, 
+    clearTimers, 
+    state as exerciseState,
+    initState as initExerciseState 
+} from './exercise-renderer.js';
 import { programDataManager } from './program-data.js';
 
 // Состояние тренировки
@@ -55,8 +60,9 @@ const workoutsModule = {
             window.currentExerciseIndex = workoutState.currentExerciseIndex;
             window.currentSet = workoutState.currentSet;
 
-            // Очищаем таймеры
+            // Очищаем таймеры и инициализируем состояние упражнения
             clearTimers();
+            initExerciseState();
 
             // Скрываем нижнюю навигацию
             document.querySelector('.bottom-nav')?.classList.add('hidden');

@@ -2,7 +2,7 @@ import { formatTime, showError, showNotification } from './utils.js';
 import { programDataManager } from './program-data.js';
 
 // Состояние приложения
-const state = {
+export const state = {
     currentWorkout: null,
     currentExerciseIndex: 0,
     currentSet: 1,
@@ -15,7 +15,7 @@ const state = {
 };
 
 // Инициализация состояния из глобальных переменных
-function initState() {
+export function initState() {
     state.currentWorkout = window.currentWorkout;
     state.currentExerciseIndex = window.currentExerciseIndex;
     state.currentSet = window.currentSet;
@@ -273,5 +273,19 @@ export function renderExercise() {
     }
 }
 
-// Экспортируем состояние для глобального доступа
-window.exerciseState = state; 
+// Делаем функции доступными глобально
+export function initGlobalFunctions() {
+    window.skipRest = skipRest;
+    window.toggleTimer = toggleTimer;
+    window.exerciseState = state;
+}
+
+// Экспортируем вспомогательные функции
+export {
+    createRestScreen,
+    updateRestTimerUI,
+    finishRest
+};
+
+// Инициализируем глобальные функции
+initGlobalFunctions(); 
