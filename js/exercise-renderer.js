@@ -78,7 +78,7 @@ export function getMuscleGroupsText(groups) {
 }
 
 // Функции для работы с таймерами
-function clearTimers() {
+export function clearTimers() {
     if (state.exerciseTimer) {
         clearInterval(state.exerciseTimer);
         state.exerciseTimer = null;

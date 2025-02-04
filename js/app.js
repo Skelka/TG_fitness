@@ -8,73 +8,99 @@ import uiManager from './ui-manager.js';
 import { programDataManager } from './program-data.js';
 
 // Глобальные переменные
-window.tg = window.Telegram.WebApp;
-window.mainButton = tg.MainButton;
-window.backButton = tg.BackButton;
+let tg;
+let mainButton;
+let backButton;
 
-// Делаем функции глобальными
-window.startWorkout = workoutsModule.startWorkout.bind(workoutsModule);
-window.showProgramDetails = programsModule.showProgramDetails.bind(programsModule);
-window.renderProgramWorkouts = programsModule.renderProgramWorkouts.bind(programsModule);
-window.switchTab = uiManager.switchTab.bind(uiManager);
-window.renderProgramCards = uiManager.renderProgramCards.bind(uiManager);
-
-// Обработчик события закрытия попапа
-tg.onEvent('popupClosed', async (event) => {
-    console.log('Popup closed with event:', event);
+// Инициализация Telegram WebApp
+function initializeTelegramWebApp() {
+    if (!window.Telegram?.WebApp) {
+        throw new Error('Telegram WebApp не доступен');
+    }
     
-    if (!event || !event.button_id) return;
+    tg = window.Telegram.WebApp;
+    window.tg = tg;
+    mainButton = tg.MainButton;
+    backButton = tg.BackButton;
+    window.mainButton = mainButton;
+    window.backButton = backButton;
+    
+    tg.expand();
+    tg.enableClosingConfirmation();
+}
 
-    if (event.button_id === 'quit_workout') {
-        workoutsModule.finishWorkout();
-    } else if (event.button_id.startsWith('start_program_')) {
-        const programId = event.button_id.replace('start_program_', '');
-        console.log('Starting program:', programId);
-        
-        const program = programDataManager.getProgramById(programId);
-        if (!program) {
-            console.error('Программа не найдена:', programId);
-            showError('Программа не найдена');
+// Обработчик начала программы
+async function handleProgramStart(programId) {
+    console.log('Starting program:', programId);
+    
+    const program = programDataManager.getProgramById(programId);
+    if (!program) {
+        console.error('Программа не найдена:', programId);
+        showError('Программа не найдена');
+        return;
+    }
+
+    try {
+        const profileData = await profileModule.getProfile();
+        if (!profileData) {
+            showError('Пожалуйста, заполните профиль перед началом программы');
+            uiManager.switchTab('profile');
             return;
         }
 
-        try {
-            // Проверяем наличие профиля
-            const profileData = await profileModule.getProfile();
-            if (!profileData) {
-                showError('Пожалуйста, заполните профиль перед началом программы');
-                uiManager.switchTab('profile');
-                return;
-            }
-
-            // Проверяем наличие тренировок
-            if (!program.workouts || program.workouts.length === 0) {
-                showError('В программе нет тренировок');
-                return;
-            }
-
-            // Отображаем список тренировок программы
-            programsModule.renderProgramWorkouts(program);
-
-            // Добавляем тактильный отклик
-            window.tg.HapticFeedback.impactOccurred('medium');
-        } catch (error) {
-            console.error('Ошибка при запуске программы:', error);
-            showError(error.message);
-            window.tg.HapticFeedback.notificationOccurred('error');
+        if (!program.workouts?.length) {
+            showError('В программе нет тренировок');
+            return;
         }
+
+        programsModule.renderProgramWorkouts(program);
+        tg.HapticFeedback.impactOccurred('medium');
+    } catch (error) {
+        console.error('Ошибка при запуске программы:', error);
+        showError(error.message);
+        tg.HapticFeedback.notificationOccurred('error');
     }
-});
+}
+
+// Обработчик закрытия попапа
+function setupPopupHandler() {
+    tg.onEvent('popupClosed', async (event) => {
+        console.log('Popup closed with event:', event);
+        
+        if (!event?.button_id) return;
+
+        if (event.button_id === 'quit_workout') {
+            workoutsModule.finishWorkout();
+        } else if (event.button_id.startsWith('start_program_')) {
+            const programId = event.button_id.replace('start_program_', '');
+            await handleProgramStart(programId);
+        }
+    });
+}
+
+// Инициализация глобальных функций
+function initializeGlobalFunctions() {
+    window.startWorkout = workoutsModule.startWorkout.bind(workoutsModule);
+    window.showProgramDetails = programsModule.showProgramDetails.bind(programsModule);
+    window.renderProgramWorkouts = programsModule.renderProgramWorkouts.bind(programsModule);
+    window.switchTab = uiManager.switchTab.bind(uiManager);
+    window.renderProgramCards = uiManager.renderProgramCards.bind(uiManager);
+}
 
 // Функция инициализации приложения
 async function initializeApp() {
     try {
         // Инициализируем Telegram WebApp
-        window.tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.enableClosingConfirmation();
+        initializeTelegramWebApp();
+        
+        // Инициализируем глобальные функции
+        initializeGlobalFunctions();
+        
+        // Настраиваем обработчик попапов
+        setupPopupHandler();
 
         // Загружаем программы
+        await programDataManager.loadPrograms();
         await programsModule.initializeDefaultPrograms();
         
         // Настраиваем обработчики событий
@@ -86,7 +112,12 @@ async function initializeApp() {
         console.log('App initialized successfully');
     } catch (error) {
         console.error('Error initializing app:', error);
-        showError('Ошибка при инициализации приложения');
+        showError('Ошибка при инициализации приложения: ' + error.message);
+        
+        // Пытаемся показать ошибку в интерфейсе Telegram
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.showAlert('Произошла ошибка при запуске приложения. Пожалуйста, попробуйте позже.');
+        }
     }
 }
 
