@@ -115,27 +115,64 @@ export function startRestTimer(duration) {
     window.isResting = true;
     window.restTimeLeft = duration;
     
-    updateTimerDisplay(window.restTimeLeft);
+    // Создаем экран отдыха
+    const restScreen = document.createElement('div');
+    restScreen.className = 'rest-screen';
+    restScreen.innerHTML = `
+        <div class="rest-icon">
+            <span class="material-symbols-rounded">timer</span>
+        </div>
+        <h3>Отдых</h3>
+        <div class="rest-subtitle">Следующий подход через</div>
+        <div class="rest-timer" id="restTimer">${formatTime(duration)}</div>
+        <div class="rest-progress">
+            <div class="rest-progress-bar" style="width: 100%"></div>
+        </div>
+        <button class="skip-rest-btn" onclick="window.skipRest()">
+            <span class="material-symbols-rounded">skip_next</span>
+            Пропустить
+        </button>
+    `;
+    document.body.appendChild(restScreen);
+    
+    // Обновляем прогресс-бар
+    const progressBar = restScreen.querySelector('.rest-progress-bar');
+    const timer = restScreen.querySelector('.rest-timer');
+    const startTime = duration;
     
     restTimer = setInterval(() => {
         window.restTimeLeft--;
-        updateTimerDisplay(window.restTimeLeft);
+        const progress = (window.restTimeLeft / startTime) * 100;
+        progressBar.style.width = `${progress}%`;
+        timer.textContent = formatTime(window.restTimeLeft);
+        
+        // Добавляем эффект мигания в конце отдыха
+        if (window.restTimeLeft <= 3) {
+            timer.classList.add('ending');
+        }
         
         if (window.restTimeLeft <= 0) {
             clearInterval(restTimer);
             window.isResting = false;
+            restScreen.remove();
             showNotification('Отдых завершен!', 'success');
-            // Здесь можно добавить логику для перехода к следующему упражнению
+            window.tg.HapticFeedback.notificationOccurred('success');
+            renderExercise();
         }
     }, 1000);
 }
 
 export function skipRest() {
-    if (window.isResting && restTimer) {
+    if (window.isResting) {
         clearInterval(restTimer);
         window.isResting = false;
+        const restScreen = document.querySelector('.rest-screen');
+        if (restScreen) {
+            restScreen.remove();
+        }
         showNotification('Отдых пропущен');
-        // Здесь можно добавить логику для перехода к следующему упражнению
+        window.tg.HapticFeedback.impactOccurred('medium');
+        renderExercise();
     }
 }
 
@@ -176,45 +213,85 @@ export function renderExercise() {
     const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
     console.log('Current exercise:', exercise);
     
-    const mainContainer = document.querySelector('#mainContainer');
+    // Создаем основной контейнер, если его нет
+    let mainContainer = document.querySelector('.workout-session');
     if (!mainContainer) {
-        console.error('Main container not found');
-        return;
+        mainContainer = document.createElement('div');
+        mainContainer.className = 'workout-session';
+        document.body.appendChild(mainContainer);
     }
 
+    // Получаем анимацию для упражнения
+    const exerciseAnimation = window.getExerciseAnimation ? 
+        window.getExerciseAnimation(exercise.name) : 
+        'https://media.giphy.com/media/3oKIPc9VZj4ylzjcys/giphy.gif';
+
     mainContainer.innerHTML = `
-        <div class="exercise-card">
-            <h2>${exercise.name}</h2>
-            <div class="exercise-details">
-                <p>Подход ${state.currentSet} из ${exercise.sets}</p>
-                ${exercise.reps ? `<p>Повторений: ${exercise.reps}</p>` : ''}
-                ${exercise.duration ? `<p>Длительность: ${formatTime(exercise.duration)}</p>` : ''}
-            </div>
-            ${exercise.description ? `<p class="exercise-description">${exercise.description}</p>` : ''}
-            
-            <div class="timer-container" ${!exercise.duration ? 'style="display: none;"' : ''}>
-                <div id="timerDisplay">${exercise.duration ? formatTime(exercise.duration) : '00:00'}</div>
-                <div class="timer-controls">
-                    <button id="startTimer" onclick="window.startExerciseTimer(${exercise.duration})">Старт</button>
-                    <button id="pauseTimer" onclick="window.toggleTimer()">Пауза</button>
+        <div class="exercise-background">
+            <img src="${exerciseAnimation}" alt="${exercise.name}">
+            <div class="overlay"></div>
+        </div>
+        
+        <div class="workout-content">
+            <div class="workout-header">
+                <div class="workout-title">
+                    <h2 class="exercise-title">${exercise.name}</h2>
+                    <div class="workout-progress">
+                        Упражнение ${state.currentExerciseIndex + 1} из ${state.currentWorkout.exercises.length}
+                    </div>
                 </div>
             </div>
 
-            <div class="exercise-controls">
-                <button class="primary-button" onclick="window.completeExercise()">
-                    Завершить подход
-                </button>
-                ${state.currentSet > 1 ? `
-                    <button class="secondary-button" onclick="window.previousSet()">
-                        Предыдущий подход
-                    </button>
+            <div class="exercise-info">
+                <div class="exercise-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">Подход ${state.currentSet}</div>
+                        <div class="stat-label">из ${exercise.sets}</div>
+                    </div>
+                    ${exercise.reps ? `
+                        <div class="stat-item">
+                            <div class="stat-value">${exercise.reps}</div>
+                            <div class="stat-label">повторений</div>
+                        </div>
+                    ` : ''}
+                    ${exercise.duration ? `
+                        <div class="stat-item">
+                            <div id="timerDisplay" class="stat-value">${formatTime(exercise.duration)}</div>
+                            <div class="stat-label">время</div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                ${exercise.description ? `
+                    <div class="exercise-description">
+                        ${exercise.description}
+                    </div>
                 ` : ''}
+            </div>
+
+            <div class="exercise-controls">
+                ${exercise.duration ? `
+                    <button id="startTimer" class="complete-set-btn" onclick="window.startExerciseTimer(${exercise.duration})">
+                        Начать упражнение
+                    </button>
+                ` : `
+                    <button class="complete-set-btn" onclick="window.completeExercise()">
+                        Завершить подход
+                    </button>
+                `}
             </div>
         </div>
     `;
 
+    // Скрываем нижнюю навигацию
+    const bottomNav = document.querySelector('.bottom-nav');
+    if (bottomNav) {
+        bottomNav.classList.add('hidden');
+    }
+
     console.log('Exercise rendered successfully');
 
+    // Если есть таймер и режим таймера включен, запускаем его
     if (exercise.duration && state.isTimerMode) {
         window.startExerciseTimer(exercise.duration);
     }

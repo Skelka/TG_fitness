@@ -1944,21 +1944,25 @@ body {
 
 /* Стили для экрана отдыха */
 .rest-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    z-index: 1000;
     padding: 20px;
-    text-align: center;
-    background: var(--tg-theme-bg-color);
 }
 
 .rest-icon {
     width: 80px;
     height: 80px;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 50%;
-    background: var(--tg-theme-button-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1967,55 +1971,52 @@ body {
 
 .rest-icon .material-symbols-rounded {
     font-size: 40px;
-    color: var(--tg-theme-button-text-color);
+    color: #fff;
 }
 
 .rest-screen h3 {
     font-size: 24px;
-    margin: 0 0 10px;
-    color: var(--tg-theme-text-color);
+    color: #fff;
+    margin: 0 0 8px 0;
+    text-align: center;
 }
 
 .rest-subtitle {
     font-size: 16px;
-    color: var(--tg-theme-hint-color);
-    margin-bottom: 30px;
-}
-
-.rest-timer {
-    font-size: 64px;
-    font-weight: bold;
-    color: var(--tg-theme-text-color);
-    margin-bottom: 40px;
-    font-variant-numeric: tabular-nums;
-    min-width: 120px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 24px;
     text-align: center;
 }
 
+.rest-timer {
+    font-size: 48px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 32px;
+    font-variant-numeric: tabular-nums;
+    animation: pulse 1s infinite;
+}
+
 .skip-rest-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
     padding: 12px 24px;
-    border-radius: 10px;
+    border-radius: 12px;
     border: none;
     background: var(--tg-theme-button-color);
     color: var(--tg-theme-button-text-color);
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s ease;
 }
 
 .skip-rest-btn:active {
-    opacity: 0.7;
+    opacity: 0.8;
 }
 
 .skip-rest-btn .material-symbols-rounded {
-    font-size: 20px;
+    margin-right: 8px;
 }
 
-/* Анимация для таймера */
 @keyframes pulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.05); }
@@ -2023,18 +2024,17 @@ body {
 }
 
 .rest-timer.ending {
-    color: var(--tg-theme-destructive-text-color);
-    animation: pulse 1s infinite;
+    color: #ff4d4d;
+    animation: pulse 0.5s infinite;
 }
 
-/* Прогресс-бар для отдыха */
 .rest-progress {
-    width: 100%;
+    width: 200px;
     height: 4px;
-    background: var(--tg-theme-secondary-bg-color);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 2px;
-    margin: 20px 0;
     overflow: hidden;
+    margin-top: 16px;
 }
 
 .rest-progress-bar {
