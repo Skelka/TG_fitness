@@ -341,6 +341,7 @@ export function previousSet() {
 
 // Функция завершения упражнения
 export function completeExercise() {
+    const state = getState();
     const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
     clearTimers();
 
@@ -354,8 +355,9 @@ export function completeExercise() {
             const nextExercise = state.currentWorkout.exercises[state.currentExerciseIndex];
             if (nextExercise.restBeforeStart) {
                 startRestTimer(nextExercise.restBeforeStart);
+            } else {
+                renderExercise();
             }
-            renderExercise();
         } else {
             // Тренировка завершена
             finishWorkout();
@@ -365,8 +367,9 @@ export function completeExercise() {
         state.currentSet++;
         if (exercise.restBetweenSets) {
             startRestTimer(exercise.restBetweenSets);
+        } else {
+            renderExercise();
         }
-        renderExercise();
     }
     
     state.tg.HapticFeedback.impactOccurred('medium');
@@ -392,4 +395,65 @@ export function nextExercise() {
         renderExercise();
         state.tg.HapticFeedback.impactOccurred('light');
     }
-} 
+}
+
+// Функция завершения тренировки
+export function finishWorkout() {
+    clearTimers();
+    
+    // Создаем экран завершения
+    const mainContainer = document.querySelector('.workout-session');
+    if (!mainContainer) return;
+
+    const state = getState();
+    const workout = state.currentWorkout;
+    const workoutDuration = Math.floor((Date.now() - window.workoutStartTime) / 60000); // в минутах
+    
+    mainContainer.innerHTML = `
+        <div class="workout-complete">
+            <div class="complete-icon">
+                <span class="material-symbols-rounded">check_circle</span>
+            </div>
+            <h2>Тренировка завершена!</h2>
+            <div class="workout-stats">
+                <div class="stat-item">
+                    <div class="stat-value">${workout.exercises.length}</div>
+                    <div class="stat-label">упражнений</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${workoutDuration}</div>
+                    <div class="stat-label">минут</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${workout.exercises.reduce((total, ex) => total + (ex.sets || 1), 0)}</div>
+                    <div class="stat-label">подходов</div>
+                </div>
+            </div>
+            <button class="finish-btn" onclick="window.finishAndReturn()">
+                <span class="material-symbols-rounded">home</span>
+                Вернуться к программе
+            </button>
+        </div>
+    `;
+
+    // Показываем нижнюю навигацию
+    document.querySelector('.bottom-nav')?.classList.remove('hidden');
+
+    // Добавляем тактильный отклик
+    state.tg.HapticFeedback.notificationOccurred('success');
+}
+
+// Функция возврата к программе
+export function finishAndReturn() {
+    const state = getState();
+    const program = window.programData.find(p => p.id === state.currentWorkout.programId);
+    if (program) {
+        renderProgramWorkouts(program);
+    } else {
+        renderProgramCards();
+    }
+}
+
+// Делаем функцию глобальной
+window.finishAndReturn = finishAndReturn;
+window.completeExercise = completeExercise; 

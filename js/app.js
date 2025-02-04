@@ -297,63 +297,41 @@ async function showProgramDetails(program) {
     });
 }
 
-// Функция для отображения тренировок программы
-async function showProgramWorkouts(program) {
-    const programsList = document.querySelector('.programs-list');
-    if (!programsList) return;
+// Функция для отображения списка тренировок программы
+function renderProgramWorkouts(program) {
+    const mainContainer = document.querySelector('#mainContainer');
+    if (!mainContainer) return;
 
-    programsList.innerHTML = `
-        <div class="program-header">
-            <button class="back-btn">
-                <span class="material-symbols-rounded">arrow_back</span>
-            </button>
-            <h2>${program.name || program.title}</h2>
-        </div>
-        <div class="program-days">
-            ${program.workouts.map((workout, index) => `
-                <div class="workout-day">
-                    <div class="workout-day-content">
-                        <div class="workout-day-icon">
-                            <span class="material-symbols-rounded">exercise</span>
+    mainContainer.innerHTML = `
+        <div class="workout-list">
+            <div class="workout-list-header">
+                <span class="material-symbols-rounded">${program.icon || 'fitness_center'}</span>
+                <h2>${program.name}</h2>
+            </div>
+            <div class="workouts-container">
+                ${program.workouts.map((workout, index) => `
+                    <div class="workout-day">
+                        <div class="workout-day-header">День ${index + 1}</div>
+                        <div class="workout-title">${workout.name}</div>
+                        <div class="workout-meta">
+                            <span>
+                                <span class="material-symbols-rounded">timer</span>
+                                ${workout.duration} мин
+                            </span>
+                            <span>
+                                <span class="material-symbols-rounded">exercise</span>
+                                ${workout.exercises ? workout.exercises.length : 0} упражнений
+                            </span>
                         </div>
-                        <div class="workout-day-text">
-                            <span class="day-number">День ${index + 1}</span>
-                            <h3>${workout.name}</h3>
-                            <p>${workout.description}</p>
-                            <div class="workout-meta">
-                                <span>
-                                    <span class="material-symbols-rounded">timer</span>
-                                    ${workout.duration} мин
-                                </span>
-                            </div>
-                        </div>
+                        <button class="start-workout-btn" onclick="window.startWorkout('${program.id}', '${workout.id}')">
+                            <span class="material-symbols-rounded">play_arrow</span>
+                            Начать тренировку
+                        </button>
                     </div>
-                    <button class="start-workout-btn" data-program-id="${program.id}" data-workout-id="${workout.id}">
-                        <span class="material-symbols-rounded">play_arrow</span>
-                        Начать тренировку
-                    </button>
-                </div>
-            `).join('')}
+                `).join('')}
+            </div>
         </div>
     `;
-
-    // Добавляем обработчики событий
-    const backBtn = programsList.querySelector('.back-btn');
-    if (backBtn) {
-        backBtn.addEventListener('click', () => {
-            renderProgramCards();
-        });
-    }
-
-    // Добавляем обработчики для кнопок начала тренировки
-    const startButtons = programsList.querySelectorAll('.start-workout-btn');
-    startButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const programId = button.dataset.programId;
-            const workoutId = button.dataset.workoutId;
-            startWorkout(programId, workoutId);
-        });
-    });
 }
 
 // Функция показа результатов программы
@@ -397,9 +375,9 @@ async function showProgramSchedule(programId) {
     });
 }
 
-// Упрощаем обработчик закрытия попапа
+// Обновляем обработчик события закрытия попапа
 tg.onEvent('popupClosed', async (event) => {
-        console.log('Popup closed with event:', event);
+    console.log('Popup closed with event:', event);
     
     if (!event || !event.button_id) return;
 
@@ -435,17 +413,6 @@ tg.onEvent('popupClosed', async (event) => {
                 return;
             }
 
-            // Находим первую тренировку
-            const firstWorkout = program.workouts[0];
-            
-            // Проверяем наличие упражнений
-            if (!firstWorkout.exercises || firstWorkout.exercises.length === 0) {
-                showError('В тренировке нет упражнений');
-                return;
-            }
-
-            console.log('Starting first workout:', firstWorkout);
-
             // Сохраняем программу как активную
             const saveResult = await setStorageItem('activeProgram', JSON.stringify(program));
             console.log('Program saved as active, result:', saveResult);
@@ -455,32 +422,8 @@ tg.onEvent('popupClosed', async (event) => {
                 throw new Error('Не удалось сохранить программу');
             }
 
-            // Обновляем глобальные данные
-            window.currentWorkout = {
-                ...firstWorkout,
-                programId: programId
-            };
-
-            // Инициализируем переменные тренировки
-            window.currentExerciseIndex = 0;
-            window.currentSet = 1;
-            window.isResting = false;
-            window.restTimeLeft = 0;
-            window.workoutStartTime = Date.now();
-
-            // Очищаем таймеры
-            clearTimers();
-
-            // Скрываем нижнюю навигацию
-            document.querySelector('.bottom-nav')?.classList.add('hidden');
-
-            // Инициализируем обработчик выхода
-            initExitHandler();
-
-            console.log('Workout initialized, rendering exercise...');
-
-            // Отображаем первое упражнение
-            renderExercise();
+            // Отображаем список тренировок программы
+            renderProgramWorkouts(program);
 
             // Добавляем тактильный отклик
             window.tg.HapticFeedback.impactOccurred('medium');
@@ -488,9 +431,9 @@ tg.onEvent('popupClosed', async (event) => {
             console.error('Ошибка при запуске программы:', error);
             showError(error.message);
             window.tg.HapticFeedback.notificationOccurred('error');
-            }
         }
-    });
+    }
+});
 
 // Добавляем функцию инициализации программы
 async function initializeProgram(program) {
