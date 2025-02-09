@@ -236,6 +236,10 @@ export function renderExercise() {
     exercise.currentReps = exercise.currentReps || exercise.reps || 10;
     exercise.completedSets = exercise.completedSets || [];
 
+    // Определяем, является ли упражнение временным
+    const isTimerExercise = exercise.duration && !exercise.reps;
+    const buttonText = isTimerExercise ? 'Начать отсчёт' : 'Готово';
+
     mainContainer.innerHTML = `
         <div class="exercise-screen">
             <div class="workout-title">
@@ -252,12 +256,19 @@ export function renderExercise() {
                 </div>
                 
                 <div class="reps-container">
-                    <button class="reps-btn" id="decreaseReps">-</button>
-                    <div class="reps-display" id="repsDisplay">
-                        <div class="reps-count">${exercise.currentReps}</div>
-                        <div class="reps-label">Подходов</div>
-                    </div>
-                    <button class="reps-btn" id="increaseReps">+</button>
+                    ${isTimerExercise ? `
+                        <div class="reps-display" id="repsDisplay" data-timer="true">
+                            <div class="reps-count">${formatTime(exercise.duration)}</div>
+                            <div class="reps-label">${buttonText}</div>
+                        </div>
+                    ` : `
+                        <button class="reps-btn" id="decreaseReps">-</button>
+                        <div class="reps-display" id="repsDisplay">
+                            <div class="reps-count">${exercise.currentReps}</div>
+                            <div class="reps-label">${buttonText}</div>
+                        </div>
+                        <button class="reps-btn" id="increaseReps">+</button>
+                    `}
                 </div>
             </div>
             
@@ -267,47 +278,93 @@ export function renderExercise() {
         </div>
     `;
 
-    // Обработчики для кнопок изменения количества повторений
+    // Обработчики для кнопок изменения количества повторений и таймера
     const decreaseBtn = document.querySelector('#decreaseReps');
     const increaseBtn = document.querySelector('#increaseReps');
     const repsDisplay = document.querySelector('#repsDisplay');
     const repsCount = document.querySelector('.reps-count');
 
-    if (decreaseBtn && increaseBtn && repsCount) {
-        decreaseBtn.addEventListener('click', () => {
-            if (exercise.currentReps > 1) {
-                exercise.currentReps--;
-                repsCount.textContent = exercise.currentReps;
-                window.tg.HapticFeedback.impactOccurred('light');
-            }
-        });
+    if (repsDisplay) {
+        if (isTimerExercise) {
+            let timerStarted = false;
+            let timeLeft = exercise.duration;
+            let timer = null;
 
-        increaseBtn.addEventListener('click', () => {
-            exercise.currentReps++;
-            repsCount.textContent = exercise.currentReps;
-            window.tg.HapticFeedback.impactOccurred('light');
-        });
+            repsDisplay.addEventListener('click', () => {
+                if (!exercise.completedSets.includes(state.currentSet - 1)) {
+                    if (!timerStarted) {
+                        // Запускаем таймер
+                        timerStarted = true;
+                        repsDisplay.classList.add('timer-running');
+                        repsDisplay.querySelector('.reps-label').textContent = 'Осталось';
+                        window.tg.HapticFeedback.impactOccurred('medium');
 
-        repsDisplay.addEventListener('click', () => {
-            if (!exercise.completedSets.includes(state.currentSet - 1)) {
-                exercise.completedSets.push(state.currentSet - 1);
-                repsDisplay.classList.add('completed');
-                window.tg.HapticFeedback.notificationOccurred('success');
+                        timer = setInterval(() => {
+                            timeLeft--;
+                            repsCount.textContent = formatTime(timeLeft);
 
-                // Сохраняем количество повторений для этого подхода
-                exercise.completedSets[state.currentSet - 1] = {
-                    reps: exercise.currentReps,
-                    timestamp: Date.now()
-                };
+                            if (timeLeft <= 0) {
+                                clearInterval(timer);
+                                repsDisplay.classList.remove('timer-running');
+                                exercise.completedSets.push(state.currentSet - 1);
+                                repsDisplay.classList.add('completed');
+                                window.tg.HapticFeedback.notificationOccurred('success');
 
-                // Если все подходы выполнены, переходим к следующему упражнению
-                if (exercise.completedSets.length === (exercise.sets || 5)) {
-                    setTimeout(() => {
-                        nextExercise();
-                    }, 500);
+                                // Сохраняем информацию о выполненном подходе
+                                exercise.completedSets[state.currentSet - 1] = {
+                                    duration: exercise.duration,
+                                    timestamp: Date.now()
+                                };
+
+                                // Если все подходы выполнены, переходим к следующему упражнению
+                                if (exercise.completedSets.length === (exercise.sets || 5)) {
+                                    setTimeout(() => {
+                                        nextExercise();
+                                    }, 500);
+                                }
+                            }
+                        }, 1000);
+                    }
                 }
+            });
+        } else {
+            if (decreaseBtn && increaseBtn && repsCount) {
+                decreaseBtn.addEventListener('click', () => {
+                    if (exercise.currentReps > 1) {
+                        exercise.currentReps--;
+                        repsCount.textContent = exercise.currentReps;
+                        window.tg.HapticFeedback.impactOccurred('light');
+                    }
+                });
+
+                increaseBtn.addEventListener('click', () => {
+                    exercise.currentReps++;
+                    repsCount.textContent = exercise.currentReps;
+                    window.tg.HapticFeedback.impactOccurred('light');
+                });
+
+                repsDisplay.addEventListener('click', () => {
+                    if (!exercise.completedSets.includes(state.currentSet - 1)) {
+                        exercise.completedSets.push(state.currentSet - 1);
+                        repsDisplay.classList.add('completed');
+                        window.tg.HapticFeedback.notificationOccurred('success');
+
+                        // Сохраняем количество повторений для этого подхода
+                        exercise.completedSets[state.currentSet - 1] = {
+                            reps: exercise.currentReps,
+                            timestamp: Date.now()
+                        };
+
+                        // Если все подходы выполнены, переходим к следующему упражнению
+                        if (exercise.completedSets.length === (exercise.sets || 5)) {
+                            setTimeout(() => {
+                                nextExercise();
+                            }, 500);
+                        }
+                    }
+                });
             }
-        });
+        }
     }
 }
 

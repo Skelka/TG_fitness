@@ -95,6 +95,11 @@
     aspect-ratio: 1;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reps-display:active {
+    transform: scale(0.95);
 }
 
 .reps-count {
@@ -102,6 +107,8 @@
     font-weight: 700;
     color: var(--tg-theme-text-color, #000);
     margin-bottom: 4px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.5px;
 }
 
 .reps-label {
@@ -585,4 +592,29 @@
 .set-label {
     font-size: 12px;
     color: var(--tg-theme-hint-color, #999);
+}
+
+/* Стили для таймера */
+.reps-display[data-timer="true"] {
+    width: 160px;
+    height: 160px;
+    margin: 0 auto;
+}
+
+.reps-display[data-timer="true"] .reps-count {
+    font-size: 48px;
+}
+
+.reps-display[data-timer="true"] .reps-label {
+    font-size: 16px;
+}
+
+.reps-display.timer-running {
+    background: var(--tg-theme-button-color, #40a7e3);
+    animation: gentlePulse 2s infinite;
+}
+
+.reps-display.timer-running .reps-count,
+.reps-display.timer-running .reps-label {
+    color: var(--tg-theme-button-text-color, #fff);
 } 
