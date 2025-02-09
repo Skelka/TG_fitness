@@ -34,31 +34,31 @@ async function handleProgramStart(programId) {
     console.log('Starting program:', programId);
     
     const program = programDataManager.getProgramById(programId);
-    if (!program) {
-        console.error('Программа не найдена:', programId);
-        showError('Программа не найдена');
+        if (!program) {
+            console.error('Программа не найдена:', programId);
+            showError('Программа не найдена');
+            return;
+        }
+
+        try {
+        const profileData = await profileModule.getProfile();
+            if (!profileData) {
+                showError('Пожалуйста, заполните профиль перед началом программы');
+            uiManager.switchTab('profile');
         return;
     }
 
-    try {
-        const profileData = await profileModule.getProfile();
-        if (!profileData) {
-            showError('Пожалуйста, заполните профиль перед началом программы');
-            uiManager.switchTab('profile');
-            return;
-        }
-
         if (!program.workouts?.length) {
             showError('В программе нет тренировок');
-            return;
+                return;
         }
 
         programsModule.renderProgramWorkouts(program);
-        tg.HapticFeedback.impactOccurred('medium');
+                tg.HapticFeedback.impactOccurred('medium');
     } catch (error) {
         console.error('Ошибка при запуске программы:', error);
         showError(error.message);
-        tg.HapticFeedback.notificationOccurred('error');
+                    tg.HapticFeedback.notificationOccurred('error');
     }
 }
 

@@ -233,13 +233,23 @@ export function renderExercise() {
     if (!exercise) return;
 
     const totalExercises = state.currentWorkout.exercises.length;
-    const isLastExercise = state.currentExerciseIndex === totalExercises - 1;
+    exercise.completedSets = exercise.completedSets || [];
+    exercise.currentReps = exercise.currentReps || exercise.reps || 10;
 
     mainContainer.innerHTML = `
         <div class="exercise-screen">
+            <div class="exercise-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${(state.currentExerciseIndex / totalExercises) * 100}%"></div>
+                </div>
+                <div class="progress-text">
+                    Тренировка ${state.currentExerciseIndex + 1} из ${totalExercises}
+                </div>
+            </div>
+
             <div class="exercise-header">
-                <div class="exercise-title">${exercise.name}</div>
-                <div class="exercise-subtitle">Упражнение ${state.currentExerciseIndex + 1} из ${totalExercises}</div>
+                <h1 class="exercise-title">${exercise.name}</h1>
+                <div class="exercise-subtitle">${getExerciseTypeText(exercise.type)} • ${getMuscleGroupsText(exercise.muscleGroups)}</div>
             </div>
             
             <div class="exercise-content">
@@ -247,103 +257,95 @@ export function renderExercise() {
                     <img src="${getExerciseAnimation(exercise.name)}" alt="${exercise.name}" class="exercise-gif">
                 </div>
 
-                <div class="sets-counter">
-                    <div class="sets-label">Количество подходов</div>
-                    <div class="sets-controls">
-                        <button class="sets-adjust" onclick="window.adjustSets(-1)">-</button>
-                        <div class="sets-display">
-                            <div class="sets-count">${exercise.sets || 1}</div>
-                            <div class="sets-text">подходов</div>
-                        </div>
-                        <button class="sets-adjust" onclick="window.adjustSets(1)">+</button>
-                    </div>
+                <div class="reps-counter">
+                    <button class="reps-btn" id="decreaseReps">-</button>
+                    <div class="reps-count" id="repsCount">${exercise.currentReps}</div>
+                    <button class="reps-btn" id="increaseReps">+</button>
                 </div>
 
-                <button class="complete-set" onclick="window.completeSet()">
-                    <span class="complete-text">Готово</span>
-                </button>
+                <div class="sets-grid">
+                    ${Array.from({length: exercise.sets || 5}, (_, i) => `
+                        <div class="set-box ${exercise.completedSets.includes(i) ? 'completed' : ''}" data-set="${i}">
+                            <div class="set-reps">${exercise.completedSets.includes(i) ? exercise.completedSets[i]?.reps || exercise.currentReps : exercise.currentReps}</div>
+                            <div class="set-label">Готово</div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="exercise-description">
+                    <h3>Как выполнять</h3>
+                    <p>${exercise.description || 'Описание отсутствует'}</p>
+                </div>
             </div>
         </div>
     `;
 
-    // Обновляем состояние кнопки "Готово"
-    updateCompleteButton();
-}
+    // Обработчики для кнопок изменения количества повторений
+    const decreaseBtn = document.querySelector('#decreaseReps');
+    const increaseBtn = document.querySelector('#increaseReps');
+    const repsCount = document.querySelector('#repsCount');
 
-// Функция для изменения количества подходов
-export function adjustSets(change) {
-    initState();
-    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
-    if (!exercise) return;
+    if (decreaseBtn && increaseBtn && repsCount) {
+        decreaseBtn.addEventListener('click', () => {
+            if (exercise.currentReps > 1) {
+                exercise.currentReps--;
+                repsCount.textContent = exercise.currentReps;
+                window.tg.HapticFeedback.impactOccurred('light');
+            }
+        });
 
-    exercise.sets = Math.max(1, (exercise.sets || 1) + change);
-    exercise.completedSets = exercise.completedSets || 0;
-    
-    // Обновляем отображение
-    const setsCount = document.querySelector('.sets-count');
-    if (setsCount) {
-        setsCount.textContent = exercise.sets;
+        increaseBtn.addEventListener('click', () => {
+            exercise.currentReps++;
+            repsCount.textContent = exercise.currentReps;
+            window.tg.HapticFeedback.impactOccurred('light');
+        });
     }
-    
-    // Обновляем состояние кнопки
-    updateCompleteButton();
-}
 
-// Функция для отметки выполнения подхода
-export function completeSet() {
-    initState();
-    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
-    if (!exercise) return;
+    // Обработчики для отметки выполненных подходов
+    const setBoxes = document.querySelectorAll('.set-box');
+    setBoxes.forEach(box => {
+        box.addEventListener('click', () => {
+            const setIndex = parseInt(box.dataset.set);
+            if (!exercise.completedSets.includes(setIndex)) {
+                exercise.completedSets.push(setIndex);
+                box.classList.add('completed');
+                window.tg.HapticFeedback.notificationOccurred('success');
 
-    exercise.completedSets = (exercise.completedSets || 0) + 1;
-    
-    if (exercise.completedSets >= exercise.sets) {
-        exercise.completedSets = 0; // Сбрасываем счетчик
-        nextExercise();
-    } else {
-        // Обновляем состояние кнопки
-        updateCompleteButton();
-        // Добавляем тактильный отклик
-        window.tg.HapticFeedback.impactOccurred('medium');
-    }
-}
+                // Сохраняем количество повторений для этого подхода
+                exercise.completedSets[setIndex] = {
+                    reps: exercise.currentReps,
+                    timestamp: Date.now()
+                };
 
-// Функция для обновления состояния кнопки "Готово"
-function updateCompleteButton() {
-    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
-    const completeButton = document.querySelector('.complete-set');
-    
-    if (completeButton && exercise) {
-        const isCompleted = (exercise.completedSets || 0) > 0;
-        completeButton.classList.toggle('done', isCompleted);
-        completeButton.querySelector('.complete-text').textContent = 
-            isCompleted ? `${exercise.completedSets}/${exercise.sets}` : 'Готово';
-    }
+                // Если все подходы выполнены, переходим к следующему упражнению
+                if (exercise.completedSets.length === (exercise.sets || 5)) {
+                    setTimeout(() => {
+                        nextExercise();
+                    }, 500);
+                }
+            }
+        });
+    });
 }
 
 // Функция для перехода к следующему упражнению
 export function nextExercise() {
-    initState();
-    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
     const isLastExercise = state.currentExerciseIndex === state.currentWorkout.exercises.length - 1;
 
-    // Проверяем, все ли подходы выполнены
-    if (exercise.completedSets >= exercise.sets) {
-        if (!isLastExercise) {
-            // Переходим к следующему упражнению
-            state.currentExerciseIndex++;
-            window.currentExerciseIndex = state.currentExerciseIndex;
-            // Сбрасываем счетчики для нового упражнения
-            state.currentSet = 1;
-            window.currentSet = state.currentSet;
-            renderExercise();
-        } else {
-            // Завершаем тренировку
-            workoutsModule.finishWorkout();
-        }
+    if (!isLastExercise) {
+        // Переходим к следующему упражнению
+        state.currentExerciseIndex++;
+        window.currentExerciseIndex = state.currentExerciseIndex;
+        
+        // Сбрасываем состояние для нового упражнения
+        const nextExercise = state.currentWorkout.exercises[state.currentExerciseIndex];
+        nextExercise.completedSets = [];
+        nextExercise.currentReps = nextExercise.reps || 10;
+        
+        renderExercise();
     } else {
-        // Если не все подходы выполнены, показываем экран отдыха
-        startRestTimer(exercise.restBetweenSets || 30);
+        // Завершаем тренировку
+        workoutsModule.finishWorkout();
     }
 }
 
@@ -359,6 +361,4 @@ window.skipRest = skipRest;
 window.toggleTimer = toggleTimer;
 window.nextExercise = nextExercise;
 window.startRestTimer = startRestTimer;
-window.exerciseState = state;
-window.adjustSets = adjustSets;
-window.completeSet = completeSet; 
+window.exerciseState = state; 
