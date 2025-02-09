@@ -2,7 +2,7 @@ import { showError } from './utils.js';
 import calendarModule from './calendar.js';
 import profileModule from './profile.js';
 import statisticsModule from './statistics.js';
-import programsModule from './programs.js';
+import { programsModule } from './programs.js';
 import workoutsModule from './workouts.js';
 import uiManager from './ui-manager.js';
 import { programDataManager } from './program-data.js';

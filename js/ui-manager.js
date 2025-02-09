@@ -2,7 +2,7 @@ import { showError, showNotification, setStorageItem } from './utils.js';
 import calendarModule from './calendar.js';
 import profileModule from './profile.js';
 import statisticsModule from './statistics.js';
-import programsModule from './programs.js';
+import { programsModule } from './programs.js';
 import { programDataManager } from './program-data.js';
 
 const uiManager = {

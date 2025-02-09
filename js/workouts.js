@@ -6,7 +6,7 @@ import {
     initState as initExerciseState 
 } from './exercise-renderer.js';
 import { programDataManager } from './program-data.js';
-import programsModule from './programs.js';
+import { programsModule } from './programs.js';
 
 // Состояние тренировки
 const workoutState = {
