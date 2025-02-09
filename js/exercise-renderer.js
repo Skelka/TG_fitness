@@ -233,49 +233,36 @@ export function renderExercise() {
     if (!exercise) return;
 
     const totalExercises = state.currentWorkout.exercises.length;
-    exercise.completedSets = exercise.completedSets || [];
     exercise.currentReps = exercise.currentReps || exercise.reps || 10;
+    exercise.completedSets = exercise.completedSets || [];
 
     mainContainer.innerHTML = `
         <div class="exercise-screen">
-            <div class="exercise-progress">
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${(state.currentExerciseIndex / totalExercises) * 100}%"></div>
-                </div>
-                <div class="progress-text">
-                    Тренировка ${state.currentExerciseIndex + 1} из ${totalExercises}
-                </div>
+            <div class="workout-title">
+                Тренировка ${state.currentExerciseIndex + 1} из ${totalExercises}
             </div>
-
-            <div class="exercise-header">
-                <h1 class="exercise-title">${exercise.name}</h1>
-                <div class="exercise-subtitle">${getExerciseTypeText(exercise.type)} • ${getMuscleGroupsText(exercise.muscleGroups)}</div>
+            
+            <div class="exercise-name">
+                ${exercise.name}
             </div>
             
             <div class="exercise-content">
-                <div class="exercise-animation">
-                    <img src="${getExerciseAnimation(exercise.name)}" alt="${exercise.name}" class="exercise-gif">
+                <div class="exercise-background">
+                    <img src="${getExerciseAnimation(exercise.name)}" alt="${exercise.name}">
                 </div>
-
-                <div class="reps-counter">
+                
+                <div class="reps-container">
                     <button class="reps-btn" id="decreaseReps">-</button>
-                    <div class="reps-count" id="repsCount">${exercise.currentReps}</div>
+                    <div class="reps-display" id="repsDisplay">
+                        <div class="reps-count">${exercise.currentReps}</div>
+                        <div class="reps-label">Подходов</div>
+                    </div>
                     <button class="reps-btn" id="increaseReps">+</button>
                 </div>
-
-                <div class="sets-grid">
-                    ${Array.from({length: exercise.sets || 5}, (_, i) => `
-                        <div class="set-box ${exercise.completedSets.includes(i) ? 'completed' : ''}" data-set="${i}">
-                            <div class="set-reps">${exercise.completedSets.includes(i) ? exercise.completedSets[i]?.reps || exercise.currentReps : exercise.currentReps}</div>
-                            <div class="set-label">Готово</div>
-                        </div>
-                    `).join('')}
-                </div>
-
-                <div class="exercise-description">
-                    <h3>Как выполнять</h3>
-                    <p>${exercise.description || 'Описание отсутствует'}</p>
-                </div>
+            </div>
+            
+            <div class="next-exercises">
+                Блок следующих упражнений с анимациями
             </div>
         </div>
     `;
@@ -283,7 +270,8 @@ export function renderExercise() {
     // Обработчики для кнопок изменения количества повторений
     const decreaseBtn = document.querySelector('#decreaseReps');
     const increaseBtn = document.querySelector('#increaseReps');
-    const repsCount = document.querySelector('#repsCount');
+    const repsDisplay = document.querySelector('#repsDisplay');
+    const repsCount = document.querySelector('.reps-count');
 
     if (decreaseBtn && increaseBtn && repsCount) {
         decreaseBtn.addEventListener('click', () => {
@@ -299,20 +287,15 @@ export function renderExercise() {
             repsCount.textContent = exercise.currentReps;
             window.tg.HapticFeedback.impactOccurred('light');
         });
-    }
 
-    // Обработчики для отметки выполненных подходов
-    const setBoxes = document.querySelectorAll('.set-box');
-    setBoxes.forEach(box => {
-        box.addEventListener('click', () => {
-            const setIndex = parseInt(box.dataset.set);
-            if (!exercise.completedSets.includes(setIndex)) {
-                exercise.completedSets.push(setIndex);
-                box.classList.add('completed');
+        repsDisplay.addEventListener('click', () => {
+            if (!exercise.completedSets.includes(state.currentSet - 1)) {
+                exercise.completedSets.push(state.currentSet - 1);
+                repsDisplay.classList.add('completed');
                 window.tg.HapticFeedback.notificationOccurred('success');
 
                 // Сохраняем количество повторений для этого подхода
-                exercise.completedSets[setIndex] = {
+                exercise.completedSets[state.currentSet - 1] = {
                     reps: exercise.currentReps,
                     timestamp: Date.now()
                 };
@@ -325,7 +308,7 @@ export function renderExercise() {
                 }
             }
         });
-    });
+    }
 }
 
 // Функция для перехода к следующему упражнению
