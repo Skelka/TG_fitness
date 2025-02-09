@@ -1,3 +1,5 @@
+import { getStorageItem, setStorageItem } from './utils.js';
+
 // Данные программ тренировок
 export const defaultPrograms = [
     {
