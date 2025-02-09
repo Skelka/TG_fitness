@@ -1,5 +1,8 @@
 import { getStorageItem, setStorageItem } from './utils.js';
 
+// Инициализация данных программ
+window.programData = [...defaultPrograms];
+
 // Данные программ тренировок
 export const defaultPrograms = [
     {
@@ -148,6 +151,12 @@ export const defaultPrograms = [
 export const programDataManager = {
     // Получение программы по ID
     getProgramById(programId) {
+        // Сначала ищем в window.programData, если он есть
+        if (window.programData) {
+            const program = window.programData.find(p => p.id === programId);
+            if (program) return program;
+        }
+        // Если не нашли, ищем в defaultPrograms
         return defaultPrograms.find(p => p.id === programId);
     },
 
@@ -220,6 +229,16 @@ export const programDataManager = {
             activeProgram.completedWorkouts.push(workoutId);
         }
         activeProgram.lastWorkoutDate = new Date().toISOString();
+
+        // Обновляем window.programData
+        const programIndex = window.programData.findIndex(p => p.id === activeProgram.id);
+        if (programIndex !== -1) {
+            window.programData[programIndex] = {
+                ...window.programData[programIndex],
+                completedWorkouts: activeProgram.completedWorkouts,
+                lastWorkoutDate: activeProgram.lastWorkoutDate
+            };
+        }
 
         // Проверяем, завершена ли программа
         const program = this.getProgramById(activeProgram.id);
