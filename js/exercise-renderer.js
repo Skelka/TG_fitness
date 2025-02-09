@@ -263,13 +263,6 @@ export function renderExercise() {
                     <span class="complete-text">Готово</span>
                 </button>
             </div>
-
-            <div class="exercise-controls">
-                <button class="control-btn next-exercise" onclick="window.nextExercise()">
-                    <span class="material-symbols-rounded">skip_next</span>
-                    ${isLastExercise ? 'Завершить тренировку' : 'Следующее упражнение'}
-                </button>
-            </div>
         </div>
     `;
 
@@ -330,25 +323,27 @@ function updateCompleteButton() {
 
 // Функция для перехода к следующему упражнению
 export function nextExercise() {
+    initState();
     const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
-    const isLastSet = state.currentSet === (exercise.sets || 1);
     const isLastExercise = state.currentExerciseIndex === state.currentWorkout.exercises.length - 1;
 
-    if (!isLastSet) {
-        // Если это не последний подход, увеличиваем счетчик подходов
-        state.currentSet++;
-        window.currentSet = state.currentSet;
-        startRestTimer(exercise.restBetweenSets || 30);
-    } else if (!isLastExercise) {
-        // Если это последний подход, но не последнее упражнение
-        state.currentExerciseIndex++;
-        state.currentSet = 1;
-        window.currentExerciseIndex = state.currentExerciseIndex;
-        window.currentSet = state.currentSet;
-        renderExercise();
+    // Проверяем, все ли подходы выполнены
+    if (exercise.completedSets >= exercise.sets) {
+        if (!isLastExercise) {
+            // Переходим к следующему упражнению
+            state.currentExerciseIndex++;
+            window.currentExerciseIndex = state.currentExerciseIndex;
+            // Сбрасываем счетчики для нового упражнения
+            state.currentSet = 1;
+            window.currentSet = state.currentSet;
+            renderExercise();
+        } else {
+            // Завершаем тренировку
+            workoutsModule.finishWorkout();
+        }
     } else {
-        // Если это последнее упражнение и последний подход
-        workoutsModule.finishWorkout();
+        // Если не все подходы выполнены, показываем экран отдыха
+        startRestTimer(exercise.restBetweenSets || 30);
     }
 }
 
