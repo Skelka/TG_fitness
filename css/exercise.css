@@ -10,35 +10,27 @@
 }
 
 .workout-title {
-    background: var(--tg-theme-bg-color, #fff);
-    border-radius: 16px;
-    padding: 12px;
-    text-align: center;
     font-size: 18px;
     font-weight: 600;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin-bottom: 8px;
 }
 
 .exercise-name {
-    background: var(--tg-theme-bg-color, #fff);
-    border-radius: 16px;
-    padding: 12px;
-    text-align: center;
     font-size: 16px;
-    margin-top: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin-bottom: 16px;
 }
 
 .exercise-content {
     flex: 1;
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    padding: 16px;
-    margin: 16px 0;
+    background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    aspect-ratio: 1;
+    max-height: 60vh;
 }
 
 .exercise-background {
@@ -48,82 +40,73 @@
     right: 0;
     bottom: 0;
     z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .exercise-background img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    opacity: 0.3;
+    object-fit: cover;
+    opacity: 0.8;
 }
 
 .reps-container {
-    position: relative;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     z-index: 2;
     display: grid;
-    grid-template-columns: 60px 1fr 60px;
-    gap: 16px;
+    grid-template-columns: auto auto auto;
+    gap: 8px;
     align-items: center;
-    width: 100%;
-    max-width: 300px;
+    background: var(--tg-theme-bg-color, #fff);
+    padding: 8px;
+    border-radius: 8px;
 }
 
 .reps-btn {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
     border: none;
-    background: var(--tg-theme-bg-color, #fff);
-    color: var(--tg-theme-text-color, #000);
-    font-size: 24px;
+    background: var(--tg-theme-button-color, #40a7e3);
+    color: var(--tg-theme-button-text-color, #fff);
+    font-size: 20px;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .reps-display {
     background: var(--tg-theme-bg-color, #fff);
-    border-radius: 16px;
-    padding: 16px;
+    border-radius: 8px;
+    padding: 8px 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    aspect-ratio: 1;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.reps-display:active {
-    transform: scale(0.95);
 }
 
 .reps-count {
-    font-size: 36px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 600;
     color: var(--tg-theme-text-color, #000);
-    margin-bottom: 4px;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.5px;
 }
 
 .reps-label {
-    font-size: 14px;
+    font-size: 12px;
     color: var(--tg-theme-hint-color, #999);
 }
 
 .next-exercises {
-    background: var(--tg-theme-bg-color, #fff);
-    border-radius: 16px;
-    padding: 12px;
+    background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+    border-radius: 12px;
+    padding: 16px;
     text-align: center;
     font-size: 14px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    margin-top: auto;
 }
 
 .reps-display.completed {
@@ -133,6 +116,40 @@
 .reps-display.completed .reps-count,
 .reps-display.completed .reps-label {
     color: var(--tg-theme-button-text-color, #fff);
+}
+
+/* Стили для таймера */
+.reps-display[data-timer="true"] {
+    padding: 8px 24px;
+}
+
+.reps-display[data-timer="true"] .reps-count {
+    font-size: 24px;
+}
+
+.reps-display[data-timer="true"] .reps-label {
+    font-size: 12px;
+}
+
+.reps-display.timer-running {
+    background: var(--tg-theme-button-color, #40a7e3);
+}
+
+.reps-display.timer-running .reps-count,
+.reps-display.timer-running .reps-label {
+    color: var(--tg-theme-button-text-color, #fff);
+}
+
+@keyframes gentlePulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 .exercise-progress {
@@ -520,21 +537,6 @@
     }
 }
 
-@keyframes gentlePulse {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 16px 40px rgba(64, 167, 227, 0.25);
-    }
-    50% {
-        transform: scale(1.05);
-        box-shadow: 0 20px 48px rgba(64, 167, 227, 0.3);
-    }
-    100% {
-        transform: scale(1);
-        box-shadow: 0 16px 40px rgba(64, 167, 227, 0.25);
-    }
-}
-
 .ending {
     animation: gentlePulse 1s infinite;
     color: var(--tg-theme-button-color, #40a7e3);
@@ -592,29 +594,4 @@
 .set-label {
     font-size: 12px;
     color: var(--tg-theme-hint-color, #999);
-}
-
-/* Стили для таймера */
-.reps-display[data-timer="true"] {
-    width: 160px;
-    height: 160px;
-    margin: 0 auto;
-}
-
-.reps-display[data-timer="true"] .reps-count {
-    font-size: 48px;
-}
-
-.reps-display[data-timer="true"] .reps-label {
-    font-size: 16px;
-}
-
-.reps-display.timer-running {
-    background: var(--tg-theme-button-color, #40a7e3);
-    animation: gentlePulse 2s infinite;
-}
-
-.reps-display.timer-running .reps-count,
-.reps-display.timer-running .reps-label {
-    color: var(--tg-theme-button-text-color, #fff);
 } 
