@@ -169,11 +169,18 @@ function createRestScreen(duration) {
         <div class="rest-progress">
             <div class="rest-progress-bar" style="width: 100%"></div>
         </div>
-        <button class="skip-rest-btn" onclick="window.skipRest()">
+        <button class="skip-rest-btn" id="skipRestBtn">
             <span class="material-symbols-rounded">skip_next</span>
             Пропустить
         </button>
     `;
+
+    // Добавляем обработчик для кнопки пропуска
+    const skipButton = restScreen.querySelector('#skipRestBtn');
+    if (skipButton) {
+        skipButton.addEventListener('click', skipRest);
+    }
+
     return restScreen;
 }
 
@@ -289,7 +296,7 @@ export function renderExercise() {
                         <div class="timer-display" id="timerDisplay">
                             ${formatTime(exercise.duration)}
                         </div>
-                        <button class="timer-btn" id="pauseTimer" onclick="window.toggleTimer()">
+                        <button class="timer-btn" id="pauseTimer">
                             <span class="material-symbols-rounded">pause</span>
                             Пауза
                         </button>
@@ -298,12 +305,12 @@ export function renderExercise() {
 
                 <div class="exercise-controls">
                     ${!isLastSet ? `
-                        <button class="control-btn next-set" onclick="window.startRestTimer(${exercise.restBetweenSets || 30})">
+                        <button class="control-btn next-set" id="nextSetBtn">
                             <span class="material-symbols-rounded">timer</span>
                             Следующий подход
                         </button>
                     ` : `
-                        <button class="control-btn next-exercise" onclick="window.nextExercise()">
+                        <button class="control-btn next-exercise" id="nextExerciseBtn">
                             <span class="material-symbols-rounded">skip_next</span>
                             ${isLastExercise ? 'Завершить тренировку' : 'Следующее упражнение'}
                         </button>
@@ -312,6 +319,22 @@ export function renderExercise() {
             </div>
         </div>
     `;
+
+    // Добавляем обработчики событий
+    const nextSetBtn = document.querySelector('#nextSetBtn');
+    if (nextSetBtn) {
+        nextSetBtn.addEventListener('click', () => startRestTimer(exercise.restBetweenSets || 30));
+    }
+
+    const nextExerciseBtn = document.querySelector('#nextExerciseBtn');
+    if (nextExerciseBtn) {
+        nextExerciseBtn.addEventListener('click', nextExercise);
+    }
+
+    const pauseTimerBtn = document.querySelector('#pauseTimer');
+    if (pauseTimerBtn) {
+        pauseTimerBtn.addEventListener('click', toggleTimer);
+    }
 
     // Запускаем таймер для упражнений с временным интервалом
     if (exercise.type === 'cardio' || exercise.type === 'static') {
@@ -343,15 +366,6 @@ export function nextExercise() {
     }
 }
 
-// Добавляем функцию в глобальные
-export function initGlobalFunctions() {
-    window.skipRest = skipRest;
-    window.toggleTimer = toggleTimer;
-    window.nextExercise = nextExercise;
-    window.startRestTimer = startRestTimer;
-    window.exerciseState = state;
-}
-
 // Экспортируем вспомогательные функции
 export {
     createRestScreen,
@@ -359,5 +373,9 @@ export {
     finishRest
 };
 
-// Инициализируем глобальные функции
-initGlobalFunctions(); 
+// Инициализируем глобальные функции после их объявления
+window.skipRest = skipRest;
+window.toggleTimer = toggleTimer;
+window.nextExercise = nextExercise;
+window.startRestTimer = startRestTimer;
+window.exerciseState = state; 
