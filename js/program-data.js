@@ -1,8 +1,5 @@
 import { getStorageItem, setStorageItem } from './utils.js';
 
-// Инициализация данных программ
-window.programData = [...defaultPrograms];
-
 // Данные программ тренировок
 export const defaultPrograms = [
     {
@@ -146,6 +143,9 @@ export const defaultPrograms = [
         ]
     }
 ];
+
+// Инициализация данных программ
+window.programData = [...defaultPrograms];
 
 // Функции для работы с данными программ
 export const programDataManager = {
