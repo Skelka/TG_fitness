@@ -1,4 +1,4 @@
-import { showError, showNotification, setStorageItem } from './utils.js';
+import { getStorageItem, setStorageItem, showError, showNotification } from './utils.js';
 import calendarModule from './calendar.js';
 import profileModule from './profile.js';
 import statisticsModule from './statistics.js';
@@ -108,30 +108,76 @@ const uiManager = {
 
     // Подтверждение очистки данных
     async confirmClearData() {
-        const result = await window.tg.showConfirm('Вы уверены, что хотите очистить все данные?');
-        if (result) {
-            await this.clearAllData();
-            showNotification('Все данные очищены');
-            window.location.reload();
+        try {
+            const result = await window.tg.showConfirm('Вы уверены, что хотите очистить все данные?');
+            // Проверяем результат подтверждения
+            if (result === true || (typeof result === 'object' && result?.button_id === 'ok')) {
+                await this.clearAllData();
+            }
+        } catch (error) {
+            console.error('Ошибка при очистке данных:', error);
+            showError('Не удалось очистить данные');
         }
     },
 
     // Очистка всех данных
     async clearAllData() {
         try {
-            await Promise.all([
-                setStorageItem('programs_meta', ''),
-                setStorageItem('activeProgram', ''),
-                setStorageItem('profile', ''),
-                setStorageItem('workoutStats', ''),
-                setStorageItem('weightStats', '')
-            ]);
-            
+            // Список всех ключей для очистки
+            const keysToDelete = [
+                'profile',
+                'workoutStats',
+                'weightHistory',
+                'programs_meta',
+                'activeProgram',
+                'currentWorkout',
+                'workoutHistory',
+                'statistics',
+                'calendar_events',
+                'exercise_progress',
+                'user_settings',
+                'completedPrograms'
+            ];
+
+            // Очищаем все данные через Telegram WebApp Storage
+            const clearPromises = keysToDelete.map(key => 
+                window.tg.CloudStorage.removeItem(key)
+                    .catch(err => console.warn(`Ошибка при удалении ${key}:`, err))
+            );
+
+            // Очищаем чанки программ
+            const meta = await getStorageItem('programs_meta');
+            if (meta) {
+                const { totalChunks } = JSON.parse(meta);
+                for (let i = 0; i < totalChunks; i++) {
+                    clearPromises.push(
+                        window.tg.CloudStorage.removeItem(`programs_chunk_${i}`)
+                            .catch(err => console.warn(`Ошибка при удалении programs_chunk_${i}:`, err))
+                    );
+                }
+            }
+
+            // Ждем завершения всех операций очистки
+            await Promise.all(clearPromises);
+
+            // Очищаем localStorage
             localStorage.clear();
-            console.log('Все данные очищены');
+
+            // Очищаем sessionStorage
+            sessionStorage.clear();
+
+            console.log('Данные успешно очищены');
+            
+            // Показываем уведомление об успехе
+            showNotification('Все данные успешно очищены');
+            
+            // Перезагружаем страницу после небольшой задержки
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         } catch (error) {
             console.error('Ошибка при очистке данных:', error);
-            showError('Не удалось очистить данные');
+            showError('Не удалось очистить данные: ' + error.message);
         }
     },
 
