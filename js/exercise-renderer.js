@@ -233,26 +233,13 @@ export function renderExercise() {
     if (!exercise) return;
 
     const totalExercises = state.currentWorkout.exercises.length;
-    const isLastSet = state.currentSet === (exercise.sets || 1);
     const isLastExercise = state.currentExerciseIndex === totalExercises - 1;
 
     mainContainer.innerHTML = `
         <div class="exercise-screen">
-            <div class="exercise-progress">
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${(state.currentExerciseIndex / totalExercises) * 100}%"></div>
-                </div>
-                <div class="progress-text">
-                    Упражнение ${state.currentExerciseIndex + 1} из ${totalExercises}
-                </div>
-            </div>
-
             <div class="exercise-header">
-                <h1 class="exercise-title">${exercise.name}</h1>
-                <div class="exercise-sets">
-                    <span class="material-symbols-rounded">repeat</span>
-                    Подход ${state.currentSet} из ${exercise.sets || 1}
-                </div>
+                <div class="exercise-title">${exercise.name}</div>
+                <div class="exercise-subtitle">Упражнение ${state.currentExerciseIndex + 1} из ${totalExercises}</div>
             </div>
             
             <div class="exercise-content">
@@ -260,85 +247,84 @@ export function renderExercise() {
                     <img src="${getExerciseAnimation(exercise.name)}" alt="${exercise.name}" class="exercise-gif">
                 </div>
 
-                <div class="exercise-info">
-                    ${exercise.type === 'cardio' || exercise.type === 'static' ? `
-                        <div class="info-card">
-                            <span class="material-symbols-rounded">timer</span>
-                            <strong>${exercise.duration} сек</strong>
-                            <span>Время</span>
+                <div class="sets-counter">
+                    <div class="sets-label">Количество подходов</div>
+                    <div class="sets-controls">
+                        <button class="sets-adjust" onclick="window.adjustSets(-1)">-</button>
+                        <div class="sets-display">
+                            <div class="sets-count">${exercise.sets || 1}</div>
+                            <div class="sets-text">подходов</div>
                         </div>
-                    ` : `
-                        <div class="info-card">
-                            <span class="material-symbols-rounded">repeat</span>
-                            <strong>${exercise.reps} повт.</strong>
-                            <span>Повторений</span>
-                        </div>
-                    `}
-                    <div class="info-card">
-                        <span class="material-symbols-rounded">fitness_center</span>
-                        <strong>${getExerciseTypeText(exercise.type)}</strong>
-                        <span>Тип</span>
-                    </div>
-                    <div class="info-card">
-                        <span class="material-symbols-rounded">sports_martial_arts</span>
-                        <strong>${getMuscleGroupsText(exercise.muscleGroups)}</strong>
-                        <span>Группы мышц</span>
+                        <button class="sets-adjust" onclick="window.adjustSets(1)">+</button>
                     </div>
                 </div>
 
-                <div class="exercise-description">
-                    <h3>Как выполнять</h3>
-                    <p>${exercise.description || 'Описание отсутствует'}</p>
-                </div>
+                <button class="complete-set" onclick="window.completeSet()">
+                    <span class="complete-text">Готово</span>
+                </button>
+            </div>
 
-                ${exercise.type === 'cardio' || exercise.type === 'static' ? `
-                    <div class="exercise-timer">
-                        <div class="timer-display" id="timerDisplay">
-                            ${formatTime(exercise.duration)}
-                        </div>
-                        <button class="timer-btn" id="pauseTimer">
-                            <span class="material-symbols-rounded">pause</span>
-                            Пауза
-                        </button>
-                    </div>
-                ` : ''}
-
-                <div class="exercise-controls">
-                    ${!isLastSet ? `
-                        <button class="control-btn next-set" id="nextSetBtn">
-                            <span class="material-symbols-rounded">timer</span>
-                            Следующий подход
-                        </button>
-                    ` : `
-                        <button class="control-btn next-exercise" id="nextExerciseBtn">
-                            <span class="material-symbols-rounded">skip_next</span>
-                            ${isLastExercise ? 'Завершить тренировку' : 'Следующее упражнение'}
-                        </button>
-                    `}
-                </div>
+            <div class="exercise-controls">
+                <button class="control-btn next-exercise" onclick="window.nextExercise()">
+                    <span class="material-symbols-rounded">skip_next</span>
+                    ${isLastExercise ? 'Завершить тренировку' : 'Следующее упражнение'}
+                </button>
             </div>
         </div>
     `;
 
-    // Добавляем обработчики событий
-    const nextSetBtn = document.querySelector('#nextSetBtn');
-    if (nextSetBtn) {
-        nextSetBtn.addEventListener('click', () => startRestTimer(exercise.restBetweenSets || 30));
-    }
+    // Обновляем состояние кнопки "Готово"
+    updateCompleteButton();
+}
 
-    const nextExerciseBtn = document.querySelector('#nextExerciseBtn');
-    if (nextExerciseBtn) {
-        nextExerciseBtn.addEventListener('click', nextExercise);
-    }
+// Функция для изменения количества подходов
+export function adjustSets(change) {
+    initState();
+    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
+    if (!exercise) return;
 
-    const pauseTimerBtn = document.querySelector('#pauseTimer');
-    if (pauseTimerBtn) {
-        pauseTimerBtn.addEventListener('click', toggleTimer);
+    exercise.sets = Math.max(1, (exercise.sets || 1) + change);
+    exercise.completedSets = exercise.completedSets || 0;
+    
+    // Обновляем отображение
+    const setsCount = document.querySelector('.sets-count');
+    if (setsCount) {
+        setsCount.textContent = exercise.sets;
     }
+    
+    // Обновляем состояние кнопки
+    updateCompleteButton();
+}
 
-    // Запускаем таймер для упражнений с временным интервалом
-    if (exercise.type === 'cardio' || exercise.type === 'static') {
-        startExerciseTimer(exercise.duration);
+// Функция для отметки выполнения подхода
+export function completeSet() {
+    initState();
+    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
+    if (!exercise) return;
+
+    exercise.completedSets = (exercise.completedSets || 0) + 1;
+    
+    if (exercise.completedSets >= exercise.sets) {
+        exercise.completedSets = 0; // Сбрасываем счетчик
+        nextExercise();
+    } else {
+        // Обновляем состояние кнопки
+        updateCompleteButton();
+        // Добавляем тактильный отклик
+        window.tg.HapticFeedback.impactOccurred('medium');
+    }
+}
+
+// Функция для обновления состояния кнопки "Готово"
+function updateCompleteButton() {
+    const exercise = state.currentWorkout.exercises[state.currentExerciseIndex];
+    const completeButton = document.querySelector('.complete-set');
+    
+    if (completeButton && exercise) {
+        const isCompleted = (exercise.completedSets || 0) > 0;
+        completeButton.classList.toggle('done', isCompleted);
+        completeButton.querySelector('.complete-text').textContent = 
+            isCompleted ? `${exercise.completedSets}/${exercise.sets}` : 'Готово';
     }
 }
 
@@ -378,4 +364,6 @@ window.skipRest = skipRest;
 window.toggleTimer = toggleTimer;
 window.nextExercise = nextExercise;
 window.startRestTimer = startRestTimer;
-window.exerciseState = state; 
+window.exerciseState = state;
+window.adjustSets = adjustSets;
+window.completeSet = completeSet; 
