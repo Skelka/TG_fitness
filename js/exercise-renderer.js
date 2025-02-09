@@ -348,6 +348,7 @@ export function initGlobalFunctions() {
     window.skipRest = skipRest;
     window.toggleTimer = toggleTimer;
     window.nextExercise = nextExercise;
+    window.startRestTimer = startRestTimer;
     window.exerciseState = state;
 }
 
@@ -355,7 +356,8 @@ export function initGlobalFunctions() {
 export {
     createRestScreen,
     updateRestTimerUI,
-    finishRest
+    finishRest,
+    startRestTimer
 };
 
 // Инициализируем глобальные функции
