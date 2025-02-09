@@ -210,6 +210,11 @@ export const programDataManager = {
         const activeProgram = await this.getActiveProgram();
         if (!activeProgram) return;
 
+        // Инициализируем массив выполненных тренировок, если его нет
+        if (!activeProgram.completedWorkouts) {
+            activeProgram.completedWorkouts = [];
+        }
+
         // Добавляем тренировку в список выполненных
         if (!activeProgram.completedWorkouts.includes(workoutId)) {
             activeProgram.completedWorkouts.push(workoutId);
