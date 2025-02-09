@@ -1,6 +1,7 @@
 import { formatTime, showError, showNotification } from './utils.js';
 import { programDataManager } from './program-data.js';
 import { getExerciseAnimation } from './exercises-animations.js';
+import workoutsModule from './workouts.js';
 
 // Состояние приложения
 export const state = {
@@ -338,7 +339,7 @@ export function nextExercise() {
         renderExercise();
     } else {
         // Если это последнее упражнение и последний подход
-        window.workoutsModule.finishWorkout();
+        workoutsModule.finishWorkout();
     }
 }
 

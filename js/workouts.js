@@ -190,4 +190,7 @@ const workoutsModule = {
 // Инициализируем модуль
 workoutsModule.init();
 
+// Делаем модуль доступным глобально
+window.workoutsModule = workoutsModule;
+
 export default workoutsModule; 
