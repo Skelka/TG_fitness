@@ -51,7 +51,7 @@ const exerciseAnimations = {
 };
 
 // Функция для получения анимации по названию упражнения
-function getExerciseAnimation(exerciseName) {
+export function getExerciseAnimation(exerciseName) {
     // Если анимация найдена, возвращаем её
     if (exerciseAnimations[exerciseName]) {
         return exerciseAnimations[exerciseName];
@@ -69,6 +69,9 @@ function getExerciseAnimation(exerciseName) {
         'https://www.musclewiki.com/media/uploads/male-bodyweight-squat-front.gif'; // Дефолтная анимация
 }
 
-// Экспортируем функцию и базу данных
+// Экспортируем базу данных
+export { exerciseAnimations };
+
+// Делаем базу данных доступной глобально
 window.exerciseAnimations = exerciseAnimations;
 window.getExerciseAnimation = getExerciseAnimation; 

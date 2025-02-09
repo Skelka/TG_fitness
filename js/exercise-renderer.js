@@ -1,5 +1,6 @@
 import { formatTime, showError, showNotification } from './utils.js';
 import { programDataManager } from './program-data.js';
+import { getExerciseAnimation } from './exercises-animations.js';
 
 // Состояние приложения
 export const state = {

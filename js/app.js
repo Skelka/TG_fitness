@@ -69,8 +69,9 @@ function setupPopupHandler() {
         
         if (!event?.button_id) return;
 
-        if (event.button_id === 'quit_workout') {
-            workoutsModule.finishWorkout();
+        if (event.button_id === 'quit_workout' || event.button_id === 'ok') {
+            workoutsModule.resetWorkout();
+            uiManager.renderProgramCards();
         } else if (event.button_id.startsWith('start_program_')) {
             const programId = event.button_id.replace('start_program_', '');
             await handleProgramStart(programId);
