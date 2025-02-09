@@ -1,21 +1,38 @@
 // База данных анимаций упражнений
 const exerciseAnimations = {
-    // Упражнения для ног
-    'Приседания': 'https://www.musclewiki.com/media/uploads/male-bodyweight-squat-front.gif',
-    'Выпады': 'https://www.musclewiki.com/media/uploads/male-bodyweight-lunge-front.gif',
-    'Подъемы на носки': 'https://www.musclewiki.com/media/uploads/male-bodyweight-calfrise-front.gif',
-    
+    // Разминка
+    'Разминка суставов': 'https://i.imgur.com/7spG1Rb.gif',
+    'Круговые движения руками': 'https://i.imgur.com/QcXRlwF.gif',
+    'Наклоны в стороны': 'https://i.imgur.com/L8E8zyH.gif',
+    'Разминка': 'https://i.imgur.com/7spG1Rb.gif',
+
+    // Кардио
+    'Прыжки Jumping Jack': 'https://i.imgur.com/8YXwvB3.gif',
+    'Бёрпи': 'https://i.imgur.com/kqB9LyJ.gif',
+    'Скалолаз': 'https://i.imgur.com/0Y6zXgK.gif',
+    'Бег на месте': 'https://i.imgur.com/ZUr8H7g.gif',
+
+    // Силовые
+    'Приседания': 'https://i.imgur.com/UJqLbwl.gif',
+    'Отжимания': 'https://i.imgur.com/UwZyefW.gif',
+    'Планка': 'https://i.imgur.com/x4qJPqF.gif',
+    'Выпады': 'https://i.imgur.com/1jKRjZF.gif',
+    'Подтягивания': 'https://i.imgur.com/8yXV6q4.gif',
+
+    // Растяжка
+    'Растяжка': 'https://i.imgur.com/YpfDORm.gif',
+    'Растяжка ног': 'https://i.imgur.com/nWYHxQA.gif',
+    'Растяжка спины': 'https://i.imgur.com/K3xGg9j.gif',
+    'Наклоны к ногам': 'https://i.imgur.com/2GLxZbg.gif',
+
     // Упражнения для груди
-    'Отжимания': 'https://www.musclewiki.com/media/uploads/male-bodyweight-pushup-front.gif',
     'Отжимания на брусьях': 'https://www.musclewiki.com/media/uploads/male-bodyweight-dips-side.gif',
     
     // Упражнения для спины
-    'Подтягивания': 'https://www.musclewiki.com/media/uploads/male-bodyweight-pullup-front.gif',
     'Гиперэкстензия': 'https://www.musclewiki.com/media/uploads/male-bodyweight-backextension-side.gif',
     
     // Упражнения для пресса
     'Скручивания': 'https://www.musclewiki.com/media/uploads/male-bodyweight-crunch-side.gif',
-    'Планка': 'https://www.musclewiki.com/media/uploads/male-bodyweight-plank-side.gif',
     'Подъемы ног': 'https://www.musclewiki.com/media/uploads/male-bodyweight-legraise-side.gif',
     
     // Упражнения для плеч
@@ -28,11 +45,6 @@ const exerciseAnimations = {
     // Упражнения для трицепса
     'Отжимания узким хватом': 'https://www.musclewiki.com/media/uploads/male-bodyweight-closegrippushup-front.gif',
     
-    // Кардио упражнения
-    'Берпи': 'https://www.musclewiki.com/media/uploads/male-bodyweight-burpee-side.gif',
-    'Прыжки на месте': 'https://www.musclewiki.com/media/uploads/male-bodyweight-jumpingjack-front.gif',
-    'Бег на месте': 'https://www.musclewiki.com/media/uploads/male-bodyweight-highknees-side.gif',
-    
     // Упражнения с гантелями
     'Жим гантелей': 'https://www.musclewiki.com/media/uploads/male-dumbbell-benchpress-side.gif',
     'Тяга гантелей в наклоне': 'https://www.musclewiki.com/media/uploads/male-dumbbell-row-side.gif',
@@ -42,11 +54,6 @@ const exerciseAnimations = {
     // Растяжка
     'Растяжка квадрицепса': 'https://www.musclewiki.com/media/uploads/male-stretch-quadriceps-side.gif',
     'Растяжка плеч': 'https://www.musclewiki.com/media/uploads/male-stretch-shoulder-front.gif',
-    'Растяжка спины': 'https://www.musclewiki.com/media/uploads/male-stretch-back-side.gif',
-    
-    // Разминка
-    'Круговые движения руками': 'https://www.musclewiki.com/media/uploads/male-stretch-armcircles-front.gif',
-    'Наклоны в стороны': 'https://www.musclewiki.com/media/uploads/male-stretch-sidebend-front.gif',
     'Вращение тазом': 'https://www.musclewiki.com/media/uploads/male-stretch-hiprotation-side.gif'
 };
 
@@ -66,7 +73,7 @@ export function getExerciseAnimation(exerciseName) {
     // Возвращаем найденную анимацию или заглушку
     return exerciseKey ? 
         exerciseAnimations[exerciseKey] : 
-        'https://www.musclewiki.com/media/uploads/male-bodyweight-squat-front.gif'; // Дефолтная анимация
+        'https://i.imgur.com/UJqLbwl.gif'; // Дефолтная анимация
 }
 
 // Экспортируем базу данных

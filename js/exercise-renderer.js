@@ -356,8 +356,7 @@ export function initGlobalFunctions() {
 export {
     createRestScreen,
     updateRestTimerUI,
-    finishRest,
-    startRestTimer
+    finishRest
 };
 
 // Инициализируем глобальные функции
